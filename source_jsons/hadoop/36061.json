@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMAppManager.java",
+  "functionName": "moveApplicationAcrossQueue",
+  "functionId": "moveApplicationAcrossQueue___applicationId-ApplicationId__targetQueue-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/RMAppManager.java",
+  "functionStartLine": 774,
+  "functionEndLine": 817,
+  "numCommitsSeen": 106,
+  "timeTaken": 2330,
+  "changeHistory": [
+    "a207aa9930e7ee4f10228e2db4b4e733794eb8ea",
+    "563480dccd0136d82730f4228f1df44449ed5822"
+  ],
+  "changeHistoryShort": {
+    "a207aa9930e7ee4f10228e2db4b4e733794eb8ea": "Ybodychange",
+    "563480dccd0136d82730f4228f1df44449ed5822": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a207aa9930e7ee4f10228e2db4b4e733794eb8ea": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6211. Synchronization improvement for moveApplicationAcrossQueues and updateApplicationPriority. Contributed by Bibin A Chundatt.\n",
+      "commitDate": "23/02/17 12:49 AM",
+      "commitName": "a207aa9930e7ee4f10228e2db4b4e733794eb8ea",
+      "commitAuthor": "Sunil G",
+      "commitDateOld": "23/01/17 9:12 AM",
+      "commitNameOld": "69fa81679f59378fd19a2c65db8019393d7c05a2",
+      "commitAuthorOld": "Jason Lowe",
+      "daysBetweenCommits": 30.65,
+      "commitsBetweenForRepo": 147,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,44 +1,44 @@\n   public void moveApplicationAcrossQueue(ApplicationId applicationId, String targetQueue)\n       throws YarnException {\n     RMApp app \u003d this.rmContext.getRMApps().get(applicationId);\n \n     // Capacity scheduler will directly follow below approach.\n     // 1. Do a pre-validate check to ensure that changes are fine.\n     // 2. Update this information to state-store\n     // 3. Perform real move operation and update in-memory data structures.\n     synchronized (applicationId) {\n-      if (app.isAppInCompletedStates()) {\n+      if (app \u003d\u003d null || app.isAppInCompletedStates()) {\n         return;\n       }\n \n       String sourceQueue \u003d app.getQueue();\n       // 1. pre-validate move application request to check for any access\n       // violations or other errors. If there are any violations, YarnException\n       // will be thrown.\n       rmContext.getScheduler().preValidateMoveApplication(applicationId,\n           targetQueue);\n \n       // 2. Update to state store with new queue and throw exception is failed.\n       updateAppDataToStateStore(targetQueue, app, false);\n \n       // 3. Perform the real move application\n       String queue \u003d \"\";\n       try {\n         queue \u003d rmContext.getScheduler().moveApplication(applicationId,\n             targetQueue);\n       } catch (YarnException e) {\n         // Revert to source queue since in-memory move has failed. Chances\n         // of this is very rare as we have already done the pre-validation.\n         updateAppDataToStateStore(sourceQueue, app, true);\n         throw e;\n       }\n \n       // update in-memory\n       if (queue !\u003d null \u0026\u0026 !queue.isEmpty()) {\n         app.setQueue(queue);\n       }\n     }\n \n     rmContext.getSystemMetricsPublisher().appUpdated(app,\n         System.currentTimeMillis());\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void moveApplicationAcrossQueue(ApplicationId applicationId, String targetQueue)\n      throws YarnException {\n    RMApp app \u003d this.rmContext.getRMApps().get(applicationId);\n\n    // Capacity scheduler will directly follow below approach.\n    // 1. Do a pre-validate check to ensure that changes are fine.\n    // 2. Update this information to state-store\n    // 3. Perform real move operation and update in-memory data structures.\n    synchronized (applicationId) {\n      if (app \u003d\u003d null || app.isAppInCompletedStates()) {\n        return;\n      }\n\n      String sourceQueue \u003d app.getQueue();\n      // 1. pre-validate move application request to check for any access\n      // violations or other errors. If there are any violations, YarnException\n      // will be thrown.\n      rmContext.getScheduler().preValidateMoveApplication(applicationId,\n          targetQueue);\n\n      // 2. Update to state store with new queue and throw exception is failed.\n      updateAppDataToStateStore(targetQueue, app, false);\n\n      // 3. Perform the real move application\n      String queue \u003d \"\";\n      try {\n        queue \u003d rmContext.getScheduler().moveApplication(applicationId,\n            targetQueue);\n      } catch (YarnException e) {\n        // Revert to source queue since in-memory move has failed. Chances\n        // of this is very rare as we have already done the pre-validation.\n        updateAppDataToStateStore(sourceQueue, app, true);\n        throw e;\n      }\n\n      // update in-memory\n      if (queue !\u003d null \u0026\u0026 !queue.isEmpty()) {\n        app.setQueue(queue);\n      }\n    }\n\n    rmContext.getSystemMetricsPublisher().appUpdated(app,\n        System.currentTimeMillis());\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/RMAppManager.java",
+      "extendedDetails": {}
+    },
+    "563480dccd0136d82730f4228f1df44449ed5822": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5932. Retrospect moveApplicationToQueue in align with YARN-5611. Contributed by Sunil G.\n",
+      "commitDate": "06/12/16 9:09 PM",
+      "commitName": "563480dccd0136d82730f4228f1df44449ed5822",
+      "commitAuthor": "Rohith Sharma K S",
+      "diff": "@@ -0,0 +1,44 @@\n+  public void moveApplicationAcrossQueue(ApplicationId applicationId, String targetQueue)\n+      throws YarnException {\n+    RMApp app \u003d this.rmContext.getRMApps().get(applicationId);\n+\n+    // Capacity scheduler will directly follow below approach.\n+    // 1. Do a pre-validate check to ensure that changes are fine.\n+    // 2. Update this information to state-store\n+    // 3. Perform real move operation and update in-memory data structures.\n+    synchronized (applicationId) {\n+      if (app.isAppInCompletedStates()) {\n+        return;\n+      }\n+\n+      String sourceQueue \u003d app.getQueue();\n+      // 1. pre-validate move application request to check for any access\n+      // violations or other errors. If there are any violations, YarnException\n+      // will be thrown.\n+      rmContext.getScheduler().preValidateMoveApplication(applicationId,\n+          targetQueue);\n+\n+      // 2. Update to state store with new queue and throw exception is failed.\n+      updateAppDataToStateStore(targetQueue, app, false);\n+\n+      // 3. Perform the real move application\n+      String queue \u003d \"\";\n+      try {\n+        queue \u003d rmContext.getScheduler().moveApplication(applicationId,\n+            targetQueue);\n+      } catch (YarnException e) {\n+        // Revert to source queue since in-memory move has failed. Chances\n+        // of this is very rare as we have already done the pre-validation.\n+        updateAppDataToStateStore(sourceQueue, app, true);\n+        throw e;\n+      }\n+\n+      // update in-memory\n+      if (queue !\u003d null \u0026\u0026 !queue.isEmpty()) {\n+        app.setQueue(queue);\n+      }\n+    }\n+\n+    rmContext.getSystemMetricsPublisher().appUpdated(app,\n+        System.currentTimeMillis());\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void moveApplicationAcrossQueue(ApplicationId applicationId, String targetQueue)\n      throws YarnException {\n    RMApp app \u003d this.rmContext.getRMApps().get(applicationId);\n\n    // Capacity scheduler will directly follow below approach.\n    // 1. Do a pre-validate check to ensure that changes are fine.\n    // 2. Update this information to state-store\n    // 3. Perform real move operation and update in-memory data structures.\n    synchronized (applicationId) {\n      if (app.isAppInCompletedStates()) {\n        return;\n      }\n\n      String sourceQueue \u003d app.getQueue();\n      // 1. pre-validate move application request to check for any access\n      // violations or other errors. If there are any violations, YarnException\n      // will be thrown.\n      rmContext.getScheduler().preValidateMoveApplication(applicationId,\n          targetQueue);\n\n      // 2. Update to state store with new queue and throw exception is failed.\n      updateAppDataToStateStore(targetQueue, app, false);\n\n      // 3. Perform the real move application\n      String queue \u003d \"\";\n      try {\n        queue \u003d rmContext.getScheduler().moveApplication(applicationId,\n            targetQueue);\n      } catch (YarnException e) {\n        // Revert to source queue since in-memory move has failed. Chances\n        // of this is very rare as we have already done the pre-validation.\n        updateAppDataToStateStore(sourceQueue, app, true);\n        throw e;\n      }\n\n      // update in-memory\n      if (queue !\u003d null \u0026\u0026 !queue.isEmpty()) {\n        app.setQueue(queue);\n      }\n    }\n\n    rmContext.getSystemMetricsPublisher().appUpdated(app,\n        System.currentTimeMillis());\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/RMAppManager.java"
+    }
+  }
+}

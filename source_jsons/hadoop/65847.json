@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DynamoDBMetadataStore.java",
+  "functionName": "retryEvent",
+  "functionId": "retryEvent___text-String__ex-IOException__attempts-int__idempotent-boolean",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+  "functionStartLine": 2017,
+  "functionEndLine": 2046,
+  "numCommitsSeen": 42,
+  "timeTaken": 2843,
+  "changeHistory": [
+    "49df83899543586bbcaf80f01399ade031cf68b0",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "49df83899543586bbcaf80f01399ade031cf68b0": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "49df83899543586bbcaf80f01399ade031cf68b0": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16697. Tune/audit S3A authoritative mode.\n\nContains:\n\nHADOOP-16474. S3Guard ProgressiveRenameTracker to mark destination\n              dirirectory as authoritative on success.\nHADOOP-16684. S3guard bucket info to list a bit more about\n              authoritative paths.\nHADOOP-16722. S3GuardTool to support FilterFileSystem.\n\nThis patch improves the marking of newly created/import directory\ntrees in S3Guard DynamoDB tables as authoritative.\n\nSpecific changes:\n\n * Renamed directories are marked as authoritative if the entire\n   operation succeeded (HADOOP-16474).\n * When updating parent table entries as part of any table write,\n   there\u0027s no overwriting of their authoritative flag.\n\ns3guard import changes:\n\n* new -verbose flag to print out what is going on.\n\n* The \"s3guard import\" command lets you declare that a directory tree\nis to be marked as authoritative\n\n  hadoop s3guard import -authoritative -verbose s3a://bucket/path\n\nWhen importing a listing and a file is found, the import tool queries\nthe metastore and only updates the entry if the file is different from\nbefore, where different \u003d\u003d new timestamp, etag, or length. S3Guard can get\ntimestamp differences due to clock skew in PUT operations.\n\nAs the recursive list performed by the import command doesn\u0027t retrieve the\nversionID, the existing entry may in fact be more complete.\nWhen updating an existing due to clock skew the existing version ID\nis propagated to the new entry (note: the etags must match; this is needed\nto deal with inconsistent listings).\n\nThere is a new s3guard command to audit a s3guard bucket/path\u0027s\nauthoritative state:\n\n  hadoop s3guard authoritative -check-config s3a://bucket/path\n\nThis is primarily for testing/auditing.\n\nThe s3guard bucket-info command also provides some more details on the\nauthoritative state of a store (HADOOP-16684).\n\nChange-Id: I58001341c04f6f3597fcb4fcb1581ccefeb77d91\n",
+      "commitDate": "10/01/20 3:11 AM",
+      "commitName": "49df83899543586bbcaf80f01399ade031cf68b0",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "26/11/19 7:36 AM",
+      "commitNameOld": "ea25f4de236611d388e14a710ebe5d6872c421b6",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 44.82,
+      "commitsBetweenForRepo": 155,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,30 @@\n   void retryEvent(\n       String text,\n       IOException ex,\n       int attempts,\n       boolean idempotent) {\n     if (S3AUtils.isThrottleException(ex)) {\n       // throttled\n-      if (instrumentation !\u003d null) {\n-        instrumentation.throttled();\n-      }\n+      instrumentation.throttled();\n       int eventCount \u003d throttleEventCount.addAndGet(1);\n       if (attempts \u003d\u003d 1 \u0026\u0026 eventCount \u003c THROTTLE_EVENT_LOG_LIMIT) {\n         LOG.warn(\"DynamoDB IO limits reached in {};\"\n                 + \" consider increasing capacity: {}\", text, ex.toString());\n         LOG.debug(\"Throttled\", ex);\n       } else {\n         // user has been warned already, log at debug only.\n         LOG.debug(\"DynamoDB IO limits reached in {};\"\n                 + \" consider increasing capacity: {}\", text, ex.toString());\n       }\n     } else if (attempts \u003d\u003d 1) {\n       // not throttled. Log on the first attempt only\n       LOG.info(\"Retrying {}: {}\", text, ex.toString());\n       LOG.debug(\"Retrying {}\", text, ex);\n     }\n \n-    if (instrumentation !\u003d null) {\n-      // note a retry\n-      instrumentation.retrying();\n-    }\n+    // note a retry\n+    instrumentation.retrying();\n     if (owner !\u003d null) {\n       owner.metastoreOperationRetried(ex, attempts, idempotent);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void retryEvent(\n      String text,\n      IOException ex,\n      int attempts,\n      boolean idempotent) {\n    if (S3AUtils.isThrottleException(ex)) {\n      // throttled\n      instrumentation.throttled();\n      int eventCount \u003d throttleEventCount.addAndGet(1);\n      if (attempts \u003d\u003d 1 \u0026\u0026 eventCount \u003c THROTTLE_EVENT_LOG_LIMIT) {\n        LOG.warn(\"DynamoDB IO limits reached in {};\"\n                + \" consider increasing capacity: {}\", text, ex.toString());\n        LOG.debug(\"Throttled\", ex);\n      } else {\n        // user has been warned already, log at debug only.\n        LOG.debug(\"DynamoDB IO limits reached in {};\"\n                + \" consider increasing capacity: {}\", text, ex.toString());\n      }\n    } else if (attempts \u003d\u003d 1) {\n      // not throttled. Log on the first attempt only\n      LOG.info(\"Retrying {}: {}\", text, ex.toString());\n      LOG.debug(\"Retrying {}\", text, ex);\n    }\n\n    // note a retry\n    instrumentation.retrying();\n    if (owner !\u003d null) {\n      owner.metastoreOperationRetried(ex, attempts, idempotent);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,34 @@\n+  void retryEvent(\n+      String text,\n+      IOException ex,\n+      int attempts,\n+      boolean idempotent) {\n+    if (S3AUtils.isThrottleException(ex)) {\n+      // throttled\n+      if (instrumentation !\u003d null) {\n+        instrumentation.throttled();\n+      }\n+      int eventCount \u003d throttleEventCount.addAndGet(1);\n+      if (attempts \u003d\u003d 1 \u0026\u0026 eventCount \u003c THROTTLE_EVENT_LOG_LIMIT) {\n+        LOG.warn(\"DynamoDB IO limits reached in {};\"\n+                + \" consider increasing capacity: {}\", text, ex.toString());\n+        LOG.debug(\"Throttled\", ex);\n+      } else {\n+        // user has been warned already, log at debug only.\n+        LOG.debug(\"DynamoDB IO limits reached in {};\"\n+                + \" consider increasing capacity: {}\", text, ex.toString());\n+      }\n+    } else if (attempts \u003d\u003d 1) {\n+      // not throttled. Log on the first attempt only\n+      LOG.info(\"Retrying {}: {}\", text, ex.toString());\n+      LOG.debug(\"Retrying {}\", text, ex);\n+    }\n+\n+    if (instrumentation !\u003d null) {\n+      // note a retry\n+      instrumentation.retrying();\n+    }\n+    if (owner !\u003d null) {\n+      owner.metastoreOperationRetried(ex, attempts, idempotent);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void retryEvent(\n      String text,\n      IOException ex,\n      int attempts,\n      boolean idempotent) {\n    if (S3AUtils.isThrottleException(ex)) {\n      // throttled\n      if (instrumentation !\u003d null) {\n        instrumentation.throttled();\n      }\n      int eventCount \u003d throttleEventCount.addAndGet(1);\n      if (attempts \u003d\u003d 1 \u0026\u0026 eventCount \u003c THROTTLE_EVENT_LOG_LIMIT) {\n        LOG.warn(\"DynamoDB IO limits reached in {};\"\n                + \" consider increasing capacity: {}\", text, ex.toString());\n        LOG.debug(\"Throttled\", ex);\n      } else {\n        // user has been warned already, log at debug only.\n        LOG.debug(\"DynamoDB IO limits reached in {};\"\n                + \" consider increasing capacity: {}\", text, ex.toString());\n      }\n    } else if (attempts \u003d\u003d 1) {\n      // not throttled. Log on the first attempt only\n      LOG.info(\"Retrying {}: {}\", text, ex.toString());\n      LOG.debug(\"Retrying {}\", text, ex);\n    }\n\n    if (instrumentation !\u003d null) {\n      // note a retry\n      instrumentation.retrying();\n    }\n    if (owner !\u003d null) {\n      owner.metastoreOperationRetried(ex, attempts, idempotent);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java"
+    }
+  }
+}

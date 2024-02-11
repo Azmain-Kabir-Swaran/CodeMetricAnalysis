@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DynoInfraUtils.java",
+  "functionName": "fetchNameNodeJMXValue",
+  "functionId": "fetchNameNodeJMXValue___nameNodeProperties-Properties__jmxBeanQuery-String__property-String",
+  "sourceFilePath": "hadoop-tools/hadoop-dynamometer/hadoop-dynamometer-infra/src/main/java/org/apache/hadoop/tools/dynamometer/DynoInfraUtils.java",
+  "functionStartLine": 539,
+  "functionEndLine": 591,
+  "numCommitsSeen": 3,
+  "timeTaken": 418,
+  "changeHistory": [
+    "ab0b180ddb5d0775a2452d5eeb7badd252aadb91"
+  ],
+  "changeHistoryShort": {
+    "ab0b180ddb5d0775a2452d5eeb7badd252aadb91": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ab0b180ddb5d0775a2452d5eeb7badd252aadb91": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-12345 Add Dynamometer to hadoop-tools, a tool for scale testing the HDFS NameNode with real metadata and workloads. Contributed by Erik Krogen.\n",
+      "commitDate": "25/06/19 8:07 AM",
+      "commitName": "ab0b180ddb5d0775a2452d5eeb7badd252aadb91",
+      "commitAuthor": "Erik Krogen",
+      "diff": "@@ -0,0 +1,53 @@\n+  static String fetchNameNodeJMXValue(Properties nameNodeProperties,\n+      String jmxBeanQuery, String property) throws IOException {\n+    URI nnWebUri \u003d getNameNodeWebUri(nameNodeProperties);\n+    URL queryURL;\n+    try {\n+      queryURL \u003d new URL(nnWebUri.getScheme(), nnWebUri.getHost(),\n+          nnWebUri.getPort(), \"/jmx?qry\u003d\" + jmxBeanQuery);\n+    } catch (MalformedURLException e) {\n+      throw new IllegalArgumentException(\"Invalid JMX query: \\\"\" + jmxBeanQuery\n+          + \"\\\" against \" + \"NameNode URI: \" + nnWebUri);\n+    }\n+    HttpURLConnection conn \u003d (HttpURLConnection) queryURL.openConnection();\n+    if (conn.getResponseCode() !\u003d 200) {\n+      throw new IOException(\n+          \"Unable to retrieve JMX: \" + conn.getResponseMessage());\n+    }\n+    InputStream in \u003d conn.getInputStream();\n+    JsonFactory fac \u003d new JsonFactory();\n+    JsonParser parser \u003d fac.createJsonParser(in);\n+    if (parser.nextToken() !\u003d JsonToken.START_OBJECT\n+        || parser.nextToken() !\u003d JsonToken.FIELD_NAME\n+        || !parser.getCurrentName().equals(\"beans\")\n+        || parser.nextToken() !\u003d JsonToken.START_ARRAY\n+        || parser.nextToken() !\u003d JsonToken.START_OBJECT) {\n+      throw new IOException(\n+          \"Unexpected format of JMX JSON response for: \" + jmxBeanQuery);\n+    }\n+    int objectDepth \u003d 1;\n+    String ret \u003d null;\n+    while (objectDepth \u003e 0) {\n+      JsonToken tok \u003d parser.nextToken();\n+      if (tok \u003d\u003d JsonToken.START_OBJECT) {\n+        objectDepth++;\n+      } else if (tok \u003d\u003d JsonToken.END_OBJECT) {\n+        objectDepth--;\n+      } else if (tok \u003d\u003d JsonToken.FIELD_NAME) {\n+        if (parser.getCurrentName().equals(property)) {\n+          parser.nextToken();\n+          ret \u003d parser.getText();\n+          break;\n+        }\n+      }\n+    }\n+    parser.close();\n+    in.close();\n+    conn.disconnect();\n+    if (ret \u003d\u003d null) {\n+      throw new IOException(\n+          \"Property \" + property + \" not found within \" + jmxBeanQuery);\n+    } else {\n+      return ret;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static String fetchNameNodeJMXValue(Properties nameNodeProperties,\n      String jmxBeanQuery, String property) throws IOException {\n    URI nnWebUri \u003d getNameNodeWebUri(nameNodeProperties);\n    URL queryURL;\n    try {\n      queryURL \u003d new URL(nnWebUri.getScheme(), nnWebUri.getHost(),\n          nnWebUri.getPort(), \"/jmx?qry\u003d\" + jmxBeanQuery);\n    } catch (MalformedURLException e) {\n      throw new IllegalArgumentException(\"Invalid JMX query: \\\"\" + jmxBeanQuery\n          + \"\\\" against \" + \"NameNode URI: \" + nnWebUri);\n    }\n    HttpURLConnection conn \u003d (HttpURLConnection) queryURL.openConnection();\n    if (conn.getResponseCode() !\u003d 200) {\n      throw new IOException(\n          \"Unable to retrieve JMX: \" + conn.getResponseMessage());\n    }\n    InputStream in \u003d conn.getInputStream();\n    JsonFactory fac \u003d new JsonFactory();\n    JsonParser parser \u003d fac.createJsonParser(in);\n    if (parser.nextToken() !\u003d JsonToken.START_OBJECT\n        || parser.nextToken() !\u003d JsonToken.FIELD_NAME\n        || !parser.getCurrentName().equals(\"beans\")\n        || parser.nextToken() !\u003d JsonToken.START_ARRAY\n        || parser.nextToken() !\u003d JsonToken.START_OBJECT) {\n      throw new IOException(\n          \"Unexpected format of JMX JSON response for: \" + jmxBeanQuery);\n    }\n    int objectDepth \u003d 1;\n    String ret \u003d null;\n    while (objectDepth \u003e 0) {\n      JsonToken tok \u003d parser.nextToken();\n      if (tok \u003d\u003d JsonToken.START_OBJECT) {\n        objectDepth++;\n      } else if (tok \u003d\u003d JsonToken.END_OBJECT) {\n        objectDepth--;\n      } else if (tok \u003d\u003d JsonToken.FIELD_NAME) {\n        if (parser.getCurrentName().equals(property)) {\n          parser.nextToken();\n          ret \u003d parser.getText();\n          break;\n        }\n      }\n    }\n    parser.close();\n    in.close();\n    conn.disconnect();\n    if (ret \u003d\u003d null) {\n      throw new IOException(\n          \"Property \" + property + \" not found within \" + jmxBeanQuery);\n    } else {\n      return ret;\n    }\n  }",
+      "path": "hadoop-tools/hadoop-dynamometer/hadoop-dynamometer-infra/src/main/java/org/apache/hadoop/tools/dynamometer/DynoInfraUtils.java"
+    }
+  }
+}

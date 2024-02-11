@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "MapTask.java",
+  "functionName": "createSortingCollector",
+  "functionId": "createSortingCollector___job-JobConf__reporter-TaskReporter",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/MapTask.java",
+  "functionStartLine": 388,
+  "functionEndLine": 428,
+  "numCommitsSeen": 30,
+  "timeTaken": 2003,
+  "changeHistory": [
+    "0b8a7c18ddbe73b356b3c9baf4460659ccaee095",
+    "298d09c9b583088f364038adcb1edf1eb1c2c196",
+    "e5e9d792c7903c58b62f2baabafd031d5d965c57",
+    "8329fae686cf7a68679d177c25623311beec3384"
+  ],
+  "changeHistoryShort": {
+    "0b8a7c18ddbe73b356b3c9baf4460659ccaee095": "Ybodychange",
+    "298d09c9b583088f364038adcb1edf1eb1c2c196": "Ybodychange",
+    "e5e9d792c7903c58b62f2baabafd031d5d965c57": "Ybodychange",
+    "8329fae686cf7a68679d177c25623311beec3384": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0b8a7c18ddbe73b356b3c9baf4460659ccaee095": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6715. Fix Several Unsafe Practices (Contributed by Yufei Gu via Daniel Templeton)\n",
+      "commitDate": "05/01/17 5:56 PM",
+      "commitName": "0b8a7c18ddbe73b356b3c9baf4460659ccaee095",
+      "commitAuthor": "Daniel Templeton",
+      "commitDateOld": "21/11/16 8:40 AM",
+      "commitNameOld": "683e0c71fe09600a24bdd7b707a613fe70ff1f6e",
+      "commitAuthorOld": "Rohith Sharma K S",
+      "daysBetweenCommits": 45.39,
+      "commitsBetweenForRepo": 235,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,35 +1,41 @@\n           createSortingCollector(JobConf job, TaskReporter reporter)\n     throws IOException, ClassNotFoundException {\n     MapOutputCollector.Context context \u003d\n       new MapOutputCollector.Context(this, job, reporter);\n \n     Class\u003c?\u003e[] collectorClasses \u003d job.getClasses(\n       JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR, MapOutputBuffer.class);\n     int remainingCollectors \u003d collectorClasses.length;\n     Exception lastException \u003d null;\n     for (Class clazz : collectorClasses) {\n       try {\n         if (!MapOutputCollector.class.isAssignableFrom(clazz)) {\n           throw new IOException(\"Invalid output collector class: \" + clazz.getName() +\n             \" (does not implement MapOutputCollector)\");\n         }\n         Class\u003c? extends MapOutputCollector\u003e subclazz \u003d\n           clazz.asSubclass(MapOutputCollector.class);\n         LOG.debug(\"Trying map output collector class: \" + subclazz.getName());\n         MapOutputCollector\u003cKEY, VALUE\u003e collector \u003d\n           ReflectionUtils.newInstance(subclazz, job);\n         collector.init(context);\n         LOG.info(\"Map output collector class \u003d \" + collector.getClass().getName());\n         return collector;\n       } catch (Exception e) {\n         String msg \u003d \"Unable to initialize MapOutputCollector \" + clazz.getName();\n         if (--remainingCollectors \u003e 0) {\n           msg +\u003d \" (\" + remainingCollectors + \" more collector(s) to try)\";\n         }\n         lastException \u003d e;\n         LOG.warn(msg, e);\n       }\n     }\n-    throw new IOException(\"Initialization of all the collectors failed. \" +\n-      \"Error in last collector was :\" + lastException.getMessage(), lastException);\n+\n+    if (lastException !\u003d null) {\n+      throw new IOException(\"Initialization of all the collectors failed. \" +\n+          \"Error in last collector was:\" + lastException.toString(),\n+          lastException);\n+    } else {\n+      throw new IOException(\"Initialization of all the collectors failed.\");\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "          createSortingCollector(JobConf job, TaskReporter reporter)\n    throws IOException, ClassNotFoundException {\n    MapOutputCollector.Context context \u003d\n      new MapOutputCollector.Context(this, job, reporter);\n\n    Class\u003c?\u003e[] collectorClasses \u003d job.getClasses(\n      JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR, MapOutputBuffer.class);\n    int remainingCollectors \u003d collectorClasses.length;\n    Exception lastException \u003d null;\n    for (Class clazz : collectorClasses) {\n      try {\n        if (!MapOutputCollector.class.isAssignableFrom(clazz)) {\n          throw new IOException(\"Invalid output collector class: \" + clazz.getName() +\n            \" (does not implement MapOutputCollector)\");\n        }\n        Class\u003c? extends MapOutputCollector\u003e subclazz \u003d\n          clazz.asSubclass(MapOutputCollector.class);\n        LOG.debug(\"Trying map output collector class: \" + subclazz.getName());\n        MapOutputCollector\u003cKEY, VALUE\u003e collector \u003d\n          ReflectionUtils.newInstance(subclazz, job);\n        collector.init(context);\n        LOG.info(\"Map output collector class \u003d \" + collector.getClass().getName());\n        return collector;\n      } catch (Exception e) {\n        String msg \u003d \"Unable to initialize MapOutputCollector \" + clazz.getName();\n        if (--remainingCollectors \u003e 0) {\n          msg +\u003d \" (\" + remainingCollectors + \" more collector(s) to try)\";\n        }\n        lastException \u003d e;\n        LOG.warn(msg, e);\n      }\n    }\n\n    if (lastException !\u003d null) {\n      throw new IOException(\"Initialization of all the collectors failed. \" +\n          \"Error in last collector was:\" + lastException.toString(),\n          lastException);\n    } else {\n      throw new IOException(\"Initialization of all the collectors failed.\");\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/MapTask.java",
+      "extendedDetails": {}
+    },
+    "298d09c9b583088f364038adcb1edf1eb1c2c196": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6194. Bubble up final exception in failures during creation of output collectors. Contributed by Varun Saxena.\n",
+      "commitDate": "15/12/14 12:56 AM",
+      "commitName": "298d09c9b583088f364038adcb1edf1eb1c2c196",
+      "commitAuthor": "Harsh J",
+      "commitDateOld": "03/09/14 5:01 PM",
+      "commitNameOld": "a18424e724982d01e0191ca7db713da1d43d1e4d",
+      "commitAuthorOld": "Chris Douglas",
+      "daysBetweenCommits": 102.37,
+      "commitsBetweenForRepo": 949,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,35 @@\n           createSortingCollector(JobConf job, TaskReporter reporter)\n     throws IOException, ClassNotFoundException {\n     MapOutputCollector.Context context \u003d\n       new MapOutputCollector.Context(this, job, reporter);\n \n     Class\u003c?\u003e[] collectorClasses \u003d job.getClasses(\n       JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR, MapOutputBuffer.class);\n     int remainingCollectors \u003d collectorClasses.length;\n+    Exception lastException \u003d null;\n     for (Class clazz : collectorClasses) {\n       try {\n         if (!MapOutputCollector.class.isAssignableFrom(clazz)) {\n           throw new IOException(\"Invalid output collector class: \" + clazz.getName() +\n             \" (does not implement MapOutputCollector)\");\n         }\n         Class\u003c? extends MapOutputCollector\u003e subclazz \u003d\n           clazz.asSubclass(MapOutputCollector.class);\n         LOG.debug(\"Trying map output collector class: \" + subclazz.getName());\n         MapOutputCollector\u003cKEY, VALUE\u003e collector \u003d\n           ReflectionUtils.newInstance(subclazz, job);\n         collector.init(context);\n         LOG.info(\"Map output collector class \u003d \" + collector.getClass().getName());\n         return collector;\n       } catch (Exception e) {\n         String msg \u003d \"Unable to initialize MapOutputCollector \" + clazz.getName();\n         if (--remainingCollectors \u003e 0) {\n           msg +\u003d \" (\" + remainingCollectors + \" more collector(s) to try)\";\n         }\n+        lastException \u003d e;\n         LOG.warn(msg, e);\n       }\n     }\n-    throw new IOException(\"Unable to initialize any output collector\");\n+    throw new IOException(\"Initialization of all the collectors failed. \" +\n+      \"Error in last collector was :\" + lastException.getMessage(), lastException);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "          createSortingCollector(JobConf job, TaskReporter reporter)\n    throws IOException, ClassNotFoundException {\n    MapOutputCollector.Context context \u003d\n      new MapOutputCollector.Context(this, job, reporter);\n\n    Class\u003c?\u003e[] collectorClasses \u003d job.getClasses(\n      JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR, MapOutputBuffer.class);\n    int remainingCollectors \u003d collectorClasses.length;\n    Exception lastException \u003d null;\n    for (Class clazz : collectorClasses) {\n      try {\n        if (!MapOutputCollector.class.isAssignableFrom(clazz)) {\n          throw new IOException(\"Invalid output collector class: \" + clazz.getName() +\n            \" (does not implement MapOutputCollector)\");\n        }\n        Class\u003c? extends MapOutputCollector\u003e subclazz \u003d\n          clazz.asSubclass(MapOutputCollector.class);\n        LOG.debug(\"Trying map output collector class: \" + subclazz.getName());\n        MapOutputCollector\u003cKEY, VALUE\u003e collector \u003d\n          ReflectionUtils.newInstance(subclazz, job);\n        collector.init(context);\n        LOG.info(\"Map output collector class \u003d \" + collector.getClass().getName());\n        return collector;\n      } catch (Exception e) {\n        String msg \u003d \"Unable to initialize MapOutputCollector \" + clazz.getName();\n        if (--remainingCollectors \u003e 0) {\n          msg +\u003d \" (\" + remainingCollectors + \" more collector(s) to try)\";\n        }\n        lastException \u003d e;\n        LOG.warn(msg, e);\n      }\n    }\n    throw new IOException(\"Initialization of all the collectors failed. \" +\n      \"Error in last collector was :\" + lastException.getMessage(), lastException);\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/MapTask.java",
+      "extendedDetails": {}
+    },
+    "e5e9d792c7903c58b62f2baabafd031d5d965c57": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-5974. Allow specifying multiple MapOutputCollectors with fallback. (Todd Lipcon via kasha)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1619492 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "21/08/14 10:37 AM",
+      "commitName": "e5e9d792c7903c58b62f2baabafd031d5d965c57",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "10/07/14 5:43 PM",
+      "commitNameOld": "95986dd2fb4527c43fa4c088c61fb7b4bd794d23",
+      "commitAuthorOld": "Alejandro Abdelnur",
+      "daysBetweenCommits": 41.7,
+      "commitsBetweenForRepo": 357,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,32 @@\n           createSortingCollector(JobConf job, TaskReporter reporter)\n     throws IOException, ClassNotFoundException {\n-    MapOutputCollector\u003cKEY, VALUE\u003e collector\n-      \u003d (MapOutputCollector\u003cKEY, VALUE\u003e)\n-       ReflectionUtils.newInstance(\n-                        job.getClass(JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR,\n-                        MapOutputBuffer.class, MapOutputCollector.class), job);\n-    LOG.info(\"Map output collector class \u003d \" + collector.getClass().getName());\n     MapOutputCollector.Context context \u003d\n-                           new MapOutputCollector.Context(this, job, reporter);\n-    collector.init(context);\n-    return collector;\n+      new MapOutputCollector.Context(this, job, reporter);\n+\n+    Class\u003c?\u003e[] collectorClasses \u003d job.getClasses(\n+      JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR, MapOutputBuffer.class);\n+    int remainingCollectors \u003d collectorClasses.length;\n+    for (Class clazz : collectorClasses) {\n+      try {\n+        if (!MapOutputCollector.class.isAssignableFrom(clazz)) {\n+          throw new IOException(\"Invalid output collector class: \" + clazz.getName() +\n+            \" (does not implement MapOutputCollector)\");\n+        }\n+        Class\u003c? extends MapOutputCollector\u003e subclazz \u003d\n+          clazz.asSubclass(MapOutputCollector.class);\n+        LOG.debug(\"Trying map output collector class: \" + subclazz.getName());\n+        MapOutputCollector\u003cKEY, VALUE\u003e collector \u003d\n+          ReflectionUtils.newInstance(subclazz, job);\n+        collector.init(context);\n+        LOG.info(\"Map output collector class \u003d \" + collector.getClass().getName());\n+        return collector;\n+      } catch (Exception e) {\n+        String msg \u003d \"Unable to initialize MapOutputCollector \" + clazz.getName();\n+        if (--remainingCollectors \u003e 0) {\n+          msg +\u003d \" (\" + remainingCollectors + \" more collector(s) to try)\";\n+        }\n+        LOG.warn(msg, e);\n+      }\n+    }\n+    throw new IOException(\"Unable to initialize any output collector\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "          createSortingCollector(JobConf job, TaskReporter reporter)\n    throws IOException, ClassNotFoundException {\n    MapOutputCollector.Context context \u003d\n      new MapOutputCollector.Context(this, job, reporter);\n\n    Class\u003c?\u003e[] collectorClasses \u003d job.getClasses(\n      JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR, MapOutputBuffer.class);\n    int remainingCollectors \u003d collectorClasses.length;\n    for (Class clazz : collectorClasses) {\n      try {\n        if (!MapOutputCollector.class.isAssignableFrom(clazz)) {\n          throw new IOException(\"Invalid output collector class: \" + clazz.getName() +\n            \" (does not implement MapOutputCollector)\");\n        }\n        Class\u003c? extends MapOutputCollector\u003e subclazz \u003d\n          clazz.asSubclass(MapOutputCollector.class);\n        LOG.debug(\"Trying map output collector class: \" + subclazz.getName());\n        MapOutputCollector\u003cKEY, VALUE\u003e collector \u003d\n          ReflectionUtils.newInstance(subclazz, job);\n        collector.init(context);\n        LOG.info(\"Map output collector class \u003d \" + collector.getClass().getName());\n        return collector;\n      } catch (Exception e) {\n        String msg \u003d \"Unable to initialize MapOutputCollector \" + clazz.getName();\n        if (--remainingCollectors \u003e 0) {\n          msg +\u003d \" (\" + remainingCollectors + \" more collector(s) to try)\";\n        }\n        LOG.warn(msg, e);\n      }\n    }\n    throw new IOException(\"Unable to initialize any output collector\");\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/MapTask.java",
+      "extendedDetails": {}
+    },
+    "8329fae686cf7a68679d177c25623311beec3384": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-4807. Allow MapOutputBuffer to be pluggable. (masokan via tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1422345 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "15/12/12 12:23 PM",
+      "commitName": "8329fae686cf7a68679d177c25623311beec3384",
+      "commitAuthor": "Alejandro Abdelnur",
+      "diff": "@@ -0,0 +1,13 @@\n+          createSortingCollector(JobConf job, TaskReporter reporter)\n+    throws IOException, ClassNotFoundException {\n+    MapOutputCollector\u003cKEY, VALUE\u003e collector\n+      \u003d (MapOutputCollector\u003cKEY, VALUE\u003e)\n+       ReflectionUtils.newInstance(\n+                        job.getClass(JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR,\n+                        MapOutputBuffer.class, MapOutputCollector.class), job);\n+    LOG.info(\"Map output collector class \u003d \" + collector.getClass().getName());\n+    MapOutputCollector.Context context \u003d\n+                           new MapOutputCollector.Context(this, job, reporter);\n+    collector.init(context);\n+    return collector;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "          createSortingCollector(JobConf job, TaskReporter reporter)\n    throws IOException, ClassNotFoundException {\n    MapOutputCollector\u003cKEY, VALUE\u003e collector\n      \u003d (MapOutputCollector\u003cKEY, VALUE\u003e)\n       ReflectionUtils.newInstance(\n                        job.getClass(JobContext.MAP_OUTPUT_COLLECTOR_CLASS_ATTR,\n                        MapOutputBuffer.class, MapOutputCollector.class), job);\n    LOG.info(\"Map output collector class \u003d \" + collector.getClass().getName());\n    MapOutputCollector.Context context \u003d\n                           new MapOutputCollector.Context(this, job, reporter);\n    collector.init(context);\n    return collector;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/MapTask.java"
+    }
+  }
+}

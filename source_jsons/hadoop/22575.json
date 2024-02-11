@@ -1,0 +1,114 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NLineInputFormat.java",
+  "functionName": "getSplitsForFile",
+  "functionId": "getSplitsForFile___status-FileStatus__conf-Configuration__numLinesPerSplit-int",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java",
+  "functionStartLine": 91,
+  "functionEndLine": 131,
+  "numCommitsSeen": 5,
+  "timeTaken": 4847,
+  "changeHistory": [
+    "f365957c6326f88734bc0a5d01cfb7eac713db20",
+    "1f40b8b4e8ce8c4876c1b57012cbd12332d0c096",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "f365957c6326f88734bc0a5d01cfb7eac713db20": "Ybodychange",
+    "1f40b8b4e8ce8c4876c1b57012cbd12332d0c096": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f365957c6326f88734bc0a5d01cfb7eac713db20": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15229. Add FileSystem builder-based openFile() API to match createFile();\nS3A to implement S3 Select through this API.\n\nThe new openFile() API is asynchronous, and implemented across FileSystem and FileContext.\n\nThe MapReduce V2 inputs are moved to this API, and you can actually set must/may\noptions to pass in.\n\nThis is more useful for setting things like s3a seek policy than for S3 select,\nas the existing input format/record readers can\u0027t handle S3 select output where\nthe stream is shorter than the file length, and splitting plain text is suboptimal.\nFuture work is needed there.\n\nIn the meantime, any/all filesystem connectors are now free to add their own filesystem-specific\nconfiguration parameters which can be set in jobs and used to set filesystem input stream\noptions (seek policy, retry, encryption secrets, etc).\n\nContributed by Steve Loughran\n",
+      "commitDate": "05/02/19 3:51 AM",
+      "commitName": "f365957c6326f88734bc0a5d01cfb7eac713db20",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "09/11/12 7:52 AM",
+      "commitNameOld": "1f40b8b4e8ce8c4876c1b57012cbd12332d0c096",
+      "commitAuthorOld": "Robert Joseph Evans",
+      "daysBetweenCommits": 2278.83,
+      "commitsBetweenForRepo": 16760,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,37 +1,41 @@\n   public static List\u003cFileSplit\u003e getSplitsForFile(FileStatus status,\n       Configuration conf, int numLinesPerSplit) throws IOException {\n     List\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e ();\n     Path fileName \u003d status.getPath();\n     if (status.isDirectory()) {\n       throw new IOException(\"Not a file: \" + fileName);\n     }\n-    FileSystem  fs \u003d fileName.getFileSystem(conf);\n     LineReader lr \u003d null;\n     try {\n-      FSDataInputStream in  \u003d fs.open(fileName);\n+      final FutureDataInputStreamBuilder builder \u003d\n+          fileName.getFileSystem(conf).openFile(fileName);\n+      FutureIOSupport.propagateOptions(builder, conf,\n+          MRJobConfig.INPUT_FILE_OPTION_PREFIX,\n+          MRJobConfig.INPUT_FILE_MANDATORY_PREFIX);\n+      FSDataInputStream in  \u003d FutureIOSupport.awaitFuture(builder.build());\n       lr \u003d new LineReader(in, conf);\n       Text line \u003d new Text();\n       int numLines \u003d 0;\n       long begin \u003d 0;\n       long length \u003d 0;\n       int num \u003d -1;\n       while ((num \u003d lr.readLine(line)) \u003e 0) {\n         numLines++;\n         length +\u003d num;\n         if (numLines \u003d\u003d numLinesPerSplit) {\n           splits.add(createFileSplit(fileName, begin, length));\n           begin +\u003d length;\n           length \u003d 0;\n           numLines \u003d 0;\n         }\n       }\n       if (numLines !\u003d 0) {\n         splits.add(createFileSplit(fileName, begin, length));\n       }\n     } finally {\n       if (lr !\u003d null) {\n         lr.close();\n       }\n     }\n     return splits; \n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static List\u003cFileSplit\u003e getSplitsForFile(FileStatus status,\n      Configuration conf, int numLinesPerSplit) throws IOException {\n    List\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e ();\n    Path fileName \u003d status.getPath();\n    if (status.isDirectory()) {\n      throw new IOException(\"Not a file: \" + fileName);\n    }\n    LineReader lr \u003d null;\n    try {\n      final FutureDataInputStreamBuilder builder \u003d\n          fileName.getFileSystem(conf).openFile(fileName);\n      FutureIOSupport.propagateOptions(builder, conf,\n          MRJobConfig.INPUT_FILE_OPTION_PREFIX,\n          MRJobConfig.INPUT_FILE_MANDATORY_PREFIX);\n      FSDataInputStream in  \u003d FutureIOSupport.awaitFuture(builder.build());\n      lr \u003d new LineReader(in, conf);\n      Text line \u003d new Text();\n      int numLines \u003d 0;\n      long begin \u003d 0;\n      long length \u003d 0;\n      int num \u003d -1;\n      while ((num \u003d lr.readLine(line)) \u003e 0) {\n        numLines++;\n        length +\u003d num;\n        if (numLines \u003d\u003d numLinesPerSplit) {\n          splits.add(createFileSplit(fileName, begin, length));\n          begin +\u003d length;\n          length \u003d 0;\n          numLines \u003d 0;\n        }\n      }\n      if (numLines !\u003d 0) {\n        splits.add(createFileSplit(fileName, begin, length));\n      }\n    } finally {\n      if (lr !\u003d null) {\n        lr.close();\n      }\n    }\n    return splits; \n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java",
+      "extendedDetails": {}
+    },
+    "1f40b8b4e8ce8c4876c1b57012cbd12332d0c096": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-4782. NLineInputFormat skips first line of last InputSplit (Mark Fuhs via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1407505 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "09/11/12 7:52 AM",
+      "commitName": "1f40b8b4e8ce8c4876c1b57012cbd12332d0c096",
+      "commitAuthor": "Robert Joseph Evans",
+      "commitDateOld": "24/08/11 5:14 PM",
+      "commitNameOld": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 442.65,
+      "commitsBetweenForRepo": 2902,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,48 +1,37 @@\n   public static List\u003cFileSplit\u003e getSplitsForFile(FileStatus status,\n       Configuration conf, int numLinesPerSplit) throws IOException {\n     List\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e ();\n     Path fileName \u003d status.getPath();\n     if (status.isDirectory()) {\n       throw new IOException(\"Not a file: \" + fileName);\n     }\n     FileSystem  fs \u003d fileName.getFileSystem(conf);\n     LineReader lr \u003d null;\n     try {\n       FSDataInputStream in  \u003d fs.open(fileName);\n       lr \u003d new LineReader(in, conf);\n       Text line \u003d new Text();\n       int numLines \u003d 0;\n       long begin \u003d 0;\n       long length \u003d 0;\n       int num \u003d -1;\n       while ((num \u003d lr.readLine(line)) \u003e 0) {\n         numLines++;\n         length +\u003d num;\n         if (numLines \u003d\u003d numLinesPerSplit) {\n-          // NLineInputFormat uses LineRecordReader, which always reads\n-          // (and consumes) at least one character out of its upper split\n-          // boundary. So to make sure that each mapper gets N lines, we\n-          // move back the upper split limits of each split \n-          // by one character here.\n-          if (begin \u003d\u003d 0) {\n-            splits.add(new FileSplit(fileName, begin, length - 1,\n-              new String[] {}));\n-          } else {\n-            splits.add(new FileSplit(fileName, begin - 1, length,\n-              new String[] {}));\n-          }\n+          splits.add(createFileSplit(fileName, begin, length));\n           begin +\u003d length;\n           length \u003d 0;\n           numLines \u003d 0;\n         }\n       }\n       if (numLines !\u003d 0) {\n-        splits.add(new FileSplit(fileName, begin, length, new String[]{}));\n+        splits.add(createFileSplit(fileName, begin, length));\n       }\n     } finally {\n       if (lr !\u003d null) {\n         lr.close();\n       }\n     }\n     return splits; \n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static List\u003cFileSplit\u003e getSplitsForFile(FileStatus status,\n      Configuration conf, int numLinesPerSplit) throws IOException {\n    List\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e ();\n    Path fileName \u003d status.getPath();\n    if (status.isDirectory()) {\n      throw new IOException(\"Not a file: \" + fileName);\n    }\n    FileSystem  fs \u003d fileName.getFileSystem(conf);\n    LineReader lr \u003d null;\n    try {\n      FSDataInputStream in  \u003d fs.open(fileName);\n      lr \u003d new LineReader(in, conf);\n      Text line \u003d new Text();\n      int numLines \u003d 0;\n      long begin \u003d 0;\n      long length \u003d 0;\n      int num \u003d -1;\n      while ((num \u003d lr.readLine(line)) \u003e 0) {\n        numLines++;\n        length +\u003d num;\n        if (numLines \u003d\u003d numLinesPerSplit) {\n          splits.add(createFileSplit(fileName, begin, length));\n          begin +\u003d length;\n          length \u003d 0;\n          numLines \u003d 0;\n        }\n      }\n      if (numLines !\u003d 0) {\n        splits.add(createFileSplit(fileName, begin, length));\n      }\n    } finally {\n      if (lr !\u003d null) {\n        lr.close();\n      }\n    }\n    return splits; \n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static List\u003cFileSplit\u003e getSplitsForFile(FileStatus status,\n      Configuration conf, int numLinesPerSplit) throws IOException {\n    List\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e ();\n    Path fileName \u003d status.getPath();\n    if (status.isDirectory()) {\n      throw new IOException(\"Not a file: \" + fileName);\n    }\n    FileSystem  fs \u003d fileName.getFileSystem(conf);\n    LineReader lr \u003d null;\n    try {\n      FSDataInputStream in  \u003d fs.open(fileName);\n      lr \u003d new LineReader(in, conf);\n      Text line \u003d new Text();\n      int numLines \u003d 0;\n      long begin \u003d 0;\n      long length \u003d 0;\n      int num \u003d -1;\n      while ((num \u003d lr.readLine(line)) \u003e 0) {\n        numLines++;\n        length +\u003d num;\n        if (numLines \u003d\u003d numLinesPerSplit) {\n          // NLineInputFormat uses LineRecordReader, which always reads\n          // (and consumes) at least one character out of its upper split\n          // boundary. So to make sure that each mapper gets N lines, we\n          // move back the upper split limits of each split \n          // by one character here.\n          if (begin \u003d\u003d 0) {\n            splits.add(new FileSplit(fileName, begin, length - 1,\n              new String[] {}));\n          } else {\n            splits.add(new FileSplit(fileName, begin - 1, length,\n              new String[] {}));\n          }\n          begin +\u003d length;\n          length \u003d 0;\n          numLines \u003d 0;\n        }\n      }\n      if (numLines !\u003d 0) {\n        splits.add(new FileSplit(fileName, begin, length, new String[]{}));\n      }\n    } finally {\n      if (lr !\u003d null) {\n        lr.close();\n      }\n    }\n    return splits; \n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yfilerename",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "17/08/11 8:02 PM",
+      "commitNameOld": "dd86860633d2ed64705b669a75bf318442ed6225",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 0.34,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static List\u003cFileSplit\u003e getSplitsForFile(FileStatus status,\n      Configuration conf, int numLinesPerSplit) throws IOException {\n    List\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e ();\n    Path fileName \u003d status.getPath();\n    if (status.isDirectory()) {\n      throw new IOException(\"Not a file: \" + fileName);\n    }\n    FileSystem  fs \u003d fileName.getFileSystem(conf);\n    LineReader lr \u003d null;\n    try {\n      FSDataInputStream in  \u003d fs.open(fileName);\n      lr \u003d new LineReader(in, conf);\n      Text line \u003d new Text();\n      int numLines \u003d 0;\n      long begin \u003d 0;\n      long length \u003d 0;\n      int num \u003d -1;\n      while ((num \u003d lr.readLine(line)) \u003e 0) {\n        numLines++;\n        length +\u003d num;\n        if (numLines \u003d\u003d numLinesPerSplit) {\n          // NLineInputFormat uses LineRecordReader, which always reads\n          // (and consumes) at least one character out of its upper split\n          // boundary. So to make sure that each mapper gets N lines, we\n          // move back the upper split limits of each split \n          // by one character here.\n          if (begin \u003d\u003d 0) {\n            splits.add(new FileSplit(fileName, begin, length - 1,\n              new String[] {}));\n          } else {\n            splits.add(new FileSplit(fileName, begin - 1, length,\n              new String[] {}));\n          }\n          begin +\u003d length;\n          length \u003d 0;\n          numLines \u003d 0;\n        }\n      }\n      if (numLines !\u003d 0) {\n        splits.add(new FileSplit(fileName, begin, length, new String[]{}));\n      }\n    } finally {\n      if (lr !\u003d null) {\n        lr.close();\n      }\n    }\n    return splits; \n  }",
+      "path": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java",
+      "extendedDetails": {
+        "oldPath": "mapreduce/src/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java",
+        "newPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,48 @@\n+  public static List\u003cFileSplit\u003e getSplitsForFile(FileStatus status,\n+      Configuration conf, int numLinesPerSplit) throws IOException {\n+    List\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e ();\n+    Path fileName \u003d status.getPath();\n+    if (status.isDirectory()) {\n+      throw new IOException(\"Not a file: \" + fileName);\n+    }\n+    FileSystem  fs \u003d fileName.getFileSystem(conf);\n+    LineReader lr \u003d null;\n+    try {\n+      FSDataInputStream in  \u003d fs.open(fileName);\n+      lr \u003d new LineReader(in, conf);\n+      Text line \u003d new Text();\n+      int numLines \u003d 0;\n+      long begin \u003d 0;\n+      long length \u003d 0;\n+      int num \u003d -1;\n+      while ((num \u003d lr.readLine(line)) \u003e 0) {\n+        numLines++;\n+        length +\u003d num;\n+        if (numLines \u003d\u003d numLinesPerSplit) {\n+          // NLineInputFormat uses LineRecordReader, which always reads\n+          // (and consumes) at least one character out of its upper split\n+          // boundary. So to make sure that each mapper gets N lines, we\n+          // move back the upper split limits of each split \n+          // by one character here.\n+          if (begin \u003d\u003d 0) {\n+            splits.add(new FileSplit(fileName, begin, length - 1,\n+              new String[] {}));\n+          } else {\n+            splits.add(new FileSplit(fileName, begin - 1, length,\n+              new String[] {}));\n+          }\n+          begin +\u003d length;\n+          length \u003d 0;\n+          numLines \u003d 0;\n+        }\n+      }\n+      if (numLines !\u003d 0) {\n+        splits.add(new FileSplit(fileName, begin, length, new String[]{}));\n+      }\n+    } finally {\n+      if (lr !\u003d null) {\n+        lr.close();\n+      }\n+    }\n+    return splits; \n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static List\u003cFileSplit\u003e getSplitsForFile(FileStatus status,\n      Configuration conf, int numLinesPerSplit) throws IOException {\n    List\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e ();\n    Path fileName \u003d status.getPath();\n    if (status.isDirectory()) {\n      throw new IOException(\"Not a file: \" + fileName);\n    }\n    FileSystem  fs \u003d fileName.getFileSystem(conf);\n    LineReader lr \u003d null;\n    try {\n      FSDataInputStream in  \u003d fs.open(fileName);\n      lr \u003d new LineReader(in, conf);\n      Text line \u003d new Text();\n      int numLines \u003d 0;\n      long begin \u003d 0;\n      long length \u003d 0;\n      int num \u003d -1;\n      while ((num \u003d lr.readLine(line)) \u003e 0) {\n        numLines++;\n        length +\u003d num;\n        if (numLines \u003d\u003d numLinesPerSplit) {\n          // NLineInputFormat uses LineRecordReader, which always reads\n          // (and consumes) at least one character out of its upper split\n          // boundary. So to make sure that each mapper gets N lines, we\n          // move back the upper split limits of each split \n          // by one character here.\n          if (begin \u003d\u003d 0) {\n            splits.add(new FileSplit(fileName, begin, length - 1,\n              new String[] {}));\n          } else {\n            splits.add(new FileSplit(fileName, begin - 1, length,\n              new String[] {}));\n          }\n          begin +\u003d length;\n          length \u003d 0;\n          numLines \u003d 0;\n        }\n      }\n      if (numLines !\u003d 0) {\n        splits.add(new FileSplit(fileName, begin, length, new String[]{}));\n      }\n    } finally {\n      if (lr !\u003d null) {\n        lr.close();\n      }\n    }\n    return splits; \n  }",
+      "path": "mapreduce/src/java/org/apache/hadoop/mapreduce/lib/input/NLineInputFormat.java"
+    }
+  }
+}

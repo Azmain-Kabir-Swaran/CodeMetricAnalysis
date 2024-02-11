@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CosmosDBDocumentStoreReader.java",
+  "functionName": "fetchEntityTypes",
+  "functionId": "fetchEntityTypes___collectionName-String__context-TimelineReaderContext",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-documentstore/src/main/java/org/apache/hadoop/yarn/server/timelineservice/documentstore/reader/cosmosdb/CosmosDBDocumentStoreReader.java",
+  "functionStartLine": 108,
+  "functionEndLine": 128,
+  "numCommitsSeen": 3,
+  "timeTaken": 990,
+  "changeHistory": [
+    "ccaa99c9235e0c6922e56f93254583eca49a12e1",
+    "f235a942d5b7cab86f0cb4f5ba285f07cd939a40"
+  ],
+  "changeHistoryShort": {
+    "ccaa99c9235e0c6922e56f93254583eca49a12e1": "Ybodychange",
+    "f235a942d5b7cab86f0cb4f5ba285f07cd939a40": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ccaa99c9235e0c6922e56f93254583eca49a12e1": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16381. The JSON License is included in binary tarball via azure-documentdb:1.16.2. Contributed by Sushil Ks.\n",
+      "commitDate": "10/07/19 9:49 PM",
+      "commitName": "ccaa99c9235e0c6922e56f93254583eca49a12e1",
+      "commitAuthor": "Akira Ajisaka",
+      "commitDateOld": "12/04/19 6:28 PM",
+      "commitNameOld": "1943db557124439f9f41c18a618455ccf4c3e6cc",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 89.14,
+      "commitsBetweenForRepo": 592,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,21 @@\n   public Set\u003cString\u003e fetchEntityTypes(String collectionName,\n       TimelineReaderContext context) {\n     StringBuilder queryStrBuilder \u003d new StringBuilder();\n     queryStrBuilder.append(\n         String.format(SELECT_DISTINCT_TYPES_FROM_COLLECTION, collectionName));\n     String sqlQuery \u003d addPredicates(context, collectionName, queryStrBuilder);\n \n     LOG.debug(\"Querying Collection : {} , with query {}\", collectionName,\n         sqlQuery);\n \n-    Set\u003cString\u003e entityTypes \u003d new HashSet\u003c\u003e();\n-    Iterator\u003cDocument\u003e documentIterator \u003d client.queryDocuments(\n+    return Sets.newHashSet(client.queryDocuments(\n         String.format(COLLECTION_LINK, databaseName, collectionName),\n-        sqlQuery, null).getQueryIterator();\n-    while (documentIterator.hasNext()) {\n-      Document document \u003d documentIterator.next();\n-      entityTypes.add(document.getString(ENTITY_TYPE_COLUMN));\n-    }\n-    return entityTypes;\n+        sqlQuery, new FeedOptions())\n+        .map(FeedResponse::getResults) // Map the page to the list of documents\n+        .concatMap(Observable::from)\n+        .map(document -\u003e String.valueOf(document.get(ENTITY_TYPE_COLUMN)))\n+        .toList()\n+        .subscribeOn(schedulerForBlockingWork)\n+        .toBlocking()\n+        .single());\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Set\u003cString\u003e fetchEntityTypes(String collectionName,\n      TimelineReaderContext context) {\n    StringBuilder queryStrBuilder \u003d new StringBuilder();\n    queryStrBuilder.append(\n        String.format(SELECT_DISTINCT_TYPES_FROM_COLLECTION, collectionName));\n    String sqlQuery \u003d addPredicates(context, collectionName, queryStrBuilder);\n\n    LOG.debug(\"Querying Collection : {} , with query {}\", collectionName,\n        sqlQuery);\n\n    return Sets.newHashSet(client.queryDocuments(\n        String.format(COLLECTION_LINK, databaseName, collectionName),\n        sqlQuery, new FeedOptions())\n        .map(FeedResponse::getResults) // Map the page to the list of documents\n        .concatMap(Observable::from)\n        .map(document -\u003e String.valueOf(document.get(ENTITY_TYPE_COLUMN)))\n        .toList()\n        .subscribeOn(schedulerForBlockingWork)\n        .toBlocking()\n        .single());\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-documentstore/src/main/java/org/apache/hadoop/yarn/server/timelineservice/documentstore/reader/cosmosdb/CosmosDBDocumentStoreReader.java",
+      "extendedDetails": {}
+    },
+    "f235a942d5b7cab86f0cb4f5ba285f07cd939a40": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-9016 DocumentStore as a backend for ATSv2. Contributed by Sushil Ks.\n",
+      "commitDate": "13/03/19 4:45 PM",
+      "commitName": "f235a942d5b7cab86f0cb4f5ba285f07cd939a40",
+      "commitAuthor": "Vrushali C",
+      "diff": "@@ -0,0 +1,20 @@\n+  public Set\u003cString\u003e fetchEntityTypes(String collectionName,\n+      TimelineReaderContext context) {\n+    StringBuilder queryStrBuilder \u003d new StringBuilder();\n+    queryStrBuilder.append(\n+        String.format(SELECT_DISTINCT_TYPES_FROM_COLLECTION, collectionName));\n+    String sqlQuery \u003d addPredicates(context, collectionName, queryStrBuilder);\n+\n+    LOG.debug(\"Querying Collection : {} , with query {}\", collectionName,\n+        sqlQuery);\n+\n+    Set\u003cString\u003e entityTypes \u003d new HashSet\u003c\u003e();\n+    Iterator\u003cDocument\u003e documentIterator \u003d client.queryDocuments(\n+        String.format(COLLECTION_LINK, databaseName, collectionName),\n+        sqlQuery, null).getQueryIterator();\n+    while (documentIterator.hasNext()) {\n+      Document document \u003d documentIterator.next();\n+      entityTypes.add(document.getString(ENTITY_TYPE_COLUMN));\n+    }\n+    return entityTypes;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public Set\u003cString\u003e fetchEntityTypes(String collectionName,\n      TimelineReaderContext context) {\n    StringBuilder queryStrBuilder \u003d new StringBuilder();\n    queryStrBuilder.append(\n        String.format(SELECT_DISTINCT_TYPES_FROM_COLLECTION, collectionName));\n    String sqlQuery \u003d addPredicates(context, collectionName, queryStrBuilder);\n\n    LOG.debug(\"Querying Collection : {} , with query {}\", collectionName,\n        sqlQuery);\n\n    Set\u003cString\u003e entityTypes \u003d new HashSet\u003c\u003e();\n    Iterator\u003cDocument\u003e documentIterator \u003d client.queryDocuments(\n        String.format(COLLECTION_LINK, databaseName, collectionName),\n        sqlQuery, null).getQueryIterator();\n    while (documentIterator.hasNext()) {\n      Document document \u003d documentIterator.next();\n      entityTypes.add(document.getString(ENTITY_TYPE_COLUMN));\n    }\n    return entityTypes;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-documentstore/src/main/java/org/apache/hadoop/yarn/server/timelineservice/documentstore/reader/cosmosdb/CosmosDBDocumentStoreReader.java"
+    }
+  }
+}

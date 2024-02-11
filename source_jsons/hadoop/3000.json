@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSUtilClient.java",
+  "functionName": "getThreadPoolExecutor",
+  "functionId": "getThreadPoolExecutor___corePoolSize-int__maxPoolSize-int__keepAliveTimeSecs-long__threadNamePrefix-String__runRejectedExec-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSUtilClient.java",
+  "functionStartLine": 926,
+  "functionEndLine": 931,
+  "numCommitsSeen": 44,
+  "timeTaken": 1538,
+  "changeHistory": [
+    "77791e4c36ddc9305306c83806bf486d4d32575d",
+    "b59206190e6f773fc223bcb81774a09715551367"
+  ],
+  "changeHistoryShort": {
+    "77791e4c36ddc9305306c83806bf486d4d32575d": "Ybodychange",
+    "b59206190e6f773fc223bcb81774a09715551367": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "77791e4c36ddc9305306c83806bf486d4d32575d": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12044. Mismatch between BlockManager.maxReplicationStreams and ErasureCodingWorker.stripedReconstructionPool pool size causes slow and bursty recovery. (Contributed by Lei (Eddy) Xu)\n",
+      "commitDate": "28/07/17 10:50 AM",
+      "commitName": "77791e4c36ddc9305306c83806bf486d4d32575d",
+      "commitAuthor": "Lei Xu",
+      "commitDateOld": "04/04/17 11:05 PM",
+      "commitNameOld": "9e0e430f18d45cfe125dda8d85916edddf79e8d6",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 114.49,
+      "commitsBetweenForRepo": 580,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,6 @@\n   public static ThreadPoolExecutor getThreadPoolExecutor(int corePoolSize,\n       int maxPoolSize, long keepAliveTimeSecs, String threadNamePrefix,\n       boolean runRejectedExec) {\n-    Preconditions.checkArgument(corePoolSize \u003e 0);\n-    ThreadPoolExecutor threadPoolExecutor \u003d new ThreadPoolExecutor(corePoolSize,\n-        maxPoolSize, keepAliveTimeSecs, TimeUnit.SECONDS,\n-        new SynchronousQueue\u003cRunnable\u003e(), new Daemon.DaemonFactory() {\n-          private final AtomicInteger threadIndex \u003d new AtomicInteger(0);\n-\n-          @Override\n-          public Thread newThread(Runnable r) {\n-            Thread t \u003d super.newThread(r);\n-            t.setName(threadNamePrefix + threadIndex.getAndIncrement());\n-            return t;\n-          }\n-        });\n-    if (runRejectedExec) {\n-      threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor\n-          .CallerRunsPolicy() {\n-        @Override\n-        public void rejectedExecution(Runnable runnable,\n-            ThreadPoolExecutor e) {\n-          LOG.info(threadNamePrefix + \" task is rejected by \" +\n-                  \"ThreadPoolExecutor. Executing it in current thread.\");\n-          // will run in the current thread\n-          super.rejectedExecution(runnable, e);\n-        }\n-      });\n-    }\n-    return threadPoolExecutor;\n-  }\n\\ No newline at end of file\n+    return getThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTimeSecs,\n+        new SynchronousQueue\u003c\u003e(), threadNamePrefix, runRejectedExec);\n+}\n\\ No newline at end of file\n",
+      "actualSource": "  public static ThreadPoolExecutor getThreadPoolExecutor(int corePoolSize,\n      int maxPoolSize, long keepAliveTimeSecs, String threadNamePrefix,\n      boolean runRejectedExec) {\n    return getThreadPoolExecutor(corePoolSize, maxPoolSize, keepAliveTimeSecs,\n        new SynchronousQueue\u003c\u003e(), threadNamePrefix, runRejectedExec);\n}",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSUtilClient.java",
+      "extendedDetails": {}
+    },
+    "b59206190e6f773fc223bcb81774a09715551367": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10909. De-duplicate code in ErasureCodingWorker#initializeStripedReadThreadPool and DFSClient#initThreadsNumForStripedReads. (Manoj Govindassamy via lei)\n",
+      "commitDate": "02/11/16 4:45 PM",
+      "commitName": "b59206190e6f773fc223bcb81774a09715551367",
+      "commitAuthor": "Lei Xu",
+      "diff": "@@ -0,0 +1,31 @@\n+  public static ThreadPoolExecutor getThreadPoolExecutor(int corePoolSize,\n+      int maxPoolSize, long keepAliveTimeSecs, String threadNamePrefix,\n+      boolean runRejectedExec) {\n+    Preconditions.checkArgument(corePoolSize \u003e 0);\n+    ThreadPoolExecutor threadPoolExecutor \u003d new ThreadPoolExecutor(corePoolSize,\n+        maxPoolSize, keepAliveTimeSecs, TimeUnit.SECONDS,\n+        new SynchronousQueue\u003cRunnable\u003e(), new Daemon.DaemonFactory() {\n+          private final AtomicInteger threadIndex \u003d new AtomicInteger(0);\n+\n+          @Override\n+          public Thread newThread(Runnable r) {\n+            Thread t \u003d super.newThread(r);\n+            t.setName(threadNamePrefix + threadIndex.getAndIncrement());\n+            return t;\n+          }\n+        });\n+    if (runRejectedExec) {\n+      threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor\n+          .CallerRunsPolicy() {\n+        @Override\n+        public void rejectedExecution(Runnable runnable,\n+            ThreadPoolExecutor e) {\n+          LOG.info(threadNamePrefix + \" task is rejected by \" +\n+                  \"ThreadPoolExecutor. Executing it in current thread.\");\n+          // will run in the current thread\n+          super.rejectedExecution(runnable, e);\n+        }\n+      });\n+    }\n+    return threadPoolExecutor;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static ThreadPoolExecutor getThreadPoolExecutor(int corePoolSize,\n      int maxPoolSize, long keepAliveTimeSecs, String threadNamePrefix,\n      boolean runRejectedExec) {\n    Preconditions.checkArgument(corePoolSize \u003e 0);\n    ThreadPoolExecutor threadPoolExecutor \u003d new ThreadPoolExecutor(corePoolSize,\n        maxPoolSize, keepAliveTimeSecs, TimeUnit.SECONDS,\n        new SynchronousQueue\u003cRunnable\u003e(), new Daemon.DaemonFactory() {\n          private final AtomicInteger threadIndex \u003d new AtomicInteger(0);\n\n          @Override\n          public Thread newThread(Runnable r) {\n            Thread t \u003d super.newThread(r);\n            t.setName(threadNamePrefix + threadIndex.getAndIncrement());\n            return t;\n          }\n        });\n    if (runRejectedExec) {\n      threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor\n          .CallerRunsPolicy() {\n        @Override\n        public void rejectedExecution(Runnable runnable,\n            ThreadPoolExecutor e) {\n          LOG.info(threadNamePrefix + \" task is rejected by \" +\n                  \"ThreadPoolExecutor. Executing it in current thread.\");\n          // will run in the current thread\n          super.rejectedExecution(runnable, e);\n        }\n      });\n    }\n    return threadPoolExecutor;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSUtilClient.java"
+    }
+  }
+}

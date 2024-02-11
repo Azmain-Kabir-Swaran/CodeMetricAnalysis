@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AFileSystem.java",
+  "functionName": "metastoreOperationRetried",
+  "functionId": "metastoreOperationRetried___ex-Exception__retries-int__idempotent-boolean",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+  "functionStartLine": 1772,
+  "functionEndLine": 1781,
+  "numCommitsSeen": 141,
+  "timeTaken": 4784,
+  "changeHistory": [
+    "56dee667707926f3796c7757be1a133a362f05c9",
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "56dee667707926f3796c7757be1a133a362f05c9": "Ybodychange",
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "56dee667707926f3796c7757be1a133a362f05c9": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16823. Large DeleteObject requests are their own Thundering Herd.\n\nContributed by Steve Loughran.\n\nDuring S3A rename() and delete() calls, the list of objects delete is\nbuilt up into batches of a thousand and then POSTed in a single large\nDeleteObjects request.\n\nBut as the IO capacity allowed on an S3 partition may only be 3500 writes\nper second *and* each entry in that POST counts as a single write, then\none of those posts alone can trigger throttling on an already loaded\nS3 directory tree. Which can trigger backoff and retry, with the same\nthousand entry post, and so recreate the exact same problem.\n\nFixes\n\n* Page size for delete object requests is set in\n  fs.s3a.bulk.delete.page.size; the default is 250.\n* The property fs.s3a.experimental.aws.s3.throttling (default\u003dtrue)\n  can be set to false to disable throttle retry logic in the AWS\n  client SDK -it is all handled in the S3A client. This\n  gives more visibility in to when operations are being throttled\n* Bulk delete throttling events are logged to the log\n  org.apache.hadoop.fs.s3a.throttled log at INFO; if this appears\n  often then choose a smaller page size.\n* The metric \"store_io_throttled\" adds the entire count of delete\n  requests when a single DeleteObjects request is throttled.\n* A new quantile, \"store_io_throttle_rate\" can track throttling\n  load over time.\n* DynamoDB metastore throttle resilience issues have also been\n  identified and fixed. Note: the fs.s3a.experimental.aws.s3.throttling\n  flag does not apply to DDB IO precisely because there may still be\n  lurking issues there and it safest to rely on the DynamoDB client\n  SDK.\n\nChange-Id: I00f85cdd94fc008864d060533f6bd4870263fd84\n",
+      "commitDate": "13/02/20 11:09 AM",
+      "commitName": "56dee667707926f3796c7757be1a133a362f05c9",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "30/01/20 2:16 AM",
+      "commitNameOld": "5977360878e6780bd04842c8a2156f9848e1d088",
+      "commitAuthorOld": "Mustafa İman",
+      "daysBetweenCommits": 14.37,
+      "commitsBetweenForRepo": 35,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,10 +1,10 @@\n   public void metastoreOperationRetried(Exception ex,\n       int retries,\n       boolean idempotent) {\n-    operationRetried(ex);\n     incrementStatistic(S3GUARD_METADATASTORE_RETRY);\n     if (isThrottleException(ex)) {\n-      incrementStatistic(S3GUARD_METADATASTORE_THROTTLED);\n-      instrumentation.addValueToQuantiles(S3GUARD_METADATASTORE_THROTTLE_RATE, 1);\n+      operationThrottled(true);\n+    } else {\n+      incrementStatistic(IGNORED_ERRORS);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void metastoreOperationRetried(Exception ex,\n      int retries,\n      boolean idempotent) {\n    incrementStatistic(S3GUARD_METADATASTORE_RETRY);\n    if (isThrottleException(ex)) {\n      operationThrottled(true);\n    } else {\n      incrementStatistic(IGNORED_ERRORS);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+      "commitDate": "12/09/18 9:04 PM",
+      "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "11/09/18 5:18 PM",
+      "commitNameOld": "87f63b6479330840e9d708a729355948bb91fd4d",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 1.16,
+      "commitsBetweenForRepo": 40,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,5 +1,10 @@\n   public void metastoreOperationRetried(Exception ex,\n       int retries,\n       boolean idempotent) {\n     operationRetried(ex);\n+    incrementStatistic(S3GUARD_METADATASTORE_RETRY);\n+    if (isThrottleException(ex)) {\n+      incrementStatistic(S3GUARD_METADATASTORE_THROTTLED);\n+      instrumentation.addValueToQuantiles(S3GUARD_METADATASTORE_THROTTLE_RATE, 1);\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void metastoreOperationRetried(Exception ex,\n      int retries,\n      boolean idempotent) {\n    operationRetried(ex);\n    incrementStatistic(S3GUARD_METADATASTORE_RETRY);\n    if (isThrottleException(ex)) {\n      incrementStatistic(S3GUARD_METADATASTORE_THROTTLED);\n      instrumentation.addValueToQuantiles(S3GUARD_METADATASTORE_THROTTLE_RATE, 1);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,5 @@\n+  public void metastoreOperationRetried(Exception ex,\n+      int retries,\n+      boolean idempotent) {\n+    operationRetried(ex);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void metastoreOperationRetried(Exception ex,\n      int retries,\n      boolean idempotent) {\n    operationRetried(ex);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java"
+    }
+  }
+}

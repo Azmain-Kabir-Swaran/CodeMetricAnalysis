@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSEditLogOp.java",
+  "functionName": "create",
+  "functionId": "create___in-DataInputStream__limiter-StreamLimiter__logVersion-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+  "functionStartLine": 4965,
+  "functionEndLine": 4985,
+  "numCommitsSeen": 100,
+  "timeTaken": 2189,
+  "changeHistory": [
+    "24f6a7c9563757234f53ca23e12f9c9208b53082"
+  ],
+  "changeHistoryShort": {
+    "24f6a7c9563757234f53ca23e12f9c9208b53082": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "24f6a7c9563757234f53ca23e12f9c9208b53082": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-8965. Harden edit log reading code against out of memory errors (cmccabe)\n",
+      "commitDate": "31/08/15 6:06 PM",
+      "commitName": "24f6a7c9563757234f53ca23e12f9c9208b53082",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "diff": "@@ -0,0 +1,21 @@\n+    public static Reader create(DataInputStream in, StreamLimiter limiter,\n+                                int logVersion) {\n+      if (logVersion \u003c NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION) {\n+        // Use the LengthPrefixedReader on edit logs which are newer than what\n+        // we can parse.  (Newer layout versions are represented by smaller\n+        // negative integers, for historical reasons.) Even though we can\u0027t\n+        // parse the Ops contained in them, we should still be able to call\n+        // scanOp on them.  This is important for the JournalNode during rolling\n+        // upgrade.\n+        return new LengthPrefixedReader(in, limiter, logVersion);\n+      } else if (NameNodeLayoutVersion.supports(\n+              NameNodeLayoutVersion.Feature.EDITLOG_LENGTH, logVersion)) {\n+        return new LengthPrefixedReader(in, limiter, logVersion);\n+      } else if (NameNodeLayoutVersion.supports(\n+          LayoutVersion.Feature.EDITS_CHECKSUM, logVersion)) {\n+        Checksum checksum \u003d DataChecksum.newCrc32();\n+        return new ChecksummedReader(checksum, in, limiter, logVersion);\n+      } else {\n+        return new LegacyReader(in, limiter, logVersion);\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public static Reader create(DataInputStream in, StreamLimiter limiter,\n                                int logVersion) {\n      if (logVersion \u003c NameNodeLayoutVersion.CURRENT_LAYOUT_VERSION) {\n        // Use the LengthPrefixedReader on edit logs which are newer than what\n        // we can parse.  (Newer layout versions are represented by smaller\n        // negative integers, for historical reasons.) Even though we can\u0027t\n        // parse the Ops contained in them, we should still be able to call\n        // scanOp on them.  This is important for the JournalNode during rolling\n        // upgrade.\n        return new LengthPrefixedReader(in, limiter, logVersion);\n      } else if (NameNodeLayoutVersion.supports(\n              NameNodeLayoutVersion.Feature.EDITLOG_LENGTH, logVersion)) {\n        return new LengthPrefixedReader(in, limiter, logVersion);\n      } else if (NameNodeLayoutVersion.supports(\n          LayoutVersion.Feature.EDITS_CHECKSUM, logVersion)) {\n        Checksum checksum \u003d DataChecksum.newCrc32();\n        return new ChecksummedReader(checksum, in, limiter, logVersion);\n      } else {\n        return new LegacyReader(in, limiter, logVersion);\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java"
+    }
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ServiceManager.java",
+  "functionName": "transition",
+  "functionId": "transition___serviceManager-ServiceManager__event-ServiceEvent",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-core/src/main/java/org/apache/hadoop/yarn/service/ServiceManager.java",
+  "functionStartLine": 188,
+  "functionEndLine": 226,
+  "numCommitsSeen": 8,
+  "timeTaken": 2480,
+  "changeHistory": [
+    "913f87dada27776c539dfb352400ecf8d40e7943",
+    "e557c6bd8de2811a561210f672f47b4d07a9d5c6",
+    "4a7369b09547a78f532af66c763c6994a38b5d68",
+    "27d60a16342fd39973d43b61008f54a8815a6237"
+  ],
+  "changeHistoryShort": {
+    "913f87dada27776c539dfb352400ecf8d40e7943": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "e557c6bd8de2811a561210f672f47b4d07a9d5c6": "Ybodychange",
+    "4a7369b09547a78f532af66c763c6994a38b5d68": "Ybodychange",
+    "27d60a16342fd39973d43b61008f54a8815a6237": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "913f87dada27776c539dfb352400ecf8d40e7943": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "YARN-8665.  Added Yarn service cancel upgrade option.\n            Contributed by Chandni Singh\n",
+      "commitDate": "26/09/18 11:51 AM",
+      "commitName": "913f87dada27776c539dfb352400ecf8d40e7943",
+      "commitAuthor": "Eric Yang",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "YARN-8665.  Added Yarn service cancel upgrade option.\n            Contributed by Chandni Singh\n",
+          "commitDate": "26/09/18 11:51 AM",
+          "commitName": "913f87dada27776c539dfb352400ecf8d40e7943",
+          "commitAuthor": "Eric Yang",
+          "commitDateOld": "21/08/18 4:49 PM",
+          "commitNameOld": "e557c6bd8de2811a561210f672f47b4d07a9d5c6",
+          "commitAuthorOld": "Eric Yang",
+          "daysBetweenCommits": 35.79,
+          "commitsBetweenForRepo": 332,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,32 @@\n-    public State transition(ServiceManager serviceManager,\n+    public void transition(ServiceManager serviceManager,\n         ServiceEvent event) {\n-      //trigger check of service state\n-      ServiceState currState \u003d serviceManager.serviceSpec.getState();\n-      if (currState.equals(ServiceState.STABLE)) {\n-        return State.STABLE;\n+      if (!serviceManager.getState().equals(State.UPGRADING)) {\n+        LOG.info(\"[SERVICE]: Cannot cancel the upgrade in {} state\",\n+            serviceManager.getState());\n+        return;\n       }\n-      if (currState.equals(ServiceState.EXPRESS_UPGRADING)) {\n-        org.apache.hadoop.yarn.service.api.records.Component component \u003d\n-            serviceManager.compsToUpgradeInOrder.peek();\n-        if (!component.getState().equals(ComponentState.NEEDS_UPGRADE) \u0026\u0026\n-            !component.getState().equals(ComponentState.UPGRADING)) {\n-          serviceManager.compsToUpgradeInOrder.remove();\n-        }\n-        serviceManager.upgradeNextCompIfAny();\n+      try {\n+        Service targetSpec \u003d ServiceApiUtil.loadService(\n+            serviceManager.context.fs, serviceManager.getName());\n+\n+        Service sourceSpec \u003d ServiceApiUtil.loadServiceUpgrade(\n+            serviceManager.context.fs, serviceManager.getName(),\n+            serviceManager.upgradeVersion);\n+        serviceManager.cancelledVersion \u003d serviceManager.upgradeVersion;\n+        LOG.info(\"[SERVICE] cancel version {}\",\n+            serviceManager.cancelledVersion);\n+        serviceManager.upgradeVersion \u003d serviceManager.serviceSpec.getVersion();\n+        serviceManager.componentsToUpgrade \u003d serviceManager\n+            .resolveCompsToUpgrade(sourceSpec, targetSpec);\n+\n+        serviceManager.compsAffectedByUpgrade.clear();\n+        serviceManager.componentsToUpgrade.forEach(comp -\u003e\n+            serviceManager.compsAffectedByUpgrade.add(comp.getName()));\n+\n+        serviceManager.dispatchNeedUpgradeEvents(true);\n+        serviceManager.upgradeNextCompIfAny(true);\n+        serviceManager.setServiceState(ServiceState.CANCEL_UPGRADING);\n+      } catch (Throwable e) {\n+        LOG.error(\"[SERVICE]: Cancellation of upgrade failed\", e);\n       }\n-      if (currState.equals(ServiceState.UPGRADING_AUTO_FINALIZE) ||\n-          event.getType().equals(ServiceEventType.START) ||\n-          (currState.equals(ServiceState.EXPRESS_UPGRADING) \u0026\u0026\n-              serviceManager.compsToUpgradeInOrder.isEmpty())) {\n-        ServiceState targetState \u003d checkIfStable(serviceManager.serviceSpec);\n-        if (targetState.equals(ServiceState.STABLE)) {\n-          if (serviceManager.finalizeUpgrade()) {\n-            LOG.info(\"Service def state changed from {} -\u003e {}\", currState,\n-                serviceManager.serviceSpec.getState());\n-            return State.STABLE;\n-          }\n-        }\n-      }\n-      return State.UPGRADING;\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public void transition(ServiceManager serviceManager,\n        ServiceEvent event) {\n      if (!serviceManager.getState().equals(State.UPGRADING)) {\n        LOG.info(\"[SERVICE]: Cannot cancel the upgrade in {} state\",\n            serviceManager.getState());\n        return;\n      }\n      try {\n        Service targetSpec \u003d ServiceApiUtil.loadService(\n            serviceManager.context.fs, serviceManager.getName());\n\n        Service sourceSpec \u003d ServiceApiUtil.loadServiceUpgrade(\n            serviceManager.context.fs, serviceManager.getName(),\n            serviceManager.upgradeVersion);\n        serviceManager.cancelledVersion \u003d serviceManager.upgradeVersion;\n        LOG.info(\"[SERVICE] cancel version {}\",\n            serviceManager.cancelledVersion);\n        serviceManager.upgradeVersion \u003d serviceManager.serviceSpec.getVersion();\n        serviceManager.componentsToUpgrade \u003d serviceManager\n            .resolveCompsToUpgrade(sourceSpec, targetSpec);\n\n        serviceManager.compsAffectedByUpgrade.clear();\n        serviceManager.componentsToUpgrade.forEach(comp -\u003e\n            serviceManager.compsAffectedByUpgrade.add(comp.getName()));\n\n        serviceManager.dispatchNeedUpgradeEvents(true);\n        serviceManager.upgradeNextCompIfAny(true);\n        serviceManager.setServiceState(ServiceState.CANCEL_UPGRADING);\n      } catch (Throwable e) {\n        LOG.error(\"[SERVICE]: Cancellation of upgrade failed\", e);\n      }\n    }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-core/src/main/java/org/apache/hadoop/yarn/service/ServiceManager.java",
+          "extendedDetails": {
+            "oldValue": "State",
+            "newValue": "void"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-8665.  Added Yarn service cancel upgrade option.\n            Contributed by Chandni Singh\n",
+          "commitDate": "26/09/18 11:51 AM",
+          "commitName": "913f87dada27776c539dfb352400ecf8d40e7943",
+          "commitAuthor": "Eric Yang",
+          "commitDateOld": "21/08/18 4:49 PM",
+          "commitNameOld": "e557c6bd8de2811a561210f672f47b4d07a9d5c6",
+          "commitAuthorOld": "Eric Yang",
+          "daysBetweenCommits": 35.79,
+          "commitsBetweenForRepo": 332,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,32 @@\n-    public State transition(ServiceManager serviceManager,\n+    public void transition(ServiceManager serviceManager,\n         ServiceEvent event) {\n-      //trigger check of service state\n-      ServiceState currState \u003d serviceManager.serviceSpec.getState();\n-      if (currState.equals(ServiceState.STABLE)) {\n-        return State.STABLE;\n+      if (!serviceManager.getState().equals(State.UPGRADING)) {\n+        LOG.info(\"[SERVICE]: Cannot cancel the upgrade in {} state\",\n+            serviceManager.getState());\n+        return;\n       }\n-      if (currState.equals(ServiceState.EXPRESS_UPGRADING)) {\n-        org.apache.hadoop.yarn.service.api.records.Component component \u003d\n-            serviceManager.compsToUpgradeInOrder.peek();\n-        if (!component.getState().equals(ComponentState.NEEDS_UPGRADE) \u0026\u0026\n-            !component.getState().equals(ComponentState.UPGRADING)) {\n-          serviceManager.compsToUpgradeInOrder.remove();\n-        }\n-        serviceManager.upgradeNextCompIfAny();\n+      try {\n+        Service targetSpec \u003d ServiceApiUtil.loadService(\n+            serviceManager.context.fs, serviceManager.getName());\n+\n+        Service sourceSpec \u003d ServiceApiUtil.loadServiceUpgrade(\n+            serviceManager.context.fs, serviceManager.getName(),\n+            serviceManager.upgradeVersion);\n+        serviceManager.cancelledVersion \u003d serviceManager.upgradeVersion;\n+        LOG.info(\"[SERVICE] cancel version {}\",\n+            serviceManager.cancelledVersion);\n+        serviceManager.upgradeVersion \u003d serviceManager.serviceSpec.getVersion();\n+        serviceManager.componentsToUpgrade \u003d serviceManager\n+            .resolveCompsToUpgrade(sourceSpec, targetSpec);\n+\n+        serviceManager.compsAffectedByUpgrade.clear();\n+        serviceManager.componentsToUpgrade.forEach(comp -\u003e\n+            serviceManager.compsAffectedByUpgrade.add(comp.getName()));\n+\n+        serviceManager.dispatchNeedUpgradeEvents(true);\n+        serviceManager.upgradeNextCompIfAny(true);\n+        serviceManager.setServiceState(ServiceState.CANCEL_UPGRADING);\n+      } catch (Throwable e) {\n+        LOG.error(\"[SERVICE]: Cancellation of upgrade failed\", e);\n       }\n-      if (currState.equals(ServiceState.UPGRADING_AUTO_FINALIZE) ||\n-          event.getType().equals(ServiceEventType.START) ||\n-          (currState.equals(ServiceState.EXPRESS_UPGRADING) \u0026\u0026\n-              serviceManager.compsToUpgradeInOrder.isEmpty())) {\n-        ServiceState targetState \u003d checkIfStable(serviceManager.serviceSpec);\n-        if (targetState.equals(ServiceState.STABLE)) {\n-          if (serviceManager.finalizeUpgrade()) {\n-            LOG.info(\"Service def state changed from {} -\u003e {}\", currState,\n-                serviceManager.serviceSpec.getState());\n-            return State.STABLE;\n-          }\n-        }\n-      }\n-      return State.UPGRADING;\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public void transition(ServiceManager serviceManager,\n        ServiceEvent event) {\n      if (!serviceManager.getState().equals(State.UPGRADING)) {\n        LOG.info(\"[SERVICE]: Cannot cancel the upgrade in {} state\",\n            serviceManager.getState());\n        return;\n      }\n      try {\n        Service targetSpec \u003d ServiceApiUtil.loadService(\n            serviceManager.context.fs, serviceManager.getName());\n\n        Service sourceSpec \u003d ServiceApiUtil.loadServiceUpgrade(\n            serviceManager.context.fs, serviceManager.getName(),\n            serviceManager.upgradeVersion);\n        serviceManager.cancelledVersion \u003d serviceManager.upgradeVersion;\n        LOG.info(\"[SERVICE] cancel version {}\",\n            serviceManager.cancelledVersion);\n        serviceManager.upgradeVersion \u003d serviceManager.serviceSpec.getVersion();\n        serviceManager.componentsToUpgrade \u003d serviceManager\n            .resolveCompsToUpgrade(sourceSpec, targetSpec);\n\n        serviceManager.compsAffectedByUpgrade.clear();\n        serviceManager.componentsToUpgrade.forEach(comp -\u003e\n            serviceManager.compsAffectedByUpgrade.add(comp.getName()));\n\n        serviceManager.dispatchNeedUpgradeEvents(true);\n        serviceManager.upgradeNextCompIfAny(true);\n        serviceManager.setServiceState(ServiceState.CANCEL_UPGRADING);\n      } catch (Throwable e) {\n        LOG.error(\"[SERVICE]: Cancellation of upgrade failed\", e);\n      }\n    }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-core/src/main/java/org/apache/hadoop/yarn/service/ServiceManager.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e557c6bd8de2811a561210f672f47b4d07a9d5c6": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8298.  Added express upgrade for YARN service.\n            Contributed by Chandni Singh\n",
+      "commitDate": "21/08/18 4:49 PM",
+      "commitName": "e557c6bd8de2811a561210f672f47b4d07a9d5c6",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "17/05/18 2:16 PM",
+      "commitNameOld": "7f083ed8699a720d3fb82e4ec310356902a6ac30",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 96.11,
+      "commitsBetweenForRepo": 715,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,31 @@\n     public State transition(ServiceManager serviceManager,\n         ServiceEvent event) {\n       //trigger check of service state\n       ServiceState currState \u003d serviceManager.serviceSpec.getState();\n       if (currState.equals(ServiceState.STABLE)) {\n         return State.STABLE;\n       }\n+      if (currState.equals(ServiceState.EXPRESS_UPGRADING)) {\n+        org.apache.hadoop.yarn.service.api.records.Component component \u003d\n+            serviceManager.compsToUpgradeInOrder.peek();\n+        if (!component.getState().equals(ComponentState.NEEDS_UPGRADE) \u0026\u0026\n+            !component.getState().equals(ComponentState.UPGRADING)) {\n+          serviceManager.compsToUpgradeInOrder.remove();\n+        }\n+        serviceManager.upgradeNextCompIfAny();\n+      }\n       if (currState.equals(ServiceState.UPGRADING_AUTO_FINALIZE) ||\n-          event.getType().equals(ServiceEventType.START)) {\n+          event.getType().equals(ServiceEventType.START) ||\n+          (currState.equals(ServiceState.EXPRESS_UPGRADING) \u0026\u0026\n+              serviceManager.compsToUpgradeInOrder.isEmpty())) {\n         ServiceState targetState \u003d checkIfStable(serviceManager.serviceSpec);\n         if (targetState.equals(ServiceState.STABLE)) {\n           if (serviceManager.finalizeUpgrade()) {\n             LOG.info(\"Service def state changed from {} -\u003e {}\", currState,\n                 serviceManager.serviceSpec.getState());\n             return State.STABLE;\n           }\n         }\n       }\n       return State.UPGRADING;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public State transition(ServiceManager serviceManager,\n        ServiceEvent event) {\n      //trigger check of service state\n      ServiceState currState \u003d serviceManager.serviceSpec.getState();\n      if (currState.equals(ServiceState.STABLE)) {\n        return State.STABLE;\n      }\n      if (currState.equals(ServiceState.EXPRESS_UPGRADING)) {\n        org.apache.hadoop.yarn.service.api.records.Component component \u003d\n            serviceManager.compsToUpgradeInOrder.peek();\n        if (!component.getState().equals(ComponentState.NEEDS_UPGRADE) \u0026\u0026\n            !component.getState().equals(ComponentState.UPGRADING)) {\n          serviceManager.compsToUpgradeInOrder.remove();\n        }\n        serviceManager.upgradeNextCompIfAny();\n      }\n      if (currState.equals(ServiceState.UPGRADING_AUTO_FINALIZE) ||\n          event.getType().equals(ServiceEventType.START) ||\n          (currState.equals(ServiceState.EXPRESS_UPGRADING) \u0026\u0026\n              serviceManager.compsToUpgradeInOrder.isEmpty())) {\n        ServiceState targetState \u003d checkIfStable(serviceManager.serviceSpec);\n        if (targetState.equals(ServiceState.STABLE)) {\n          if (serviceManager.finalizeUpgrade()) {\n            LOG.info(\"Service def state changed from {} -\u003e {}\", currState,\n                serviceManager.serviceSpec.getState());\n            return State.STABLE;\n          }\n        }\n      }\n      return State.UPGRADING;\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-core/src/main/java/org/apache/hadoop/yarn/service/ServiceManager.java",
+      "extendedDetails": {}
+    },
+    "4a7369b09547a78f532af66c763c6994a38b5d68": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7939.  Added support to upgrade a component instance.\n            Contributed by Chandni Singh\n",
+      "commitDate": "26/04/18 1:54 PM",
+      "commitName": "4a7369b09547a78f532af66c763c6994a38b5d68",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "26/03/18 3:46 PM",
+      "commitNameOld": "27d60a16342fd39973d43b61008f54a8815a6237",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 30.92,
+      "commitsBetweenForRepo": 699,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,20 @@\n     public State transition(ServiceManager serviceManager,\n         ServiceEvent event) {\n-      //abort is not supported currently\n-      //trigger re-check of service state\n-      ServiceMaster.checkAndUpdateServiceState(serviceManager.scheduler,\n-          true);\n-      if (serviceManager.serviceSpec.getState().equals(ServiceState.STABLE)) {\n-        return serviceManager.finalizeUpgrade() ? State.STABLE :\n-            State.UPGRADING;\n-      } else {\n-        return State.UPGRADING;\n+      //trigger check of service state\n+      ServiceState currState \u003d serviceManager.serviceSpec.getState();\n+      if (currState.equals(ServiceState.STABLE)) {\n+        return State.STABLE;\n       }\n+      if (currState.equals(ServiceState.UPGRADING_AUTO_FINALIZE) ||\n+          event.getType().equals(ServiceEventType.START)) {\n+        ServiceState targetState \u003d checkIfStable(serviceManager.serviceSpec);\n+        if (targetState.equals(ServiceState.STABLE)) {\n+          if (serviceManager.finalizeUpgrade()) {\n+            LOG.info(\"Service def state changed from {} -\u003e {}\", currState,\n+                serviceManager.serviceSpec.getState());\n+            return State.STABLE;\n+          }\n+        }\n+      }\n+      return State.UPGRADING;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public State transition(ServiceManager serviceManager,\n        ServiceEvent event) {\n      //trigger check of service state\n      ServiceState currState \u003d serviceManager.serviceSpec.getState();\n      if (currState.equals(ServiceState.STABLE)) {\n        return State.STABLE;\n      }\n      if (currState.equals(ServiceState.UPGRADING_AUTO_FINALIZE) ||\n          event.getType().equals(ServiceEventType.START)) {\n        ServiceState targetState \u003d checkIfStable(serviceManager.serviceSpec);\n        if (targetState.equals(ServiceState.STABLE)) {\n          if (serviceManager.finalizeUpgrade()) {\n            LOG.info(\"Service def state changed from {} -\u003e {}\", currState,\n                serviceManager.serviceSpec.getState());\n            return State.STABLE;\n          }\n        }\n      }\n      return State.UPGRADING;\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-core/src/main/java/org/apache/hadoop/yarn/service/ServiceManager.java",
+      "extendedDetails": {}
+    },
+    "27d60a16342fd39973d43b61008f54a8815a6237": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-8018.  Added support for initiating yarn service upgrade.\n            Contributed by Chandni Singh\n",
+      "commitDate": "26/03/18 3:46 PM",
+      "commitName": "27d60a16342fd39973d43b61008f54a8815a6237",
+      "commitAuthor": "Eric Yang",
+      "diff": "@@ -0,0 +1,13 @@\n+    public State transition(ServiceManager serviceManager,\n+        ServiceEvent event) {\n+      //abort is not supported currently\n+      //trigger re-check of service state\n+      ServiceMaster.checkAndUpdateServiceState(serviceManager.scheduler,\n+          true);\n+      if (serviceManager.serviceSpec.getState().equals(ServiceState.STABLE)) {\n+        return serviceManager.finalizeUpgrade() ? State.STABLE :\n+            State.UPGRADING;\n+      } else {\n+        return State.UPGRADING;\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public State transition(ServiceManager serviceManager,\n        ServiceEvent event) {\n      //abort is not supported currently\n      //trigger re-check of service state\n      ServiceMaster.checkAndUpdateServiceState(serviceManager.scheduler,\n          true);\n      if (serviceManager.serviceSpec.getState().equals(ServiceState.STABLE)) {\n        return serviceManager.finalizeUpgrade() ? State.STABLE :\n            State.UPGRADING;\n      } else {\n        return State.UPGRADING;\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-core/src/main/java/org/apache/hadoop/yarn/service/ServiceManager.java"
+    }
+  }
+}

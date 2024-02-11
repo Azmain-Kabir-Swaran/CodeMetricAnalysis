@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DatanodeAdminBackoffMonitor.java",
+  "functionName": "scanDatanodeStorage",
+  "functionId": "scanDatanodeStorage___dn-DatanodeDescriptor__initialScan-Boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeAdminBackoffMonitor.java",
+  "functionStartLine": 603,
+  "functionEndLine": 649,
+  "numCommitsSeen": 1,
+  "timeTaken": 909,
+  "changeHistory": [
+    "c93cb6790e0f1c64efd03d859f907a0522010894"
+  ],
+  "changeHistoryShort": {
+    "c93cb6790e0f1c64efd03d859f907a0522010894": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c93cb6790e0f1c64efd03d859f907a0522010894": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-14854. Create improved decommission monitor implementation. Contributed by Stephen O\u0027Donnell.\n\nReviewed-by: Inigo Goiri \u003cinigoiri@apache.org\u003e\nSigned-off-by: Wei-Chiu Chuang \u003cweichiu@apache.org\u003e\n",
+      "commitDate": "10/12/19 5:16 PM",
+      "commitName": "c93cb6790e0f1c64efd03d859f907a0522010894",
+      "commitAuthor": "Stephen O\u0027Donnell",
+      "diff": "@@ -0,0 +1,47 @@\n+  private void scanDatanodeStorage(DatanodeDescriptor dn,\n+                                   Boolean initialScan) {\n+    HashMap\u003cBlockInfo, Integer\u003e blockList \u003d outOfServiceNodeBlocks.get(dn);\n+    if (blockList \u003d\u003d null) {\n+      blockList \u003d new HashMap\u003c\u003e();\n+      outOfServiceNodeBlocks.put(dn, blockList);\n+    }\n+\n+    DatanodeStorageInfo[] storage;\n+    namesystem.readLock();\n+    try {\n+      storage \u003d dn.getStorageInfos();\n+    } finally {\n+      namesystem.readUnlock();\n+    }\n+\n+    for (DatanodeStorageInfo s : storage) {\n+      namesystem.readLock();\n+      try {\n+        // As the lock is dropped and re-taken between each storage, we need\n+        // to check the storage is still present before processing it, as it\n+        // may have been removed.\n+        if (dn.getStorageInfo(s.getStorageID()) \u003d\u003d null) {\n+          continue;\n+        }\n+        Iterator\u003cBlockInfo\u003e it \u003d s.getBlockIterator();\n+        while (it.hasNext()) {\n+          BlockInfo b \u003d it.next();\n+          if (!initialScan || dn.isEnteringMaintenance()) {\n+            // this is a rescan, so most blocks should be replicated now,\n+            // or this node is going into maintenance. On a healthy\n+            // cluster using racks or upgrade domain, a node should be\n+            // able to go into maintenance without replicating many blocks\n+            // so we will check them immediately.\n+            if (!isBlockReplicatedOk(dn, b, false, null)) {\n+              blockList.put(b, null);\n+            }\n+          } else {\n+            blockList.put(b, null);\n+          }\n+          numBlocksChecked++;\n+        }\n+      } finally {\n+        namesystem.readUnlock();\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void scanDatanodeStorage(DatanodeDescriptor dn,\n                                   Boolean initialScan) {\n    HashMap\u003cBlockInfo, Integer\u003e blockList \u003d outOfServiceNodeBlocks.get(dn);\n    if (blockList \u003d\u003d null) {\n      blockList \u003d new HashMap\u003c\u003e();\n      outOfServiceNodeBlocks.put(dn, blockList);\n    }\n\n    DatanodeStorageInfo[] storage;\n    namesystem.readLock();\n    try {\n      storage \u003d dn.getStorageInfos();\n    } finally {\n      namesystem.readUnlock();\n    }\n\n    for (DatanodeStorageInfo s : storage) {\n      namesystem.readLock();\n      try {\n        // As the lock is dropped and re-taken between each storage, we need\n        // to check the storage is still present before processing it, as it\n        // may have been removed.\n        if (dn.getStorageInfo(s.getStorageID()) \u003d\u003d null) {\n          continue;\n        }\n        Iterator\u003cBlockInfo\u003e it \u003d s.getBlockIterator();\n        while (it.hasNext()) {\n          BlockInfo b \u003d it.next();\n          if (!initialScan || dn.isEnteringMaintenance()) {\n            // this is a rescan, so most blocks should be replicated now,\n            // or this node is going into maintenance. On a healthy\n            // cluster using racks or upgrade domain, a node should be\n            // able to go into maintenance without replicating many blocks\n            // so we will check them immediately.\n            if (!isBlockReplicatedOk(dn, b, false, null)) {\n              blockList.put(b, null);\n            }\n          } else {\n            blockList.put(b, null);\n          }\n          numBlocksChecked++;\n        }\n      } finally {\n        namesystem.readUnlock();\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeAdminBackoffMonitor.java"
+    }
+  }
+}

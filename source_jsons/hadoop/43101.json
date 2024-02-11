@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SystemServiceManagerImpl.java",
+  "functionName": "launchServices",
+  "functionId": "launchServices___userUgi-UserGroupInformation__serviceClient-ServiceClient__service-Service",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-api/src/main/java/org/apache/hadoop/yarn/service/client/SystemServiceManagerImpl.java",
+  "functionStartLine": 216,
+  "functionEndLine": 259,
+  "numCommitsSeen": 5,
+  "timeTaken": 1830,
+  "changeHistory": [
+    "69b05968974994c6e22d6562a67b9392d1700094",
+    "a23ff8d88001ad8e4ac4c36fc1f7691d193dc1d0",
+    "d4e63ccca0763b452e4a0169dd932b3f32066281"
+  ],
+  "changeHistoryShort": {
+    "69b05968974994c6e22d6562a67b9392d1700094": "Ybodychange",
+    "a23ff8d88001ad8e4ac4c36fc1f7691d193dc1d0": "Yfilerename",
+    "d4e63ccca0763b452e4a0169dd932b3f32066281": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "69b05968974994c6e22d6562a67b9392d1700094": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8411.  Restart stopped system service during RM start.\n            Contributed by Billie Rinaldi\n",
+      "commitDate": "13/06/18 4:05 PM",
+      "commitName": "69b05968974994c6e22d6562a67b9392d1700094",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "18/05/18 2:29 PM",
+      "commitNameOld": "a23ff8d88001ad8e4ac4c36fc1f7691d193dc1d0",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 26.07,
+      "commitsBetweenForRepo": 206,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,44 @@\n   private void launchServices(UserGroupInformation userUgi,\n       ServiceClient serviceClient, Service service)\n       throws IOException, InterruptedException {\n     if (service.getState() \u003d\u003d ServiceState.STOPPED) {\n       userUgi.doAs(new PrivilegedExceptionAction\u003cVoid\u003e() {\n         @Override public Void run() throws IOException, YarnException {\n           serviceClient.actionBuild(service);\n           return null;\n         }\n       });\n       LOG.info(\"Service {} version {} saved.\", service.getName(),\n           service.getVersion());\n     } else {\n       ApplicationId applicationId \u003d\n           userUgi.doAs(new PrivilegedExceptionAction\u003cApplicationId\u003e() {\n             @Override public ApplicationId run()\n                 throws IOException, YarnException {\n-              ApplicationId applicationId \u003d serviceClient.actionCreate(service);\n-              return applicationId;\n+              boolean tryStart \u003d true;\n+              try {\n+                serviceClient.actionBuild(service);\n+              } catch (Exception e) {\n+                if (e instanceof SliderException \u0026\u0026 ((SliderException) e)\n+                    .getExitCode() \u003d\u003d SliderExitCodes.EXIT_INSTANCE_EXISTS) {\n+                  LOG.info(\"Service {} already exists, will attempt to start \" +\n+                      \"service\", service.getName());\n+                } else {\n+                  tryStart \u003d false;\n+                  LOG.info(\"Got exception saving {}, will not attempt to \" +\n+                      \"start service\", service.getName(), e);\n+                }\n+              }\n+              if (tryStart) {\n+                return serviceClient.actionStartAndGetId(service.getName());\n+              } else {\n+                return null;\n+              }\n             }\n           });\n-      LOG.info(\"Service {} submitted with Application ID: {}\",\n-          service.getName(), applicationId);\n+      if (applicationId !\u003d null) {\n+        LOG.info(\"Service {} submitted with Application ID: {}\",\n+            service.getName(), applicationId);\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void launchServices(UserGroupInformation userUgi,\n      ServiceClient serviceClient, Service service)\n      throws IOException, InterruptedException {\n    if (service.getState() \u003d\u003d ServiceState.STOPPED) {\n      userUgi.doAs(new PrivilegedExceptionAction\u003cVoid\u003e() {\n        @Override public Void run() throws IOException, YarnException {\n          serviceClient.actionBuild(service);\n          return null;\n        }\n      });\n      LOG.info(\"Service {} version {} saved.\", service.getName(),\n          service.getVersion());\n    } else {\n      ApplicationId applicationId \u003d\n          userUgi.doAs(new PrivilegedExceptionAction\u003cApplicationId\u003e() {\n            @Override public ApplicationId run()\n                throws IOException, YarnException {\n              boolean tryStart \u003d true;\n              try {\n                serviceClient.actionBuild(service);\n              } catch (Exception e) {\n                if (e instanceof SliderException \u0026\u0026 ((SliderException) e)\n                    .getExitCode() \u003d\u003d SliderExitCodes.EXIT_INSTANCE_EXISTS) {\n                  LOG.info(\"Service {} already exists, will attempt to start \" +\n                      \"service\", service.getName());\n                } else {\n                  tryStart \u003d false;\n                  LOG.info(\"Got exception saving {}, will not attempt to \" +\n                      \"start service\", service.getName(), e);\n                }\n              }\n              if (tryStart) {\n                return serviceClient.actionStartAndGetId(service.getName());\n              } else {\n                return null;\n              }\n            }\n          });\n      if (applicationId !\u003d null) {\n        LOG.info(\"Service {} submitted with Application ID: {}\",\n            service.getName(), applicationId);\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-api/src/main/java/org/apache/hadoop/yarn/service/client/SystemServiceManagerImpl.java",
+      "extendedDetails": {}
+    },
+    "a23ff8d88001ad8e4ac4c36fc1f7691d193dc1d0": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-7530.  Refactored YARN service API project location.\n            Contributed by Chandni Singh\n",
+      "commitDate": "18/05/18 2:29 PM",
+      "commitName": "a23ff8d88001ad8e4ac4c36fc1f7691d193dc1d0",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "18/05/18 11:29 AM",
+      "commitNameOld": "89f59113927dd886f09d8fe2c05ff2cd5d1390c1",
+      "commitAuthorOld": "Xiao Chen",
+      "daysBetweenCommits": 0.12,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void launchServices(UserGroupInformation userUgi,\n      ServiceClient serviceClient, Service service)\n      throws IOException, InterruptedException {\n    if (service.getState() \u003d\u003d ServiceState.STOPPED) {\n      userUgi.doAs(new PrivilegedExceptionAction\u003cVoid\u003e() {\n        @Override public Void run() throws IOException, YarnException {\n          serviceClient.actionBuild(service);\n          return null;\n        }\n      });\n      LOG.info(\"Service {} version {} saved.\", service.getName(),\n          service.getVersion());\n    } else {\n      ApplicationId applicationId \u003d\n          userUgi.doAs(new PrivilegedExceptionAction\u003cApplicationId\u003e() {\n            @Override public ApplicationId run()\n                throws IOException, YarnException {\n              ApplicationId applicationId \u003d serviceClient.actionCreate(service);\n              return applicationId;\n            }\n          });\n      LOG.info(\"Service {} submitted with Application ID: {}\",\n          service.getName(), applicationId);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-api/src/main/java/org/apache/hadoop/yarn/service/client/SystemServiceManagerImpl.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services-api/src/main/java/org/apache/hadoop/yarn/service/client/SystemServiceManagerImpl.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-api/src/main/java/org/apache/hadoop/yarn/service/client/SystemServiceManagerImpl.java"
+      }
+    },
+    "d4e63ccca0763b452e4a0169dd932b3f32066281": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-8048. Support auto-spawning of admin configured services during bootstrap of RM (Rohith Sharma K S via wangda)\n\nChange-Id: I2d8d61ccad55e1118009294d7e17822df3cd0fd5\n",
+      "commitDate": "06/04/18 9:24 PM",
+      "commitName": "d4e63ccca0763b452e4a0169dd932b3f32066281",
+      "commitAuthor": "Wangda Tan",
+      "diff": "@@ -0,0 +1,25 @@\n+  private void launchServices(UserGroupInformation userUgi,\n+      ServiceClient serviceClient, Service service)\n+      throws IOException, InterruptedException {\n+    if (service.getState() \u003d\u003d ServiceState.STOPPED) {\n+      userUgi.doAs(new PrivilegedExceptionAction\u003cVoid\u003e() {\n+        @Override public Void run() throws IOException, YarnException {\n+          serviceClient.actionBuild(service);\n+          return null;\n+        }\n+      });\n+      LOG.info(\"Service {} version {} saved.\", service.getName(),\n+          service.getVersion());\n+    } else {\n+      ApplicationId applicationId \u003d\n+          userUgi.doAs(new PrivilegedExceptionAction\u003cApplicationId\u003e() {\n+            @Override public ApplicationId run()\n+                throws IOException, YarnException {\n+              ApplicationId applicationId \u003d serviceClient.actionCreate(service);\n+              return applicationId;\n+            }\n+          });\n+      LOG.info(\"Service {} submitted with Application ID: {}\",\n+          service.getName(), applicationId);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void launchServices(UserGroupInformation userUgi,\n      ServiceClient serviceClient, Service service)\n      throws IOException, InterruptedException {\n    if (service.getState() \u003d\u003d ServiceState.STOPPED) {\n      userUgi.doAs(new PrivilegedExceptionAction\u003cVoid\u003e() {\n        @Override public Void run() throws IOException, YarnException {\n          serviceClient.actionBuild(service);\n          return null;\n        }\n      });\n      LOG.info(\"Service {} version {} saved.\", service.getName(),\n          service.getVersion());\n    } else {\n      ApplicationId applicationId \u003d\n          userUgi.doAs(new PrivilegedExceptionAction\u003cApplicationId\u003e() {\n            @Override public ApplicationId run()\n                throws IOException, YarnException {\n              ApplicationId applicationId \u003d serviceClient.actionCreate(service);\n              return applicationId;\n            }\n          });\n      LOG.info(\"Service {} submitted with Application ID: {}\",\n          service.getName(), applicationId);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services-api/src/main/java/org/apache/hadoop/yarn/service/client/SystemServiceManagerImpl.java"
+    }
+  }
+}

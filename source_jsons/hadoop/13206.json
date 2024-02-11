@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SequentialBlockGroupIdGenerator.java",
+  "functionName": "nextValue",
+  "functionId": "nextValue",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/SequentialBlockGroupIdGenerator.java",
+  "functionStartLine": 54,
+  "functionEndLine": 68,
+  "numCommitsSeen": 3,
+  "timeTaken": 1446,
+  "changeHistory": [
+    "f5d4a95ef5fc01eb2b93fb79798ad2357cfc2ba0",
+    "bc2833b1c91e107d090619d755c584f6eae82327"
+  ],
+  "changeHistoryShort": {
+    "f5d4a95ef5fc01eb2b93fb79798ad2357cfc2ba0": "Ybodychange",
+    "bc2833b1c91e107d090619d755c584f6eae82327": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f5d4a95ef5fc01eb2b93fb79798ad2357cfc2ba0": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8228. Erasure Coding: SequentialBlockGroupIdGenerator#nextValue may cause block id conflicts. Contributed by Jing Zhao.\n",
+      "commitDate": "26/05/15 11:59 AM",
+      "commitName": "f5d4a95ef5fc01eb2b93fb79798ad2357cfc2ba0",
+      "commitAuthor": "Zhe Zhang",
+      "commitDateOld": "26/05/15 11:03 AM",
+      "commitNameOld": "bc2833b1c91e107d090619d755c584f6eae82327",
+      "commitAuthorOld": "Zhe Zhang",
+      "daysBetweenCommits": 0.04,
+      "commitsBetweenForRepo": 81,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,15 @@\n   public long nextValue() {\n-    // Skip to next legitimate block group ID based on the naming protocol\n-    while (super.getCurrentValue() % HdfsConstants.MAX_BLOCKS_IN_GROUP \u003e 0) {\n-      super.nextValue();\n-    }\n+    skipTo((getCurrentValue() \u0026 ~BLOCK_GROUP_INDEX_MASK) + MAX_BLOCKS_IN_GROUP);\n     // Make sure there\u0027s no conflict with existing random block IDs\n-    while (hasValidBlockInRange(super.getCurrentValue())) {\n-      super.skipTo(super.getCurrentValue() +\n-          HdfsConstants.MAX_BLOCKS_IN_GROUP);\n+    final Block b \u003d new Block(getCurrentValue());\n+    while (hasValidBlockInRange(b)) {\n+      skipTo(getCurrentValue() + MAX_BLOCKS_IN_GROUP);\n+      b.setBlockId(getCurrentValue());\n     }\n-    if (super.getCurrentValue() \u003e\u003d 0) {\n-      BlockManager.LOG.warn(\"All negative block group IDs are used, \" +\n-          \"growing into positive IDs, \" +\n-          \"which might conflict with non-erasure coded blocks.\");\n+    if (b.getBlockId() \u003e\u003d 0) {\n+      throw new IllegalStateException(\"All negative block group IDs are used, \"\n+          + \"growing into positive IDs, \"\n+          + \"which might conflict with non-erasure coded blocks.\");\n     }\n-    return super.getCurrentValue();\n+    return getCurrentValue();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public long nextValue() {\n    skipTo((getCurrentValue() \u0026 ~BLOCK_GROUP_INDEX_MASK) + MAX_BLOCKS_IN_GROUP);\n    // Make sure there\u0027s no conflict with existing random block IDs\n    final Block b \u003d new Block(getCurrentValue());\n    while (hasValidBlockInRange(b)) {\n      skipTo(getCurrentValue() + MAX_BLOCKS_IN_GROUP);\n      b.setBlockId(getCurrentValue());\n    }\n    if (b.getBlockId() \u003e\u003d 0) {\n      throw new IllegalStateException(\"All negative block group IDs are used, \"\n          + \"growing into positive IDs, \"\n          + \"which might conflict with non-erasure coded blocks.\");\n    }\n    return getCurrentValue();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/SequentialBlockGroupIdGenerator.java",
+      "extendedDetails": {}
+    },
+    "bc2833b1c91e107d090619d755c584f6eae82327": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7339. Allocating and persisting block groups in NameNode. Contributed by Zhe Zhang\n",
+      "commitDate": "26/05/15 11:03 AM",
+      "commitName": "bc2833b1c91e107d090619d755c584f6eae82327",
+      "commitAuthor": "Zhe Zhang",
+      "diff": "@@ -0,0 +1,17 @@\n+  public long nextValue() {\n+    // Skip to next legitimate block group ID based on the naming protocol\n+    while (super.getCurrentValue() % HdfsConstants.MAX_BLOCKS_IN_GROUP \u003e 0) {\n+      super.nextValue();\n+    }\n+    // Make sure there\u0027s no conflict with existing random block IDs\n+    while (hasValidBlockInRange(super.getCurrentValue())) {\n+      super.skipTo(super.getCurrentValue() +\n+          HdfsConstants.MAX_BLOCKS_IN_GROUP);\n+    }\n+    if (super.getCurrentValue() \u003e\u003d 0) {\n+      BlockManager.LOG.warn(\"All negative block group IDs are used, \" +\n+          \"growing into positive IDs, \" +\n+          \"which might conflict with non-erasure coded blocks.\");\n+    }\n+    return super.getCurrentValue();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public long nextValue() {\n    // Skip to next legitimate block group ID based on the naming protocol\n    while (super.getCurrentValue() % HdfsConstants.MAX_BLOCKS_IN_GROUP \u003e 0) {\n      super.nextValue();\n    }\n    // Make sure there\u0027s no conflict with existing random block IDs\n    while (hasValidBlockInRange(super.getCurrentValue())) {\n      super.skipTo(super.getCurrentValue() +\n          HdfsConstants.MAX_BLOCKS_IN_GROUP);\n    }\n    if (super.getCurrentValue() \u003e\u003d 0) {\n      BlockManager.LOG.warn(\"All negative block group IDs are used, \" +\n          \"growing into positive IDs, \" +\n          \"which might conflict with non-erasure coded blocks.\");\n    }\n    return super.getCurrentValue();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/SequentialBlockGroupIdGenerator.java"
+    }
+  }
+}

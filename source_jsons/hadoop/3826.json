@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DistributedFileSystem.java",
+  "functionName": "createPathHandle",
+  "functionId": "createPathHandle___st-FileStatus__opts-HandleOpt",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+  "functionStartLine": 381,
+  "functionEndLine": 411,
+  "numCommitsSeen": 96,
+  "timeTaken": 3239,
+  "changeHistory": [
+    "693169ef34f856a27dc09d90a45fb4ec5b66ed2c",
+    "d015e0bbd5416943cb4875274e67b7077c00e54b"
+  ],
+  "changeHistoryShort": {
+    "693169ef34f856a27dc09d90a45fb4ec5b66ed2c": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "d015e0bbd5416943cb4875274e67b7077c00e54b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "693169ef34f856a27dc09d90a45fb4ec5b66ed2c": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-12882. Support full open(PathHandle) contract in HDFS\n",
+      "commitDate": "11/12/17 8:14 PM",
+      "commitName": "693169ef34f856a27dc09d90a45fb4ec5b66ed2c",
+      "commitAuthor": "Chris Douglas",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-12882. Support full open(PathHandle) contract in HDFS\n",
+          "commitDate": "11/12/17 8:14 PM",
+          "commitName": "693169ef34f856a27dc09d90a45fb4ec5b66ed2c",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "04/12/17 10:40 AM",
+          "commitNameOld": "404eab4dc0582e0384b93664ea6ee77ccd5eeebc",
+          "commitAuthorOld": "Xiao Chen",
+          "daysBetweenCommits": 7.4,
+          "commitsBetweenForRepo": 54,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,31 @@\n-  protected PathHandle createPathHandle(FileStatus st, HandleOpt... opts) {\n+  protected HdfsPathHandle createPathHandle(FileStatus st, HandleOpt... opts) {\n     if (!(st instanceof HdfsFileStatus)) {\n       throw new IllegalArgumentException(\"Invalid FileStatus \"\n           + st.getClass().getSimpleName());\n     }\n     if (st.isDirectory() || st.isSymlink()) {\n       throw new IllegalArgumentException(\"PathHandle only available for files\");\n     }\n     if (!getUri().getAuthority().equals(st.getPath().toUri().getAuthority())) {\n       throw new IllegalArgumentException(\"Wrong FileSystem: \" + st.getPath());\n     }\n     HandleOpt.Data data \u003d HandleOpt.getOpt(HandleOpt.Data.class, opts)\n         .orElse(HandleOpt.changed(false));\n     HandleOpt.Location loc \u003d HandleOpt.getOpt(HandleOpt.Location.class, opts)\n         .orElse(HandleOpt.moved(false));\n-    if (!data.allowChange() || !loc.allowChange()) {\n-      throw new UnsupportedOperationException(\"Unsupported opts \"\n-          + Arrays.stream(opts)\n-                  .map(HandleOpt::toString).collect(Collectors.joining(\",\")));\n+\n+    HdfsFileStatus hst \u003d (HdfsFileStatus) st;\n+    final Path p;\n+    final Optional\u003cLong\u003e inodeId;\n+    if (loc.allowChange()) {\n+      p \u003d DFSUtilClient.makePathFromFileId(hst.getFileId());\n+      inodeId \u003d Optional.empty();\n+    } else {\n+      p \u003d hst.getPath();\n+      inodeId \u003d Optional.of(hst.getFileId());\n     }\n-    return new HdfsPathHandle((HdfsFileStatus)st);\n+    final Optional\u003cLong\u003e mtime \u003d !data.allowChange()\n+        ? Optional.of(hst.getModificationTime())\n+        : Optional.empty();\n+    return new HdfsPathHandle(getPathName(p), inodeId, mtime);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected HdfsPathHandle createPathHandle(FileStatus st, HandleOpt... opts) {\n    if (!(st instanceof HdfsFileStatus)) {\n      throw new IllegalArgumentException(\"Invalid FileStatus \"\n          + st.getClass().getSimpleName());\n    }\n    if (st.isDirectory() || st.isSymlink()) {\n      throw new IllegalArgumentException(\"PathHandle only available for files\");\n    }\n    if (!getUri().getAuthority().equals(st.getPath().toUri().getAuthority())) {\n      throw new IllegalArgumentException(\"Wrong FileSystem: \" + st.getPath());\n    }\n    HandleOpt.Data data \u003d HandleOpt.getOpt(HandleOpt.Data.class, opts)\n        .orElse(HandleOpt.changed(false));\n    HandleOpt.Location loc \u003d HandleOpt.getOpt(HandleOpt.Location.class, opts)\n        .orElse(HandleOpt.moved(false));\n\n    HdfsFileStatus hst \u003d (HdfsFileStatus) st;\n    final Path p;\n    final Optional\u003cLong\u003e inodeId;\n    if (loc.allowChange()) {\n      p \u003d DFSUtilClient.makePathFromFileId(hst.getFileId());\n      inodeId \u003d Optional.empty();\n    } else {\n      p \u003d hst.getPath();\n      inodeId \u003d Optional.of(hst.getFileId());\n    }\n    final Optional\u003cLong\u003e mtime \u003d !data.allowChange()\n        ? Optional.of(hst.getModificationTime())\n        : Optional.empty();\n    return new HdfsPathHandle(getPathName(p), inodeId, mtime);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "PathHandle",
+            "newValue": "HdfsPathHandle"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-12882. Support full open(PathHandle) contract in HDFS\n",
+          "commitDate": "11/12/17 8:14 PM",
+          "commitName": "693169ef34f856a27dc09d90a45fb4ec5b66ed2c",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "04/12/17 10:40 AM",
+          "commitNameOld": "404eab4dc0582e0384b93664ea6ee77ccd5eeebc",
+          "commitAuthorOld": "Xiao Chen",
+          "daysBetweenCommits": 7.4,
+          "commitsBetweenForRepo": 54,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,31 @@\n-  protected PathHandle createPathHandle(FileStatus st, HandleOpt... opts) {\n+  protected HdfsPathHandle createPathHandle(FileStatus st, HandleOpt... opts) {\n     if (!(st instanceof HdfsFileStatus)) {\n       throw new IllegalArgumentException(\"Invalid FileStatus \"\n           + st.getClass().getSimpleName());\n     }\n     if (st.isDirectory() || st.isSymlink()) {\n       throw new IllegalArgumentException(\"PathHandle only available for files\");\n     }\n     if (!getUri().getAuthority().equals(st.getPath().toUri().getAuthority())) {\n       throw new IllegalArgumentException(\"Wrong FileSystem: \" + st.getPath());\n     }\n     HandleOpt.Data data \u003d HandleOpt.getOpt(HandleOpt.Data.class, opts)\n         .orElse(HandleOpt.changed(false));\n     HandleOpt.Location loc \u003d HandleOpt.getOpt(HandleOpt.Location.class, opts)\n         .orElse(HandleOpt.moved(false));\n-    if (!data.allowChange() || !loc.allowChange()) {\n-      throw new UnsupportedOperationException(\"Unsupported opts \"\n-          + Arrays.stream(opts)\n-                  .map(HandleOpt::toString).collect(Collectors.joining(\",\")));\n+\n+    HdfsFileStatus hst \u003d (HdfsFileStatus) st;\n+    final Path p;\n+    final Optional\u003cLong\u003e inodeId;\n+    if (loc.allowChange()) {\n+      p \u003d DFSUtilClient.makePathFromFileId(hst.getFileId());\n+      inodeId \u003d Optional.empty();\n+    } else {\n+      p \u003d hst.getPath();\n+      inodeId \u003d Optional.of(hst.getFileId());\n     }\n-    return new HdfsPathHandle((HdfsFileStatus)st);\n+    final Optional\u003cLong\u003e mtime \u003d !data.allowChange()\n+        ? Optional.of(hst.getModificationTime())\n+        : Optional.empty();\n+    return new HdfsPathHandle(getPathName(p), inodeId, mtime);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected HdfsPathHandle createPathHandle(FileStatus st, HandleOpt... opts) {\n    if (!(st instanceof HdfsFileStatus)) {\n      throw new IllegalArgumentException(\"Invalid FileStatus \"\n          + st.getClass().getSimpleName());\n    }\n    if (st.isDirectory() || st.isSymlink()) {\n      throw new IllegalArgumentException(\"PathHandle only available for files\");\n    }\n    if (!getUri().getAuthority().equals(st.getPath().toUri().getAuthority())) {\n      throw new IllegalArgumentException(\"Wrong FileSystem: \" + st.getPath());\n    }\n    HandleOpt.Data data \u003d HandleOpt.getOpt(HandleOpt.Data.class, opts)\n        .orElse(HandleOpt.changed(false));\n    HandleOpt.Location loc \u003d HandleOpt.getOpt(HandleOpt.Location.class, opts)\n        .orElse(HandleOpt.moved(false));\n\n    HdfsFileStatus hst \u003d (HdfsFileStatus) st;\n    final Path p;\n    final Optional\u003cLong\u003e inodeId;\n    if (loc.allowChange()) {\n      p \u003d DFSUtilClient.makePathFromFileId(hst.getFileId());\n      inodeId \u003d Optional.empty();\n    } else {\n      p \u003d hst.getPath();\n      inodeId \u003d Optional.of(hst.getFileId());\n    }\n    final Optional\u003cLong\u003e mtime \u003d !data.allowChange()\n        ? Optional.of(hst.getModificationTime())\n        : Optional.empty();\n    return new HdfsPathHandle(getPathName(p), inodeId, mtime);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "d015e0bbd5416943cb4875274e67b7077c00e54b": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7878. API - expose a unique file identifier.\n",
+      "commitDate": "31/10/17 9:44 AM",
+      "commitName": "d015e0bbd5416943cb4875274e67b7077c00e54b",
+      "commitAuthor": "Chris Douglas",
+      "diff": "@@ -0,0 +1,22 @@\n+  protected PathHandle createPathHandle(FileStatus st, HandleOpt... opts) {\n+    if (!(st instanceof HdfsFileStatus)) {\n+      throw new IllegalArgumentException(\"Invalid FileStatus \"\n+          + st.getClass().getSimpleName());\n+    }\n+    if (st.isDirectory() || st.isSymlink()) {\n+      throw new IllegalArgumentException(\"PathHandle only available for files\");\n+    }\n+    if (!getUri().getAuthority().equals(st.getPath().toUri().getAuthority())) {\n+      throw new IllegalArgumentException(\"Wrong FileSystem: \" + st.getPath());\n+    }\n+    HandleOpt.Data data \u003d HandleOpt.getOpt(HandleOpt.Data.class, opts)\n+        .orElse(HandleOpt.changed(false));\n+    HandleOpt.Location loc \u003d HandleOpt.getOpt(HandleOpt.Location.class, opts)\n+        .orElse(HandleOpt.moved(false));\n+    if (!data.allowChange() || !loc.allowChange()) {\n+      throw new UnsupportedOperationException(\"Unsupported opts \"\n+          + Arrays.stream(opts)\n+                  .map(HandleOpt::toString).collect(Collectors.joining(\",\")));\n+    }\n+    return new HdfsPathHandle((HdfsFileStatus)st);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected PathHandle createPathHandle(FileStatus st, HandleOpt... opts) {\n    if (!(st instanceof HdfsFileStatus)) {\n      throw new IllegalArgumentException(\"Invalid FileStatus \"\n          + st.getClass().getSimpleName());\n    }\n    if (st.isDirectory() || st.isSymlink()) {\n      throw new IllegalArgumentException(\"PathHandle only available for files\");\n    }\n    if (!getUri().getAuthority().equals(st.getPath().toUri().getAuthority())) {\n      throw new IllegalArgumentException(\"Wrong FileSystem: \" + st.getPath());\n    }\n    HandleOpt.Data data \u003d HandleOpt.getOpt(HandleOpt.Data.class, opts)\n        .orElse(HandleOpt.changed(false));\n    HandleOpt.Location loc \u003d HandleOpt.getOpt(HandleOpt.Location.class, opts)\n        .orElse(HandleOpt.moved(false));\n    if (!data.allowChange() || !loc.allowChange()) {\n      throw new UnsupportedOperationException(\"Unsupported opts \"\n          + Arrays.stream(opts)\n                  .map(HandleOpt::toString).collect(Collectors.joining(\",\")));\n    }\n    return new HdfsPathHandle((HdfsFileStatus)st);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java"
+    }
+  }
+}

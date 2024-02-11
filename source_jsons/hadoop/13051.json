@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockPlacementPolicyWithNodeGroup.java",
+  "functionName": "chooseFavouredNodes",
+  "functionId": "chooseFavouredNodes___src-String__numOfReplicas-int__favoredNodes-List__DatanodeDescriptor____favoriteAndExcludedNodes-Set__Node____blocksize-long__maxNodesPerRack-int__results-List__DatanodeStorageInfo____avoidStaleNodes-boolean__storageTypes-EnumMap__StorageType,Integer__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockPlacementPolicyWithNodeGroup.java",
+  "functionStartLine": 64,
+  "functionEndLine": 105,
+  "numCommitsSeen": 23,
+  "timeTaken": 1120,
+  "changeHistory": [
+    "588baab160e7c328dca1c45cf3541e79218406e8"
+  ],
+  "changeHistoryShort": {
+    "588baab160e7c328dca1c45cf3541e79218406e8": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "588baab160e7c328dca1c45cf3541e79218406e8": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9044. Give Priority to FavouredNodes , before selecting nodes from FavouredNode\u0027s Node Group (Contributed by J.Andreina)\n",
+      "commitDate": "28/10/15 11:14 PM",
+      "commitName": "588baab160e7c328dca1c45cf3541e79218406e8",
+      "commitAuthor": "Vinayakumar B",
+      "diff": "@@ -0,0 +1,42 @@\n+  protected void chooseFavouredNodes(String src, int numOfReplicas,\n+      List\u003cDatanodeDescriptor\u003e favoredNodes,\n+      Set\u003cNode\u003e favoriteAndExcludedNodes, long blocksize,\n+      int maxNodesPerRack, List\u003cDatanodeStorageInfo\u003e results,\n+      boolean avoidStaleNodes, EnumMap\u003cStorageType, Integer\u003e storageTypes)\n+      throws NotEnoughReplicasException {\n+    super.chooseFavouredNodes(src, numOfReplicas, favoredNodes,\n+        favoriteAndExcludedNodes, blocksize, maxNodesPerRack, results,\n+        avoidStaleNodes, storageTypes);\n+    if (results.size() \u003c numOfReplicas) {\n+      // Not enough replicas, choose from unselected Favorednode\u0027s Nodegroup\n+      for (int i \u003d 0;\n+          i \u003c favoredNodes.size() \u0026\u0026 results.size() \u003c numOfReplicas; i++) {\n+        DatanodeDescriptor favoredNode \u003d favoredNodes.get(i);\n+        boolean chosenNode \u003d\n+            isNodeChosen(results, favoredNode);\n+        if (chosenNode) {\n+          continue;\n+        }\n+        NetworkTopologyWithNodeGroup clusterMapNodeGroup \u003d\n+            (NetworkTopologyWithNodeGroup) clusterMap;\n+        // try a node on FavouredNode\u0027s node group\n+        DatanodeStorageInfo target \u003d null;\n+        String scope \u003d\n+            clusterMapNodeGroup.getNodeGroup(favoredNode.getNetworkLocation());\n+        try {\n+          target \u003d\n+              chooseRandom(scope, favoriteAndExcludedNodes, blocksize,\n+                maxNodesPerRack, results, avoidStaleNodes, storageTypes);\n+        } catch (NotEnoughReplicasException e) {\n+          // catch Exception and continue with other favored nodes\n+          continue;\n+        }\n+        if (target \u003d\u003d null) {\n+          LOG.warn(\"Could not find a target for file \"\n+              + src + \" within nodegroup of favored node \" + favoredNode);\n+          continue;\n+        }\n+        favoriteAndExcludedNodes.add(target.getDatanodeDescriptor());\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void chooseFavouredNodes(String src, int numOfReplicas,\n      List\u003cDatanodeDescriptor\u003e favoredNodes,\n      Set\u003cNode\u003e favoriteAndExcludedNodes, long blocksize,\n      int maxNodesPerRack, List\u003cDatanodeStorageInfo\u003e results,\n      boolean avoidStaleNodes, EnumMap\u003cStorageType, Integer\u003e storageTypes)\n      throws NotEnoughReplicasException {\n    super.chooseFavouredNodes(src, numOfReplicas, favoredNodes,\n        favoriteAndExcludedNodes, blocksize, maxNodesPerRack, results,\n        avoidStaleNodes, storageTypes);\n    if (results.size() \u003c numOfReplicas) {\n      // Not enough replicas, choose from unselected Favorednode\u0027s Nodegroup\n      for (int i \u003d 0;\n          i \u003c favoredNodes.size() \u0026\u0026 results.size() \u003c numOfReplicas; i++) {\n        DatanodeDescriptor favoredNode \u003d favoredNodes.get(i);\n        boolean chosenNode \u003d\n            isNodeChosen(results, favoredNode);\n        if (chosenNode) {\n          continue;\n        }\n        NetworkTopologyWithNodeGroup clusterMapNodeGroup \u003d\n            (NetworkTopologyWithNodeGroup) clusterMap;\n        // try a node on FavouredNode\u0027s node group\n        DatanodeStorageInfo target \u003d null;\n        String scope \u003d\n            clusterMapNodeGroup.getNodeGroup(favoredNode.getNetworkLocation());\n        try {\n          target \u003d\n              chooseRandom(scope, favoriteAndExcludedNodes, blocksize,\n                maxNodesPerRack, results, avoidStaleNodes, storageTypes);\n        } catch (NotEnoughReplicasException e) {\n          // catch Exception and continue with other favored nodes\n          continue;\n        }\n        if (target \u003d\u003d null) {\n          LOG.warn(\"Could not find a target for file \"\n              + src + \" within nodegroup of favored node \" + favoredNode);\n          continue;\n        }\n        favoriteAndExcludedNodes.add(target.getDatanodeDescriptor());\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockPlacementPolicyWithNodeGroup.java"
+    }
+  }
+}

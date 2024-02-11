@@ -1,0 +1,133 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LogAggregationService.java",
+  "functionName": "stopApp",
+  "functionId": "stopApp___appId-ApplicationId",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java",
+  "functionStartLine": 340,
+  "functionEndLine": 358,
+  "numCommitsSeen": 50,
+  "timeTaken": 8217,
+  "changeHistory": [
+    "4b540bbfcf02d828052999215c6135603d98f5db",
+    "81effb7dcde2b31423438d6f1b8b8204d4ca05b3",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1",
+    "e9aa5aac6805c7e40e3fd0a0e0a046fbbb4f94d2",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517"
+  ],
+  "changeHistoryShort": {
+    "4b540bbfcf02d828052999215c6135603d98f5db": "Ybodychange",
+    "81effb7dcde2b31423438d6f1b8b8204d4ca05b3": "Ybodychange",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": "Yfilerename",
+    "e9aa5aac6805c7e40e3fd0a0e0a046fbbb4f94d2": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4b540bbfcf02d828052999215c6135603d98f5db": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8418. App local logs could leaked if log aggregation fails to initialize for the app. (Bibin A Chundatt via wangda)\n\nChange-Id: I29a23ca4b219b48c92e7975cd44cddb8b0e04104\n",
+      "commitDate": "31/07/18 12:08 PM",
+      "commitName": "4b540bbfcf02d828052999215c6135603d98f5db",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "30/07/18 10:55 AM",
+      "commitNameOld": "2b39ad26984d641bad57db2cfcc0b7515ef95f46",
+      "commitAuthorOld": "bibinchundatt",
+      "daysBetweenCommits": 1.05,
+      "commitsBetweenForRepo": 7,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,19 @@\n   private void stopApp(ApplicationId appId) {\n \n     // App is complete. Finish up any containers\u0027 pending log aggregation and\n     // close the application specific logFile.\n-\n-    AppLogAggregator aggregator \u003d this.appLogAggregators.get(appId);\n-    if (aggregator \u003d\u003d null) {\n-      LOG.warn(\"Log aggregation is not initialized for \" + appId\n-          + \", did it fail to start?\");\n-      this.dispatcher.getEventHandler().handle(\n-          new ApplicationEvent(appId,\n-              ApplicationEventType.APPLICATION_LOG_HANDLING_FAILED));\n-      return;\n+    try {\n+      AppLogAggregator aggregator \u003d this.appLogAggregators.get(appId);\n+      if (aggregator \u003d\u003d null) {\n+        LOG.warn(\"Log aggregation is not initialized for \" + appId\n+            + \", did it fail to start?\");\n+        this.dispatcher.getEventHandler().handle(new ApplicationEvent(appId,\n+            ApplicationEventType.APPLICATION_LOG_HANDLING_FAILED));\n+        return;\n+      }\n+      aggregator.finishLogAggregation();\n+    } finally {\n+      // Remove invalid Token Apps\n+      invalidTokenApps.remove(appId);\n     }\n-    aggregator.finishLogAggregation();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void stopApp(ApplicationId appId) {\n\n    // App is complete. Finish up any containers\u0027 pending log aggregation and\n    // close the application specific logFile.\n    try {\n      AppLogAggregator aggregator \u003d this.appLogAggregators.get(appId);\n      if (aggregator \u003d\u003d null) {\n        LOG.warn(\"Log aggregation is not initialized for \" + appId\n            + \", did it fail to start?\");\n        this.dispatcher.getEventHandler().handle(new ApplicationEvent(appId,\n            ApplicationEventType.APPLICATION_LOG_HANDLING_FAILED));\n        return;\n      }\n      aggregator.finishLogAggregation();\n    } finally {\n      // Remove invalid Token Apps\n      invalidTokenApps.remove(appId);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java",
+      "extendedDetails": {}
+    },
+    "81effb7dcde2b31423438d6f1b8b8204d4ca05b3": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4325. Nodemanager log handlers fail to send finished/failed events in some cases. Contributed by Junping Du\n",
+      "commitDate": "16/05/16 8:40 AM",
+      "commitName": "81effb7dcde2b31423438d6f1b8b8204d4ca05b3",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "04/05/16 11:38 AM",
+      "commitNameOld": "7bd418e48c71590fc8026d69f9b8f8ad42f2aade",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 11.88,
+      "commitsBetweenForRepo": 70,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,16 @@\n   private void stopApp(ApplicationId appId) {\n \n     // App is complete. Finish up any containers\u0027 pending log aggregation and\n     // close the application specific logFile.\n \n     AppLogAggregator aggregator \u003d this.appLogAggregators.get(appId);\n     if (aggregator \u003d\u003d null) {\n       LOG.warn(\"Log aggregation is not initialized for \" + appId\n           + \", did it fail to start?\");\n+      this.dispatcher.getEventHandler().handle(\n+          new ApplicationEvent(appId,\n+              ApplicationEventType.APPLICATION_LOG_HANDLING_FAILED));\n       return;\n     }\n     aggregator.finishLogAggregation();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void stopApp(ApplicationId appId) {\n\n    // App is complete. Finish up any containers\u0027 pending log aggregation and\n    // close the application specific logFile.\n\n    AppLogAggregator aggregator \u003d this.appLogAggregators.get(appId);\n    if (aggregator \u003d\u003d null) {\n      LOG.warn(\"Log aggregation is not initialized for \" + appId\n          + \", did it fail to start?\");\n      this.dispatcher.getEventHandler().handle(\n          new ApplicationEvent(appId,\n              ApplicationEventType.APPLICATION_LOG_HANDLING_FAILED));\n      return;\n    }\n    aggregator.finishLogAggregation();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java",
+      "extendedDetails": {}
+    },
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-1. Promote YARN to be a sub-project of Apache Hadoop.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1370666 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/12 10:22 PM",
+      "commitName": "e1fdf62123625e4ba399af02f8aad500637d29d1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "07/08/12 7:53 PM",
+      "commitNameOld": "34554d1e11ee1d5b564d7d9ed3e6d55931d72749",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 0.1,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void stopApp(ApplicationId appId) {\n\n    // App is complete. Finish up any containers\u0027 pending log aggregation and\n    // close the application specific logFile.\n\n    AppLogAggregator aggregator \u003d this.appLogAggregators.get(appId);\n    if (aggregator \u003d\u003d null) {\n      LOG.warn(\"Log aggregation is not initialized for \" + appId\n          + \", did it fail to start?\");\n      return;\n    }\n    aggregator.finishLogAggregation();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java"
+      }
+    },
+    "e9aa5aac6805c7e40e3fd0a0e0a046fbbb4f94d2": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-4448. Fix NM crash during app cleanup if aggregation didn\u0027t init. (Jason Lowe via daryn)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1362618 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/07/12 12:32 PM",
+      "commitName": "e9aa5aac6805c7e40e3fd0a0e0a046fbbb4f94d2",
+      "commitAuthor": "Daryn Sharp",
+      "commitDateOld": "01/06/12 2:54 PM",
+      "commitNameOld": "1cf60106758c482991f08caa136446885d5f8f27",
+      "commitAuthorOld": "Robert Joseph Evans",
+      "daysBetweenCommits": 45.9,
+      "commitsBetweenForRepo": 240,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,11 +1,13 @@\n   private void stopApp(ApplicationId appId) {\n \n     // App is complete. Finish up any containers\u0027 pending log aggregation and\n     // close the application specific logFile.\n \n-    if (!this.appLogAggregators.containsKey(appId)) {\n-      throw new YarnException(\"Application is not initialized yet for \"\n-          + appId);\n+    AppLogAggregator aggregator \u003d this.appLogAggregators.get(appId);\n+    if (aggregator \u003d\u003d null) {\n+      LOG.warn(\"Log aggregation is not initialized for \" + appId\n+          + \", did it fail to start?\");\n+      return;\n     }\n-    this.appLogAggregators.get(appId).finishLogAggregation();\n+    aggregator.finishLogAggregation();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void stopApp(ApplicationId appId) {\n\n    // App is complete. Finish up any containers\u0027 pending log aggregation and\n    // close the application specific logFile.\n\n    AppLogAggregator aggregator \u003d this.appLogAggregators.get(appId);\n    if (aggregator \u003d\u003d null) {\n      LOG.warn(\"Log aggregation is not initialized for \" + appId\n          + \", did it fail to start?\");\n      return;\n    }\n    aggregator.finishLogAggregation();\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void stopApp(ApplicationId appId) {\n\n    // App is complete. Finish up any containers\u0027 pending log aggregation and\n    // close the application specific logFile.\n\n    if (!this.appLogAggregators.containsKey(appId)) {\n      throw new YarnException(\"Application is not initialized yet for \"\n          + appId);\n    }\n    this.appLogAggregators.get(appId).finishLogAggregation();\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,11 @@\n+  private void stopApp(ApplicationId appId) {\n+\n+    // App is complete. Finish up any containers\u0027 pending log aggregation and\n+    // close the application specific logFile.\n+\n+    if (!this.appLogAggregators.containsKey(appId)) {\n+      throw new YarnException(\"Application is not initialized yet for \"\n+          + appId);\n+    }\n+    this.appLogAggregators.get(appId).finishLogAggregation();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void stopApp(ApplicationId appId) {\n\n    // App is complete. Finish up any containers\u0027 pending log aggregation and\n    // close the application specific logFile.\n\n    if (!this.appLogAggregators.containsKey(appId)) {\n      throw new YarnException(\"Application is not initialized yet for \"\n          + appId);\n    }\n    this.appLogAggregators.get(appId).finishLogAggregation();\n  }",
+      "path": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/logaggregation/LogAggregationService.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "VolumeScanner.java",
+  "functionName": "getNextBlockToScan",
+  "functionId": "getNextBlockToScan",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/VolumeScanner.java",
+  "functionStartLine": 491,
+  "functionEndLine": 528,
+  "numCommitsSeen": 20,
+  "timeTaken": 956,
+  "changeHistory": [
+    "f43a152b9729323e290908fbd4f188f6034efb3f"
+  ],
+  "changeHistoryShort": {
+    "f43a152b9729323e290908fbd4f188f6034efb3f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f43a152b9729323e290908fbd4f188f6034efb3f": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-15369. Refactor method VolumeScanner#runLoop(). Contributed by Yang Yun.\n",
+      "commitDate": "24/05/20 5:33 AM",
+      "commitName": "f43a152b9729323e290908fbd4f188f6034efb3f",
+      "commitAuthor": "Ayush Saxena",
+      "diff": "@@ -0,0 +1,38 @@\n+  ExtendedBlock getNextBlockToScan() {\n+    ExtendedBlock block;\n+    try {\n+      block \u003d curBlockIter.nextBlock();\n+    } catch (IOException e) {\n+      // There was an error listing the next block in the volume.  This is a\n+      // serious issue.\n+      LOG.warn(\"{}: nextBlock error on {}\", this, curBlockIter);\n+      // On the next loop iteration, curBlockIter#eof will be set to true, and\n+      // we will pick a different block iterator.\n+      return null;\n+    }\n+    if (block \u003d\u003d null) {\n+      // The BlockIterator is at EOF.\n+      LOG.info(\"{}: finished scanning block pool {}\",\n+          this, curBlockIter.getBlockPoolId());\n+      saveBlockIterator(curBlockIter);\n+      return null;\n+    } else if (conf.skipRecentAccessed) {\n+      // Check the access time of block file to avoid scanning recently\n+      // changed blocks, reducing disk IO.\n+      try {\n+        BlockLocalPathInfo blockLocalPathInfo \u003d\n+            volume.getDataset().getBlockLocalPathInfo(block);\n+        BasicFileAttributes attr \u003d Files.readAttributes(\n+            new File(blockLocalPathInfo.getBlockPath()).toPath(),\n+            BasicFileAttributes.class);\n+        if (System.currentTimeMillis() - attr.lastAccessTime().\n+            to(TimeUnit.MILLISECONDS) \u003c conf.scanPeriodMs) {\n+          return null;\n+        }\n+      } catch (IOException ioe) {\n+        LOG.debug(\"Failed to get access time of block {}\",\n+            block, ioe);\n+      }\n+    }\n+    return block;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  ExtendedBlock getNextBlockToScan() {\n    ExtendedBlock block;\n    try {\n      block \u003d curBlockIter.nextBlock();\n    } catch (IOException e) {\n      // There was an error listing the next block in the volume.  This is a\n      // serious issue.\n      LOG.warn(\"{}: nextBlock error on {}\", this, curBlockIter);\n      // On the next loop iteration, curBlockIter#eof will be set to true, and\n      // we will pick a different block iterator.\n      return null;\n    }\n    if (block \u003d\u003d null) {\n      // The BlockIterator is at EOF.\n      LOG.info(\"{}: finished scanning block pool {}\",\n          this, curBlockIter.getBlockPoolId());\n      saveBlockIterator(curBlockIter);\n      return null;\n    } else if (conf.skipRecentAccessed) {\n      // Check the access time of block file to avoid scanning recently\n      // changed blocks, reducing disk IO.\n      try {\n        BlockLocalPathInfo blockLocalPathInfo \u003d\n            volume.getDataset().getBlockLocalPathInfo(block);\n        BasicFileAttributes attr \u003d Files.readAttributes(\n            new File(blockLocalPathInfo.getBlockPath()).toPath(),\n            BasicFileAttributes.class);\n        if (System.currentTimeMillis() - attr.lastAccessTime().\n            to(TimeUnit.MILLISECONDS) \u003c conf.scanPeriodMs) {\n          return null;\n        }\n      } catch (IOException ioe) {\n        LOG.debug(\"Failed to get access time of block {}\",\n            block, ioe);\n      }\n    }\n    return block;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/VolumeScanner.java"
+    }
+  }
+}

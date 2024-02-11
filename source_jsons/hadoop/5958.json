@@ -1,0 +1,159 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSDirEncryptionZoneOp.java",
+  "functionName": "getEncryptionKeyInfo",
+  "functionId": "getEncryptionKeyInfo___fsn-FSNamesystem__iip-INodesInPath__supportedVersions-CryptoProtocolVersion[]",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirEncryptionZoneOp.java",
+  "functionStartLine": 636,
+  "functionEndLine": 667,
+  "numCommitsSeen": 71,
+  "timeTaken": 5052,
+  "changeHistory": [
+    "f32e9fc8f7150f0e889c0774b3ad712af26fbd65",
+    "869393643de23dcb010cc33091c8eb398de0fd6c",
+    "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2",
+    "71a81b6257c0000475ad62eb69292a20d45d269c",
+    "2b6bcfdafa91223a4116e3e9304579f5f91dccac"
+  ],
+  "changeHistoryShort": {
+    "f32e9fc8f7150f0e889c0774b3ad712af26fbd65": "Ymultichange(Ymovefromfile,Ybodychange,Yparameterchange)",
+    "869393643de23dcb010cc33091c8eb398de0fd6c": "Ybodychange",
+    "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2": "Ybodychange",
+    "71a81b6257c0000475ad62eb69292a20d45d269c": "Ybodychange",
+    "2b6bcfdafa91223a4116e3e9304579f5f91dccac": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f32e9fc8f7150f0e889c0774b3ad712af26fbd65": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange,Yparameterchange)",
+      "commitMessage": "HDFS-10939. Reduce performance penalty of encryption zones. Contributed by Daryn sharp.\n",
+      "commitDate": "06/10/16 1:11 PM",
+      "commitName": "f32e9fc8f7150f0e889c0774b3ad712af26fbd65",
+      "commitAuthor": "Kihwal Lee",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-10939. Reduce performance penalty of encryption zones. Contributed by Daryn sharp.\n",
+          "commitDate": "06/10/16 1:11 PM",
+          "commitName": "f32e9fc8f7150f0e889c0774b3ad712af26fbd65",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "06/10/16 11:19 AM",
+          "commitNameOld": "72a2ae6452e615c66d10829da38737896814e02b",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 0.08,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,32 @@\n   static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n-      FSPermissionChecker pc, String src,\n-      CryptoProtocolVersion[] supportedVersions)\n+      INodesInPath iip, CryptoProtocolVersion[] supportedVersions)\n       throws IOException {\n     FSDirectory fsd \u003d fsn.getFSDirectory();\n-    INodesInPath iip \u003d fsd.resolvePathForWrite(pc, src);\n     // Nothing to do if the path is not within an EZ\n-    final EncryptionZone zone \u003d FSDirEncryptionZoneOp.getEZForPath(fsd, iip);\n+    final EncryptionZone zone \u003d getEZForPath(fsd, iip);\n     if (zone \u003d\u003d null) {\n+      EncryptionFaultInjector.getInstance().startFileNoKey();\n       return null;\n     }\n     CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n         zone, supportedVersions);\n     CipherSuite suite \u003d zone.getSuite();\n     String ezKeyName \u003d zone.getKeyName();\n \n     Preconditions.checkNotNull(protocolVersion);\n     Preconditions.checkNotNull(suite);\n     Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                 \"Chose an UNKNOWN CipherSuite!\");\n     Preconditions.checkNotNull(ezKeyName);\n-    return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n+\n+    // Generate EDEK while not holding the fsn lock.\n+    fsn.writeUnlock();\n+    try {\n+      EncryptionFaultInjector.getInstance().startFileBeforeGenerateKey();\n+      return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName,\n+          generateEncryptedDataEncryptionKey(fsd, ezKeyName));\n+    } finally {\n+      fsn.writeLock();\n+      EncryptionFaultInjector.getInstance().startFileAfterGenerateKey();\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n      INodesInPath iip, CryptoProtocolVersion[] supportedVersions)\n      throws IOException {\n    FSDirectory fsd \u003d fsn.getFSDirectory();\n    // Nothing to do if the path is not within an EZ\n    final EncryptionZone zone \u003d getEZForPath(fsd, iip);\n    if (zone \u003d\u003d null) {\n      EncryptionFaultInjector.getInstance().startFileNoKey();\n      return null;\n    }\n    CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n        zone, supportedVersions);\n    CipherSuite suite \u003d zone.getSuite();\n    String ezKeyName \u003d zone.getKeyName();\n\n    Preconditions.checkNotNull(protocolVersion);\n    Preconditions.checkNotNull(suite);\n    Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                \"Chose an UNKNOWN CipherSuite!\");\n    Preconditions.checkNotNull(ezKeyName);\n\n    // Generate EDEK while not holding the fsn lock.\n    fsn.writeUnlock();\n    try {\n      EncryptionFaultInjector.getInstance().startFileBeforeGenerateKey();\n      return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName,\n          generateEncryptedDataEncryptionKey(fsd, ezKeyName));\n    } finally {\n      fsn.writeLock();\n      EncryptionFaultInjector.getInstance().startFileAfterGenerateKey();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirEncryptionZoneOp.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirEncryptionZoneOp.java",
+            "oldMethodName": "getEncryptionKeyInfo",
+            "newMethodName": "getEncryptionKeyInfo"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10939. Reduce performance penalty of encryption zones. Contributed by Daryn sharp.\n",
+          "commitDate": "06/10/16 1:11 PM",
+          "commitName": "f32e9fc8f7150f0e889c0774b3ad712af26fbd65",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "06/10/16 11:19 AM",
+          "commitNameOld": "72a2ae6452e615c66d10829da38737896814e02b",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 0.08,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,32 @@\n   static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n-      FSPermissionChecker pc, String src,\n-      CryptoProtocolVersion[] supportedVersions)\n+      INodesInPath iip, CryptoProtocolVersion[] supportedVersions)\n       throws IOException {\n     FSDirectory fsd \u003d fsn.getFSDirectory();\n-    INodesInPath iip \u003d fsd.resolvePathForWrite(pc, src);\n     // Nothing to do if the path is not within an EZ\n-    final EncryptionZone zone \u003d FSDirEncryptionZoneOp.getEZForPath(fsd, iip);\n+    final EncryptionZone zone \u003d getEZForPath(fsd, iip);\n     if (zone \u003d\u003d null) {\n+      EncryptionFaultInjector.getInstance().startFileNoKey();\n       return null;\n     }\n     CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n         zone, supportedVersions);\n     CipherSuite suite \u003d zone.getSuite();\n     String ezKeyName \u003d zone.getKeyName();\n \n     Preconditions.checkNotNull(protocolVersion);\n     Preconditions.checkNotNull(suite);\n     Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                 \"Chose an UNKNOWN CipherSuite!\");\n     Preconditions.checkNotNull(ezKeyName);\n-    return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n+\n+    // Generate EDEK while not holding the fsn lock.\n+    fsn.writeUnlock();\n+    try {\n+      EncryptionFaultInjector.getInstance().startFileBeforeGenerateKey();\n+      return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName,\n+          generateEncryptedDataEncryptionKey(fsd, ezKeyName));\n+    } finally {\n+      fsn.writeLock();\n+      EncryptionFaultInjector.getInstance().startFileAfterGenerateKey();\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n      INodesInPath iip, CryptoProtocolVersion[] supportedVersions)\n      throws IOException {\n    FSDirectory fsd \u003d fsn.getFSDirectory();\n    // Nothing to do if the path is not within an EZ\n    final EncryptionZone zone \u003d getEZForPath(fsd, iip);\n    if (zone \u003d\u003d null) {\n      EncryptionFaultInjector.getInstance().startFileNoKey();\n      return null;\n    }\n    CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n        zone, supportedVersions);\n    CipherSuite suite \u003d zone.getSuite();\n    String ezKeyName \u003d zone.getKeyName();\n\n    Preconditions.checkNotNull(protocolVersion);\n    Preconditions.checkNotNull(suite);\n    Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                \"Chose an UNKNOWN CipherSuite!\");\n    Preconditions.checkNotNull(ezKeyName);\n\n    // Generate EDEK while not holding the fsn lock.\n    fsn.writeUnlock();\n    try {\n      EncryptionFaultInjector.getInstance().startFileBeforeGenerateKey();\n      return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName,\n          generateEncryptedDataEncryptionKey(fsd, ezKeyName));\n    } finally {\n      fsn.writeLock();\n      EncryptionFaultInjector.getInstance().startFileAfterGenerateKey();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirEncryptionZoneOp.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10939. Reduce performance penalty of encryption zones. Contributed by Daryn sharp.\n",
+          "commitDate": "06/10/16 1:11 PM",
+          "commitName": "f32e9fc8f7150f0e889c0774b3ad712af26fbd65",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "06/10/16 11:19 AM",
+          "commitNameOld": "72a2ae6452e615c66d10829da38737896814e02b",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 0.08,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,32 @@\n   static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n-      FSPermissionChecker pc, String src,\n-      CryptoProtocolVersion[] supportedVersions)\n+      INodesInPath iip, CryptoProtocolVersion[] supportedVersions)\n       throws IOException {\n     FSDirectory fsd \u003d fsn.getFSDirectory();\n-    INodesInPath iip \u003d fsd.resolvePathForWrite(pc, src);\n     // Nothing to do if the path is not within an EZ\n-    final EncryptionZone zone \u003d FSDirEncryptionZoneOp.getEZForPath(fsd, iip);\n+    final EncryptionZone zone \u003d getEZForPath(fsd, iip);\n     if (zone \u003d\u003d null) {\n+      EncryptionFaultInjector.getInstance().startFileNoKey();\n       return null;\n     }\n     CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n         zone, supportedVersions);\n     CipherSuite suite \u003d zone.getSuite();\n     String ezKeyName \u003d zone.getKeyName();\n \n     Preconditions.checkNotNull(protocolVersion);\n     Preconditions.checkNotNull(suite);\n     Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                 \"Chose an UNKNOWN CipherSuite!\");\n     Preconditions.checkNotNull(ezKeyName);\n-    return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n+\n+    // Generate EDEK while not holding the fsn lock.\n+    fsn.writeUnlock();\n+    try {\n+      EncryptionFaultInjector.getInstance().startFileBeforeGenerateKey();\n+      return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName,\n+          generateEncryptedDataEncryptionKey(fsd, ezKeyName));\n+    } finally {\n+      fsn.writeLock();\n+      EncryptionFaultInjector.getInstance().startFileAfterGenerateKey();\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n      INodesInPath iip, CryptoProtocolVersion[] supportedVersions)\n      throws IOException {\n    FSDirectory fsd \u003d fsn.getFSDirectory();\n    // Nothing to do if the path is not within an EZ\n    final EncryptionZone zone \u003d getEZForPath(fsd, iip);\n    if (zone \u003d\u003d null) {\n      EncryptionFaultInjector.getInstance().startFileNoKey();\n      return null;\n    }\n    CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n        zone, supportedVersions);\n    CipherSuite suite \u003d zone.getSuite();\n    String ezKeyName \u003d zone.getKeyName();\n\n    Preconditions.checkNotNull(protocolVersion);\n    Preconditions.checkNotNull(suite);\n    Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                \"Chose an UNKNOWN CipherSuite!\");\n    Preconditions.checkNotNull(ezKeyName);\n\n    // Generate EDEK while not holding the fsn lock.\n    fsn.writeUnlock();\n    try {\n      EncryptionFaultInjector.getInstance().startFileBeforeGenerateKey();\n      return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName,\n          generateEncryptedDataEncryptionKey(fsd, ezKeyName));\n    } finally {\n      fsn.writeLock();\n      EncryptionFaultInjector.getInstance().startFileAfterGenerateKey();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirEncryptionZoneOp.java",
+          "extendedDetails": {
+            "oldValue": "[fsn-FSNamesystem, pc-FSPermissionChecker, src-String, supportedVersions-CryptoProtocolVersion[]]",
+            "newValue": "[fsn-FSNamesystem, iip-INodesInPath, supportedVersions-CryptoProtocolVersion[]]"
+          }
+        }
+      ]
+    },
+    "869393643de23dcb010cc33091c8eb398de0fd6c": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10745. Directly resolve paths into INodesInPath. Contributed by Daryn Sharp.\n",
+      "commitDate": "17/08/16 1:53 PM",
+      "commitName": "869393643de23dcb010cc33091c8eb398de0fd6c",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "15/08/16 2:45 PM",
+      "commitNameOld": "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 1.96,
+      "commitsBetweenForRepo": 23,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,23 @@\n   static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n       FSPermissionChecker pc, String src,\n       CryptoProtocolVersion[] supportedVersions)\n       throws IOException {\n     FSDirectory fsd \u003d fsn.getFSDirectory();\n-    src \u003d fsd.resolvePath(pc, src);\n-    INodesInPath iip \u003d fsd.getINodesInPath4Write(src);\n+    INodesInPath iip \u003d fsd.resolvePathForWrite(pc, src);\n     // Nothing to do if the path is not within an EZ\n     final EncryptionZone zone \u003d FSDirEncryptionZoneOp.getEZForPath(fsd, iip);\n     if (zone \u003d\u003d null) {\n       return null;\n     }\n     CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n         zone, supportedVersions);\n     CipherSuite suite \u003d zone.getSuite();\n     String ezKeyName \u003d zone.getKeyName();\n \n     Preconditions.checkNotNull(protocolVersion);\n     Preconditions.checkNotNull(suite);\n     Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                 \"Chose an UNKNOWN CipherSuite!\");\n     Preconditions.checkNotNull(ezKeyName);\n     return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n      FSPermissionChecker pc, String src,\n      CryptoProtocolVersion[] supportedVersions)\n      throws IOException {\n    FSDirectory fsd \u003d fsn.getFSDirectory();\n    INodesInPath iip \u003d fsd.resolvePathForWrite(pc, src);\n    // Nothing to do if the path is not within an EZ\n    final EncryptionZone zone \u003d FSDirEncryptionZoneOp.getEZForPath(fsd, iip);\n    if (zone \u003d\u003d null) {\n      return null;\n    }\n    CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n        zone, supportedVersions);\n    CipherSuite suite \u003d zone.getSuite();\n    String ezKeyName \u003d zone.getKeyName();\n\n    Preconditions.checkNotNull(protocolVersion);\n    Preconditions.checkNotNull(suite);\n    Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                \"Chose an UNKNOWN CipherSuite!\");\n    Preconditions.checkNotNull(ezKeyName);\n    return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp.java",
+      "extendedDetails": {}
+    },
+    "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10744. Internally optimize path component resolution. Contributed by Daryn Sharp.\n",
+      "commitDate": "15/08/16 2:45 PM",
+      "commitName": "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "04/08/16 7:07 AM",
+      "commitNameOld": "6ae39199dac6ac7be6802b31452552c76da16e24",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 11.32,
+      "commitsBetweenForRepo": 73,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,24 @@\n   static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n       FSPermissionChecker pc, String src,\n       CryptoProtocolVersion[] supportedVersions)\n       throws IOException {\n-    byte[][] pathComponents \u003d FSDirectory.getPathComponentsForReservedPath(src);\n     FSDirectory fsd \u003d fsn.getFSDirectory();\n-    src \u003d fsd.resolvePath(pc, src, pathComponents);\n+    src \u003d fsd.resolvePath(pc, src);\n     INodesInPath iip \u003d fsd.getINodesInPath4Write(src);\n     // Nothing to do if the path is not within an EZ\n     final EncryptionZone zone \u003d FSDirEncryptionZoneOp.getEZForPath(fsd, iip);\n     if (zone \u003d\u003d null) {\n       return null;\n     }\n     CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n         zone, supportedVersions);\n     CipherSuite suite \u003d zone.getSuite();\n     String ezKeyName \u003d zone.getKeyName();\n \n     Preconditions.checkNotNull(protocolVersion);\n     Preconditions.checkNotNull(suite);\n     Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                 \"Chose an UNKNOWN CipherSuite!\");\n     Preconditions.checkNotNull(ezKeyName);\n     return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n      FSPermissionChecker pc, String src,\n      CryptoProtocolVersion[] supportedVersions)\n      throws IOException {\n    FSDirectory fsd \u003d fsn.getFSDirectory();\n    src \u003d fsd.resolvePath(pc, src);\n    INodesInPath iip \u003d fsd.getINodesInPath4Write(src);\n    // Nothing to do if the path is not within an EZ\n    final EncryptionZone zone \u003d FSDirEncryptionZoneOp.getEZForPath(fsd, iip);\n    if (zone \u003d\u003d null) {\n      return null;\n    }\n    CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n        zone, supportedVersions);\n    CipherSuite suite \u003d zone.getSuite();\n    String ezKeyName \u003d zone.getKeyName();\n\n    Preconditions.checkNotNull(protocolVersion);\n    Preconditions.checkNotNull(suite);\n    Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                \"Chose an UNKNOWN CipherSuite!\");\n    Preconditions.checkNotNull(ezKeyName);\n    return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp.java",
+      "extendedDetails": {}
+    },
+    "71a81b6257c0000475ad62eb69292a20d45d269c": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7529. Consolidate encryption zone related implementation into a single class. Contributed by Rakesh R.\n",
+      "commitDate": "24/09/15 8:34 AM",
+      "commitName": "71a81b6257c0000475ad62eb69292a20d45d269c",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "24/08/15 3:53 PM",
+      "commitNameOld": "bdd79388f39f4f35af7decd5703eff587b0ddfb7",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 30.7,
+      "commitsBetweenForRepo": 199,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,25 @@\n   static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n       FSPermissionChecker pc, String src,\n       CryptoProtocolVersion[] supportedVersions)\n       throws IOException {\n     byte[][] pathComponents \u003d FSDirectory.getPathComponentsForReservedPath(src);\n     FSDirectory fsd \u003d fsn.getFSDirectory();\n     src \u003d fsd.resolvePath(pc, src, pathComponents);\n     INodesInPath iip \u003d fsd.getINodesInPath4Write(src);\n     // Nothing to do if the path is not within an EZ\n-    final EncryptionZone zone \u003d fsd.getEZForPath(iip);\n+    final EncryptionZone zone \u003d FSDirEncryptionZoneOp.getEZForPath(fsd, iip);\n     if (zone \u003d\u003d null) {\n       return null;\n     }\n     CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n         zone, supportedVersions);\n     CipherSuite suite \u003d zone.getSuite();\n     String ezKeyName \u003d zone.getKeyName();\n \n     Preconditions.checkNotNull(protocolVersion);\n     Preconditions.checkNotNull(suite);\n     Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                 \"Chose an UNKNOWN CipherSuite!\");\n     Preconditions.checkNotNull(ezKeyName);\n     return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n      FSPermissionChecker pc, String src,\n      CryptoProtocolVersion[] supportedVersions)\n      throws IOException {\n    byte[][] pathComponents \u003d FSDirectory.getPathComponentsForReservedPath(src);\n    FSDirectory fsd \u003d fsn.getFSDirectory();\n    src \u003d fsd.resolvePath(pc, src, pathComponents);\n    INodesInPath iip \u003d fsd.getINodesInPath4Write(src);\n    // Nothing to do if the path is not within an EZ\n    final EncryptionZone zone \u003d FSDirEncryptionZoneOp.getEZForPath(fsd, iip);\n    if (zone \u003d\u003d null) {\n      return null;\n    }\n    CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n        zone, supportedVersions);\n    CipherSuite suite \u003d zone.getSuite();\n    String ezKeyName \u003d zone.getKeyName();\n\n    Preconditions.checkNotNull(protocolVersion);\n    Preconditions.checkNotNull(suite);\n    Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                \"Chose an UNKNOWN CipherSuite!\");\n    Preconditions.checkNotNull(ezKeyName);\n    return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp.java",
+      "extendedDetails": {}
+    },
+    "2b6bcfdafa91223a4116e3e9304579f5f91dccac": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-8421. Move startFile() and related functions into FSDirWriteFileOp. Contributed by Haohui Mai.\n",
+      "commitDate": "21/05/15 8:08 AM",
+      "commitName": "2b6bcfdafa91223a4116e3e9304579f5f91dccac",
+      "commitAuthor": "Haohui Mai",
+      "diff": "@@ -0,0 +1,25 @@\n+  static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n+      FSPermissionChecker pc, String src,\n+      CryptoProtocolVersion[] supportedVersions)\n+      throws IOException {\n+    byte[][] pathComponents \u003d FSDirectory.getPathComponentsForReservedPath(src);\n+    FSDirectory fsd \u003d fsn.getFSDirectory();\n+    src \u003d fsd.resolvePath(pc, src, pathComponents);\n+    INodesInPath iip \u003d fsd.getINodesInPath4Write(src);\n+    // Nothing to do if the path is not within an EZ\n+    final EncryptionZone zone \u003d fsd.getEZForPath(iip);\n+    if (zone \u003d\u003d null) {\n+      return null;\n+    }\n+    CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n+        zone, supportedVersions);\n+    CipherSuite suite \u003d zone.getSuite();\n+    String ezKeyName \u003d zone.getKeyName();\n+\n+    Preconditions.checkNotNull(protocolVersion);\n+    Preconditions.checkNotNull(suite);\n+    Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n+                                \"Chose an UNKNOWN CipherSuite!\");\n+    Preconditions.checkNotNull(ezKeyName);\n+    return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static EncryptionKeyInfo getEncryptionKeyInfo(FSNamesystem fsn,\n      FSPermissionChecker pc, String src,\n      CryptoProtocolVersion[] supportedVersions)\n      throws IOException {\n    byte[][] pathComponents \u003d FSDirectory.getPathComponentsForReservedPath(src);\n    FSDirectory fsd \u003d fsn.getFSDirectory();\n    src \u003d fsd.resolvePath(pc, src, pathComponents);\n    INodesInPath iip \u003d fsd.getINodesInPath4Write(src);\n    // Nothing to do if the path is not within an EZ\n    final EncryptionZone zone \u003d fsd.getEZForPath(iip);\n    if (zone \u003d\u003d null) {\n      return null;\n    }\n    CryptoProtocolVersion protocolVersion \u003d fsn.chooseProtocolVersion(\n        zone, supportedVersions);\n    CipherSuite suite \u003d zone.getSuite();\n    String ezKeyName \u003d zone.getKeyName();\n\n    Preconditions.checkNotNull(protocolVersion);\n    Preconditions.checkNotNull(suite);\n    Preconditions.checkArgument(!suite.equals(CipherSuite.UNKNOWN),\n                                \"Chose an UNKNOWN CipherSuite!\");\n    Preconditions.checkNotNull(ezKeyName);\n    return new EncryptionKeyInfo(protocolVersion, suite, ezKeyName);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirWriteFileOp.java"
+    }
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PageBlobInputStream.java",
+  "functionName": "validateDataIntegrity",
+  "functionId": "validateDataIntegrity___buffer-byte[]",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobInputStream.java",
+  "functionStartLine": 228,
+  "functionEndLine": 260,
+  "numCommitsSeen": 9,
+  "timeTaken": 4140,
+  "changeHistory": [
+    "5b11b9fd413470e134ecdc7c50468f8c7b39fa50",
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40"
+  ],
+  "changeHistoryShort": {
+    "5b11b9fd413470e134ecdc7c50468f8c7b39fa50": "Ymultichange(Yrename,Yparameterchange,Ybodychange)",
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5b11b9fd413470e134ecdc7c50468f8c7b39fa50": {
+      "type": "Ymultichange(Yrename,Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-15446. WASB: PageBlobInputStream.skip breaks HBASE replication.\nContributed by Thomas Marquardt\n",
+      "commitDate": "07/05/18 3:54 AM",
+      "commitName": "5b11b9fd413470e134ecdc7c50468f8c7b39fa50",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HADOOP-15446. WASB: PageBlobInputStream.skip breaks HBASE replication.\nContributed by Thomas Marquardt\n",
+          "commitDate": "07/05/18 3:54 AM",
+          "commitName": "5b11b9fd413470e134ecdc7c50468f8c7b39fa50",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "28/11/17 3:52 AM",
+          "commitNameOld": "0ea182d0faa35c726dcb37249d48786bfc8ca04c",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 159.96,
+          "commitsBetweenForRepo": 1638,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,33 @@\n-  private void validateCurrentBufferConsistency()\n+  private void validateDataIntegrity(byte[] buffer)\n       throws IOException {\n-    if (currentBuffer.length % PAGE_SIZE !\u003d 0) {\n+\n+    if (buffer.length % PAGE_SIZE !\u003d 0) {\n       throw new AssertionError(\"Unexpected buffer size: \" \n-      + currentBuffer.length);\n+      + buffer.length);\n     }\n-    int numberOfPages \u003d currentBuffer.length / PAGE_SIZE;\n+\n+    int bufferLength \u003d 0;\n+    int numberOfPages \u003d buffer.length / PAGE_SIZE;\n+    long totalPagesAfterCurrent \u003d numberOfPagesRemaining;\n+\n     for (int page \u003d 0; page \u003c numberOfPages; page++) {\n-      short currentPageSize \u003d getPageSize(blob, currentBuffer,\n-          page * PAGE_SIZE);\n-      // Calculate the number of pages that exist after this one\n-      // in the blob.\n-      long totalPagesAfterCurrent \u003d\n-          (numberOfPages - page - 1) + numberOfPagesRemaining;\n-      // Only the last page is allowed to be not filled completely.\n-      if (currentPageSize \u003c PAGE_DATA_SIZE \n+      // Calculate the number of pages that exist in the blob after this one\n+      totalPagesAfterCurrent--;\n+\n+      short currentPageSize \u003d getPageSize(blob, buffer, page * PAGE_SIZE);\n+\n+      // Only the last page can be partially filled.\n+      if (currentPageSize \u003c PAGE_DATA_SIZE\n           \u0026\u0026 totalPagesAfterCurrent \u003e 0) {\n         throw fileCorruptException(blob, String.format(\n-            \"Page with partial data found in the middle (%d pages from the\" \n-            + \" end) that only has %d bytes of data.\",\n-            totalPagesAfterCurrent, currentPageSize));\n+            \"Page with partial data found in the middle (%d pages from the\"\n+             + \" end) that only has %d bytes of data.\",\n+             totalPagesAfterCurrent, currentPageSize));\n       }\n+      bufferLength +\u003d currentPageSize + PAGE_HEADER_SIZE;\n     }\n+\n+    currentBufferOffset \u003d PAGE_HEADER_SIZE;\n+    currentBufferLength \u003d bufferLength;\n+    currentBuffer \u003d buffer;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void validateDataIntegrity(byte[] buffer)\n      throws IOException {\n\n    if (buffer.length % PAGE_SIZE !\u003d 0) {\n      throw new AssertionError(\"Unexpected buffer size: \" \n      + buffer.length);\n    }\n\n    int bufferLength \u003d 0;\n    int numberOfPages \u003d buffer.length / PAGE_SIZE;\n    long totalPagesAfterCurrent \u003d numberOfPagesRemaining;\n\n    for (int page \u003d 0; page \u003c numberOfPages; page++) {\n      // Calculate the number of pages that exist in the blob after this one\n      totalPagesAfterCurrent--;\n\n      short currentPageSize \u003d getPageSize(blob, buffer, page * PAGE_SIZE);\n\n      // Only the last page can be partially filled.\n      if (currentPageSize \u003c PAGE_DATA_SIZE\n          \u0026\u0026 totalPagesAfterCurrent \u003e 0) {\n        throw fileCorruptException(blob, String.format(\n            \"Page with partial data found in the middle (%d pages from the\"\n             + \" end) that only has %d bytes of data.\",\n             totalPagesAfterCurrent, currentPageSize));\n      }\n      bufferLength +\u003d currentPageSize + PAGE_HEADER_SIZE;\n    }\n\n    currentBufferOffset \u003d PAGE_HEADER_SIZE;\n    currentBufferLength \u003d bufferLength;\n    currentBuffer \u003d buffer;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobInputStream.java",
+          "extendedDetails": {
+            "oldValue": "validateCurrentBufferConsistency",
+            "newValue": "validateDataIntegrity"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-15446. WASB: PageBlobInputStream.skip breaks HBASE replication.\nContributed by Thomas Marquardt\n",
+          "commitDate": "07/05/18 3:54 AM",
+          "commitName": "5b11b9fd413470e134ecdc7c50468f8c7b39fa50",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "28/11/17 3:52 AM",
+          "commitNameOld": "0ea182d0faa35c726dcb37249d48786bfc8ca04c",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 159.96,
+          "commitsBetweenForRepo": 1638,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,33 @@\n-  private void validateCurrentBufferConsistency()\n+  private void validateDataIntegrity(byte[] buffer)\n       throws IOException {\n-    if (currentBuffer.length % PAGE_SIZE !\u003d 0) {\n+\n+    if (buffer.length % PAGE_SIZE !\u003d 0) {\n       throw new AssertionError(\"Unexpected buffer size: \" \n-      + currentBuffer.length);\n+      + buffer.length);\n     }\n-    int numberOfPages \u003d currentBuffer.length / PAGE_SIZE;\n+\n+    int bufferLength \u003d 0;\n+    int numberOfPages \u003d buffer.length / PAGE_SIZE;\n+    long totalPagesAfterCurrent \u003d numberOfPagesRemaining;\n+\n     for (int page \u003d 0; page \u003c numberOfPages; page++) {\n-      short currentPageSize \u003d getPageSize(blob, currentBuffer,\n-          page * PAGE_SIZE);\n-      // Calculate the number of pages that exist after this one\n-      // in the blob.\n-      long totalPagesAfterCurrent \u003d\n-          (numberOfPages - page - 1) + numberOfPagesRemaining;\n-      // Only the last page is allowed to be not filled completely.\n-      if (currentPageSize \u003c PAGE_DATA_SIZE \n+      // Calculate the number of pages that exist in the blob after this one\n+      totalPagesAfterCurrent--;\n+\n+      short currentPageSize \u003d getPageSize(blob, buffer, page * PAGE_SIZE);\n+\n+      // Only the last page can be partially filled.\n+      if (currentPageSize \u003c PAGE_DATA_SIZE\n           \u0026\u0026 totalPagesAfterCurrent \u003e 0) {\n         throw fileCorruptException(blob, String.format(\n-            \"Page with partial data found in the middle (%d pages from the\" \n-            + \" end) that only has %d bytes of data.\",\n-            totalPagesAfterCurrent, currentPageSize));\n+            \"Page with partial data found in the middle (%d pages from the\"\n+             + \" end) that only has %d bytes of data.\",\n+             totalPagesAfterCurrent, currentPageSize));\n       }\n+      bufferLength +\u003d currentPageSize + PAGE_HEADER_SIZE;\n     }\n+\n+    currentBufferOffset \u003d PAGE_HEADER_SIZE;\n+    currentBufferLength \u003d bufferLength;\n+    currentBuffer \u003d buffer;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void validateDataIntegrity(byte[] buffer)\n      throws IOException {\n\n    if (buffer.length % PAGE_SIZE !\u003d 0) {\n      throw new AssertionError(\"Unexpected buffer size: \" \n      + buffer.length);\n    }\n\n    int bufferLength \u003d 0;\n    int numberOfPages \u003d buffer.length / PAGE_SIZE;\n    long totalPagesAfterCurrent \u003d numberOfPagesRemaining;\n\n    for (int page \u003d 0; page \u003c numberOfPages; page++) {\n      // Calculate the number of pages that exist in the blob after this one\n      totalPagesAfterCurrent--;\n\n      short currentPageSize \u003d getPageSize(blob, buffer, page * PAGE_SIZE);\n\n      // Only the last page can be partially filled.\n      if (currentPageSize \u003c PAGE_DATA_SIZE\n          \u0026\u0026 totalPagesAfterCurrent \u003e 0) {\n        throw fileCorruptException(blob, String.format(\n            \"Page with partial data found in the middle (%d pages from the\"\n             + \" end) that only has %d bytes of data.\",\n             totalPagesAfterCurrent, currentPageSize));\n      }\n      bufferLength +\u003d currentPageSize + PAGE_HEADER_SIZE;\n    }\n\n    currentBufferOffset \u003d PAGE_HEADER_SIZE;\n    currentBufferLength \u003d bufferLength;\n    currentBuffer \u003d buffer;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobInputStream.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[buffer-byte[]]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15446. WASB: PageBlobInputStream.skip breaks HBASE replication.\nContributed by Thomas Marquardt\n",
+          "commitDate": "07/05/18 3:54 AM",
+          "commitName": "5b11b9fd413470e134ecdc7c50468f8c7b39fa50",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "28/11/17 3:52 AM",
+          "commitNameOld": "0ea182d0faa35c726dcb37249d48786bfc8ca04c",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 159.96,
+          "commitsBetweenForRepo": 1638,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,33 @@\n-  private void validateCurrentBufferConsistency()\n+  private void validateDataIntegrity(byte[] buffer)\n       throws IOException {\n-    if (currentBuffer.length % PAGE_SIZE !\u003d 0) {\n+\n+    if (buffer.length % PAGE_SIZE !\u003d 0) {\n       throw new AssertionError(\"Unexpected buffer size: \" \n-      + currentBuffer.length);\n+      + buffer.length);\n     }\n-    int numberOfPages \u003d currentBuffer.length / PAGE_SIZE;\n+\n+    int bufferLength \u003d 0;\n+    int numberOfPages \u003d buffer.length / PAGE_SIZE;\n+    long totalPagesAfterCurrent \u003d numberOfPagesRemaining;\n+\n     for (int page \u003d 0; page \u003c numberOfPages; page++) {\n-      short currentPageSize \u003d getPageSize(blob, currentBuffer,\n-          page * PAGE_SIZE);\n-      // Calculate the number of pages that exist after this one\n-      // in the blob.\n-      long totalPagesAfterCurrent \u003d\n-          (numberOfPages - page - 1) + numberOfPagesRemaining;\n-      // Only the last page is allowed to be not filled completely.\n-      if (currentPageSize \u003c PAGE_DATA_SIZE \n+      // Calculate the number of pages that exist in the blob after this one\n+      totalPagesAfterCurrent--;\n+\n+      short currentPageSize \u003d getPageSize(blob, buffer, page * PAGE_SIZE);\n+\n+      // Only the last page can be partially filled.\n+      if (currentPageSize \u003c PAGE_DATA_SIZE\n           \u0026\u0026 totalPagesAfterCurrent \u003e 0) {\n         throw fileCorruptException(blob, String.format(\n-            \"Page with partial data found in the middle (%d pages from the\" \n-            + \" end) that only has %d bytes of data.\",\n-            totalPagesAfterCurrent, currentPageSize));\n+            \"Page with partial data found in the middle (%d pages from the\"\n+             + \" end) that only has %d bytes of data.\",\n+             totalPagesAfterCurrent, currentPageSize));\n       }\n+      bufferLength +\u003d currentPageSize + PAGE_HEADER_SIZE;\n     }\n+\n+    currentBufferOffset \u003d PAGE_HEADER_SIZE;\n+    currentBufferLength \u003d bufferLength;\n+    currentBuffer \u003d buffer;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void validateDataIntegrity(byte[] buffer)\n      throws IOException {\n\n    if (buffer.length % PAGE_SIZE !\u003d 0) {\n      throw new AssertionError(\"Unexpected buffer size: \" \n      + buffer.length);\n    }\n\n    int bufferLength \u003d 0;\n    int numberOfPages \u003d buffer.length / PAGE_SIZE;\n    long totalPagesAfterCurrent \u003d numberOfPagesRemaining;\n\n    for (int page \u003d 0; page \u003c numberOfPages; page++) {\n      // Calculate the number of pages that exist in the blob after this one\n      totalPagesAfterCurrent--;\n\n      short currentPageSize \u003d getPageSize(blob, buffer, page * PAGE_SIZE);\n\n      // Only the last page can be partially filled.\n      if (currentPageSize \u003c PAGE_DATA_SIZE\n          \u0026\u0026 totalPagesAfterCurrent \u003e 0) {\n        throw fileCorruptException(blob, String.format(\n            \"Page with partial data found in the middle (%d pages from the\"\n             + \" end) that only has %d bytes of data.\",\n             totalPagesAfterCurrent, currentPageSize));\n      }\n      bufferLength +\u003d currentPageSize + PAGE_HEADER_SIZE;\n    }\n\n    currentBufferOffset \u003d PAGE_HEADER_SIZE;\n    currentBufferLength \u003d bufferLength;\n    currentBuffer \u003d buffer;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobInputStream.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10809. hadoop-azure: page blob support. Contributed by Dexter Bradshaw, Mostafa Elhemali, Eric Hanson, and Mike Liddell.\n",
+      "commitDate": "08/10/14 2:20 PM",
+      "commitName": "2217e2f8ff418b88eac6ad36cafe3a9795a11f40",
+      "commitAuthor": "cnauroth",
+      "diff": "@@ -0,0 +1,24 @@\n+  private void validateCurrentBufferConsistency()\n+      throws IOException {\n+    if (currentBuffer.length % PAGE_SIZE !\u003d 0) {\n+      throw new AssertionError(\"Unexpected buffer size: \" \n+      + currentBuffer.length);\n+    }\n+    int numberOfPages \u003d currentBuffer.length / PAGE_SIZE;\n+    for (int page \u003d 0; page \u003c numberOfPages; page++) {\n+      short currentPageSize \u003d getPageSize(blob, currentBuffer,\n+          page * PAGE_SIZE);\n+      // Calculate the number of pages that exist after this one\n+      // in the blob.\n+      long totalPagesAfterCurrent \u003d\n+          (numberOfPages - page - 1) + numberOfPagesRemaining;\n+      // Only the last page is allowed to be not filled completely.\n+      if (currentPageSize \u003c PAGE_DATA_SIZE \n+          \u0026\u0026 totalPagesAfterCurrent \u003e 0) {\n+        throw fileCorruptException(blob, String.format(\n+            \"Page with partial data found in the middle (%d pages from the\" \n+            + \" end) that only has %d bytes of data.\",\n+            totalPagesAfterCurrent, currentPageSize));\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void validateCurrentBufferConsistency()\n      throws IOException {\n    if (currentBuffer.length % PAGE_SIZE !\u003d 0) {\n      throw new AssertionError(\"Unexpected buffer size: \" \n      + currentBuffer.length);\n    }\n    int numberOfPages \u003d currentBuffer.length / PAGE_SIZE;\n    for (int page \u003d 0; page \u003c numberOfPages; page++) {\n      short currentPageSize \u003d getPageSize(blob, currentBuffer,\n          page * PAGE_SIZE);\n      // Calculate the number of pages that exist after this one\n      // in the blob.\n      long totalPagesAfterCurrent \u003d\n          (numberOfPages - page - 1) + numberOfPagesRemaining;\n      // Only the last page is allowed to be not filled completely.\n      if (currentPageSize \u003c PAGE_DATA_SIZE \n          \u0026\u0026 totalPagesAfterCurrent \u003e 0) {\n        throw fileCorruptException(blob, String.format(\n            \"Page with partial data found in the middle (%d pages from the\" \n            + \" end) that only has %d bytes of data.\",\n            totalPagesAfterCurrent, currentPageSize));\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobInputStream.java"
+    }
+  }
+}

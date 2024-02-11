@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AliyunOSSFileReaderTask.java",
+  "functionName": "run",
+  "functionId": "run",
+  "sourceFilePath": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSFileReaderTask.java",
+  "functionStartLine": 68,
+  "functionEndLine": 108,
+  "numCommitsSeen": 1,
+  "timeTaken": 513,
+  "changeHistory": [
+    "9195a6e302028ed3921d1016ac2fa5754f06ebf0"
+  ],
+  "changeHistoryShort": {
+    "9195a6e302028ed3921d1016ac2fa5754f06ebf0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9195a6e302028ed3921d1016ac2fa5754f06ebf0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15027. AliyunOSS: Support multi-thread pre-read to improve sequential read from Hadoop to Aliyun OSS performance. (Contributed by Jinhu Wu)\n",
+      "commitDate": "16/01/18 11:55 PM",
+      "commitName": "9195a6e302028ed3921d1016ac2fa5754f06ebf0",
+      "commitAuthor": "Sammi Chen",
+      "diff": "@@ -0,0 +1,41 @@\n+  public void run() {\n+    int retries \u003d 0;\n+    readBuffer.lock();\n+    try {\n+      while (true) {\n+        try (InputStream in \u003d store.retrieve(\n+            key, readBuffer.getByteStart(), readBuffer.getByteEnd())) {\n+          IOUtils.readFully(in, readBuffer.getBuffer(),\n+              0, readBuffer.getBuffer().length);\n+          readBuffer.setStatus(ReadBuffer.STATUS.SUCCESS);\n+          break;\n+        } catch (Exception e) {\n+          LOG.warn(\"Exception thrown when retrieve key: \"\n+              + this.key + \", exception: \" + e);\n+          try {\n+            RetryPolicy.RetryAction rc \u003d retryPolicy.shouldRetry(\n+                e, retries++, 0, true);\n+            if (rc.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.RETRY) {\n+              Thread.sleep(rc.delayMillis);\n+            } else {\n+              //should not retry\n+              break;\n+            }\n+          } catch (Exception ex) {\n+            //FAIL\n+            LOG.warn(\"Exception thrown when call shouldRetry, exception \" + ex);\n+            break;\n+          }\n+        }\n+      }\n+\n+      if (readBuffer.getStatus() !\u003d ReadBuffer.STATUS.SUCCESS) {\n+        readBuffer.setStatus(ReadBuffer.STATUS.ERROR);\n+      }\n+\n+      //notify main thread which wait for this buffer\n+      readBuffer.signalAll();\n+    } finally {\n+      readBuffer.unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void run() {\n    int retries \u003d 0;\n    readBuffer.lock();\n    try {\n      while (true) {\n        try (InputStream in \u003d store.retrieve(\n            key, readBuffer.getByteStart(), readBuffer.getByteEnd())) {\n          IOUtils.readFully(in, readBuffer.getBuffer(),\n              0, readBuffer.getBuffer().length);\n          readBuffer.setStatus(ReadBuffer.STATUS.SUCCESS);\n          break;\n        } catch (Exception e) {\n          LOG.warn(\"Exception thrown when retrieve key: \"\n              + this.key + \", exception: \" + e);\n          try {\n            RetryPolicy.RetryAction rc \u003d retryPolicy.shouldRetry(\n                e, retries++, 0, true);\n            if (rc.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.RETRY) {\n              Thread.sleep(rc.delayMillis);\n            } else {\n              //should not retry\n              break;\n            }\n          } catch (Exception ex) {\n            //FAIL\n            LOG.warn(\"Exception thrown when call shouldRetry, exception \" + ex);\n            break;\n          }\n        }\n      }\n\n      if (readBuffer.getStatus() !\u003d ReadBuffer.STATUS.SUCCESS) {\n        readBuffer.setStatus(ReadBuffer.STATUS.ERROR);\n      }\n\n      //notify main thread which wait for this buffer\n      readBuffer.signalAll();\n    } finally {\n      readBuffer.unlock();\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSFileReaderTask.java"
+    }
+  }
+}

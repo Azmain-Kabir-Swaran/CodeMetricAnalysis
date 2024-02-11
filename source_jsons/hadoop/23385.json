@@ -1,0 +1,95 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "OracleDBRecordReader.java",
+  "functionName": "getSelectQuery",
+  "functionId": "getSelectQuery",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/db/OracleDBRecordReader.java",
+  "functionStartLine": 53,
+  "functionEndLine": 99,
+  "numCommitsSeen": 5,
+  "timeTaken": 4372,
+  "changeHistory": [
+    "73325f23f691e93cf88a445ce8bb0f94b7b2cfbf",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "73325f23f691e93cf88a445ce8bb0f94b7b2cfbf": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "73325f23f691e93cf88a445ce8bb0f94b7b2cfbf": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6012. DBInputSplit creates invalid ranges on Oracle. (Wei Yan via kasha)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1618694 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/14 11:25 AM",
+      "commitName": "73325f23f691e93cf88a445ce8bb0f94b7b2cfbf",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "24/08/11 5:14 PM",
+      "commitNameOld": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 1089.76,
+      "commitsBetweenForRepo": 7010,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,48 +1,47 @@\n   protected String getSelectQuery() {\n     StringBuilder query \u003d new StringBuilder();\n     DBConfiguration dbConf \u003d getDBConf();\n     String conditions \u003d getConditions();\n     String tableName \u003d getTableName();\n     String [] fieldNames \u003d getFieldNames();\n \n     // Oracle-specific codepath to use rownum instead of LIMIT/OFFSET.\n     if(dbConf.getInputQuery() \u003d\u003d null) {\n       query.append(\"SELECT \");\n   \n       for (int i \u003d 0; i \u003c fieldNames.length; i++) {\n         query.append(fieldNames[i]);\n         if (i !\u003d fieldNames.length -1) {\n           query.append(\", \");\n         }\n       }\n   \n       query.append(\" FROM \").append(tableName);\n       if (conditions !\u003d null \u0026\u0026 conditions.length() \u003e 0)\n         query.append(\" WHERE \").append(conditions);\n       String orderBy \u003d dbConf.getInputOrderBy();\n       if (orderBy !\u003d null \u0026\u0026 orderBy.length() \u003e 0) {\n         query.append(\" ORDER BY \").append(orderBy);\n       }\n     } else {\n       //PREBUILT QUERY\n       query.append(dbConf.getInputQuery());\n     }\n         \n     try {\n       DBInputFormat.DBInputSplit split \u003d getSplit();\n-      if (split.getLength() \u003e 0 \u0026\u0026 split.getStart() \u003e 0){\n+      if (split.getLength() \u003e 0){\n         String querystring \u003d query.toString();\n \n         query \u003d new StringBuilder();\n         query.append(\"SELECT * FROM (SELECT a.*,ROWNUM dbif_rno FROM ( \");\n         query.append(querystring);\n-        query.append(\" ) a WHERE rownum \u003c\u003d \").append(split.getStart());\n-        query.append(\" + \").append(split.getLength());\n-        query.append(\" ) WHERE dbif_rno \u003e\u003d \").append(split.getStart());\n+        query.append(\" ) a WHERE rownum \u003c\u003d \").append(split.getEnd());\n+        query.append(\" ) WHERE dbif_rno \u003e \").append(split.getStart());\n       }\n     } catch (IOException ex) {\n       // ignore, will not throw.\n     }\t\t      \n \n     return query.toString();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected String getSelectQuery() {\n    StringBuilder query \u003d new StringBuilder();\n    DBConfiguration dbConf \u003d getDBConf();\n    String conditions \u003d getConditions();\n    String tableName \u003d getTableName();\n    String [] fieldNames \u003d getFieldNames();\n\n    // Oracle-specific codepath to use rownum instead of LIMIT/OFFSET.\n    if(dbConf.getInputQuery() \u003d\u003d null) {\n      query.append(\"SELECT \");\n  \n      for (int i \u003d 0; i \u003c fieldNames.length; i++) {\n        query.append(fieldNames[i]);\n        if (i !\u003d fieldNames.length -1) {\n          query.append(\", \");\n        }\n      }\n  \n      query.append(\" FROM \").append(tableName);\n      if (conditions !\u003d null \u0026\u0026 conditions.length() \u003e 0)\n        query.append(\" WHERE \").append(conditions);\n      String orderBy \u003d dbConf.getInputOrderBy();\n      if (orderBy !\u003d null \u0026\u0026 orderBy.length() \u003e 0) {\n        query.append(\" ORDER BY \").append(orderBy);\n      }\n    } else {\n      //PREBUILT QUERY\n      query.append(dbConf.getInputQuery());\n    }\n        \n    try {\n      DBInputFormat.DBInputSplit split \u003d getSplit();\n      if (split.getLength() \u003e 0){\n        String querystring \u003d query.toString();\n\n        query \u003d new StringBuilder();\n        query.append(\"SELECT * FROM (SELECT a.*,ROWNUM dbif_rno FROM ( \");\n        query.append(querystring);\n        query.append(\" ) a WHERE rownum \u003c\u003d \").append(split.getEnd());\n        query.append(\" ) WHERE dbif_rno \u003e \").append(split.getStart());\n      }\n    } catch (IOException ex) {\n      // ignore, will not throw.\n    }\t\t      \n\n    return query.toString();\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/db/OracleDBRecordReader.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  protected String getSelectQuery() {\n    StringBuilder query \u003d new StringBuilder();\n    DBConfiguration dbConf \u003d getDBConf();\n    String conditions \u003d getConditions();\n    String tableName \u003d getTableName();\n    String [] fieldNames \u003d getFieldNames();\n\n    // Oracle-specific codepath to use rownum instead of LIMIT/OFFSET.\n    if(dbConf.getInputQuery() \u003d\u003d null) {\n      query.append(\"SELECT \");\n  \n      for (int i \u003d 0; i \u003c fieldNames.length; i++) {\n        query.append(fieldNames[i]);\n        if (i !\u003d fieldNames.length -1) {\n          query.append(\", \");\n        }\n      }\n  \n      query.append(\" FROM \").append(tableName);\n      if (conditions !\u003d null \u0026\u0026 conditions.length() \u003e 0)\n        query.append(\" WHERE \").append(conditions);\n      String orderBy \u003d dbConf.getInputOrderBy();\n      if (orderBy !\u003d null \u0026\u0026 orderBy.length() \u003e 0) {\n        query.append(\" ORDER BY \").append(orderBy);\n      }\n    } else {\n      //PREBUILT QUERY\n      query.append(dbConf.getInputQuery());\n    }\n        \n    try {\n      DBInputFormat.DBInputSplit split \u003d getSplit();\n      if (split.getLength() \u003e 0 \u0026\u0026 split.getStart() \u003e 0){\n        String querystring \u003d query.toString();\n\n        query \u003d new StringBuilder();\n        query.append(\"SELECT * FROM (SELECT a.*,ROWNUM dbif_rno FROM ( \");\n        query.append(querystring);\n        query.append(\" ) a WHERE rownum \u003c\u003d \").append(split.getStart());\n        query.append(\" + \").append(split.getLength());\n        query.append(\" ) WHERE dbif_rno \u003e\u003d \").append(split.getStart());\n      }\n    } catch (IOException ex) {\n      // ignore, will not throw.\n    }\t\t      \n\n    return query.toString();\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/db/OracleDBRecordReader.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/db/OracleDBRecordReader.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/db/OracleDBRecordReader.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yfilerename",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "17/08/11 8:02 PM",
+      "commitNameOld": "dd86860633d2ed64705b669a75bf318442ed6225",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 0.34,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  protected String getSelectQuery() {\n    StringBuilder query \u003d new StringBuilder();\n    DBConfiguration dbConf \u003d getDBConf();\n    String conditions \u003d getConditions();\n    String tableName \u003d getTableName();\n    String [] fieldNames \u003d getFieldNames();\n\n    // Oracle-specific codepath to use rownum instead of LIMIT/OFFSET.\n    if(dbConf.getInputQuery() \u003d\u003d null) {\n      query.append(\"SELECT \");\n  \n      for (int i \u003d 0; i \u003c fieldNames.length; i++) {\n        query.append(fieldNames[i]);\n        if (i !\u003d fieldNames.length -1) {\n          query.append(\", \");\n        }\n      }\n  \n      query.append(\" FROM \").append(tableName);\n      if (conditions !\u003d null \u0026\u0026 conditions.length() \u003e 0)\n        query.append(\" WHERE \").append(conditions);\n      String orderBy \u003d dbConf.getInputOrderBy();\n      if (orderBy !\u003d null \u0026\u0026 orderBy.length() \u003e 0) {\n        query.append(\" ORDER BY \").append(orderBy);\n      }\n    } else {\n      //PREBUILT QUERY\n      query.append(dbConf.getInputQuery());\n    }\n        \n    try {\n      DBInputFormat.DBInputSplit split \u003d getSplit();\n      if (split.getLength() \u003e 0 \u0026\u0026 split.getStart() \u003e 0){\n        String querystring \u003d query.toString();\n\n        query \u003d new StringBuilder();\n        query.append(\"SELECT * FROM (SELECT a.*,ROWNUM dbif_rno FROM ( \");\n        query.append(querystring);\n        query.append(\" ) a WHERE rownum \u003c\u003d \").append(split.getStart());\n        query.append(\" + \").append(split.getLength());\n        query.append(\" ) WHERE dbif_rno \u003e\u003d \").append(split.getStart());\n      }\n    } catch (IOException ex) {\n      // ignore, will not throw.\n    }\t\t      \n\n    return query.toString();\n  }",
+      "path": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/db/OracleDBRecordReader.java",
+      "extendedDetails": {
+        "oldPath": "mapreduce/src/java/org/apache/hadoop/mapreduce/lib/db/OracleDBRecordReader.java",
+        "newPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/db/OracleDBRecordReader.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,48 @@\n+  protected String getSelectQuery() {\n+    StringBuilder query \u003d new StringBuilder();\n+    DBConfiguration dbConf \u003d getDBConf();\n+    String conditions \u003d getConditions();\n+    String tableName \u003d getTableName();\n+    String [] fieldNames \u003d getFieldNames();\n+\n+    // Oracle-specific codepath to use rownum instead of LIMIT/OFFSET.\n+    if(dbConf.getInputQuery() \u003d\u003d null) {\n+      query.append(\"SELECT \");\n+  \n+      for (int i \u003d 0; i \u003c fieldNames.length; i++) {\n+        query.append(fieldNames[i]);\n+        if (i !\u003d fieldNames.length -1) {\n+          query.append(\", \");\n+        }\n+      }\n+  \n+      query.append(\" FROM \").append(tableName);\n+      if (conditions !\u003d null \u0026\u0026 conditions.length() \u003e 0)\n+        query.append(\" WHERE \").append(conditions);\n+      String orderBy \u003d dbConf.getInputOrderBy();\n+      if (orderBy !\u003d null \u0026\u0026 orderBy.length() \u003e 0) {\n+        query.append(\" ORDER BY \").append(orderBy);\n+      }\n+    } else {\n+      //PREBUILT QUERY\n+      query.append(dbConf.getInputQuery());\n+    }\n+        \n+    try {\n+      DBInputFormat.DBInputSplit split \u003d getSplit();\n+      if (split.getLength() \u003e 0 \u0026\u0026 split.getStart() \u003e 0){\n+        String querystring \u003d query.toString();\n+\n+        query \u003d new StringBuilder();\n+        query.append(\"SELECT * FROM (SELECT a.*,ROWNUM dbif_rno FROM ( \");\n+        query.append(querystring);\n+        query.append(\" ) a WHERE rownum \u003c\u003d \").append(split.getStart());\n+        query.append(\" + \").append(split.getLength());\n+        query.append(\" ) WHERE dbif_rno \u003e\u003d \").append(split.getStart());\n+      }\n+    } catch (IOException ex) {\n+      // ignore, will not throw.\n+    }\t\t      \n+\n+    return query.toString();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected String getSelectQuery() {\n    StringBuilder query \u003d new StringBuilder();\n    DBConfiguration dbConf \u003d getDBConf();\n    String conditions \u003d getConditions();\n    String tableName \u003d getTableName();\n    String [] fieldNames \u003d getFieldNames();\n\n    // Oracle-specific codepath to use rownum instead of LIMIT/OFFSET.\n    if(dbConf.getInputQuery() \u003d\u003d null) {\n      query.append(\"SELECT \");\n  \n      for (int i \u003d 0; i \u003c fieldNames.length; i++) {\n        query.append(fieldNames[i]);\n        if (i !\u003d fieldNames.length -1) {\n          query.append(\", \");\n        }\n      }\n  \n      query.append(\" FROM \").append(tableName);\n      if (conditions !\u003d null \u0026\u0026 conditions.length() \u003e 0)\n        query.append(\" WHERE \").append(conditions);\n      String orderBy \u003d dbConf.getInputOrderBy();\n      if (orderBy !\u003d null \u0026\u0026 orderBy.length() \u003e 0) {\n        query.append(\" ORDER BY \").append(orderBy);\n      }\n    } else {\n      //PREBUILT QUERY\n      query.append(dbConf.getInputQuery());\n    }\n        \n    try {\n      DBInputFormat.DBInputSplit split \u003d getSplit();\n      if (split.getLength() \u003e 0 \u0026\u0026 split.getStart() \u003e 0){\n        String querystring \u003d query.toString();\n\n        query \u003d new StringBuilder();\n        query.append(\"SELECT * FROM (SELECT a.*,ROWNUM dbif_rno FROM ( \");\n        query.append(querystring);\n        query.append(\" ) a WHERE rownum \u003c\u003d \").append(split.getStart());\n        query.append(\" + \").append(split.getLength());\n        query.append(\" ) WHERE dbif_rno \u003e\u003d \").append(split.getStart());\n      }\n    } catch (IOException ex) {\n      // ignore, will not throw.\n    }\t\t      \n\n    return query.toString();\n  }",
+      "path": "mapreduce/src/java/org/apache/hadoop/mapreduce/lib/db/OracleDBRecordReader.java"
+    }
+  }
+}

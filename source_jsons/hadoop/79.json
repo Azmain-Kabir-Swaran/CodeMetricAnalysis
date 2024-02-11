@@ -1,0 +1,121 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "WriteCtx.java",
+  "functionName": "getData",
+  "functionId": "getData",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-nfs/src/main/java/org/apache/hadoop/hdfs/nfs/nfs3/WriteCtx.java",
+  "functionStartLine": 215,
+  "functionEndLine": 227,
+  "numCommitsSeen": 12,
+  "timeTaken": 970,
+  "changeHistory": [
+    "caa4abd30cfc4361c7bc9f212a9092840d7c3b53",
+    "28e3d09230971b32f74284311931525cb7ad1b7c",
+    "58d75576c4d2a03d4954174bc223ed0334b34fee",
+    "37f587563a943a827fbff865f5302bac6d202415"
+  ],
+  "changeHistoryShort": {
+    "caa4abd30cfc4361c7bc9f212a9092840d7c3b53": "Yreturntypechange",
+    "28e3d09230971b32f74284311931525cb7ad1b7c": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "58d75576c4d2a03d4954174bc223ed0334b34fee": "Ybodychange",
+    "37f587563a943a827fbff865f5302bac6d202415": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "caa4abd30cfc4361c7bc9f212a9092840d7c3b53": {
+      "type": "Yreturntypechange",
+      "commitMessage": "HDFS-5259. Support client which combines appended data with old data before sends it to NFS server. Contributed by Brandon Li\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1529730 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/10/13 7:57 PM",
+      "commitName": "caa4abd30cfc4361c7bc9f212a9092840d7c3b53",
+      "commitAuthor": "Brandon Li",
+      "commitDateOld": "23/09/13 1:02 PM",
+      "commitNameOld": "28e3d09230971b32f74284311931525cb7ad1b7c",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 13.29,
+      "commitsBetweenForRepo": 110,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,13 @@\n-  byte[] getData() throws IOException {\n+  ByteBuffer getData() throws IOException {\n     if (dataState !\u003d DataState.DUMPED) {\n       synchronized (this) {\n         if (dataState !\u003d DataState.DUMPED) {\n           Preconditions.checkState(data !\u003d null);\n           return data;\n         }\n       }\n     }\n     // read back from dumped file\n     this.loadData();\n     return data;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  ByteBuffer getData() throws IOException {\n    if (dataState !\u003d DataState.DUMPED) {\n      synchronized (this) {\n        if (dataState !\u003d DataState.DUMPED) {\n          Preconditions.checkState(data !\u003d null);\n          return data;\n        }\n      }\n    }\n    // read back from dumped file\n    this.loadData();\n    return data;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-nfs/src/main/java/org/apache/hadoop/hdfs/nfs/nfs3/WriteCtx.java",
+      "extendedDetails": {
+        "oldValue": "byte[]",
+        "newValue": "ByteBuffer"
+      }
+    },
+    "28e3d09230971b32f74284311931525cb7ad1b7c": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HDFS-4971. Move IO operations out of locking in OpenFileCtx. Contributed by Jing Zhao and Brandon Li.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1525681 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "23/09/13 1:02 PM",
+      "commitName": "28e3d09230971b32f74284311931525cb7ad1b7c",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-4971. Move IO operations out of locking in OpenFileCtx. Contributed by Jing Zhao and Brandon Li.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1525681 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "23/09/13 1:02 PM",
+          "commitName": "28e3d09230971b32f74284311931525cb7ad1b7c",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "10/07/13 10:01 AM",
+          "commitNameOld": "58d75576c4d2a03d4954174bc223ed0334b34fee",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 75.13,
+          "commitsBetweenForRepo": 436,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,13 @@\n-  public byte[] getData() throws IOException {\n+  byte[] getData() throws IOException {\n     if (dataState !\u003d DataState.DUMPED) {\n-      if (data \u003d\u003d null) {\n-        throw new IOException(\"Data is not dumpted but has null:\" + this);\n-      }\n-    } else {\n-      // read back\n-      if (data !\u003d null) {\n-        throw new IOException(\"Data is dumpted but not null\");\n-      }\n-      data \u003d new byte[count];\n-      raf.seek(dumpFileOffset);\n-      int size \u003d raf.read(data, 0, count);\n-      if (size !\u003d count) {\n-        throw new IOException(\"Data count is \" + count + \", but read back \"\n-            + size + \"bytes\");\n+      synchronized (this) {\n+        if (dataState !\u003d DataState.DUMPED) {\n+          Preconditions.checkState(data !\u003d null);\n+          return data;\n+        }\n       }\n     }\n+    // read back from dumped file\n+    this.loadData();\n     return data;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  byte[] getData() throws IOException {\n    if (dataState !\u003d DataState.DUMPED) {\n      synchronized (this) {\n        if (dataState !\u003d DataState.DUMPED) {\n          Preconditions.checkState(data !\u003d null);\n          return data;\n        }\n      }\n    }\n    // read back from dumped file\n    this.loadData();\n    return data;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-nfs/src/main/java/org/apache/hadoop/hdfs/nfs/nfs3/WriteCtx.java",
+          "extendedDetails": {
+            "oldValue": "[public]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-4971. Move IO operations out of locking in OpenFileCtx. Contributed by Jing Zhao and Brandon Li.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1525681 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "23/09/13 1:02 PM",
+          "commitName": "28e3d09230971b32f74284311931525cb7ad1b7c",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "10/07/13 10:01 AM",
+          "commitNameOld": "58d75576c4d2a03d4954174bc223ed0334b34fee",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 75.13,
+          "commitsBetweenForRepo": 436,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,13 @@\n-  public byte[] getData() throws IOException {\n+  byte[] getData() throws IOException {\n     if (dataState !\u003d DataState.DUMPED) {\n-      if (data \u003d\u003d null) {\n-        throw new IOException(\"Data is not dumpted but has null:\" + this);\n-      }\n-    } else {\n-      // read back\n-      if (data !\u003d null) {\n-        throw new IOException(\"Data is dumpted but not null\");\n-      }\n-      data \u003d new byte[count];\n-      raf.seek(dumpFileOffset);\n-      int size \u003d raf.read(data, 0, count);\n-      if (size !\u003d count) {\n-        throw new IOException(\"Data count is \" + count + \", but read back \"\n-            + size + \"bytes\");\n+      synchronized (this) {\n+        if (dataState !\u003d DataState.DUMPED) {\n+          Preconditions.checkState(data !\u003d null);\n+          return data;\n+        }\n       }\n     }\n+    // read back from dumped file\n+    this.loadData();\n     return data;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  byte[] getData() throws IOException {\n    if (dataState !\u003d DataState.DUMPED) {\n      synchronized (this) {\n        if (dataState !\u003d DataState.DUMPED) {\n          Preconditions.checkState(data !\u003d null);\n          return data;\n        }\n      }\n    }\n    // read back from dumped file\n    this.loadData();\n    return data;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-nfs/src/main/java/org/apache/hadoop/hdfs/nfs/nfs3/WriteCtx.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "58d75576c4d2a03d4954174bc223ed0334b34fee": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-4962. Use enum for nfs constants. Contributed by Tsz Wo (Nicholas) SZE.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1501851 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/07/13 10:01 AM",
+      "commitName": "58d75576c4d2a03d4954174bc223ed0334b34fee",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "02/07/13 10:31 AM",
+      "commitNameOld": "37f587563a943a827fbff865f5302bac6d202415",
+      "commitAuthorOld": "Brandon Li",
+      "daysBetweenCommits": 7.98,
+      "commitsBetweenForRepo": 31,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,20 @@\n   public byte[] getData() throws IOException {\n-    if (dataState !\u003d DUMPED) {\n+    if (dataState !\u003d DataState.DUMPED) {\n       if (data \u003d\u003d null) {\n         throw new IOException(\"Data is not dumpted but has null:\" + this);\n       }\n     } else {\n       // read back\n       if (data !\u003d null) {\n         throw new IOException(\"Data is dumpted but not null\");\n       }\n       data \u003d new byte[count];\n       raf.seek(dumpFileOffset);\n       int size \u003d raf.read(data, 0, count);\n       if (size !\u003d count) {\n         throw new IOException(\"Data count is \" + count + \", but read back \"\n             + size + \"bytes\");\n       }\n     }\n     return data;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public byte[] getData() throws IOException {\n    if (dataState !\u003d DataState.DUMPED) {\n      if (data \u003d\u003d null) {\n        throw new IOException(\"Data is not dumpted but has null:\" + this);\n      }\n    } else {\n      // read back\n      if (data !\u003d null) {\n        throw new IOException(\"Data is dumpted but not null\");\n      }\n      data \u003d new byte[count];\n      raf.seek(dumpFileOffset);\n      int size \u003d raf.read(data, 0, count);\n      if (size !\u003d count) {\n        throw new IOException(\"Data count is \" + count + \", but read back \"\n            + size + \"bytes\");\n      }\n    }\n    return data;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-nfs/src/main/java/org/apache/hadoop/hdfs/nfs/nfs3/WriteCtx.java",
+      "extendedDetails": {}
+    },
+    "37f587563a943a827fbff865f5302bac6d202415": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-4762 Provide HDFS based NFSv3 and Mountd implementation. Contributed by Brandon Li\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1499029 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/07/13 10:31 AM",
+      "commitName": "37f587563a943a827fbff865f5302bac6d202415",
+      "commitAuthor": "Brandon Li",
+      "diff": "@@ -0,0 +1,20 @@\n+  public byte[] getData() throws IOException {\n+    if (dataState !\u003d DUMPED) {\n+      if (data \u003d\u003d null) {\n+        throw new IOException(\"Data is not dumpted but has null:\" + this);\n+      }\n+    } else {\n+      // read back\n+      if (data !\u003d null) {\n+        throw new IOException(\"Data is dumpted but not null\");\n+      }\n+      data \u003d new byte[count];\n+      raf.seek(dumpFileOffset);\n+      int size \u003d raf.read(data, 0, count);\n+      if (size !\u003d count) {\n+        throw new IOException(\"Data count is \" + count + \", but read back \"\n+            + size + \"bytes\");\n+      }\n+    }\n+    return data;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public byte[] getData() throws IOException {\n    if (dataState !\u003d DUMPED) {\n      if (data \u003d\u003d null) {\n        throw new IOException(\"Data is not dumpted but has null:\" + this);\n      }\n    } else {\n      // read back\n      if (data !\u003d null) {\n        throw new IOException(\"Data is dumpted but not null\");\n      }\n      data \u003d new byte[count];\n      raf.seek(dumpFileOffset);\n      int size \u003d raf.read(data, 0, count);\n      if (size !\u003d count) {\n        throw new IOException(\"Data count is \" + count + \", but read back \"\n            + size + \"bytes\");\n      }\n    }\n    return data;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-nfs/src/main/java/org/apache/hadoop/hdfs/nfs/nfs3/WriteCtx.java"
+    }
+  }
+}

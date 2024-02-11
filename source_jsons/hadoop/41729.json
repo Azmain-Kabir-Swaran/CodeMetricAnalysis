@@ -1,0 +1,137 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbstractYarnScheduler.java",
+  "functionName": "killAllAppsInQueue",
+  "functionId": "killAllAppsInQueue___queueName-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+  "functionStartLine": 821,
+  "functionEndLine": 835,
+  "numCommitsSeen": 115,
+  "timeTaken": 4137,
+  "changeHistory": [
+    "2f752830ba74c90ccce818d687572db9afded25b",
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+    "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f",
+    "cf23f2c2b5b4eb9e51de1a66b7aa57dee7ff30b5",
+    "c3084d6c1661332a4771882529077e778d9c5692"
+  ],
+  "changeHistoryShort": {
+    "2f752830ba74c90ccce818d687572db9afded25b": "Ybodychange",
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": "Ybodychange",
+    "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "cf23f2c2b5b4eb9e51de1a66b7aa57dee7ff30b5": "Ybodychange",
+    "c3084d6c1661332a4771882529077e778d9c5692": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2f752830ba74c90ccce818d687572db9afded25b": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9214. Add AbstractYarnScheduler#getValidQueues method to remove duplication. Contributed by Wanqiang Ji.\n",
+      "commitDate": "01/04/19 8:05 PM",
+      "commitName": "2f752830ba74c90ccce818d687572db9afded25b",
+      "commitAuthor": "Yufei Gu",
+      "commitDateOld": "15/03/19 4:20 PM",
+      "commitNameOld": "2064ca015d1584263aac0cc20c60b925a3aff612",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 17.16,
+      "commitsBetweenForRepo": 111,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,15 @@\n   public void killAllAppsInQueue(String queueName)\n       throws YarnException {\n     writeLock.lock();\n     try {\n-      // check if queue is a valid\n-      List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n-      if (apps \u003d\u003d null) {\n-        String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n-        LOG.warn(errMsg);\n-        throw new YarnException(errMsg);\n-      }\n       // generate kill events for each pending/running app\n-      for (ApplicationAttemptId app : apps) {\n+      for (ApplicationAttemptId app : getAppsFromQueue(queueName)) {\n         this.rmContext.getDispatcher().getEventHandler().handle(\n             new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n                 \"Application killed due to expiry of reservation queue \"\n                     + queueName + \".\"));\n       }\n     } finally {\n       writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void killAllAppsInQueue(String queueName)\n      throws YarnException {\n    writeLock.lock();\n    try {\n      // generate kill events for each pending/running app\n      for (ApplicationAttemptId app : getAppsFromQueue(queueName)) {\n        this.rmContext.getDispatcher().getEventHandler().handle(\n            new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n                \"Application killed due to expiry of reservation queue \"\n                    + queueName + \".\"));\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+      "extendedDetails": {}
+    },
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9341.  Fixed enentrant lock usage in YARN project.\n            Contributed by Prabhu Joseph\n",
+      "commitDate": "07/03/19 1:47 PM",
+      "commitName": "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "04/03/19 9:10 PM",
+      "commitNameOld": "e40e2d6ad5cbe782c3a067229270738b501ed27e",
+      "commitAuthorOld": "Prabhu Joseph",
+      "daysBetweenCommits": 2.69,
+      "commitsBetweenForRepo": 39,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,22 @@\n   public void killAllAppsInQueue(String queueName)\n       throws YarnException {\n+    writeLock.lock();\n     try {\n-      writeLock.lock();\n       // check if queue is a valid\n       List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n       if (apps \u003d\u003d null) {\n         String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n         LOG.warn(errMsg);\n         throw new YarnException(errMsg);\n       }\n       // generate kill events for each pending/running app\n       for (ApplicationAttemptId app : apps) {\n         this.rmContext.getDispatcher().getEventHandler().handle(\n             new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n                 \"Application killed due to expiry of reservation queue \"\n                     + queueName + \".\"));\n       }\n     } finally {\n       writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void killAllAppsInQueue(String queueName)\n      throws YarnException {\n    writeLock.lock();\n    try {\n      // check if queue is a valid\n      List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n      if (apps \u003d\u003d null) {\n        String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n        LOG.warn(errMsg);\n        throw new YarnException(errMsg);\n      }\n      // generate kill events for each pending/running app\n      for (ApplicationAttemptId app : apps) {\n        this.rmContext.getDispatcher().getEventHandler().handle(\n            new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n                \"Application killed due to expiry of reservation queue \"\n                    + queueName + \".\"));\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+      "extendedDetails": {}
+    },
+    "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "YARN-3139. Improve locks in AbstractYarnScheduler/CapacityScheduler/FairScheduler. Contributed by Wangda Tan\n",
+      "commitDate": "04/10/16 5:23 PM",
+      "commitName": "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f",
+      "commitAuthor": "Jian He",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "YARN-3139. Improve locks in AbstractYarnScheduler/CapacityScheduler/FairScheduler. Contributed by Wangda Tan\n",
+          "commitDate": "04/10/16 5:23 PM",
+          "commitName": "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f",
+          "commitAuthor": "Jian He",
+          "commitDateOld": "30/08/16 3:52 PM",
+          "commitNameOld": "d6d9cff21b7b6141ed88359652cf22e8973c0661",
+          "commitAuthorOld": "Arun Suresh",
+          "daysBetweenCommits": 35.06,
+          "commitsBetweenForRepo": 195,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,22 @@\n-  public synchronized void killAllAppsInQueue(String queueName)\n+  public void killAllAppsInQueue(String queueName)\n       throws YarnException {\n-    // check if queue is a valid\n-    List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n-    if (apps \u003d\u003d null) {\n-      String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n-      LOG.warn(errMsg);\n-      throw new YarnException(errMsg);\n-    }\n-    // generate kill events for each pending/running app\n-    for (ApplicationAttemptId app : apps) {\n-      this.rmContext\n-          .getDispatcher()\n-          .getEventHandler()\n-          .handle(new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n-          \"Application killed due to expiry of reservation queue \" +\n-          queueName + \".\"));\n+    try {\n+      writeLock.lock();\n+      // check if queue is a valid\n+      List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n+      if (apps \u003d\u003d null) {\n+        String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n+        LOG.warn(errMsg);\n+        throw new YarnException(errMsg);\n+      }\n+      // generate kill events for each pending/running app\n+      for (ApplicationAttemptId app : apps) {\n+        this.rmContext.getDispatcher().getEventHandler().handle(\n+            new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n+                \"Application killed due to expiry of reservation queue \"\n+                    + queueName + \".\"));\n+      }\n+    } finally {\n+      writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void killAllAppsInQueue(String queueName)\n      throws YarnException {\n    try {\n      writeLock.lock();\n      // check if queue is a valid\n      List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n      if (apps \u003d\u003d null) {\n        String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n        LOG.warn(errMsg);\n        throw new YarnException(errMsg);\n      }\n      // generate kill events for each pending/running app\n      for (ApplicationAttemptId app : apps) {\n        this.rmContext.getDispatcher().getEventHandler().handle(\n            new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n                \"Application killed due to expiry of reservation queue \"\n                    + queueName + \".\"));\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+          "extendedDetails": {
+            "oldValue": "[public, synchronized]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-3139. Improve locks in AbstractYarnScheduler/CapacityScheduler/FairScheduler. Contributed by Wangda Tan\n",
+          "commitDate": "04/10/16 5:23 PM",
+          "commitName": "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f",
+          "commitAuthor": "Jian He",
+          "commitDateOld": "30/08/16 3:52 PM",
+          "commitNameOld": "d6d9cff21b7b6141ed88359652cf22e8973c0661",
+          "commitAuthorOld": "Arun Suresh",
+          "daysBetweenCommits": 35.06,
+          "commitsBetweenForRepo": 195,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,22 @@\n-  public synchronized void killAllAppsInQueue(String queueName)\n+  public void killAllAppsInQueue(String queueName)\n       throws YarnException {\n-    // check if queue is a valid\n-    List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n-    if (apps \u003d\u003d null) {\n-      String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n-      LOG.warn(errMsg);\n-      throw new YarnException(errMsg);\n-    }\n-    // generate kill events for each pending/running app\n-    for (ApplicationAttemptId app : apps) {\n-      this.rmContext\n-          .getDispatcher()\n-          .getEventHandler()\n-          .handle(new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n-          \"Application killed due to expiry of reservation queue \" +\n-          queueName + \".\"));\n+    try {\n+      writeLock.lock();\n+      // check if queue is a valid\n+      List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n+      if (apps \u003d\u003d null) {\n+        String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n+        LOG.warn(errMsg);\n+        throw new YarnException(errMsg);\n+      }\n+      // generate kill events for each pending/running app\n+      for (ApplicationAttemptId app : apps) {\n+        this.rmContext.getDispatcher().getEventHandler().handle(\n+            new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n+                \"Application killed due to expiry of reservation queue \"\n+                    + queueName + \".\"));\n+      }\n+    } finally {\n+      writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void killAllAppsInQueue(String queueName)\n      throws YarnException {\n    try {\n      writeLock.lock();\n      // check if queue is a valid\n      List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n      if (apps \u003d\u003d null) {\n        String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n        LOG.warn(errMsg);\n        throw new YarnException(errMsg);\n      }\n      // generate kill events for each pending/running app\n      for (ApplicationAttemptId app : apps) {\n        this.rmContext.getDispatcher().getEventHandler().handle(\n            new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n                \"Application killed due to expiry of reservation queue \"\n                    + queueName + \".\"));\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cf23f2c2b5b4eb9e51de1a66b7aa57dee7ff30b5": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4000. RM crashes with NPE if leaf queue becomes parent queue during restart. Contributed by Varun Saxena\n",
+      "commitDate": "15/10/15 5:12 PM",
+      "commitName": "cf23f2c2b5b4eb9e51de1a66b7aa57dee7ff30b5",
+      "commitAuthor": "Jian He",
+      "commitDateOld": "12/10/15 12:14 AM",
+      "commitNameOld": "049c6e8dc0f952b5ff7d394aa564ab7db13e4f26",
+      "commitAuthorOld": "Zhihai Xu",
+      "daysBetweenCommits": 3.71,
+      "commitsBetweenForRepo": 48,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,19 @@\n   public synchronized void killAllAppsInQueue(String queueName)\n       throws YarnException {\n     // check if queue is a valid\n     List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n     if (apps \u003d\u003d null) {\n       String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n       LOG.warn(errMsg);\n       throw new YarnException(errMsg);\n     }\n     // generate kill events for each pending/running app\n     for (ApplicationAttemptId app : apps) {\n       this.rmContext\n           .getDispatcher()\n           .getEventHandler()\n-          .handle(new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL));\n+          .handle(new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n+          \"Application killed due to expiry of reservation queue \" +\n+          queueName + \".\"));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void killAllAppsInQueue(String queueName)\n      throws YarnException {\n    // check if queue is a valid\n    List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n    if (apps \u003d\u003d null) {\n      String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n      LOG.warn(errMsg);\n      throw new YarnException(errMsg);\n    }\n    // generate kill events for each pending/running app\n    for (ApplicationAttemptId app : apps) {\n      this.rmContext\n          .getDispatcher()\n          .getEventHandler()\n          .handle(new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL,\n          \"Application killed due to expiry of reservation queue \" +\n          queueName + \".\"));\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+      "extendedDetails": {}
+    },
+    "c3084d6c1661332a4771882529077e778d9c5692": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2389. Added functionality for schedulers to kill all applications in a queue. Contributed by Subramaniam Venkatraman Krishnan\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1618294 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "15/08/14 4:53 PM",
+      "commitName": "c3084d6c1661332a4771882529077e778d9c5692",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,17 @@\n+  public synchronized void killAllAppsInQueue(String queueName)\n+      throws YarnException {\n+    // check if queue is a valid\n+    List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n+    if (apps \u003d\u003d null) {\n+      String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n+      LOG.warn(errMsg);\n+      throw new YarnException(errMsg);\n+    }\n+    // generate kill events for each pending/running app\n+    for (ApplicationAttemptId app : apps) {\n+      this.rmContext\n+          .getDispatcher()\n+          .getEventHandler()\n+          .handle(new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void killAllAppsInQueue(String queueName)\n      throws YarnException {\n    // check if queue is a valid\n    List\u003cApplicationAttemptId\u003e apps \u003d getAppsInQueue(queueName);\n    if (apps \u003d\u003d null) {\n      String errMsg \u003d \"The specified Queue: \" + queueName + \" doesn\u0027t exist\";\n      LOG.warn(errMsg);\n      throw new YarnException(errMsg);\n    }\n    // generate kill events for each pending/running app\n    for (ApplicationAttemptId app : apps) {\n      this.rmContext\n          .getDispatcher()\n          .getEventHandler()\n          .handle(new RMAppEvent(app.getApplicationId(), RMAppEventType.KILL));\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java"
+    }
+  }
+}

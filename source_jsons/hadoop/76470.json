@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NativeIO.java",
+  "functionName": "getFstat",
+  "functionId": "getFstat___fd-FileDescriptor",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/nativeio/NativeIO.java",
+  "functionStartLine": 564,
+  "functionEndLine": 585,
+  "numCommitsSeen": 39,
+  "timeTaken": 1237,
+  "changeHistory": [
+    "2e99da4853ff3c5076e09b3284cf109951f5c9a4",
+    "f8c486fbc8b9ea2380b6f7caa2fb8e2364774f5d"
+  ],
+  "changeHistoryShort": {
+    "2e99da4853ff3c5076e09b3284cf109951f5c9a4": "Ybodychange",
+    "f8c486fbc8b9ea2380b6f7caa2fb8e2364774f5d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2e99da4853ff3c5076e09b3284cf109951f5c9a4": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-9637. Adding Native Fstat for Windows as needed by YARN. Contributed by Chuan Liu.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1494341 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/06/13 3:15 PM",
+      "commitName": "2e99da4853ff3c5076e09b3284cf109951f5c9a4",
+      "commitAuthor": "Chris Nauroth",
+      "commitDateOld": "29/04/13 3:12 PM",
+      "commitNameOld": "30b7a9c49fe2aaffd1c2c36c473eba8e407b5973",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 50.0,
+      "commitsBetweenForRepo": 332,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,6 +1,22 @@\n     public static Stat getFstat(FileDescriptor fd) throws IOException {\n-      Stat stat \u003d fstat(fd);\n-      stat.owner \u003d getName(IdCache.USER, stat.ownerId);\n-      stat.group \u003d getName(IdCache.GROUP, stat.groupId);\n+      Stat stat \u003d null;\n+      if (!Shell.WINDOWS) {\n+        stat \u003d fstat(fd); \n+        stat.owner \u003d getName(IdCache.USER, stat.ownerId);\n+        stat.group \u003d getName(IdCache.GROUP, stat.groupId);\n+      } else {\n+        try {\n+          stat \u003d fstat(fd);\n+        } catch (NativeIOException nioe) {\n+          if (nioe.getErrorCode() \u003d\u003d 6) {\n+            throw new NativeIOException(\"The handle is invalid.\",\n+                Errno.EBADF);\n+          } else {\n+            LOG.warn(String.format(\"NativeIO.getFstat error (%d): %s\",\n+                nioe.getErrorCode(), nioe.getMessage()));\n+            throw new NativeIOException(\"Unknown error\", Errno.UNKNOWN);\n+          }\n+        }\n+      }\n       return stat;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public static Stat getFstat(FileDescriptor fd) throws IOException {\n      Stat stat \u003d null;\n      if (!Shell.WINDOWS) {\n        stat \u003d fstat(fd); \n        stat.owner \u003d getName(IdCache.USER, stat.ownerId);\n        stat.group \u003d getName(IdCache.GROUP, stat.groupId);\n      } else {\n        try {\n          stat \u003d fstat(fd);\n        } catch (NativeIOException nioe) {\n          if (nioe.getErrorCode() \u003d\u003d 6) {\n            throw new NativeIOException(\"The handle is invalid.\",\n                Errno.EBADF);\n          } else {\n            LOG.warn(String.format(\"NativeIO.getFstat error (%d): %s\",\n                nioe.getErrorCode(), nioe.getMessage()));\n            throw new NativeIOException(\"Unknown error\", Errno.UNKNOWN);\n          }\n        }\n      }\n      return stat;\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/nativeio/NativeIO.java",
+      "extendedDetails": {}
+    },
+    "f8c486fbc8b9ea2380b6f7caa2fb8e2364774f5d": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7115. Add a cache for getpwuid_r and getpwgid_r calls (tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1407577 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "09/11/12 10:25 AM",
+      "commitName": "f8c486fbc8b9ea2380b6f7caa2fb8e2364774f5d",
+      "commitAuthor": "Alejandro Abdelnur",
+      "diff": "@@ -0,0 +1,6 @@\n+  public static Stat getFstat(FileDescriptor fd) throws IOException {\n+    Stat stat \u003d fstat(fd);\n+    stat.owner \u003d getName(IdCache.USER, stat.ownerId);\n+    stat.group \u003d getName(IdCache.GROUP, stat.groupId);\n+    return stat;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Stat getFstat(FileDescriptor fd) throws IOException {\n    Stat stat \u003d fstat(fd);\n    stat.owner \u003d getName(IdCache.USER, stat.ownerId);\n    stat.group \u003d getName(IdCache.GROUP, stat.groupId);\n    return stat;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/nativeio/NativeIO.java"
+    }
+  }
+}

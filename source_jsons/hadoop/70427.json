@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockBlobInputStream.java",
+  "functionName": "doNetworkRead",
+  "functionId": "doNetworkRead___buffer-byte[]__offset-int__len-int",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java",
+  "functionStartLine": 216,
+  "functionEndLine": 264,
+  "numCommitsSeen": 3,
+  "timeTaken": 1191,
+  "changeHistory": [
+    "d91b7a8451489f97bdde928cea774764155cfe03",
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0"
+  ],
+  "changeHistoryShort": {
+    "d91b7a8451489f97bdde928cea774764155cfe03": "Ybodychange",
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d91b7a8451489f97bdde928cea774764155cfe03": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14722. Azure: BlockBlobInputStream position incorrect after seek.\nContributed by Thomas Marquardt\n",
+      "commitDate": "06/08/17 12:19 PM",
+      "commitName": "d91b7a8451489f97bdde928cea774764155cfe03",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "25/07/17 4:26 PM",
+      "commitNameOld": "a92bf39e2313d4bfccd641ce0ccefe26f4903a69",
+      "commitAuthorOld": "Jitendra Pandey",
+      "daysBetweenCommits": 11.83,
+      "commitsBetweenForRepo": 120,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,50 +1,49 @@\n   private int doNetworkRead(byte[] buffer, int offset, int len)\n       throws IOException {\n     MemoryOutputStream outputStream;\n     boolean needToCopy \u003d false;\n \n     if (streamPositionAfterLastRead \u003d\u003d streamPosition) {\n       // caller is reading sequentially, so initialize the stream buffer\n       if (streamBuffer \u003d\u003d null) {\n         streamBuffer \u003d new byte[(int) Math.min(minimumReadSizeInBytes,\n             streamLength)];\n       }\n-      streamBufferPosition \u003d 0;\n-      streamBufferLength \u003d 0;\n+      resetStreamBuffer();\n       outputStream \u003d new MemoryOutputStream(streamBuffer, streamBufferPosition,\n           streamBuffer.length);\n       needToCopy \u003d true;\n     } else {\n       outputStream \u003d new MemoryOutputStream(buffer, offset, len);\n     }\n \n     long bytesToRead \u003d Math.min(\n         minimumReadSizeInBytes,\n         Math.min(\n             outputStream.capacity(),\n             streamLength - streamPosition));\n \n     try {\n       blob.downloadRange(streamPosition, bytesToRead, outputStream, options,\n           opContext);\n     } catch (StorageException e) {\n       throw new IOException(e);\n     }\n \n     int bytesRead \u003d outputStream.size();\n     if (bytesRead \u003e 0) {\n       streamPosition +\u003d bytesRead;\n       streamPositionAfterLastRead \u003d streamPosition;\n       int count \u003d Math.min(bytesRead, len);\n       if (needToCopy) {\n         streamBufferLength \u003d bytesRead;\n         System.arraycopy(streamBuffer, streamBufferPosition, buffer, offset,\n             count);\n         streamBufferPosition +\u003d count;\n       }\n       return count;\n     } else {\n       // This may happen if the blob was modified after the length was obtained.\n       throw new EOFException(\"End of stream reached unexpectedly.\");\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private int doNetworkRead(byte[] buffer, int offset, int len)\n      throws IOException {\n    MemoryOutputStream outputStream;\n    boolean needToCopy \u003d false;\n\n    if (streamPositionAfterLastRead \u003d\u003d streamPosition) {\n      // caller is reading sequentially, so initialize the stream buffer\n      if (streamBuffer \u003d\u003d null) {\n        streamBuffer \u003d new byte[(int) Math.min(minimumReadSizeInBytes,\n            streamLength)];\n      }\n      resetStreamBuffer();\n      outputStream \u003d new MemoryOutputStream(streamBuffer, streamBufferPosition,\n          streamBuffer.length);\n      needToCopy \u003d true;\n    } else {\n      outputStream \u003d new MemoryOutputStream(buffer, offset, len);\n    }\n\n    long bytesToRead \u003d Math.min(\n        minimumReadSizeInBytes,\n        Math.min(\n            outputStream.capacity(),\n            streamLength - streamPosition));\n\n    try {\n      blob.downloadRange(streamPosition, bytesToRead, outputStream, options,\n          opContext);\n    } catch (StorageException e) {\n      throw new IOException(e);\n    }\n\n    int bytesRead \u003d outputStream.size();\n    if (bytesRead \u003e 0) {\n      streamPosition +\u003d bytesRead;\n      streamPositionAfterLastRead \u003d streamPosition;\n      int count \u003d Math.min(bytesRead, len);\n      if (needToCopy) {\n        streamBufferLength \u003d bytesRead;\n        System.arraycopy(streamBuffer, streamBufferPosition, buffer, offset,\n            count);\n        streamBufferPosition +\u003d count;\n      }\n      return count;\n    } else {\n      // This may happen if the blob was modified after the length was obtained.\n      throw new EOFException(\"End of stream reached unexpectedly.\");\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java",
+      "extendedDetails": {}
+    },
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14535 wasb: implement high-performance random access and seek of block blobs.\nContributed by Thomas Marquardt\n",
+      "commitDate": "11/07/17 1:34 PM",
+      "commitName": "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,50 @@\n+  private int doNetworkRead(byte[] buffer, int offset, int len)\n+      throws IOException {\n+    MemoryOutputStream outputStream;\n+    boolean needToCopy \u003d false;\n+\n+    if (streamPositionAfterLastRead \u003d\u003d streamPosition) {\n+      // caller is reading sequentially, so initialize the stream buffer\n+      if (streamBuffer \u003d\u003d null) {\n+        streamBuffer \u003d new byte[(int) Math.min(minimumReadSizeInBytes,\n+            streamLength)];\n+      }\n+      streamBufferPosition \u003d 0;\n+      streamBufferLength \u003d 0;\n+      outputStream \u003d new MemoryOutputStream(streamBuffer, streamBufferPosition,\n+          streamBuffer.length);\n+      needToCopy \u003d true;\n+    } else {\n+      outputStream \u003d new MemoryOutputStream(buffer, offset, len);\n+    }\n+\n+    long bytesToRead \u003d Math.min(\n+        minimumReadSizeInBytes,\n+        Math.min(\n+            outputStream.capacity(),\n+            streamLength - streamPosition));\n+\n+    try {\n+      blob.downloadRange(streamPosition, bytesToRead, outputStream, options,\n+          opContext);\n+    } catch (StorageException e) {\n+      throw new IOException(e);\n+    }\n+\n+    int bytesRead \u003d outputStream.size();\n+    if (bytesRead \u003e 0) {\n+      streamPosition +\u003d bytesRead;\n+      streamPositionAfterLastRead \u003d streamPosition;\n+      int count \u003d Math.min(bytesRead, len);\n+      if (needToCopy) {\n+        streamBufferLength \u003d bytesRead;\n+        System.arraycopy(streamBuffer, streamBufferPosition, buffer, offset,\n+            count);\n+        streamBufferPosition +\u003d count;\n+      }\n+      return count;\n+    } else {\n+      // This may happen if the blob was modified after the length was obtained.\n+      throw new EOFException(\"End of stream reached unexpectedly.\");\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private int doNetworkRead(byte[] buffer, int offset, int len)\n      throws IOException {\n    MemoryOutputStream outputStream;\n    boolean needToCopy \u003d false;\n\n    if (streamPositionAfterLastRead \u003d\u003d streamPosition) {\n      // caller is reading sequentially, so initialize the stream buffer\n      if (streamBuffer \u003d\u003d null) {\n        streamBuffer \u003d new byte[(int) Math.min(minimumReadSizeInBytes,\n            streamLength)];\n      }\n      streamBufferPosition \u003d 0;\n      streamBufferLength \u003d 0;\n      outputStream \u003d new MemoryOutputStream(streamBuffer, streamBufferPosition,\n          streamBuffer.length);\n      needToCopy \u003d true;\n    } else {\n      outputStream \u003d new MemoryOutputStream(buffer, offset, len);\n    }\n\n    long bytesToRead \u003d Math.min(\n        minimumReadSizeInBytes,\n        Math.min(\n            outputStream.capacity(),\n            streamLength - streamPosition));\n\n    try {\n      blob.downloadRange(streamPosition, bytesToRead, outputStream, options,\n          opContext);\n    } catch (StorageException e) {\n      throw new IOException(e);\n    }\n\n    int bytesRead \u003d outputStream.size();\n    if (bytesRead \u003e 0) {\n      streamPosition +\u003d bytesRead;\n      streamPositionAfterLastRead \u003d streamPosition;\n      int count \u003d Math.min(bytesRead, len);\n      if (needToCopy) {\n        streamBufferLength \u003d bytesRead;\n        System.arraycopy(streamBuffer, streamBufferPosition, buffer, offset,\n            count);\n        streamBufferPosition +\u003d count;\n      }\n      return count;\n    } else {\n      // This may happen if the blob was modified after the length was obtained.\n      throw new EOFException(\"End of stream reached unexpectedly.\");\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java"
+    }
+  }
+}

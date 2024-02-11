@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TimelineCollectionWriter.java",
+  "functionName": "writeDocument",
+  "functionId": "writeDocument___timelineDocument-Document",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-documentstore/src/main/java/org/apache/hadoop/yarn/server/timelineservice/documentstore/writer/TimelineCollectionWriter.java",
+  "functionStartLine": 83,
+  "functionEndLine": 111,
+  "numCommitsSeen": 1,
+  "timeTaken": 519,
+  "changeHistory": [
+    "f235a942d5b7cab86f0cb4f5ba285f07cd939a40"
+  ],
+  "changeHistoryShort": {
+    "f235a942d5b7cab86f0cb4f5ba285f07cd939a40": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f235a942d5b7cab86f0cb4f5ba285f07cd939a40": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-9016 DocumentStore as a backend for ATSv2. Contributed by Sushil Ks.\n",
+      "commitDate": "13/03/19 4:45 PM",
+      "commitName": "f235a942d5b7cab86f0cb4f5ba285f07cd939a40",
+      "commitAuthor": "Vrushali C",
+      "diff": "@@ -0,0 +1,29 @@\n+  public void writeDocument(Document timelineDocument) {\n+    /*\n+     * The DocumentBuffer is used to buffer the most frequently used\n+     * documents for performing upserts on them, whenever either due to\n+     * buffer gets fulled or the scheduledDocumentsFlusher\n+     * invokes flush() periodically, all the buffered documents would be written\n+     * to DocumentStore in a background thread.\n+     */\n+    long startTime \u003d Time.monotonicNow();\n+\n+    synchronized(documentsBuffer) {\n+      //if buffer is full copy to flushBuffer in order to flush\n+      if (documentsBuffer.size() \u003d\u003d maxBufferSize) {\n+        final Map\u003cString, Document\u003e flushedBuffer \u003d copyToFlushBuffer();\n+        //flush all documents from flushBuffer in background\n+        documentsBufferFullFlusher.execute(() -\u003e flush(flushedBuffer));\n+      }\n+      Document prevDocument \u003d documentsBuffer.get(timelineDocument.getId());\n+      // check if Document exists inside documentsBuffer\n+      if (prevDocument !\u003d null) {\n+        prevDocument.merge(timelineDocument);\n+      } else { // else treat this as a new document\n+        prevDocument \u003d timelineDocument;\n+      }\n+      documentsBuffer.put(prevDocument.getId(), prevDocument);\n+    }\n+    METRICS.addAsyncPutEntitiesLatency(Time.monotonicNow() - startTime,\n+        true);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void writeDocument(Document timelineDocument) {\n    /*\n     * The DocumentBuffer is used to buffer the most frequently used\n     * documents for performing upserts on them, whenever either due to\n     * buffer gets fulled or the scheduledDocumentsFlusher\n     * invokes flush() periodically, all the buffered documents would be written\n     * to DocumentStore in a background thread.\n     */\n    long startTime \u003d Time.monotonicNow();\n\n    synchronized(documentsBuffer) {\n      //if buffer is full copy to flushBuffer in order to flush\n      if (documentsBuffer.size() \u003d\u003d maxBufferSize) {\n        final Map\u003cString, Document\u003e flushedBuffer \u003d copyToFlushBuffer();\n        //flush all documents from flushBuffer in background\n        documentsBufferFullFlusher.execute(() -\u003e flush(flushedBuffer));\n      }\n      Document prevDocument \u003d documentsBuffer.get(timelineDocument.getId());\n      // check if Document exists inside documentsBuffer\n      if (prevDocument !\u003d null) {\n        prevDocument.merge(timelineDocument);\n      } else { // else treat this as a new document\n        prevDocument \u003d timelineDocument;\n      }\n      documentsBuffer.put(prevDocument.getId(), prevDocument);\n    }\n    METRICS.addAsyncPutEntitiesLatency(Time.monotonicNow() - startTime,\n        true);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-documentstore/src/main/java/org/apache/hadoop/yarn/server/timelineservice/documentstore/writer/TimelineCollectionWriter.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AliyunOSSFileSystem.java",
+  "functionName": "innerDelete",
+  "functionId": "innerDelete___status-FileStatus__recursive-boolean",
+  "sourceFilePath": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSFileSystem.java",
+  "functionStartLine": 188,
+  "functionEndLine": 222,
+  "numCommitsSeen": 22,
+  "timeTaken": 1372,
+  "changeHistory": [
+    "c31b5e61b1f09949548116309218a2b3e9c0beda",
+    "08b37603d9c0be67c4e0790c1ad266551ef21f5e",
+    "d33e928fbeb1764a724c8f3c051bb0d8be82bbff"
+  ],
+  "changeHistoryShort": {
+    "c31b5e61b1f09949548116309218a2b3e9c0beda": "Ybodychange",
+    "08b37603d9c0be67c4e0790c1ad266551ef21f5e": "Ybodychange",
+    "d33e928fbeb1764a724c8f3c051bb0d8be82bbff": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c31b5e61b1f09949548116309218a2b3e9c0beda": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13701. AbstractContractRootDirectoryTest can fail when handling delete \"/\". Contributed by Genmao Yu\n",
+      "commitDate": "08/10/16 4:35 AM",
+      "commitName": "c31b5e61b1f09949548116309218a2b3e9c0beda",
+      "commitAuthor": "Kai Zheng",
+      "commitDateOld": "20/09/16 12:12 AM",
+      "commitNameOld": "08b37603d9c0be67c4e0790c1ad266551ef21f5e",
+      "commitAuthorOld": "Kai Zheng",
+      "daysBetweenCommits": 18.18,
+      "commitsBetweenForRepo": 135,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,35 @@\n   private boolean innerDelete(FileStatus status, boolean recursive)\n       throws IOException {\n     Path f \u003d status.getPath();\n+    String p \u003d f.toUri().getPath();\n+    FileStatus[] statuses;\n+    // indicating root directory \"/\".\n+    if (p.equals(\"/\")) {\n+      statuses \u003d listStatus(status.getPath());\n+      boolean isEmptyDir \u003d statuses.length \u003c\u003d 0;\n+      return rejectRootDirectoryDelete(isEmptyDir, recursive);\n+    }\n+\n     String key \u003d pathToKey(f);\n     if (status.isDirectory()) {\n       if (!recursive) {\n-        FileStatus[] statuses \u003d listStatus(status.getPath());\n         // Check whether it is an empty directory or not\n+        statuses \u003d listStatus(status.getPath());\n         if (statuses.length \u003e 0) {\n           throw new IOException(\"Cannot remove directory \" + f +\n               \": It is not empty!\");\n         } else {\n           // Delete empty directory without \u0027-r\u0027\n           key \u003d AliyunOSSUtils.maybeAddTrailingSlash(key);\n           store.deleteObject(key);\n         }\n       } else {\n         store.deleteDirs(key);\n       }\n     } else {\n       store.deleteObject(key);\n     }\n \n     createFakeDirectoryIfNecessary(f);\n     return true;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean innerDelete(FileStatus status, boolean recursive)\n      throws IOException {\n    Path f \u003d status.getPath();\n    String p \u003d f.toUri().getPath();\n    FileStatus[] statuses;\n    // indicating root directory \"/\".\n    if (p.equals(\"/\")) {\n      statuses \u003d listStatus(status.getPath());\n      boolean isEmptyDir \u003d statuses.length \u003c\u003d 0;\n      return rejectRootDirectoryDelete(isEmptyDir, recursive);\n    }\n\n    String key \u003d pathToKey(f);\n    if (status.isDirectory()) {\n      if (!recursive) {\n        // Check whether it is an empty directory or not\n        statuses \u003d listStatus(status.getPath());\n        if (statuses.length \u003e 0) {\n          throw new IOException(\"Cannot remove directory \" + f +\n              \": It is not empty!\");\n        } else {\n          // Delete empty directory without \u0027-r\u0027\n          key \u003d AliyunOSSUtils.maybeAddTrailingSlash(key);\n          store.deleteObject(key);\n        }\n      } else {\n        store.deleteDirs(key);\n      }\n    } else {\n      store.deleteObject(key);\n    }\n\n    createFakeDirectoryIfNecessary(f);\n    return true;\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSFileSystem.java",
+      "extendedDetails": {}
+    },
+    "08b37603d9c0be67c4e0790c1ad266551ef21f5e": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13591. Unit test failure in TestOSSContractGetFileStatus and TestOSSContractRootDir. Contributed by Genmao Yu\n",
+      "commitDate": "20/09/16 12:12 AM",
+      "commitName": "08b37603d9c0be67c4e0790c1ad266551ef21f5e",
+      "commitAuthor": "Kai Zheng",
+      "commitDateOld": "19/09/16 8:39 PM",
+      "commitNameOld": "9cd47602576cd01a905e27642b685905a88eee72",
+      "commitAuthorOld": "Kai Zheng",
+      "daysBetweenCommits": 0.15,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,26 @@\n   private boolean innerDelete(FileStatus status, boolean recursive)\n       throws IOException {\n     Path f \u003d status.getPath();\n     String key \u003d pathToKey(f);\n     if (status.isDirectory()) {\n-      if (!key.endsWith(\"/\")) {\n-        key +\u003d \"/\";\n-      }\n       if (!recursive) {\n         FileStatus[] statuses \u003d listStatus(status.getPath());\n         // Check whether it is an empty directory or not\n         if (statuses.length \u003e 0) {\n           throw new IOException(\"Cannot remove directory \" + f +\n               \": It is not empty!\");\n         } else {\n           // Delete empty directory without \u0027-r\u0027\n+          key \u003d AliyunOSSUtils.maybeAddTrailingSlash(key);\n           store.deleteObject(key);\n         }\n       } else {\n         store.deleteDirs(key);\n       }\n     } else {\n       store.deleteObject(key);\n     }\n \n     createFakeDirectoryIfNecessary(f);\n     return true;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean innerDelete(FileStatus status, boolean recursive)\n      throws IOException {\n    Path f \u003d status.getPath();\n    String key \u003d pathToKey(f);\n    if (status.isDirectory()) {\n      if (!recursive) {\n        FileStatus[] statuses \u003d listStatus(status.getPath());\n        // Check whether it is an empty directory or not\n        if (statuses.length \u003e 0) {\n          throw new IOException(\"Cannot remove directory \" + f +\n              \": It is not empty!\");\n        } else {\n          // Delete empty directory without \u0027-r\u0027\n          key \u003d AliyunOSSUtils.maybeAddTrailingSlash(key);\n          store.deleteObject(key);\n        }\n      } else {\n        store.deleteDirs(key);\n      }\n    } else {\n      store.deleteObject(key);\n    }\n\n    createFakeDirectoryIfNecessary(f);\n    return true;\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSFileSystem.java",
+      "extendedDetails": {}
+    },
+    "d33e928fbeb1764a724c8f3c051bb0d8be82bbff": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13529. Do some code refactoring. Contributed by Genmao Yu.\n",
+      "commitDate": "06/09/16 8:15 PM",
+      "commitName": "d33e928fbeb1764a724c8f3c051bb0d8be82bbff",
+      "commitAuthor": "Mingfei",
+      "diff": "@@ -0,0 +1,28 @@\n+  private boolean innerDelete(FileStatus status, boolean recursive)\n+      throws IOException {\n+    Path f \u003d status.getPath();\n+    String key \u003d pathToKey(f);\n+    if (status.isDirectory()) {\n+      if (!key.endsWith(\"/\")) {\n+        key +\u003d \"/\";\n+      }\n+      if (!recursive) {\n+        FileStatus[] statuses \u003d listStatus(status.getPath());\n+        // Check whether it is an empty directory or not\n+        if (statuses.length \u003e 0) {\n+          throw new IOException(\"Cannot remove directory \" + f +\n+              \": It is not empty!\");\n+        } else {\n+          // Delete empty directory without \u0027-r\u0027\n+          store.deleteObject(key);\n+        }\n+      } else {\n+        store.deleteDirs(key);\n+      }\n+    } else {\n+      store.deleteObject(key);\n+    }\n+\n+    createFakeDirectoryIfNecessary(f);\n+    return true;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean innerDelete(FileStatus status, boolean recursive)\n      throws IOException {\n    Path f \u003d status.getPath();\n    String key \u003d pathToKey(f);\n    if (status.isDirectory()) {\n      if (!key.endsWith(\"/\")) {\n        key +\u003d \"/\";\n      }\n      if (!recursive) {\n        FileStatus[] statuses \u003d listStatus(status.getPath());\n        // Check whether it is an empty directory or not\n        if (statuses.length \u003e 0) {\n          throw new IOException(\"Cannot remove directory \" + f +\n              \": It is not empty!\");\n        } else {\n          // Delete empty directory without \u0027-r\u0027\n          store.deleteObject(key);\n        }\n      } else {\n        store.deleteDirs(key);\n      }\n    } else {\n      store.deleteObject(key);\n    }\n\n    createFakeDirectoryIfNecessary(f);\n    return true;\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSFileSystem.java"
+    }
+  }
+}

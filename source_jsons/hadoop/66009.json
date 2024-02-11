@@ -1,0 +1,102 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CallableSupplier.java",
+  "functionName": "maybeAwaitCompletion",
+  "functionId": "maybeAwaitCompletion___future-CompletableFuture__Void__(annotations-@Nullable__modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/CallableSupplier.java",
+  "functionStartLine": 150,
+  "functionEndLine": 156,
+  "numCommitsSeen": 4,
+  "timeTaken": 4051,
+  "changeHistory": [
+    "56dee667707926f3796c7757be1a133a362f05c9",
+    "511df1e837b19ccb9271520589452d82d50ac69d"
+  ],
+  "changeHistoryShort": {
+    "56dee667707926f3796c7757be1a133a362f05c9": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange)",
+    "511df1e837b19ccb9271520589452d82d50ac69d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "56dee667707926f3796c7757be1a133a362f05c9": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange)",
+      "commitMessage": "HADOOP-16823. Large DeleteObject requests are their own Thundering Herd.\n\nContributed by Steve Loughran.\n\nDuring S3A rename() and delete() calls, the list of objects delete is\nbuilt up into batches of a thousand and then POSTed in a single large\nDeleteObjects request.\n\nBut as the IO capacity allowed on an S3 partition may only be 3500 writes\nper second *and* each entry in that POST counts as a single write, then\none of those posts alone can trigger throttling on an already loaded\nS3 directory tree. Which can trigger backoff and retry, with the same\nthousand entry post, and so recreate the exact same problem.\n\nFixes\n\n* Page size for delete object requests is set in\n  fs.s3a.bulk.delete.page.size; the default is 250.\n* The property fs.s3a.experimental.aws.s3.throttling (default\u003dtrue)\n  can be set to false to disable throttle retry logic in the AWS\n  client SDK -it is all handled in the S3A client. This\n  gives more visibility in to when operations are being throttled\n* Bulk delete throttling events are logged to the log\n  org.apache.hadoop.fs.s3a.throttled log at INFO; if this appears\n  often then choose a smaller page size.\n* The metric \"store_io_throttled\" adds the entire count of delete\n  requests when a single DeleteObjects request is throttled.\n* A new quantile, \"store_io_throttle_rate\" can track throttling\n  load over time.\n* DynamoDB metastore throttle resilience issues have also been\n  identified and fixed. Note: the fs.s3a.experimental.aws.s3.throttling\n  flag does not apply to DDB IO precisely because there may still be\n  lurking issues there and it safest to rely on the DynamoDB client\n  SDK.\n\nChange-Id: I00f85cdd94fc008864d060533f6bd4870263fd84\n",
+      "commitDate": "13/02/20 11:09 AM",
+      "commitName": "56dee667707926f3796c7757be1a133a362f05c9",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HADOOP-16823. Large DeleteObject requests are their own Thundering Herd.\n\nContributed by Steve Loughran.\n\nDuring S3A rename() and delete() calls, the list of objects delete is\nbuilt up into batches of a thousand and then POSTed in a single large\nDeleteObjects request.\n\nBut as the IO capacity allowed on an S3 partition may only be 3500 writes\nper second *and* each entry in that POST counts as a single write, then\none of those posts alone can trigger throttling on an already loaded\nS3 directory tree. Which can trigger backoff and retry, with the same\nthousand entry post, and so recreate the exact same problem.\n\nFixes\n\n* Page size for delete object requests is set in\n  fs.s3a.bulk.delete.page.size; the default is 250.\n* The property fs.s3a.experimental.aws.s3.throttling (default\u003dtrue)\n  can be set to false to disable throttle retry logic in the AWS\n  client SDK -it is all handled in the S3A client. This\n  gives more visibility in to when operations are being throttled\n* Bulk delete throttling events are logged to the log\n  org.apache.hadoop.fs.s3a.throttled log at INFO; if this appears\n  often then choose a smaller page size.\n* The metric \"store_io_throttled\" adds the entire count of delete\n  requests when a single DeleteObjects request is throttled.\n* A new quantile, \"store_io_throttle_rate\" can track throttling\n  load over time.\n* DynamoDB metastore throttle resilience issues have also been\n  identified and fixed. Note: the fs.s3a.experimental.aws.s3.throttling\n  flag does not apply to DDB IO precisely because there may still be\n  lurking issues there and it safest to rely on the DynamoDB client\n  SDK.\n\nChange-Id: I00f85cdd94fc008864d060533f6bd4870263fd84\n",
+          "commitDate": "13/02/20 11:09 AM",
+          "commitName": "56dee667707926f3796c7757be1a133a362f05c9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "13/02/20 7:31 AM",
+          "commitNameOld": "da99ac7e93722bedd4fca1dd6c992140fcf927e1",
+          "commitAuthorOld": "Szilard Nemeth",
+          "daysBetweenCommits": 0.15,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,7 @@\n-  private void maybeAwaitCompletion(\n+  public static void maybeAwaitCompletion(\n       @Nullable final CompletableFuture\u003cVoid\u003e future)\n       throws IOException {\n     if (future !\u003d null) {\n-      try (DurationInfo ignored \u003d\n-               new DurationInfo(LOG, false, \"delete completion\")) {\n-        waitForCompletion(future);\n-      }\n+      waitForCompletion(future);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void maybeAwaitCompletion(\n      @Nullable final CompletableFuture\u003cVoid\u003e future)\n      throws IOException {\n    if (future !\u003d null) {\n      waitForCompletion(future);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/CallableSupplier.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/DeleteOperation.java",
+            "newPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/CallableSupplier.java",
+            "oldMethodName": "maybeAwaitCompletion",
+            "newMethodName": "maybeAwaitCompletion"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-16823. Large DeleteObject requests are their own Thundering Herd.\n\nContributed by Steve Loughran.\n\nDuring S3A rename() and delete() calls, the list of objects delete is\nbuilt up into batches of a thousand and then POSTed in a single large\nDeleteObjects request.\n\nBut as the IO capacity allowed on an S3 partition may only be 3500 writes\nper second *and* each entry in that POST counts as a single write, then\none of those posts alone can trigger throttling on an already loaded\nS3 directory tree. Which can trigger backoff and retry, with the same\nthousand entry post, and so recreate the exact same problem.\n\nFixes\n\n* Page size for delete object requests is set in\n  fs.s3a.bulk.delete.page.size; the default is 250.\n* The property fs.s3a.experimental.aws.s3.throttling (default\u003dtrue)\n  can be set to false to disable throttle retry logic in the AWS\n  client SDK -it is all handled in the S3A client. This\n  gives more visibility in to when operations are being throttled\n* Bulk delete throttling events are logged to the log\n  org.apache.hadoop.fs.s3a.throttled log at INFO; if this appears\n  often then choose a smaller page size.\n* The metric \"store_io_throttled\" adds the entire count of delete\n  requests when a single DeleteObjects request is throttled.\n* A new quantile, \"store_io_throttle_rate\" can track throttling\n  load over time.\n* DynamoDB metastore throttle resilience issues have also been\n  identified and fixed. Note: the fs.s3a.experimental.aws.s3.throttling\n  flag does not apply to DDB IO precisely because there may still be\n  lurking issues there and it safest to rely on the DynamoDB client\n  SDK.\n\nChange-Id: I00f85cdd94fc008864d060533f6bd4870263fd84\n",
+          "commitDate": "13/02/20 11:09 AM",
+          "commitName": "56dee667707926f3796c7757be1a133a362f05c9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "13/02/20 7:31 AM",
+          "commitNameOld": "da99ac7e93722bedd4fca1dd6c992140fcf927e1",
+          "commitAuthorOld": "Szilard Nemeth",
+          "daysBetweenCommits": 0.15,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,7 @@\n-  private void maybeAwaitCompletion(\n+  public static void maybeAwaitCompletion(\n       @Nullable final CompletableFuture\u003cVoid\u003e future)\n       throws IOException {\n     if (future !\u003d null) {\n-      try (DurationInfo ignored \u003d\n-               new DurationInfo(LOG, false, \"delete completion\")) {\n-        waitForCompletion(future);\n-      }\n+      waitForCompletion(future);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void maybeAwaitCompletion(\n      @Nullable final CompletableFuture\u003cVoid\u003e future)\n      throws IOException {\n    if (future !\u003d null) {\n      waitForCompletion(future);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/CallableSupplier.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[public, static]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16823. Large DeleteObject requests are their own Thundering Herd.\n\nContributed by Steve Loughran.\n\nDuring S3A rename() and delete() calls, the list of objects delete is\nbuilt up into batches of a thousand and then POSTed in a single large\nDeleteObjects request.\n\nBut as the IO capacity allowed on an S3 partition may only be 3500 writes\nper second *and* each entry in that POST counts as a single write, then\none of those posts alone can trigger throttling on an already loaded\nS3 directory tree. Which can trigger backoff and retry, with the same\nthousand entry post, and so recreate the exact same problem.\n\nFixes\n\n* Page size for delete object requests is set in\n  fs.s3a.bulk.delete.page.size; the default is 250.\n* The property fs.s3a.experimental.aws.s3.throttling (default\u003dtrue)\n  can be set to false to disable throttle retry logic in the AWS\n  client SDK -it is all handled in the S3A client. This\n  gives more visibility in to when operations are being throttled\n* Bulk delete throttling events are logged to the log\n  org.apache.hadoop.fs.s3a.throttled log at INFO; if this appears\n  often then choose a smaller page size.\n* The metric \"store_io_throttled\" adds the entire count of delete\n  requests when a single DeleteObjects request is throttled.\n* A new quantile, \"store_io_throttle_rate\" can track throttling\n  load over time.\n* DynamoDB metastore throttle resilience issues have also been\n  identified and fixed. Note: the fs.s3a.experimental.aws.s3.throttling\n  flag does not apply to DDB IO precisely because there may still be\n  lurking issues there and it safest to rely on the DynamoDB client\n  SDK.\n\nChange-Id: I00f85cdd94fc008864d060533f6bd4870263fd84\n",
+          "commitDate": "13/02/20 11:09 AM",
+          "commitName": "56dee667707926f3796c7757be1a133a362f05c9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "13/02/20 7:31 AM",
+          "commitNameOld": "da99ac7e93722bedd4fca1dd6c992140fcf927e1",
+          "commitAuthorOld": "Szilard Nemeth",
+          "daysBetweenCommits": 0.15,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,7 @@\n-  private void maybeAwaitCompletion(\n+  public static void maybeAwaitCompletion(\n       @Nullable final CompletableFuture\u003cVoid\u003e future)\n       throws IOException {\n     if (future !\u003d null) {\n-      try (DurationInfo ignored \u003d\n-               new DurationInfo(LOG, false, \"delete completion\")) {\n-        waitForCompletion(future);\n-      }\n+      waitForCompletion(future);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void maybeAwaitCompletion(\n      @Nullable final CompletableFuture\u003cVoid\u003e future)\n      throws IOException {\n    if (future !\u003d null) {\n      waitForCompletion(future);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/CallableSupplier.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "511df1e837b19ccb9271520589452d82d50ac69d": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-16430. S3AFilesystem.delete to incrementally update s3guard with deletions\n\nContributed by Steve Loughran.\n\nThis overlaps the scanning for directory entries with batched calls to S3 DELETE and updates of the S3Guard tables.\nIt also uses S3Guard to list the files to delete, so find newly created files even when S3 listings are not use consistent.\n\nFor path which the client considers S3Guard to be authoritative, we also do a recursive LIST of the store and delete files; this is to find unindexed files and do guarantee that the delete(path, true) call really does delete everything underneath.\n\nChange-Id: Ice2f6e940c506e0b3a78fa534a99721b1698708e\n",
+      "commitDate": "05/09/19 6:25 AM",
+      "commitName": "511df1e837b19ccb9271520589452d82d50ac69d",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,10 @@\n+  private void maybeAwaitCompletion(\n+      @Nullable final CompletableFuture\u003cVoid\u003e future)\n+      throws IOException {\n+    if (future !\u003d null) {\n+      try (DurationInfo ignored \u003d\n+               new DurationInfo(LOG, false, \"delete completion\")) {\n+        waitForCompletion(future);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void maybeAwaitCompletion(\n      @Nullable final CompletableFuture\u003cVoid\u003e future)\n      throws IOException {\n    if (future !\u003d null) {\n      try (DurationInfo ignored \u003d\n               new DurationInfo(LOG, false, \"delete completion\")) {\n        waitForCompletion(future);\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/DeleteOperation.java"
+    }
+  }
+}

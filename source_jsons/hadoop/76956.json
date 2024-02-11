@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "HHUtil.java",
+  "functionName": "getPiggyBackForDecode",
+  "functionId": "getPiggyBackForDecode___inputs-ByteBuffer[][]__outputs-ByteBuffer[][]__pbParityIndex-int__numDataUnits-int__numParityUnits-int__pbIndex-int",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/erasurecode/coder/util/HHUtil.java",
+  "functionStartLine": 150,
+  "functionEndLine": 201,
+  "numCommitsSeen": 2,
+  "timeTaken": 549,
+  "changeHistory": [
+    "1bb31fb22e6f8e6df8e9ff4e94adf20308b4c743"
+  ],
+  "changeHistoryShort": {
+    "1bb31fb22e6f8e6df8e9ff4e94adf20308b4c743": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1bb31fb22e6f8e6df8e9ff4e94adf20308b4c743": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-11828. Implement the Hitchhiker erasure coding algorithm. Contributed by Jack Liu Quan.\n\nChange-Id: If43475ccc2574df60949c947af562722db076251\n",
+      "commitDate": "21/01/16 10:30 AM",
+      "commitName": "1bb31fb22e6f8e6df8e9ff4e94adf20308b4c743",
+      "commitAuthor": "Zhe Zhang",
+      "diff": "@@ -0,0 +1,52 @@\n+  public static ByteBuffer getPiggyBackForDecode(ByteBuffer[][] inputs,\n+                                                 ByteBuffer[][] outputs,\n+                                                 int pbParityIndex,\n+                                                 int numDataUnits,\n+                                                 int numParityUnits,\n+                                                 int pbIndex) {\n+    ByteBuffer fisrtValidInput \u003d HHUtil.findFirstValidInput(inputs[0]);\n+    int bufSize \u003d fisrtValidInput.remaining();\n+\n+    ByteBuffer piggybacks \u003d allocateByteBuffer(fisrtValidInput.isDirect(),\n+            bufSize);\n+\n+    // Use piggyBackParityIndex to figure out which parity location has the\n+    // associated piggyBack\n+    // Obtain the piggyback by subtracting the decoded (second sub-packet\n+    // only ) parity value from the actually read parity value\n+    if (pbParityIndex \u003c numParityUnits) {\n+      // not the last piggybackSet\n+      int inputIdx \u003d numDataUnits + pbParityIndex;\n+      int inputPos \u003d inputs[1][inputIdx].position();\n+      int outputPos \u003d outputs[1][pbParityIndex].position();\n+\n+      for (int m \u003d 0, k \u003d inputPos, n \u003d outputPos; m \u003c bufSize; k++, m++, n++) {\n+        int valueWithPb \u003d 0xFF \u0026 inputs[1][inputIdx].get(k);\n+        int valueWithoutPb \u003d 0xFF \u0026 outputs[1][pbParityIndex].get(n);\n+        piggybacks.put(m, (byte) RSUtil.GF.add(valueWithPb, valueWithoutPb));\n+      }\n+    } else {\n+      // last piggybackSet\n+      int sum \u003d 0;\n+      for (int k \u003d 0; k \u003c bufSize; k++) {\n+        sum \u003d 0;\n+        for (int i \u003d 1; i \u003c numParityUnits; i++) {\n+          int inIdx \u003d numDataUnits + i;\n+          int inPos \u003d inputs[1][numDataUnits + i].position();\n+          int outPos \u003d outputs[1][i].position();\n+\n+          sum \u003d RSUtil.GF.add(sum, (0xFF \u0026 inputs[1][inIdx].get(inPos + k)));\n+          sum \u003d RSUtil.GF.add(sum, (0xFF \u0026 outputs[1][i].get(outPos + k)));\n+        }\n+\n+        sum \u003d RSUtil.GF.add(sum,\n+                (0xFF \u0026 inputs[0][numDataUnits + pbIndex].get(\n+                        inputs[0][numDataUnits + pbIndex].position() + k)));\n+\n+        piggybacks.put(k, (byte) sum);\n+      }\n+\n+    }\n+\n+    return piggybacks;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static ByteBuffer getPiggyBackForDecode(ByteBuffer[][] inputs,\n                                                 ByteBuffer[][] outputs,\n                                                 int pbParityIndex,\n                                                 int numDataUnits,\n                                                 int numParityUnits,\n                                                 int pbIndex) {\n    ByteBuffer fisrtValidInput \u003d HHUtil.findFirstValidInput(inputs[0]);\n    int bufSize \u003d fisrtValidInput.remaining();\n\n    ByteBuffer piggybacks \u003d allocateByteBuffer(fisrtValidInput.isDirect(),\n            bufSize);\n\n    // Use piggyBackParityIndex to figure out which parity location has the\n    // associated piggyBack\n    // Obtain the piggyback by subtracting the decoded (second sub-packet\n    // only ) parity value from the actually read parity value\n    if (pbParityIndex \u003c numParityUnits) {\n      // not the last piggybackSet\n      int inputIdx \u003d numDataUnits + pbParityIndex;\n      int inputPos \u003d inputs[1][inputIdx].position();\n      int outputPos \u003d outputs[1][pbParityIndex].position();\n\n      for (int m \u003d 0, k \u003d inputPos, n \u003d outputPos; m \u003c bufSize; k++, m++, n++) {\n        int valueWithPb \u003d 0xFF \u0026 inputs[1][inputIdx].get(k);\n        int valueWithoutPb \u003d 0xFF \u0026 outputs[1][pbParityIndex].get(n);\n        piggybacks.put(m, (byte) RSUtil.GF.add(valueWithPb, valueWithoutPb));\n      }\n    } else {\n      // last piggybackSet\n      int sum \u003d 0;\n      for (int k \u003d 0; k \u003c bufSize; k++) {\n        sum \u003d 0;\n        for (int i \u003d 1; i \u003c numParityUnits; i++) {\n          int inIdx \u003d numDataUnits + i;\n          int inPos \u003d inputs[1][numDataUnits + i].position();\n          int outPos \u003d outputs[1][i].position();\n\n          sum \u003d RSUtil.GF.add(sum, (0xFF \u0026 inputs[1][inIdx].get(inPos + k)));\n          sum \u003d RSUtil.GF.add(sum, (0xFF \u0026 outputs[1][i].get(outPos + k)));\n        }\n\n        sum \u003d RSUtil.GF.add(sum,\n                (0xFF \u0026 inputs[0][numDataUnits + pbIndex].get(\n                        inputs[0][numDataUnits + pbIndex].position() + k)));\n\n        piggybacks.put(k, (byte) sum);\n      }\n\n    }\n\n    return piggybacks;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/erasurecode/coder/util/HHUtil.java"
+    }
+  }
+}

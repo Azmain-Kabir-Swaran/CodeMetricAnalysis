@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockBlobInputStream.java",
+  "functionName": "skip",
+  "functionId": "skip___n-long",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java",
+  "functionStartLine": 336,
+  "functionEndLine": 370,
+  "numCommitsSeen": 3,
+  "timeTaken": 1247,
+  "changeHistory": [
+    "d91b7a8451489f97bdde928cea774764155cfe03",
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0"
+  ],
+  "changeHistoryShort": {
+    "d91b7a8451489f97bdde928cea774764155cfe03": "Ybodychange",
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d91b7a8451489f97bdde928cea774764155cfe03": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14722. Azure: BlockBlobInputStream position incorrect after seek.\nContributed by Thomas Marquardt\n",
+      "commitDate": "06/08/17 12:19 PM",
+      "commitName": "d91b7a8451489f97bdde928cea774764155cfe03",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "25/07/17 4:26 PM",
+      "commitNameOld": "a92bf39e2313d4bfccd641ce0ccefe26f4903a69",
+      "commitAuthorOld": "Jitendra Pandey",
+      "daysBetweenCommits": 11.83,
+      "commitsBetweenForRepo": 120,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,35 @@\n   public synchronized long skip(long n) throws IOException {\n     checkState();\n \n     if (blobInputStream !\u003d null) {\n-      return blobInputStream.skip(n);\n-    } else {\n-      if (n \u003c 0 || streamPosition + n \u003e streamLength) {\n-        throw new IndexOutOfBoundsException(\"skip range\");\n-      }\n-\n-      if (streamBuffer !\u003d null) {\n-        streamBufferPosition \u003d (n \u003c streamBufferLength - streamBufferPosition)\n-            ? streamBufferPosition + (int) n\n-            : streamBufferLength;\n-      }\n-\n-      streamPosition +\u003d n;\n-      return n;\n+      // blobInput stream is open; delegate the work to it\n+      long skipped \u003d blobInputStream.skip(n);\n+      // update position to the actual skip value\n+      streamPosition +\u003d skipped;\n+      return skipped;\n     }\n+\n+    // no blob stream; implement the skip logic directly\n+    if (n \u003c 0 || n \u003e streamLength - getPos()) {\n+      throw new IndexOutOfBoundsException(\"skip range\");\n+    }\n+\n+    if (streamBuffer !\u003d null) {\n+      // there\u0027s a buffer, so seek with it\n+      if (n \u003c streamBufferLength - streamBufferPosition) {\n+        // new range is in the buffer, so just update the buffer position\n+        // skip within the buffer.\n+        streamBufferPosition +\u003d (int) n;\n+      } else {\n+        // skip is out of range, so move position to ne value and reset\n+        // the buffer ready for the next read()\n+        streamPosition \u003d getPos() + n;\n+        resetStreamBuffer();\n+      }\n+    } else {\n+      // no stream buffer; increment the stream position ready for\n+      // the next triggered connection \u0026 read\n+      streamPosition +\u003d n;\n+    }\n+    return n;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized long skip(long n) throws IOException {\n    checkState();\n\n    if (blobInputStream !\u003d null) {\n      // blobInput stream is open; delegate the work to it\n      long skipped \u003d blobInputStream.skip(n);\n      // update position to the actual skip value\n      streamPosition +\u003d skipped;\n      return skipped;\n    }\n\n    // no blob stream; implement the skip logic directly\n    if (n \u003c 0 || n \u003e streamLength - getPos()) {\n      throw new IndexOutOfBoundsException(\"skip range\");\n    }\n\n    if (streamBuffer !\u003d null) {\n      // there\u0027s a buffer, so seek with it\n      if (n \u003c streamBufferLength - streamBufferPosition) {\n        // new range is in the buffer, so just update the buffer position\n        // skip within the buffer.\n        streamBufferPosition +\u003d (int) n;\n      } else {\n        // skip is out of range, so move position to ne value and reset\n        // the buffer ready for the next read()\n        streamPosition \u003d getPos() + n;\n        resetStreamBuffer();\n      }\n    } else {\n      // no stream buffer; increment the stream position ready for\n      // the next triggered connection \u0026 read\n      streamPosition +\u003d n;\n    }\n    return n;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java",
+      "extendedDetails": {}
+    },
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14535 wasb: implement high-performance random access and seek of block blobs.\nContributed by Thomas Marquardt\n",
+      "commitDate": "11/07/17 1:34 PM",
+      "commitName": "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,20 @@\n+  public synchronized long skip(long n) throws IOException {\n+    checkState();\n+\n+    if (blobInputStream !\u003d null) {\n+      return blobInputStream.skip(n);\n+    } else {\n+      if (n \u003c 0 || streamPosition + n \u003e streamLength) {\n+        throw new IndexOutOfBoundsException(\"skip range\");\n+      }\n+\n+      if (streamBuffer !\u003d null) {\n+        streamBufferPosition \u003d (n \u003c streamBufferLength - streamBufferPosition)\n+            ? streamBufferPosition + (int) n\n+            : streamBufferLength;\n+      }\n+\n+      streamPosition +\u003d n;\n+      return n;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized long skip(long n) throws IOException {\n    checkState();\n\n    if (blobInputStream !\u003d null) {\n      return blobInputStream.skip(n);\n    } else {\n      if (n \u003c 0 || streamPosition + n \u003e streamLength) {\n        throw new IndexOutOfBoundsException(\"skip range\");\n      }\n\n      if (streamBuffer !\u003d null) {\n        streamBufferPosition \u003d (n \u003c streamBufferLength - streamBufferPosition)\n            ? streamBufferPosition + (int) n\n            : streamBufferLength;\n      }\n\n      streamPosition +\u003d n;\n      return n;\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java"
+    }
+  }
+}

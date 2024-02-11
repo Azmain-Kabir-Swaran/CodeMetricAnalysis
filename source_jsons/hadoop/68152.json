@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SwiftNativeFileSystem.java",
+  "functionName": "getFileBlockLocations",
+  "functionId": "getFileBlockLocations___file-FileStatus__start-long__len-long",
+  "sourceFilePath": "hadoop-tools/hadoop-openstack/src/main/java/org/apache/hadoop/fs/swift/snative/SwiftNativeFileSystem.java",
+  "functionStartLine": 256,
+  "functionEndLine": 315,
+  "numCommitsSeen": 9,
+  "timeTaken": 646,
+  "changeHistory": [
+    "3caca924bc72fe4a0e5b1ea89adb098cc1eb7874"
+  ],
+  "changeHistoryShort": {
+    "3caca924bc72fe4a0e5b1ea89adb098cc1eb7874": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "3caca924bc72fe4a0e5b1ea89adb098cc1eb7874": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-8545. Filesystem Implementation for OpenStack Swift\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1526854 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "27/09/13 4:32 AM",
+      "commitName": "3caca924bc72fe4a0e5b1ea89adb098cc1eb7874",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,60 @@\n+  public BlockLocation[] getFileBlockLocations(FileStatus file,\n+                                               long start,\n+                                               long len) throws IOException {\n+    //argument checks\n+    if (file \u003d\u003d null) {\n+      return null;\n+    }\n+\n+    if (start \u003c 0 || len \u003c 0) {\n+      throw new IllegalArgumentException(\"Negative start or len parameter\" +\n+                                         \" to getFileBlockLocations\");\n+    }\n+    if (file.getLen() \u003c\u003d start) {\n+      return new BlockLocation[0];\n+    }\n+\n+    // Check if requested file in Swift is more than 5Gb. In this case\n+    // each block has its own location -which may be determinable\n+    // from the Swift client API, depending on the remote server\n+    final FileStatus[] listOfFileBlocks \u003d store.listSubPaths(file.getPath(),\n+                                                             false,\n+                                                             true);\n+    List\u003cURI\u003e locations \u003d new ArrayList\u003cURI\u003e();\n+    if (listOfFileBlocks.length \u003e 1) {\n+      for (FileStatus fileStatus : listOfFileBlocks) {\n+        if (SwiftObjectPath.fromPath(uri, fileStatus.getPath())\n+                .equals(SwiftObjectPath.fromPath(uri, file.getPath()))) {\n+          continue;\n+        }\n+        locations.addAll(store.getObjectLocation(fileStatus.getPath()));\n+      }\n+    } else {\n+      locations \u003d store.getObjectLocation(file.getPath());\n+    }\n+\n+    if (locations.isEmpty()) {\n+      LOG.debug(\"No locations returned for \" + file.getPath());\n+      //no locations were returned for the object\n+      //fall back to the superclass\n+\n+      String[] name \u003d {SwiftProtocolConstants.BLOCK_LOCATION};\n+      String[] host \u003d { \"localhost\" };\n+      String[] topology\u003d{SwiftProtocolConstants.TOPOLOGY_PATH};\n+      return new BlockLocation[] {\n+        new BlockLocation(name, host, topology,0, file.getLen())\n+      };\n+    }\n+\n+    final String[] names \u003d new String[locations.size()];\n+    final String[] hosts \u003d new String[locations.size()];\n+    int i \u003d 0;\n+    for (URI location : locations) {\n+      hosts[i] \u003d location.getHost();\n+      names[i] \u003d location.getAuthority();\n+      i++;\n+    }\n+    return new BlockLocation[]{\n+            new BlockLocation(names, hosts, 0, file.getLen())\n+    };\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public BlockLocation[] getFileBlockLocations(FileStatus file,\n                                               long start,\n                                               long len) throws IOException {\n    //argument checks\n    if (file \u003d\u003d null) {\n      return null;\n    }\n\n    if (start \u003c 0 || len \u003c 0) {\n      throw new IllegalArgumentException(\"Negative start or len parameter\" +\n                                         \" to getFileBlockLocations\");\n    }\n    if (file.getLen() \u003c\u003d start) {\n      return new BlockLocation[0];\n    }\n\n    // Check if requested file in Swift is more than 5Gb. In this case\n    // each block has its own location -which may be determinable\n    // from the Swift client API, depending on the remote server\n    final FileStatus[] listOfFileBlocks \u003d store.listSubPaths(file.getPath(),\n                                                             false,\n                                                             true);\n    List\u003cURI\u003e locations \u003d new ArrayList\u003cURI\u003e();\n    if (listOfFileBlocks.length \u003e 1) {\n      for (FileStatus fileStatus : listOfFileBlocks) {\n        if (SwiftObjectPath.fromPath(uri, fileStatus.getPath())\n                .equals(SwiftObjectPath.fromPath(uri, file.getPath()))) {\n          continue;\n        }\n        locations.addAll(store.getObjectLocation(fileStatus.getPath()));\n      }\n    } else {\n      locations \u003d store.getObjectLocation(file.getPath());\n    }\n\n    if (locations.isEmpty()) {\n      LOG.debug(\"No locations returned for \" + file.getPath());\n      //no locations were returned for the object\n      //fall back to the superclass\n\n      String[] name \u003d {SwiftProtocolConstants.BLOCK_LOCATION};\n      String[] host \u003d { \"localhost\" };\n      String[] topology\u003d{SwiftProtocolConstants.TOPOLOGY_PATH};\n      return new BlockLocation[] {\n        new BlockLocation(name, host, topology,0, file.getLen())\n      };\n    }\n\n    final String[] names \u003d new String[locations.size()];\n    final String[] hosts \u003d new String[locations.size()];\n    int i \u003d 0;\n    for (URI location : locations) {\n      hosts[i] \u003d location.getHost();\n      names[i] \u003d location.getAuthority();\n      i++;\n    }\n    return new BlockLocation[]{\n            new BlockLocation(names, hosts, 0, file.getLen())\n    };\n  }",
+      "path": "hadoop-tools/hadoop-openstack/src/main/java/org/apache/hadoop/fs/swift/snative/SwiftNativeFileSystem.java"
+    }
+  }
+}

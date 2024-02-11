@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ContainerScheduler.java",
+  "functionName": "enqueueContainer",
+  "functionId": "enqueueContainer___container-Container",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/scheduler/ContainerScheduler.java",
+  "functionStartLine": 432,
+  "functionEndLine": 469,
+  "numCommitsSeen": 22,
+  "timeTaken": 1669,
+  "changeHistory": [
+    "5b007921cdf01ecc8ed97c164b7d327b8304c529"
+  ],
+  "changeHistoryShort": {
+    "5b007921cdf01ecc8ed97c164b7d327b8304c529": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5b007921cdf01ecc8ed97c164b7d327b8304c529": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6706. Refactor ContainerScheduler to make oversubscription change easier. (Haibo Chen via asuresh)\n",
+      "commitDate": "17/07/17 2:11 PM",
+      "commitName": "5b007921cdf01ecc8ed97c164b7d327b8304c529",
+      "commitAuthor": "Arun Suresh",
+      "diff": "@@ -0,0 +1,38 @@\n+  private boolean enqueueContainer(Container container) {\n+    boolean isGuaranteedContainer \u003d container.getContainerTokenIdentifier().\n+        getExecutionType() \u003d\u003d ExecutionType.GUARANTEED;\n+\n+    boolean isQueued;\n+    if (isGuaranteedContainer) {\n+      queuedGuaranteedContainers.put(container.getContainerId(), container);\n+      isQueued \u003d true;\n+    } else {\n+      if (queuedOpportunisticContainers.size() \u003c maxOppQueueLength) {\n+        LOG.info(\"Opportunistic container {} will be queued at the NM.\",\n+            container.getContainerId());\n+        queuedOpportunisticContainers.put(\n+            container.getContainerId(), container);\n+        isQueued \u003d true;\n+      } else {\n+        LOG.info(\"Opportunistic container [{}] will not be queued at the NM\" +\n+                \"since max queue length [{}] has been reached\",\n+            container.getContainerId(), maxOppQueueLength);\n+        container.sendKillEvent(\n+            ContainerExitStatus.KILLED_BY_CONTAINER_SCHEDULER,\n+            \"Opportunistic container queue is full.\");\n+        isQueued \u003d false;\n+      }\n+    }\n+\n+    if (isQueued) {\n+      try {\n+        this.context.getNMStateStore().storeContainerQueued(\n+            container.getContainerId());\n+      } catch (IOException e) {\n+        LOG.warn(\"Could not store container [\" + container.getContainerId()\n+            + \"] state. The Container has been queued.\", e);\n+      }\n+    }\n+\n+    return isQueued;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean enqueueContainer(Container container) {\n    boolean isGuaranteedContainer \u003d container.getContainerTokenIdentifier().\n        getExecutionType() \u003d\u003d ExecutionType.GUARANTEED;\n\n    boolean isQueued;\n    if (isGuaranteedContainer) {\n      queuedGuaranteedContainers.put(container.getContainerId(), container);\n      isQueued \u003d true;\n    } else {\n      if (queuedOpportunisticContainers.size() \u003c maxOppQueueLength) {\n        LOG.info(\"Opportunistic container {} will be queued at the NM.\",\n            container.getContainerId());\n        queuedOpportunisticContainers.put(\n            container.getContainerId(), container);\n        isQueued \u003d true;\n      } else {\n        LOG.info(\"Opportunistic container [{}] will not be queued at the NM\" +\n                \"since max queue length [{}] has been reached\",\n            container.getContainerId(), maxOppQueueLength);\n        container.sendKillEvent(\n            ContainerExitStatus.KILLED_BY_CONTAINER_SCHEDULER,\n            \"Opportunistic container queue is full.\");\n        isQueued \u003d false;\n      }\n    }\n\n    if (isQueued) {\n      try {\n        this.context.getNMStateStore().storeContainerQueued(\n            container.getContainerId());\n      } catch (IOException e) {\n        LOG.warn(\"Could not store container [\" + container.getContainerId()\n            + \"] state. The Container has been queued.\", e);\n      }\n    }\n\n    return isQueued;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/scheduler/ContainerScheduler.java"
+    }
+  }
+}

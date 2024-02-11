@@ -1,0 +1,139 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DirectoryStagingCommitter.java",
+  "functionName": "preCommitJob",
+  "functionId": "preCommitJob___context-JobContext(modifiers-final)__pending-ActiveCommit(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+  "functionStartLine": 106,
+  "functionEndLine": 133,
+  "numCommitsSeen": 9,
+  "timeTaken": 4176,
+  "changeHistory": [
+    "6574f27fa348542411bff888b184cd7ce34e5d9e",
+    "cc3600aabdca6e8b14c9fe02fe54073bf4ef7685",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": "Ymultichange(Yparameterchange,Ymodifierchange,Ybodychange,Yparametermetachange)",
+    "cc3600aabdca6e8b14c9fe02fe54073bf4ef7685": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": {
+      "type": "Ymultichange(Yparameterchange,Ymodifierchange,Ybodychange,Yparametermetachange)",
+      "commitMessage": "HADOOP-16570. S3A committers encounter scale issues.\n\nContributed by Steve Loughran.\n\nThis addresses two scale issues which has surfaced in large scale benchmarks\nof the S3A Committers.\n\n* Thread pools are not cleaned up.\n  This now happens, with tests.\n\n* OOM on job commit for jobs with many thousands of tasks,\n  each generating tens of (very large) files.\n\nInstead of loading all pending commits into memory as a single list, the list\nof files to load is the sole list which is passed around; .pendingset files are\nloaded and processed in isolation -and reloaded if necessary for any\nabort/rollback operation.\n\nThe parallel commit/abort/revert operations now work at the .pendingset level,\nrather than that of individual pending commit files. The existing parallelized\nTasks API is still used to commit those files, but with a null thread pool, so\nas to serialize the operations.\n\nChange-Id: I5c8240cd31800eaa83d112358770ca0eb2bca797\n",
+      "commitDate": "04/10/19 10:54 AM",
+      "commitName": "6574f27fa348542411bff888b184cd7ce34e5d9e",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16570. S3A committers encounter scale issues.\n\nContributed by Steve Loughran.\n\nThis addresses two scale issues which has surfaced in large scale benchmarks\nof the S3A Committers.\n\n* Thread pools are not cleaned up.\n  This now happens, with tests.\n\n* OOM on job commit for jobs with many thousands of tasks,\n  each generating tens of (very large) files.\n\nInstead of loading all pending commits into memory as a single list, the list\nof files to load is the sole list which is passed around; .pendingset files are\nloaded and processed in isolation -and reloaded if necessary for any\nabort/rollback operation.\n\nThe parallel commit/abort/revert operations now work at the .pendingset level,\nrather than that of individual pending commit files. The existing parallelized\nTasks API is still used to commit those files, but with a null thread pool, so\nas to serialize the operations.\n\nChange-Id: I5c8240cd31800eaa83d112358770ca0eb2bca797\n",
+          "commitDate": "04/10/19 10:54 AM",
+          "commitName": "6574f27fa348542411bff888b184cd7ce34e5d9e",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "11/07/19 10:15 AM",
+          "commitNameOld": "6a3433bffdbdefc5aa66705085bcf6fa089721b2",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 85.03,
+          "commitsBetweenForRepo": 766,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,28 @@\n-  protected void preCommitJob(JobContext context,\n-      List\u003cSinglePendingCommit\u003e pending) throws IOException {\n+  public void preCommitJob(\n+      final JobContext context,\n+      final ActiveCommit pending) throws IOException {\n+\n+    // see if the files can be loaded.\n+    super.preCommitJob(context, pending);\n     Path outputPath \u003d getOutputPath();\n     FileSystem fs \u003d getDestFS();\n     Configuration fsConf \u003d fs.getConf();\n     switch (getConflictResolutionMode(context, fsConf)) {\n     case FAIL:\n       // this was checked in setupJob; temporary files may have been\n       // created, so do not check again.\n       break;\n     case APPEND:\n       // do nothing\n       break;\n     case REPLACE:\n       if (fs.delete(outputPath, true /* recursive */)) {\n         LOG.info(\"{}: removed output path to be replaced: {}\",\n             getRole(), outputPath);\n       }\n       break;\n     default:\n       throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n           + getConflictResolutionMode(context, fsConf));\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void preCommitJob(\n      final JobContext context,\n      final ActiveCommit pending) throws IOException {\n\n    // see if the files can be loaded.\n    super.preCommitJob(context, pending);\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    Configuration fsConf \u003d fs.getConf();\n    switch (getConflictResolutionMode(context, fsConf)) {\n    case FAIL:\n      // this was checked in setupJob; temporary files may have been\n      // created, so do not check again.\n      break;\n    case APPEND:\n      // do nothing\n      break;\n    case REPLACE:\n      if (fs.delete(outputPath, true /* recursive */)) {\n        LOG.info(\"{}: removed output path to be replaced: {}\",\n            getRole(), outputPath);\n      }\n      break;\n    default:\n      throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n          + getConflictResolutionMode(context, fsConf));\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+          "extendedDetails": {
+            "oldValue": "[context-JobContext, pending-List\u003cSinglePendingCommit\u003e]",
+            "newValue": "[context-JobContext(modifiers-final), pending-ActiveCommit(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-16570. S3A committers encounter scale issues.\n\nContributed by Steve Loughran.\n\nThis addresses two scale issues which has surfaced in large scale benchmarks\nof the S3A Committers.\n\n* Thread pools are not cleaned up.\n  This now happens, with tests.\n\n* OOM on job commit for jobs with many thousands of tasks,\n  each generating tens of (very large) files.\n\nInstead of loading all pending commits into memory as a single list, the list\nof files to load is the sole list which is passed around; .pendingset files are\nloaded and processed in isolation -and reloaded if necessary for any\nabort/rollback operation.\n\nThe parallel commit/abort/revert operations now work at the .pendingset level,\nrather than that of individual pending commit files. The existing parallelized\nTasks API is still used to commit those files, but with a null thread pool, so\nas to serialize the operations.\n\nChange-Id: I5c8240cd31800eaa83d112358770ca0eb2bca797\n",
+          "commitDate": "04/10/19 10:54 AM",
+          "commitName": "6574f27fa348542411bff888b184cd7ce34e5d9e",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "11/07/19 10:15 AM",
+          "commitNameOld": "6a3433bffdbdefc5aa66705085bcf6fa089721b2",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 85.03,
+          "commitsBetweenForRepo": 766,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,28 @@\n-  protected void preCommitJob(JobContext context,\n-      List\u003cSinglePendingCommit\u003e pending) throws IOException {\n+  public void preCommitJob(\n+      final JobContext context,\n+      final ActiveCommit pending) throws IOException {\n+\n+    // see if the files can be loaded.\n+    super.preCommitJob(context, pending);\n     Path outputPath \u003d getOutputPath();\n     FileSystem fs \u003d getDestFS();\n     Configuration fsConf \u003d fs.getConf();\n     switch (getConflictResolutionMode(context, fsConf)) {\n     case FAIL:\n       // this was checked in setupJob; temporary files may have been\n       // created, so do not check again.\n       break;\n     case APPEND:\n       // do nothing\n       break;\n     case REPLACE:\n       if (fs.delete(outputPath, true /* recursive */)) {\n         LOG.info(\"{}: removed output path to be replaced: {}\",\n             getRole(), outputPath);\n       }\n       break;\n     default:\n       throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n           + getConflictResolutionMode(context, fsConf));\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void preCommitJob(\n      final JobContext context,\n      final ActiveCommit pending) throws IOException {\n\n    // see if the files can be loaded.\n    super.preCommitJob(context, pending);\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    Configuration fsConf \u003d fs.getConf();\n    switch (getConflictResolutionMode(context, fsConf)) {\n    case FAIL:\n      // this was checked in setupJob; temporary files may have been\n      // created, so do not check again.\n      break;\n    case APPEND:\n      // do nothing\n      break;\n    case REPLACE:\n      if (fs.delete(outputPath, true /* recursive */)) {\n        LOG.info(\"{}: removed output path to be replaced: {}\",\n            getRole(), outputPath);\n      }\n      break;\n    default:\n      throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n          + getConflictResolutionMode(context, fsConf));\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+          "extendedDetails": {
+            "oldValue": "[protected]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16570. S3A committers encounter scale issues.\n\nContributed by Steve Loughran.\n\nThis addresses two scale issues which has surfaced in large scale benchmarks\nof the S3A Committers.\n\n* Thread pools are not cleaned up.\n  This now happens, with tests.\n\n* OOM on job commit for jobs with many thousands of tasks,\n  each generating tens of (very large) files.\n\nInstead of loading all pending commits into memory as a single list, the list\nof files to load is the sole list which is passed around; .pendingset files are\nloaded and processed in isolation -and reloaded if necessary for any\nabort/rollback operation.\n\nThe parallel commit/abort/revert operations now work at the .pendingset level,\nrather than that of individual pending commit files. The existing parallelized\nTasks API is still used to commit those files, but with a null thread pool, so\nas to serialize the operations.\n\nChange-Id: I5c8240cd31800eaa83d112358770ca0eb2bca797\n",
+          "commitDate": "04/10/19 10:54 AM",
+          "commitName": "6574f27fa348542411bff888b184cd7ce34e5d9e",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "11/07/19 10:15 AM",
+          "commitNameOld": "6a3433bffdbdefc5aa66705085bcf6fa089721b2",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 85.03,
+          "commitsBetweenForRepo": 766,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,28 @@\n-  protected void preCommitJob(JobContext context,\n-      List\u003cSinglePendingCommit\u003e pending) throws IOException {\n+  public void preCommitJob(\n+      final JobContext context,\n+      final ActiveCommit pending) throws IOException {\n+\n+    // see if the files can be loaded.\n+    super.preCommitJob(context, pending);\n     Path outputPath \u003d getOutputPath();\n     FileSystem fs \u003d getDestFS();\n     Configuration fsConf \u003d fs.getConf();\n     switch (getConflictResolutionMode(context, fsConf)) {\n     case FAIL:\n       // this was checked in setupJob; temporary files may have been\n       // created, so do not check again.\n       break;\n     case APPEND:\n       // do nothing\n       break;\n     case REPLACE:\n       if (fs.delete(outputPath, true /* recursive */)) {\n         LOG.info(\"{}: removed output path to be replaced: {}\",\n             getRole(), outputPath);\n       }\n       break;\n     default:\n       throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n           + getConflictResolutionMode(context, fsConf));\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void preCommitJob(\n      final JobContext context,\n      final ActiveCommit pending) throws IOException {\n\n    // see if the files can be loaded.\n    super.preCommitJob(context, pending);\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    Configuration fsConf \u003d fs.getConf();\n    switch (getConflictResolutionMode(context, fsConf)) {\n    case FAIL:\n      // this was checked in setupJob; temporary files may have been\n      // created, so do not check again.\n      break;\n    case APPEND:\n      // do nothing\n      break;\n    case REPLACE:\n      if (fs.delete(outputPath, true /* recursive */)) {\n        LOG.info(\"{}: removed output path to be replaced: {}\",\n            getRole(), outputPath);\n      }\n      break;\n    default:\n      throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n          + getConflictResolutionMode(context, fsConf));\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HADOOP-16570. S3A committers encounter scale issues.\n\nContributed by Steve Loughran.\n\nThis addresses two scale issues which has surfaced in large scale benchmarks\nof the S3A Committers.\n\n* Thread pools are not cleaned up.\n  This now happens, with tests.\n\n* OOM on job commit for jobs with many thousands of tasks,\n  each generating tens of (very large) files.\n\nInstead of loading all pending commits into memory as a single list, the list\nof files to load is the sole list which is passed around; .pendingset files are\nloaded and processed in isolation -and reloaded if necessary for any\nabort/rollback operation.\n\nThe parallel commit/abort/revert operations now work at the .pendingset level,\nrather than that of individual pending commit files. The existing parallelized\nTasks API is still used to commit those files, but with a null thread pool, so\nas to serialize the operations.\n\nChange-Id: I5c8240cd31800eaa83d112358770ca0eb2bca797\n",
+          "commitDate": "04/10/19 10:54 AM",
+          "commitName": "6574f27fa348542411bff888b184cd7ce34e5d9e",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "11/07/19 10:15 AM",
+          "commitNameOld": "6a3433bffdbdefc5aa66705085bcf6fa089721b2",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 85.03,
+          "commitsBetweenForRepo": 766,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,28 @@\n-  protected void preCommitJob(JobContext context,\n-      List\u003cSinglePendingCommit\u003e pending) throws IOException {\n+  public void preCommitJob(\n+      final JobContext context,\n+      final ActiveCommit pending) throws IOException {\n+\n+    // see if the files can be loaded.\n+    super.preCommitJob(context, pending);\n     Path outputPath \u003d getOutputPath();\n     FileSystem fs \u003d getDestFS();\n     Configuration fsConf \u003d fs.getConf();\n     switch (getConflictResolutionMode(context, fsConf)) {\n     case FAIL:\n       // this was checked in setupJob; temporary files may have been\n       // created, so do not check again.\n       break;\n     case APPEND:\n       // do nothing\n       break;\n     case REPLACE:\n       if (fs.delete(outputPath, true /* recursive */)) {\n         LOG.info(\"{}: removed output path to be replaced: {}\",\n             getRole(), outputPath);\n       }\n       break;\n     default:\n       throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n           + getConflictResolutionMode(context, fsConf));\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void preCommitJob(\n      final JobContext context,\n      final ActiveCommit pending) throws IOException {\n\n    // see if the files can be loaded.\n    super.preCommitJob(context, pending);\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    Configuration fsConf \u003d fs.getConf();\n    switch (getConflictResolutionMode(context, fsConf)) {\n    case FAIL:\n      // this was checked in setupJob; temporary files may have been\n      // created, so do not check again.\n      break;\n    case APPEND:\n      // do nothing\n      break;\n    case REPLACE:\n      if (fs.delete(outputPath, true /* recursive */)) {\n        LOG.info(\"{}: removed output path to be replaced: {}\",\n            getRole(), outputPath);\n      }\n      break;\n    default:\n      throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n          + getConflictResolutionMode(context, fsConf));\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+          "extendedDetails": {
+            "oldValue": "[context-JobContext, pending-List\u003cSinglePendingCommit\u003e]",
+            "newValue": "[context-JobContext(modifiers-final), pending-ActiveCommit(modifiers-final)]"
+          }
+        }
+      ]
+    },
+    "cc3600aabdca6e8b14c9fe02fe54073bf4ef7685": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15469. S3A directory committer commit job fails if _temporary directory created under dest.\nContributed by Steve Loughran.\n\n(cherry picked from commit 170f1040d46f9b1a084e6637def91e9864446acc)\n",
+      "commitDate": "17/05/18 11:08 AM",
+      "commitName": "cc3600aabdca6e8b14c9fe02fe54073bf4ef7685",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "22/11/17 7:28 AM",
+      "commitNameOld": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 176.11,
+      "commitsBetweenForRepo": 1748,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,24 @@\n   protected void preCommitJob(JobContext context,\n       List\u003cSinglePendingCommit\u003e pending) throws IOException {\n     Path outputPath \u003d getOutputPath();\n     FileSystem fs \u003d getDestFS();\n     Configuration fsConf \u003d fs.getConf();\n     switch (getConflictResolutionMode(context, fsConf)) {\n     case FAIL:\n-      // this was checked in setupJob, but this avoids some cases where\n-      // output was created while the job was processing\n-      if (fs.exists(outputPath)) {\n-        throw new PathExistsException(outputPath.toString(), E_DEST_EXISTS);\n-      }\n+      // this was checked in setupJob; temporary files may have been\n+      // created, so do not check again.\n       break;\n     case APPEND:\n       // do nothing\n       break;\n     case REPLACE:\n       if (fs.delete(outputPath, true /* recursive */)) {\n         LOG.info(\"{}: removed output path to be replaced: {}\",\n             getRole(), outputPath);\n       }\n       break;\n     default:\n       throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n           + getConflictResolutionMode(context, fsConf));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void preCommitJob(JobContext context,\n      List\u003cSinglePendingCommit\u003e pending) throws IOException {\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    Configuration fsConf \u003d fs.getConf();\n    switch (getConflictResolutionMode(context, fsConf)) {\n    case FAIL:\n      // this was checked in setupJob; temporary files may have been\n      // created, so do not check again.\n      break;\n    case APPEND:\n      // do nothing\n      break;\n    case REPLACE:\n      if (fs.delete(outputPath, true /* recursive */)) {\n        LOG.info(\"{}: removed output path to be replaced: {}\",\n            getRole(), outputPath);\n      }\n      break;\n    default:\n      throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n          + getConflictResolutionMode(context, fsConf));\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,27 @@\n+  protected void preCommitJob(JobContext context,\n+      List\u003cSinglePendingCommit\u003e pending) throws IOException {\n+    Path outputPath \u003d getOutputPath();\n+    FileSystem fs \u003d getDestFS();\n+    Configuration fsConf \u003d fs.getConf();\n+    switch (getConflictResolutionMode(context, fsConf)) {\n+    case FAIL:\n+      // this was checked in setupJob, but this avoids some cases where\n+      // output was created while the job was processing\n+      if (fs.exists(outputPath)) {\n+        throw new PathExistsException(outputPath.toString(), E_DEST_EXISTS);\n+      }\n+      break;\n+    case APPEND:\n+      // do nothing\n+      break;\n+    case REPLACE:\n+      if (fs.delete(outputPath, true /* recursive */)) {\n+        LOG.info(\"{}: removed output path to be replaced: {}\",\n+            getRole(), outputPath);\n+      }\n+      break;\n+    default:\n+      throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n+          + getConflictResolutionMode(context, fsConf));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void preCommitJob(JobContext context,\n      List\u003cSinglePendingCommit\u003e pending) throws IOException {\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    Configuration fsConf \u003d fs.getConf();\n    switch (getConflictResolutionMode(context, fsConf)) {\n    case FAIL:\n      // this was checked in setupJob, but this avoids some cases where\n      // output was created while the job was processing\n      if (fs.exists(outputPath)) {\n        throw new PathExistsException(outputPath.toString(), E_DEST_EXISTS);\n      }\n      break;\n    case APPEND:\n      // do nothing\n      break;\n    case REPLACE:\n      if (fs.delete(outputPath, true /* recursive */)) {\n        LOG.info(\"{}: removed output path to be replaced: {}\",\n            getRole(), outputPath);\n      }\n      break;\n    default:\n      throw new IOException(getRole() + \": unknown conflict resolution mode: \"\n          + getConflictResolutionMode(context, fsConf));\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LeaseManager.java",
+  "functionName": "getUnderConstructionFiles",
+  "functionId": "getUnderConstructionFiles___prevId-long(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/LeaseManager.java",
+  "functionStartLine": 280,
+  "functionEndLine": 284,
+  "numCommitsSeen": 51,
+  "timeTaken": 3041,
+  "changeHistory": [
+    "bf5c94899537011465350d5d999fad9ffaeb605d",
+    "96be795656039c0c12031ec31becfcd35fbb1b70",
+    "fb68980959f95f0d89e86f91909867724ad01791"
+  ],
+  "changeHistoryShort": {
+    "bf5c94899537011465350d5d999fad9ffaeb605d": "Ybodychange",
+    "96be795656039c0c12031ec31becfcd35fbb1b70": "Ybodychange",
+    "fb68980959f95f0d89e86f91909867724ad01791": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "bf5c94899537011465350d5d999fad9ffaeb605d": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11848. Enhance dfsadmin listOpenFiles command to list files under a given path. Contributed by Yiqun Lin.\n",
+      "commitDate": "05/01/18 10:31 PM",
+      "commitName": "bf5c94899537011465350d5d999fad9ffaeb605d",
+      "commitAuthor": "Yiqun Lin",
+      "commitDateOld": "23/10/17 1:20 PM",
+      "commitNameOld": "96be795656039c0c12031ec31becfcd35fbb1b70",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 74.42,
+      "commitsBetweenForRepo": 525,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,5 @@\n   public BatchedListEntries\u003cOpenFileEntry\u003e getUnderConstructionFiles(\n       final long prevId) throws IOException {\n-    assert fsnamesystem.hasReadLock();\n-    SortedMap\u003cLong, Lease\u003e remainingLeases;\n-    synchronized (this) {\n-      remainingLeases \u003d leasesById.tailMap(prevId, false);\n-    }\n-    Collection\u003cLong\u003e inodeIds \u003d remainingLeases.keySet();\n-    final int numResponses \u003d Math.min(\n-        this.fsnamesystem.getMaxListOpenFilesResponses(), inodeIds.size());\n-    final List\u003cOpenFileEntry\u003e openFileEntries \u003d\n-        Lists.newArrayListWithExpectedSize(numResponses);\n-\n-    int count \u003d 0;\n-    for (Long inodeId: inodeIds) {\n-      final INodeFile inodeFile \u003d\n-          fsnamesystem.getFSDirectory().getInode(inodeId).asFile();\n-      if (!inodeFile.isUnderConstruction()) {\n-        LOG.warn(\"The file {} is not under construction but has lease.\",\n-            inodeFile.getFullPathName());\n-        continue;\n-      }\n-      openFileEntries.add(new OpenFileEntry(\n-          inodeFile.getId(), inodeFile.getFullPathName(),\n-          inodeFile.getFileUnderConstructionFeature().getClientName(),\n-          inodeFile.getFileUnderConstructionFeature().getClientMachine()));\n-      count++;\n-      if (count \u003e\u003d numResponses) {\n-        break;\n-      }\n-    }\n-    boolean hasMore \u003d (numResponses \u003c remainingLeases.size());\n-    return new BatchedListEntries\u003c\u003e(openFileEntries, hasMore);\n+    return getUnderConstructionFiles(prevId,\n+        OpenFilesIterator.FILTER_PATH_DEFAULT);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public BatchedListEntries\u003cOpenFileEntry\u003e getUnderConstructionFiles(\n      final long prevId) throws IOException {\n    return getUnderConstructionFiles(prevId,\n        OpenFilesIterator.FILTER_PATH_DEFAULT);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/LeaseManager.java",
+      "extendedDetails": {}
+    },
+    "96be795656039c0c12031ec31becfcd35fbb1b70": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12650. Use slf4j instead of log4j in LeaseManager. Contributed by Ajay Kumar.\n",
+      "commitDate": "23/10/17 1:20 PM",
+      "commitName": "96be795656039c0c12031ec31becfcd35fbb1b70",
+      "commitAuthor": "Arpit Agarwal",
+      "commitDateOld": "07/09/17 4:30 PM",
+      "commitNameOld": "52b894db33bc68b46eec5cdf2735dfcf4030853a",
+      "commitAuthorOld": "Xiao Chen",
+      "daysBetweenCommits": 45.87,
+      "commitsBetweenForRepo": 392,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,34 @@\n   public BatchedListEntries\u003cOpenFileEntry\u003e getUnderConstructionFiles(\n       final long prevId) throws IOException {\n     assert fsnamesystem.hasReadLock();\n     SortedMap\u003cLong, Lease\u003e remainingLeases;\n     synchronized (this) {\n       remainingLeases \u003d leasesById.tailMap(prevId, false);\n     }\n     Collection\u003cLong\u003e inodeIds \u003d remainingLeases.keySet();\n     final int numResponses \u003d Math.min(\n         this.fsnamesystem.getMaxListOpenFilesResponses(), inodeIds.size());\n     final List\u003cOpenFileEntry\u003e openFileEntries \u003d\n         Lists.newArrayListWithExpectedSize(numResponses);\n \n     int count \u003d 0;\n     for (Long inodeId: inodeIds) {\n       final INodeFile inodeFile \u003d\n           fsnamesystem.getFSDirectory().getInode(inodeId).asFile();\n       if (!inodeFile.isUnderConstruction()) {\n-        LOG.warn(\"The file \" + inodeFile.getFullPathName()\n-            + \" is not under construction but has lease.\");\n+        LOG.warn(\"The file {} is not under construction but has lease.\",\n+            inodeFile.getFullPathName());\n         continue;\n       }\n       openFileEntries.add(new OpenFileEntry(\n           inodeFile.getId(), inodeFile.getFullPathName(),\n           inodeFile.getFileUnderConstructionFeature().getClientName(),\n           inodeFile.getFileUnderConstructionFeature().getClientMachine()));\n       count++;\n       if (count \u003e\u003d numResponses) {\n         break;\n       }\n     }\n     boolean hasMore \u003d (numResponses \u003c remainingLeases.size());\n     return new BatchedListEntries\u003c\u003e(openFileEntries, hasMore);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public BatchedListEntries\u003cOpenFileEntry\u003e getUnderConstructionFiles(\n      final long prevId) throws IOException {\n    assert fsnamesystem.hasReadLock();\n    SortedMap\u003cLong, Lease\u003e remainingLeases;\n    synchronized (this) {\n      remainingLeases \u003d leasesById.tailMap(prevId, false);\n    }\n    Collection\u003cLong\u003e inodeIds \u003d remainingLeases.keySet();\n    final int numResponses \u003d Math.min(\n        this.fsnamesystem.getMaxListOpenFilesResponses(), inodeIds.size());\n    final List\u003cOpenFileEntry\u003e openFileEntries \u003d\n        Lists.newArrayListWithExpectedSize(numResponses);\n\n    int count \u003d 0;\n    for (Long inodeId: inodeIds) {\n      final INodeFile inodeFile \u003d\n          fsnamesystem.getFSDirectory().getInode(inodeId).asFile();\n      if (!inodeFile.isUnderConstruction()) {\n        LOG.warn(\"The file {} is not under construction but has lease.\",\n            inodeFile.getFullPathName());\n        continue;\n      }\n      openFileEntries.add(new OpenFileEntry(\n          inodeFile.getId(), inodeFile.getFullPathName(),\n          inodeFile.getFileUnderConstructionFeature().getClientName(),\n          inodeFile.getFileUnderConstructionFeature().getClientMachine()));\n      count++;\n      if (count \u003e\u003d numResponses) {\n        break;\n      }\n    }\n    boolean hasMore \u003d (numResponses \u003c remainingLeases.size());\n    return new BatchedListEntries\u003c\u003e(openFileEntries, hasMore);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/LeaseManager.java",
+      "extendedDetails": {}
+    },
+    "fb68980959f95f0d89e86f91909867724ad01791": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10480. Add an admin command to list currently open files. Contributed by Manoj Govindassamy.\n",
+      "commitDate": "15/06/17 2:46 PM",
+      "commitName": "fb68980959f95f0d89e86f91909867724ad01791",
+      "commitAuthor": "Andrew Wang",
+      "diff": "@@ -0,0 +1,34 @@\n+  public BatchedListEntries\u003cOpenFileEntry\u003e getUnderConstructionFiles(\n+      final long prevId) throws IOException {\n+    assert fsnamesystem.hasReadLock();\n+    SortedMap\u003cLong, Lease\u003e remainingLeases;\n+    synchronized (this) {\n+      remainingLeases \u003d leasesById.tailMap(prevId, false);\n+    }\n+    Collection\u003cLong\u003e inodeIds \u003d remainingLeases.keySet();\n+    final int numResponses \u003d Math.min(\n+        this.fsnamesystem.getMaxListOpenFilesResponses(), inodeIds.size());\n+    final List\u003cOpenFileEntry\u003e openFileEntries \u003d\n+        Lists.newArrayListWithExpectedSize(numResponses);\n+\n+    int count \u003d 0;\n+    for (Long inodeId: inodeIds) {\n+      final INodeFile inodeFile \u003d\n+          fsnamesystem.getFSDirectory().getInode(inodeId).asFile();\n+      if (!inodeFile.isUnderConstruction()) {\n+        LOG.warn(\"The file \" + inodeFile.getFullPathName()\n+            + \" is not under construction but has lease.\");\n+        continue;\n+      }\n+      openFileEntries.add(new OpenFileEntry(\n+          inodeFile.getId(), inodeFile.getFullPathName(),\n+          inodeFile.getFileUnderConstructionFeature().getClientName(),\n+          inodeFile.getFileUnderConstructionFeature().getClientMachine()));\n+      count++;\n+      if (count \u003e\u003d numResponses) {\n+        break;\n+      }\n+    }\n+    boolean hasMore \u003d (numResponses \u003c remainingLeases.size());\n+    return new BatchedListEntries\u003c\u003e(openFileEntries, hasMore);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public BatchedListEntries\u003cOpenFileEntry\u003e getUnderConstructionFiles(\n      final long prevId) throws IOException {\n    assert fsnamesystem.hasReadLock();\n    SortedMap\u003cLong, Lease\u003e remainingLeases;\n    synchronized (this) {\n      remainingLeases \u003d leasesById.tailMap(prevId, false);\n    }\n    Collection\u003cLong\u003e inodeIds \u003d remainingLeases.keySet();\n    final int numResponses \u003d Math.min(\n        this.fsnamesystem.getMaxListOpenFilesResponses(), inodeIds.size());\n    final List\u003cOpenFileEntry\u003e openFileEntries \u003d\n        Lists.newArrayListWithExpectedSize(numResponses);\n\n    int count \u003d 0;\n    for (Long inodeId: inodeIds) {\n      final INodeFile inodeFile \u003d\n          fsnamesystem.getFSDirectory().getInode(inodeId).asFile();\n      if (!inodeFile.isUnderConstruction()) {\n        LOG.warn(\"The file \" + inodeFile.getFullPathName()\n            + \" is not under construction but has lease.\");\n        continue;\n      }\n      openFileEntries.add(new OpenFileEntry(\n          inodeFile.getId(), inodeFile.getFullPathName(),\n          inodeFile.getFileUnderConstructionFeature().getClientName(),\n          inodeFile.getFileUnderConstructionFeature().getClientMachine()));\n      count++;\n      if (count \u003e\u003d numResponses) {\n        break;\n      }\n    }\n    boolean hasMore \u003d (numResponses \u003c remainingLeases.size());\n    return new BatchedListEntries\u003c\u003e(openFileEntries, hasMore);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/LeaseManager.java"
+    }
+  }
+}

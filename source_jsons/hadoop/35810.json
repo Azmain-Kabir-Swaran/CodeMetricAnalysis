@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMNodeImpl.java",
+  "functionName": "handleRunningAppOnNode",
+  "functionId": "handleRunningAppOnNode___rmNode-RMNodeImpl__context-RMContext__appId-ApplicationId__nodeId-NodeId",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmnode/RMNodeImpl.java",
+  "functionStartLine": 810,
+  "functionEndLine": 829,
+  "numCommitsSeen": 92,
+  "timeTaken": 2733,
+  "changeHistory": [
+    "08244264c0583472b9c4e16591cfde72c6db62a2",
+    "b8f151231ba37247b9daa23ecce1211fdca0e49f",
+    "95897ca14b7abd7fe047fdcf150473a8a2cbb024"
+  ],
+  "changeHistoryShort": {
+    "08244264c0583472b9c4e16591cfde72c6db62a2": "Ybodychange",
+    "b8f151231ba37247b9daa23ecce1211fdca0e49f": "Ymodifierchange",
+    "95897ca14b7abd7fe047fdcf150473a8a2cbb024": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "08244264c0583472b9c4e16591cfde72c6db62a2": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3445. Cache runningApps in RMNode for getting running apps on given NodeId. (Junping Du via mingma)\n",
+      "commitDate": "10/07/15 8:30 AM",
+      "commitName": "08244264c0583472b9c4e16591cfde72c6db62a2",
+      "commitAuthor": "Ming Ma",
+      "commitDateOld": "18/06/15 2:37 PM",
+      "commitNameOld": "5b5bb8dcdc888ba1ebc7e4eba0fa0e7e79edda9a",
+      "commitAuthorOld": "Xuan",
+      "daysBetweenCommits": 21.74,
+      "commitsBetweenForRepo": 145,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,20 @@\n   private static void handleRunningAppOnNode(RMNodeImpl rmNode,\n       RMContext context, ApplicationId appId, NodeId nodeId) {\n     RMApp app \u003d context.getRMApps().get(appId);\n \n     // if we failed getting app by appId, maybe something wrong happened, just\n     // add the app to the finishedApplications list so that the app can be\n     // cleaned up on the NM\n     if (null \u003d\u003d app) {\n       LOG.warn(\"Cannot get RMApp by appId\u003d\" + appId\n           + \", just added it to finishedApplications list for cleanup\");\n       rmNode.finishedApplications.add(appId);\n+      rmNode.runningApplications.remove(appId);\n       return;\n     }\n \n+    // Add running applications back due to Node add or Node reconnection.\n+    rmNode.runningApplications.add(appId);\n     context.getDispatcher().getEventHandler()\n         .handle(new RMAppRunningOnNodeEvent(appId, nodeId));\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void handleRunningAppOnNode(RMNodeImpl rmNode,\n      RMContext context, ApplicationId appId, NodeId nodeId) {\n    RMApp app \u003d context.getRMApps().get(appId);\n\n    // if we failed getting app by appId, maybe something wrong happened, just\n    // add the app to the finishedApplications list so that the app can be\n    // cleaned up on the NM\n    if (null \u003d\u003d app) {\n      LOG.warn(\"Cannot get RMApp by appId\u003d\" + appId\n          + \", just added it to finishedApplications list for cleanup\");\n      rmNode.finishedApplications.add(appId);\n      rmNode.runningApplications.remove(appId);\n      return;\n    }\n\n    // Add running applications back due to Node add or Node reconnection.\n    rmNode.runningApplications.add(appId);\n    context.getDispatcher().getEventHandler()\n        .handle(new RMAppRunningOnNodeEvent(appId, nodeId));\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmnode/RMNodeImpl.java",
+      "extendedDetails": {}
+    },
+    "b8f151231ba37247b9daa23ecce1211fdca0e49f": {
+      "type": "Ymodifierchange",
+      "commitMessage": "YARN-1354. Recover applications upon nodemanager restart. (Contributed by Jason Lowe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1615550 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/08/14 6:25 AM",
+      "commitName": "b8f151231ba37247b9daa23ecce1211fdca0e49f",
+      "commitAuthor": "Junping Du",
+      "commitDateOld": "14/07/14 4:32 PM",
+      "commitNameOld": "c6cc6a6a8e9e086512da58ef80c28e5ad2c96c48",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 20.58,
+      "commitsBetweenForRepo": 153,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,17 @@\n-    void handleRunningAppOnNode(RMNodeImpl rmNode, RMContext context,\n-        ApplicationId appId, NodeId nodeId) {\n-      RMApp app \u003d context.getRMApps().get(appId);\n-      \n-      // if we failed getting app by appId, maybe something wrong happened, just\n-      // add the app to the finishedApplications list so that the app can be\n-      // cleaned up on the NM\n-      if (null \u003d\u003d app) {\n-        LOG.warn(\"Cannot get RMApp by appId\u003d\" + appId\n-            + \", just added it to finishedApplications list for cleanup\");\n-        rmNode.finishedApplications.add(appId);\n-        return;\n-      }\n+  private static void handleRunningAppOnNode(RMNodeImpl rmNode,\n+      RMContext context, ApplicationId appId, NodeId nodeId) {\n+    RMApp app \u003d context.getRMApps().get(appId);\n \n-      context.getDispatcher().getEventHandler()\n-          .handle(new RMAppRunningOnNodeEvent(appId, nodeId));\n-    }\n\\ No newline at end of file\n+    // if we failed getting app by appId, maybe something wrong happened, just\n+    // add the app to the finishedApplications list so that the app can be\n+    // cleaned up on the NM\n+    if (null \u003d\u003d app) {\n+      LOG.warn(\"Cannot get RMApp by appId\u003d\" + appId\n+          + \", just added it to finishedApplications list for cleanup\");\n+      rmNode.finishedApplications.add(appId);\n+      return;\n+    }\n+\n+    context.getDispatcher().getEventHandler()\n+        .handle(new RMAppRunningOnNodeEvent(appId, nodeId));\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void handleRunningAppOnNode(RMNodeImpl rmNode,\n      RMContext context, ApplicationId appId, NodeId nodeId) {\n    RMApp app \u003d context.getRMApps().get(appId);\n\n    // if we failed getting app by appId, maybe something wrong happened, just\n    // add the app to the finishedApplications list so that the app can be\n    // cleaned up on the NM\n    if (null \u003d\u003d app) {\n      LOG.warn(\"Cannot get RMApp by appId\u003d\" + appId\n          + \", just added it to finishedApplications list for cleanup\");\n      rmNode.finishedApplications.add(appId);\n      return;\n    }\n\n    context.getDispatcher().getEventHandler()\n        .handle(new RMAppRunningOnNodeEvent(appId, nodeId));\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmnode/RMNodeImpl.java",
+      "extendedDetails": {
+        "oldValue": "[]",
+        "newValue": "[private, static]"
+      }
+    },
+    "95897ca14b7abd7fe047fdcf150473a8a2cbb024": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-1885. Fixed a bug that RM may not send application-clean-up signal to NMs where the completed applications previously ran in case of RM restart. Contributed by Wangda Tan\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1603028 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/06/14 4:56 PM",
+      "commitName": "95897ca14b7abd7fe047fdcf150473a8a2cbb024",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,17 @@\n+    void handleRunningAppOnNode(RMNodeImpl rmNode, RMContext context,\n+        ApplicationId appId, NodeId nodeId) {\n+      RMApp app \u003d context.getRMApps().get(appId);\n+      \n+      // if we failed getting app by appId, maybe something wrong happened, just\n+      // add the app to the finishedApplications list so that the app can be\n+      // cleaned up on the NM\n+      if (null \u003d\u003d app) {\n+        LOG.warn(\"Cannot get RMApp by appId\u003d\" + appId\n+            + \", just added it to finishedApplications list for cleanup\");\n+        rmNode.finishedApplications.add(appId);\n+        return;\n+      }\n+\n+      context.getDispatcher().getEventHandler()\n+          .handle(new RMAppRunningOnNodeEvent(appId, nodeId));\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    void handleRunningAppOnNode(RMNodeImpl rmNode, RMContext context,\n        ApplicationId appId, NodeId nodeId) {\n      RMApp app \u003d context.getRMApps().get(appId);\n      \n      // if we failed getting app by appId, maybe something wrong happened, just\n      // add the app to the finishedApplications list so that the app can be\n      // cleaned up on the NM\n      if (null \u003d\u003d app) {\n        LOG.warn(\"Cannot get RMApp by appId\u003d\" + appId\n            + \", just added it to finishedApplications list for cleanup\");\n        rmNode.finishedApplications.add(appId);\n        return;\n      }\n\n      context.getDispatcher().getEventHandler()\n          .handle(new RMAppRunningOnNodeEvent(appId, nodeId));\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmnode/RMNodeImpl.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ReadWriteDiskValidator.java",
+  "functionName": "checkStatus",
+  "functionId": "checkStatus___dir-File",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/ReadWriteDiskValidator.java",
+  "functionStartLine": 43,
+  "functionEndLine": 94,
+  "numCommitsSeen": 1,
+  "timeTaken": 468,
+  "changeHistory": [
+    "591fb159444037bf4cb651aa1228914f5d71e1bf"
+  ],
+  "changeHistoryShort": {
+    "591fb159444037bf4cb651aa1228914f5d71e1bf": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "591fb159444037bf4cb651aa1228914f5d71e1bf": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5529. Create new DiskValidator class with metrics (yufeigu via rkanter)\n",
+      "commitDate": "03/01/17 12:13 PM",
+      "commitName": "591fb159444037bf4cb651aa1228914f5d71e1bf",
+      "commitAuthor": "Robert Kanter",
+      "diff": "@@ -0,0 +1,52 @@\n+  public void checkStatus(File dir) throws DiskErrorException {\n+    ReadWriteDiskValidatorMetrics metric \u003d\n+        ReadWriteDiskValidatorMetrics.getMetric(dir.toString());\n+    Path tmpFile \u003d null;\n+    try {\n+      if (!dir.isDirectory()) {\n+        metric.diskCheckFailed();\n+        throw new DiskErrorException(dir + \" is not a directory!\");\n+      }\n+\n+      // check the directory presence and permission.\n+      DiskChecker.checkDir(dir);\n+\n+      // create a tmp file under the dir\n+      tmpFile \u003d Files.createTempFile(dir.toPath(), \"test\", \"tmp\");\n+\n+      // write 16 bytes into the tmp file\n+      byte[] inputBytes \u003d new byte[16];\n+      RANDOM.nextBytes(inputBytes);\n+      long startTime \u003d System.nanoTime();\n+      Files.write(tmpFile, inputBytes);\n+      long writeLatency \u003d TimeUnit.MICROSECONDS.convert(\n+          System.nanoTime() - startTime, TimeUnit.NANOSECONDS);\n+      metric.addWriteFileLatency(writeLatency);\n+\n+      // read back\n+      startTime \u003d System.nanoTime();\n+      byte[] outputBytes \u003d Files.readAllBytes(tmpFile);\n+      long readLatency \u003d TimeUnit.MICROSECONDS.convert(\n+          System.nanoTime() - startTime, TimeUnit.NANOSECONDS);\n+      metric.addReadFileLatency(readLatency);\n+\n+      // validation\n+      if (!Arrays.equals(inputBytes, outputBytes)) {\n+        metric.diskCheckFailed();\n+        throw new DiskErrorException(\"Data in file has been corrupted.\");\n+      }\n+    } catch (IOException e) {\n+      metric.diskCheckFailed();\n+      throw new DiskErrorException(\"Disk Check failed!\", e);\n+    } finally {\n+      // delete the file\n+      if (tmpFile !\u003d null) {\n+        try {\n+          Files.delete(tmpFile);\n+        } catch (IOException e) {\n+          metric.diskCheckFailed();\n+          throw new DiskErrorException(\"File deletion failed!\", e);\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void checkStatus(File dir) throws DiskErrorException {\n    ReadWriteDiskValidatorMetrics metric \u003d\n        ReadWriteDiskValidatorMetrics.getMetric(dir.toString());\n    Path tmpFile \u003d null;\n    try {\n      if (!dir.isDirectory()) {\n        metric.diskCheckFailed();\n        throw new DiskErrorException(dir + \" is not a directory!\");\n      }\n\n      // check the directory presence and permission.\n      DiskChecker.checkDir(dir);\n\n      // create a tmp file under the dir\n      tmpFile \u003d Files.createTempFile(dir.toPath(), \"test\", \"tmp\");\n\n      // write 16 bytes into the tmp file\n      byte[] inputBytes \u003d new byte[16];\n      RANDOM.nextBytes(inputBytes);\n      long startTime \u003d System.nanoTime();\n      Files.write(tmpFile, inputBytes);\n      long writeLatency \u003d TimeUnit.MICROSECONDS.convert(\n          System.nanoTime() - startTime, TimeUnit.NANOSECONDS);\n      metric.addWriteFileLatency(writeLatency);\n\n      // read back\n      startTime \u003d System.nanoTime();\n      byte[] outputBytes \u003d Files.readAllBytes(tmpFile);\n      long readLatency \u003d TimeUnit.MICROSECONDS.convert(\n          System.nanoTime() - startTime, TimeUnit.NANOSECONDS);\n      metric.addReadFileLatency(readLatency);\n\n      // validation\n      if (!Arrays.equals(inputBytes, outputBytes)) {\n        metric.diskCheckFailed();\n        throw new DiskErrorException(\"Data in file has been corrupted.\");\n      }\n    } catch (IOException e) {\n      metric.diskCheckFailed();\n      throw new DiskErrorException(\"Disk Check failed!\", e);\n    } finally {\n      // delete the file\n      if (tmpFile !\u003d null) {\n        try {\n          Files.delete(tmpFile);\n        } catch (IOException e) {\n          metric.diskCheckFailed();\n          throw new DiskErrorException(\"File deletion failed!\", e);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/ReadWriteDiskValidator.java"
+    }
+  }
+}

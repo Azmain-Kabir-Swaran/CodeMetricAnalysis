@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TrafficController.java",
+  "functionName": "parseStatsString",
+  "functionId": "parseStatsString___stats-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/TrafficController.java",
+  "functionStartLine": 344,
+  "functionEndLine": 395,
+  "numCommitsSeen": 5,
+  "timeTaken": 711,
+  "changeHistory": [
+    "a100be685cc4521e9949589948219231aa5d2733"
+  ],
+  "changeHistoryShort": {
+    "a100be685cc4521e9949589948219231aa5d2733": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a100be685cc4521e9949589948219231aa5d2733": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3366. Enhanced NodeManager to support classifying/shaping outgoing network bandwidth traffic originating from YARN containers Contributed by Sidharta Seethana.\n",
+      "commitDate": "22/04/15 5:26 PM",
+      "commitName": "a100be685cc4521e9949589948219231aa5d2733",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,52 @@\n+  private Map\u003cInteger, Integer\u003e parseStatsString(String stats) {\n+    //Example class stats segment (multiple present in tc output)\n+    //  class htb 42:4 parent 42:3 prio 0 rate 1000Kbit ceil 7000Kbit burst1600b cburst 1598b\n+    //   Sent 77921300 bytes 52617 pkt (dropped 0, overlimits 0 requeues 0)\n+    //   rate 6973Kbit 589pps backlog 0b 39p requeues 0\n+    //   lended: 3753 borrowed: 22514 giants: 0\n+    //   tokens: -122164 ctokens: -52488\n+\n+    String[] lines \u003d Pattern.compile(\"$\", Pattern.MULTILINE)\n+        .split(stats);\n+    Pattern tcClassPattern \u003d Pattern.compile(String.format(\n+        \"class htb %d:(\\\\d+) .*\", ROOT_QDISC_HANDLE));\n+    Pattern bytesPattern \u003d Pattern.compile(\"Sent (\\\\d+) bytes.*\");\n+\n+    int currentClassId \u003d -1;\n+    Map\u003cInteger, Integer\u003e containerClassIdStats \u003d new HashMap\u003c\u003e();\n+\n+    for (String lineSplit : lines) {\n+      String line \u003d lineSplit.trim();\n+\n+      if (!line.isEmpty()) {\n+        //Check if we encountered a stats segment for a container class\n+        Matcher classMatcher \u003d tcClassPattern.matcher(line);\n+        if (classMatcher.matches()) {\n+          int classId \u003d Integer.parseInt(classMatcher.group(1));\n+          if (classId \u003e\u003d MIN_CONTAINER_CLASS_ID) {\n+            currentClassId \u003d classId;\n+            continue;\n+          }\n+        }\n+\n+        //Check if we encountered a stats line\n+        Matcher bytesMatcher \u003d bytesPattern.matcher(line);\n+        if (bytesMatcher.matches()) {\n+          //we found at least one class segment\n+          if (currentClassId !\u003d -1) {\n+            int bytes \u003d Integer.parseInt(bytesMatcher.group(1));\n+            containerClassIdStats.put(currentClassId, bytes);\n+          } else {\n+            LOG.warn(\"Matched a \u0027bytes sent\u0027 line outside of a class stats \" +\n+                  \"segment : \" + line);\n+          }\n+          continue;\n+        }\n+\n+        //skip other kinds of non-empty lines - since we aren\u0027t interested in\n+        //them.\n+      }\n+    }\n+\n+    return containerClassIdStats;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Map\u003cInteger, Integer\u003e parseStatsString(String stats) {\n    //Example class stats segment (multiple present in tc output)\n    //  class htb 42:4 parent 42:3 prio 0 rate 1000Kbit ceil 7000Kbit burst1600b cburst 1598b\n    //   Sent 77921300 bytes 52617 pkt (dropped 0, overlimits 0 requeues 0)\n    //   rate 6973Kbit 589pps backlog 0b 39p requeues 0\n    //   lended: 3753 borrowed: 22514 giants: 0\n    //   tokens: -122164 ctokens: -52488\n\n    String[] lines \u003d Pattern.compile(\"$\", Pattern.MULTILINE)\n        .split(stats);\n    Pattern tcClassPattern \u003d Pattern.compile(String.format(\n        \"class htb %d:(\\\\d+) .*\", ROOT_QDISC_HANDLE));\n    Pattern bytesPattern \u003d Pattern.compile(\"Sent (\\\\d+) bytes.*\");\n\n    int currentClassId \u003d -1;\n    Map\u003cInteger, Integer\u003e containerClassIdStats \u003d new HashMap\u003c\u003e();\n\n    for (String lineSplit : lines) {\n      String line \u003d lineSplit.trim();\n\n      if (!line.isEmpty()) {\n        //Check if we encountered a stats segment for a container class\n        Matcher classMatcher \u003d tcClassPattern.matcher(line);\n        if (classMatcher.matches()) {\n          int classId \u003d Integer.parseInt(classMatcher.group(1));\n          if (classId \u003e\u003d MIN_CONTAINER_CLASS_ID) {\n            currentClassId \u003d classId;\n            continue;\n          }\n        }\n\n        //Check if we encountered a stats line\n        Matcher bytesMatcher \u003d bytesPattern.matcher(line);\n        if (bytesMatcher.matches()) {\n          //we found at least one class segment\n          if (currentClassId !\u003d -1) {\n            int bytes \u003d Integer.parseInt(bytesMatcher.group(1));\n            containerClassIdStats.put(currentClassId, bytes);\n          } else {\n            LOG.warn(\"Matched a \u0027bytes sent\u0027 line outside of a class stats \" +\n                  \"segment : \" + line);\n          }\n          continue;\n        }\n\n        //skip other kinds of non-empty lines - since we aren\u0027t interested in\n        //them.\n      }\n    }\n\n    return containerClassIdStats;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/TrafficController.java"
+    }
+  }
+}

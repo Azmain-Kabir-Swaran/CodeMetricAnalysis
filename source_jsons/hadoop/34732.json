@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NMContainerTokenSecretManager.java",
+  "functionName": "startContainerSuccessful",
+  "functionId": "startContainerSuccessful___tokenId-ContainerTokenIdentifier",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/security/NMContainerTokenSecretManager.java",
+  "functionStartLine": 199,
+  "functionEndLine": 217,
+  "numCommitsSeen": 9,
+  "timeTaken": 1822,
+  "changeHistory": [
+    "2050e0dad661bade3e140d7a5692cfe1999badc3",
+    "8b9c1e68ab33b8d7720dbca9d9de9e92f9b6b447",
+    "ca8024673178fa1c80224b390dfba932921693d9",
+    "ffd2e01604be814fa3db1dded7cd7cff26a79b1e"
+  ],
+  "changeHistoryShort": {
+    "2050e0dad661bade3e140d7a5692cfe1999badc3": "Ybodychange",
+    "8b9c1e68ab33b8d7720dbca9d9de9e92f9b6b447": "Ybodychange",
+    "ca8024673178fa1c80224b390dfba932921693d9": "Ybodychange",
+    "ffd2e01604be814fa3db1dded7cd7cff26a79b1e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2050e0dad661bade3e140d7a5692cfe1999badc3": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-1342. Recover container tokens upon nodemanager restart. Contributed by Jason Lowe.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1612995 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "23/07/14 10:02 PM",
+      "commitName": "2050e0dad661bade3e140d7a5692cfe1999badc3",
+      "commitAuthor": "Devarajulu K",
+      "commitDateOld": "16/07/13 9:24 PM",
+      "commitNameOld": "8b9c1e68ab33b8d7720dbca9d9de9e92f9b6b447",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 372.03,
+      "commitsBetweenForRepo": 2491,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,19 @@\n   public synchronized void startContainerSuccessful(\n       ContainerTokenIdentifier tokenId) {\n \n     removeAnyContainerTokenIfExpired();\n     \n+    ContainerId containerId \u003d tokenId.getContainerID();\n     Long expTime \u003d tokenId.getExpiryTimeStamp();\n     // We might have multiple containers with same expiration time.\n     if (!recentlyStartedContainerTracker.containsKey(expTime)) {\n       recentlyStartedContainerTracker\n         .put(expTime, new ArrayList\u003cContainerId\u003e());\n     }\n-    recentlyStartedContainerTracker.get(expTime).add(tokenId.getContainerID());\n-\n+    recentlyStartedContainerTracker.get(expTime).add(containerId);\n+    try {\n+      stateStore.storeContainerToken(containerId, expTime);\n+    } catch (IOException e) {\n+      LOG.error(\"Unable to store token for container \" + containerId, e);\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void startContainerSuccessful(\n      ContainerTokenIdentifier tokenId) {\n\n    removeAnyContainerTokenIfExpired();\n    \n    ContainerId containerId \u003d tokenId.getContainerID();\n    Long expTime \u003d tokenId.getExpiryTimeStamp();\n    // We might have multiple containers with same expiration time.\n    if (!recentlyStartedContainerTracker.containsKey(expTime)) {\n      recentlyStartedContainerTracker\n        .put(expTime, new ArrayList\u003cContainerId\u003e());\n    }\n    recentlyStartedContainerTracker.get(expTime).add(containerId);\n    try {\n      stateStore.storeContainerToken(containerId, expTime);\n    } catch (IOException e) {\n      LOG.error(\"Unable to store token for container \" + containerId, e);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/security/NMContainerTokenSecretManager.java",
+      "extendedDetails": {}
+    },
+    "8b9c1e68ab33b8d7720dbca9d9de9e92f9b6b447": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-62. Modified NodeManagers to avoid AMs from abusing container tokens for repetitive container launches. Contributed by Omkar Vinit Joshi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1503986 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/07/13 9:24 PM",
+      "commitName": "8b9c1e68ab33b8d7720dbca9d9de9e92f9b6b447",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "18/06/13 4:19 PM",
+      "commitNameOld": "243bcd367ff3130d74676280233041f88aca62a5",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 28.21,
+      "commitsBetweenForRepo": 140,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,10 +1,14 @@\n   public synchronized void startContainerSuccessful(\n       ContainerTokenIdentifier tokenId) {\n-    int keyId \u003d tokenId.getMasterKeyId();\n-    if (currentMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n-      addKeyForContainerId(tokenId.getContainerID(), currentMasterKey);\n-    } else if (previousMasterKey !\u003d null\n-        \u0026\u0026 previousMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n-      addKeyForContainerId(tokenId.getContainerID(), previousMasterKey);\n+\n+    removeAnyContainerTokenIfExpired();\n+    \n+    Long expTime \u003d tokenId.getExpiryTimeStamp();\n+    // We might have multiple containers with same expiration time.\n+    if (!recentlyStartedContainerTracker.containsKey(expTime)) {\n+      recentlyStartedContainerTracker\n+        .put(expTime, new ArrayList\u003cContainerId\u003e());\n     }\n+    recentlyStartedContainerTracker.get(expTime).add(tokenId.getContainerID());\n+\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void startContainerSuccessful(\n      ContainerTokenIdentifier tokenId) {\n\n    removeAnyContainerTokenIfExpired();\n    \n    Long expTime \u003d tokenId.getExpiryTimeStamp();\n    // We might have multiple containers with same expiration time.\n    if (!recentlyStartedContainerTracker.containsKey(expTime)) {\n      recentlyStartedContainerTracker\n        .put(expTime, new ArrayList\u003cContainerId\u003e());\n    }\n    recentlyStartedContainerTracker.get(expTime).add(tokenId.getContainerID());\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/security/NMContainerTokenSecretManager.java",
+      "extendedDetails": {}
+    },
+    "ca8024673178fa1c80224b390dfba932921693d9": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-617. Made ContainerTokens to be used for validation at NodeManager also in unsecure mode to prevent AMs from faking resource requirements in unsecure mode. Contributed by Omkar Vinit Joshi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1483667 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/05/13 11:36 PM",
+      "commitName": "ca8024673178fa1c80224b390dfba932921693d9",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "31/08/12 12:11 PM",
+      "commitNameOld": "45a8e8c5a46535287de97fd6609c0743eef888ee",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 258.48,
+      "commitsBetweenForRepo": 1468,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,10 @@\n   public synchronized void startContainerSuccessful(\n       ContainerTokenIdentifier tokenId) {\n-    if (!UserGroupInformation.isSecurityEnabled()) {\n-      return;\n-    }\n-\n     int keyId \u003d tokenId.getMasterKeyId();\n     if (currentMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n       addKeyForContainerId(tokenId.getContainerID(), currentMasterKey);\n     } else if (previousMasterKey !\u003d null\n         \u0026\u0026 previousMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n       addKeyForContainerId(tokenId.getContainerID(), previousMasterKey);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void startContainerSuccessful(\n      ContainerTokenIdentifier tokenId) {\n    int keyId \u003d tokenId.getMasterKeyId();\n    if (currentMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n      addKeyForContainerId(tokenId.getContainerID(), currentMasterKey);\n    } else if (previousMasterKey !\u003d null\n        \u0026\u0026 previousMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n      addKeyForContainerId(tokenId.getContainerID(), previousMasterKey);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/security/NMContainerTokenSecretManager.java",
+      "extendedDetails": {}
+    },
+    "ffd2e01604be814fa3db1dded7cd7cff26a79b1e": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-39. RM-NM secret-keys should be randomly generated and rolled every so often. (Contributed by Vinod Kumar Vavilapalli and Siddharth Seth)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1377180 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/12 7:18 PM",
+      "commitName": "ffd2e01604be814fa3db1dded7cd7cff26a79b1e",
+      "commitAuthor": "Siddharth Seth",
+      "diff": "@@ -0,0 +1,14 @@\n+  public synchronized void startContainerSuccessful(\n+      ContainerTokenIdentifier tokenId) {\n+    if (!UserGroupInformation.isSecurityEnabled()) {\n+      return;\n+    }\n+\n+    int keyId \u003d tokenId.getMasterKeyId();\n+    if (currentMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n+      addKeyForContainerId(tokenId.getContainerID(), currentMasterKey);\n+    } else if (previousMasterKey !\u003d null\n+        \u0026\u0026 previousMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n+      addKeyForContainerId(tokenId.getContainerID(), previousMasterKey);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void startContainerSuccessful(\n      ContainerTokenIdentifier tokenId) {\n    if (!UserGroupInformation.isSecurityEnabled()) {\n      return;\n    }\n\n    int keyId \u003d tokenId.getMasterKeyId();\n    if (currentMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n      addKeyForContainerId(tokenId.getContainerID(), currentMasterKey);\n    } else if (previousMasterKey !\u003d null\n        \u0026\u0026 previousMasterKey.getMasterKey().getKeyId() \u003d\u003d keyId) {\n      addKeyForContainerId(tokenId.getContainerID(), previousMasterKey);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/security/NMContainerTokenSecretManager.java"
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DatanodeHttpServer.java",
+  "functionName": "start",
+  "functionId": "start",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/DatanodeHttpServer.java",
+  "functionStartLine": 307,
+  "functionEndLine": 345,
+  "numCommitsSeen": 18,
+  "timeTaken": 1905,
+  "changeHistory": [
+    "0c6638c2ea278bd460df88e7118945e461266a8b",
+    "46b6d23e8fbed4c2ba537dd752116c173805bca7",
+    "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4"
+  ],
+  "changeHistoryShort": {
+    "0c6638c2ea278bd460df88e7118945e461266a8b": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "46b6d23e8fbed4c2ba537dd752116c173805bca7": "Ybodychange",
+    "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0c6638c2ea278bd460df88e7118945e461266a8b": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-8268. Port conflict log for data node server is not sufficient (Contributed by Mohammad Shahid Khan)\n",
+      "commitDate": "22/05/15 3:45 AM",
+      "commitName": "0c6638c2ea278bd460df88e7118945e461266a8b",
+      "commitAuthor": "Vinayakumar B",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-8268. Port conflict log for data node server is not sufficient (Contributed by Mohammad Shahid Khan)\n",
+          "commitDate": "22/05/15 3:45 AM",
+          "commitName": "0c6638c2ea278bd460df88e7118945e461266a8b",
+          "commitAuthor": "Vinayakumar B",
+          "commitDateOld": "12/02/15 5:40 PM",
+          "commitNameOld": "46b6d23e8fbed4c2ba537dd752116c173805bca7",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 98.38,
+          "commitsBetweenForRepo": 936,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,39 @@\n-  public void start() {\n+  public void start() throws IOException {\n     if (httpServer !\u003d null) {\n-      ChannelFuture f \u003d httpServer.bind(DataNode.getInfoAddr(conf));\n-      f.syncUninterruptibly();\n+      InetSocketAddress infoAddr \u003d DataNode.getInfoAddr(conf);\n+      ChannelFuture f \u003d httpServer.bind(infoAddr);\n+      try {\n+        f.syncUninterruptibly();\n+      } catch (Throwable e) {\n+        if (e instanceof BindException) {\n+          throw NetUtils.wrapException(null, 0, infoAddr.getHostName(),\n+              infoAddr.getPort(), (SocketException) e);\n+        } else {\n+          throw e;\n+        }\n+      }\n       httpAddress \u003d (InetSocketAddress) f.channel().localAddress();\n       LOG.info(\"Listening HTTP traffic on \" + httpAddress);\n     }\n \n     if (httpsServer !\u003d null) {\n-      InetSocketAddress secInfoSocAddr \u003d NetUtils.createSocketAddr(conf.getTrimmed(\n-        DFS_DATANODE_HTTPS_ADDRESS_KEY, DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n+      InetSocketAddress secInfoSocAddr \u003d\n+          NetUtils.createSocketAddr(conf.getTrimmed(\n+              DFS_DATANODE_HTTPS_ADDRESS_KEY,\n+              DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n       ChannelFuture f \u003d httpsServer.bind(secInfoSocAddr);\n-      f.syncUninterruptibly();\n+\n+      try {\n+        f.syncUninterruptibly();\n+      } catch (Throwable e) {\n+        if (e instanceof BindException) {\n+          throw NetUtils.wrapException(null, 0, secInfoSocAddr.getHostName(),\n+              secInfoSocAddr.getPort(), (SocketException) e);\n+        } else {\n+          throw e;\n+        }\n+      }\n       httpsAddress \u003d (InetSocketAddress) f.channel().localAddress();\n       LOG.info(\"Listening HTTPS traffic on \" + httpsAddress);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void start() throws IOException {\n    if (httpServer !\u003d null) {\n      InetSocketAddress infoAddr \u003d DataNode.getInfoAddr(conf);\n      ChannelFuture f \u003d httpServer.bind(infoAddr);\n      try {\n        f.syncUninterruptibly();\n      } catch (Throwable e) {\n        if (e instanceof BindException) {\n          throw NetUtils.wrapException(null, 0, infoAddr.getHostName(),\n              infoAddr.getPort(), (SocketException) e);\n        } else {\n          throw e;\n        }\n      }\n      httpAddress \u003d (InetSocketAddress) f.channel().localAddress();\n      LOG.info(\"Listening HTTP traffic on \" + httpAddress);\n    }\n\n    if (httpsServer !\u003d null) {\n      InetSocketAddress secInfoSocAddr \u003d\n          NetUtils.createSocketAddr(conf.getTrimmed(\n              DFS_DATANODE_HTTPS_ADDRESS_KEY,\n              DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n      ChannelFuture f \u003d httpsServer.bind(secInfoSocAddr);\n\n      try {\n        f.syncUninterruptibly();\n      } catch (Throwable e) {\n        if (e instanceof BindException) {\n          throw NetUtils.wrapException(null, 0, secInfoSocAddr.getHostName(),\n              secInfoSocAddr.getPort(), (SocketException) e);\n        } else {\n          throw e;\n        }\n      }\n      httpsAddress \u003d (InetSocketAddress) f.channel().localAddress();\n      LOG.info(\"Listening HTTPS traffic on \" + httpsAddress);\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/DatanodeHttpServer.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-8268. Port conflict log for data node server is not sufficient (Contributed by Mohammad Shahid Khan)\n",
+          "commitDate": "22/05/15 3:45 AM",
+          "commitName": "0c6638c2ea278bd460df88e7118945e461266a8b",
+          "commitAuthor": "Vinayakumar B",
+          "commitDateOld": "12/02/15 5:40 PM",
+          "commitNameOld": "46b6d23e8fbed4c2ba537dd752116c173805bca7",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 98.38,
+          "commitsBetweenForRepo": 936,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,39 @@\n-  public void start() {\n+  public void start() throws IOException {\n     if (httpServer !\u003d null) {\n-      ChannelFuture f \u003d httpServer.bind(DataNode.getInfoAddr(conf));\n-      f.syncUninterruptibly();\n+      InetSocketAddress infoAddr \u003d DataNode.getInfoAddr(conf);\n+      ChannelFuture f \u003d httpServer.bind(infoAddr);\n+      try {\n+        f.syncUninterruptibly();\n+      } catch (Throwable e) {\n+        if (e instanceof BindException) {\n+          throw NetUtils.wrapException(null, 0, infoAddr.getHostName(),\n+              infoAddr.getPort(), (SocketException) e);\n+        } else {\n+          throw e;\n+        }\n+      }\n       httpAddress \u003d (InetSocketAddress) f.channel().localAddress();\n       LOG.info(\"Listening HTTP traffic on \" + httpAddress);\n     }\n \n     if (httpsServer !\u003d null) {\n-      InetSocketAddress secInfoSocAddr \u003d NetUtils.createSocketAddr(conf.getTrimmed(\n-        DFS_DATANODE_HTTPS_ADDRESS_KEY, DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n+      InetSocketAddress secInfoSocAddr \u003d\n+          NetUtils.createSocketAddr(conf.getTrimmed(\n+              DFS_DATANODE_HTTPS_ADDRESS_KEY,\n+              DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n       ChannelFuture f \u003d httpsServer.bind(secInfoSocAddr);\n-      f.syncUninterruptibly();\n+\n+      try {\n+        f.syncUninterruptibly();\n+      } catch (Throwable e) {\n+        if (e instanceof BindException) {\n+          throw NetUtils.wrapException(null, 0, secInfoSocAddr.getHostName(),\n+              secInfoSocAddr.getPort(), (SocketException) e);\n+        } else {\n+          throw e;\n+        }\n+      }\n       httpsAddress \u003d (InetSocketAddress) f.channel().localAddress();\n       LOG.info(\"Listening HTTPS traffic on \" + httpsAddress);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void start() throws IOException {\n    if (httpServer !\u003d null) {\n      InetSocketAddress infoAddr \u003d DataNode.getInfoAddr(conf);\n      ChannelFuture f \u003d httpServer.bind(infoAddr);\n      try {\n        f.syncUninterruptibly();\n      } catch (Throwable e) {\n        if (e instanceof BindException) {\n          throw NetUtils.wrapException(null, 0, infoAddr.getHostName(),\n              infoAddr.getPort(), (SocketException) e);\n        } else {\n          throw e;\n        }\n      }\n      httpAddress \u003d (InetSocketAddress) f.channel().localAddress();\n      LOG.info(\"Listening HTTP traffic on \" + httpAddress);\n    }\n\n    if (httpsServer !\u003d null) {\n      InetSocketAddress secInfoSocAddr \u003d\n          NetUtils.createSocketAddr(conf.getTrimmed(\n              DFS_DATANODE_HTTPS_ADDRESS_KEY,\n              DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n      ChannelFuture f \u003d httpsServer.bind(secInfoSocAddr);\n\n      try {\n        f.syncUninterruptibly();\n      } catch (Throwable e) {\n        if (e instanceof BindException) {\n          throw NetUtils.wrapException(null, 0, secInfoSocAddr.getHostName(),\n              secInfoSocAddr.getPort(), (SocketException) e);\n        } else {\n          throw e;\n        }\n      }\n      httpsAddress \u003d (InetSocketAddress) f.channel().localAddress();\n      LOG.info(\"Listening HTTPS traffic on \" + httpsAddress);\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/DatanodeHttpServer.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "46b6d23e8fbed4c2ba537dd752116c173805bca7": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7684. The host:port settings of the deamons should be trimmed before use. Contributed by Anu Engineer.\n",
+      "commitDate": "12/02/15 5:40 PM",
+      "commitName": "46b6d23e8fbed4c2ba537dd752116c173805bca7",
+      "commitAuthor": "Akira Ajisaka",
+      "commitDateOld": "17/11/14 11:42 AM",
+      "commitNameOld": "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 87.25,
+      "commitsBetweenForRepo": 626,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,17 @@\n   public void start() {\n     if (httpServer !\u003d null) {\n       ChannelFuture f \u003d httpServer.bind(DataNode.getInfoAddr(conf));\n       f.syncUninterruptibly();\n       httpAddress \u003d (InetSocketAddress) f.channel().localAddress();\n       LOG.info(\"Listening HTTP traffic on \" + httpAddress);\n     }\n \n     if (httpsServer !\u003d null) {\n-      InetSocketAddress secInfoSocAddr \u003d NetUtils.createSocketAddr(conf.get(\n+      InetSocketAddress secInfoSocAddr \u003d NetUtils.createSocketAddr(conf.getTrimmed(\n         DFS_DATANODE_HTTPS_ADDRESS_KEY, DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n       ChannelFuture f \u003d httpsServer.bind(secInfoSocAddr);\n       f.syncUninterruptibly();\n       httpsAddress \u003d (InetSocketAddress) f.channel().localAddress();\n       LOG.info(\"Listening HTTPS traffic on \" + httpsAddress);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void start() {\n    if (httpServer !\u003d null) {\n      ChannelFuture f \u003d httpServer.bind(DataNode.getInfoAddr(conf));\n      f.syncUninterruptibly();\n      httpAddress \u003d (InetSocketAddress) f.channel().localAddress();\n      LOG.info(\"Listening HTTP traffic on \" + httpAddress);\n    }\n\n    if (httpsServer !\u003d null) {\n      InetSocketAddress secInfoSocAddr \u003d NetUtils.createSocketAddr(conf.getTrimmed(\n        DFS_DATANODE_HTTPS_ADDRESS_KEY, DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n      ChannelFuture f \u003d httpsServer.bind(secInfoSocAddr);\n      f.syncUninterruptibly();\n      httpsAddress \u003d (InetSocketAddress) f.channel().localAddress();\n      LOG.info(\"Listening HTTPS traffic on \" + httpsAddress);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/DatanodeHttpServer.java",
+      "extendedDetails": {}
+    },
+    "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7279. Use netty to implement DatanodeWebHdfsMethods. Contributed by Haohui Mai.\n",
+      "commitDate": "17/11/14 11:42 AM",
+      "commitName": "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4",
+      "commitAuthor": "Haohui Mai",
+      "diff": "@@ -0,0 +1,17 @@\n+  public void start() {\n+    if (httpServer !\u003d null) {\n+      ChannelFuture f \u003d httpServer.bind(DataNode.getInfoAddr(conf));\n+      f.syncUninterruptibly();\n+      httpAddress \u003d (InetSocketAddress) f.channel().localAddress();\n+      LOG.info(\"Listening HTTP traffic on \" + httpAddress);\n+    }\n+\n+    if (httpsServer !\u003d null) {\n+      InetSocketAddress secInfoSocAddr \u003d NetUtils.createSocketAddr(conf.get(\n+        DFS_DATANODE_HTTPS_ADDRESS_KEY, DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n+      ChannelFuture f \u003d httpsServer.bind(secInfoSocAddr);\n+      f.syncUninterruptibly();\n+      httpsAddress \u003d (InetSocketAddress) f.channel().localAddress();\n+      LOG.info(\"Listening HTTPS traffic on \" + httpsAddress);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void start() {\n    if (httpServer !\u003d null) {\n      ChannelFuture f \u003d httpServer.bind(DataNode.getInfoAddr(conf));\n      f.syncUninterruptibly();\n      httpAddress \u003d (InetSocketAddress) f.channel().localAddress();\n      LOG.info(\"Listening HTTP traffic on \" + httpAddress);\n    }\n\n    if (httpsServer !\u003d null) {\n      InetSocketAddress secInfoSocAddr \u003d NetUtils.createSocketAddr(conf.get(\n        DFS_DATANODE_HTTPS_ADDRESS_KEY, DFS_DATANODE_HTTPS_ADDRESS_DEFAULT));\n      ChannelFuture f \u003d httpsServer.bind(secInfoSocAddr);\n      f.syncUninterruptibly();\n      httpsAddress \u003d (InetSocketAddress) f.channel().localAddress();\n      LOG.info(\"Listening HTTPS traffic on \" + httpsAddress);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/DatanodeHttpServer.java"
+    }
+  }
+}

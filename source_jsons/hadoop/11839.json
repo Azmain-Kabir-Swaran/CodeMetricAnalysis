@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FsVolumeImpl.java",
+  "functionName": "append",
+  "functionId": "append___bpid-String__replicaInfo-ReplicaInfo__newGS-long__estimateBlockLen-long",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+  "functionStartLine": 1186,
+  "functionEndLine": 1222,
+  "numCommitsSeen": 71,
+  "timeTaken": 3244,
+  "changeHistory": [
+    "2021f4bdce3b27c46edaad198f0007a26a8a1391",
+    "c619e9b43fd00ba0e59a98ae09685ff719bb722b",
+    "86c9862bec0248d671e657aa56094a2919b8ac14"
+  ],
+  "changeHistoryShort": {
+    "2021f4bdce3b27c46edaad198f0007a26a8a1391": "Ybodychange",
+    "c619e9b43fd00ba0e59a98ae09685ff719bb722b": "Ybodychange",
+    "86c9862bec0248d671e657aa56094a2919b8ac14": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2021f4bdce3b27c46edaad198f0007a26a8a1391": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11187. Optimize disk access for last partial chunk checksum of Finalized replica. Contributed by Wei-Chiu Chuang.\n",
+      "commitDate": "02/02/18 5:18 PM",
+      "commitName": "2021f4bdce3b27c46edaad198f0007a26a8a1391",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "15/12/17 5:51 PM",
+      "commitNameOld": "b668eb91556b8c85c2b4925808ccb1f769031c20",
+      "commitAuthorOld": "Virajith Jalaparti",
+      "daysBetweenCommits": 48.98,
+      "commitsBetweenForRepo": 292,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,38 +1,37 @@\n   public ReplicaInPipeline append(String bpid, ReplicaInfo replicaInfo,\n       long newGS, long estimateBlockLen) throws IOException {\n \n     long bytesReserved \u003d estimateBlockLen - replicaInfo.getNumBytes();\n     if (getAvailable() \u003c bytesReserved) {\n       throw new DiskOutOfSpaceException(\"Insufficient space for appending to \"\n           + replicaInfo);\n     }\n \n     assert replicaInfo.getVolume() \u003d\u003d this:\n       \"The volume of the replica should be the same as this volume\";\n \n     // construct a RBW replica with the new GS\n     File newBlkFile \u003d new File(getRbwDir(bpid), replicaInfo.getBlockName());\n     LocalReplicaInPipeline newReplicaInfo \u003d new ReplicaBuilder(ReplicaState.RBW)\n         .setBlockId(replicaInfo.getBlockId())\n         .setLength(replicaInfo.getNumBytes())\n         .setGenerationStamp(newGS)\n         .setFsVolume(this)\n         .setDirectoryToUse(newBlkFile.getParentFile())\n         .setWriterThread(Thread.currentThread())\n         .setBytesToReserve(bytesReserved)\n         .buildLocalReplicaInPipeline();\n \n+    // Only a finalized replica can be appended.\n+    FinalizedReplica finalized \u003d (FinalizedReplica)replicaInfo;\n     // load last checksum and datalen\n-    LocalReplica localReplica \u003d (LocalReplica)replicaInfo;\n-    byte[] lastChunkChecksum \u003d loadLastPartialChunkChecksum(\n-        localReplica.getBlockFile(), localReplica.getMetaFile());\n     newReplicaInfo.setLastChecksumAndDataLen(\n-        replicaInfo.getNumBytes(), lastChunkChecksum);\n+        finalized.getVisibleLength(), finalized.getLastPartialChunkChecksum());\n \n     // rename meta file to rbw directory\n     // rename block file to rbw directory\n     newReplicaInfo.moveReplicaFrom(replicaInfo, newBlkFile);\n \n     reserveSpaceForReplica(bytesReserved);\n     return newReplicaInfo;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ReplicaInPipeline append(String bpid, ReplicaInfo replicaInfo,\n      long newGS, long estimateBlockLen) throws IOException {\n\n    long bytesReserved \u003d estimateBlockLen - replicaInfo.getNumBytes();\n    if (getAvailable() \u003c bytesReserved) {\n      throw new DiskOutOfSpaceException(\"Insufficient space for appending to \"\n          + replicaInfo);\n    }\n\n    assert replicaInfo.getVolume() \u003d\u003d this:\n      \"The volume of the replica should be the same as this volume\";\n\n    // construct a RBW replica with the new GS\n    File newBlkFile \u003d new File(getRbwDir(bpid), replicaInfo.getBlockName());\n    LocalReplicaInPipeline newReplicaInfo \u003d new ReplicaBuilder(ReplicaState.RBW)\n        .setBlockId(replicaInfo.getBlockId())\n        .setLength(replicaInfo.getNumBytes())\n        .setGenerationStamp(newGS)\n        .setFsVolume(this)\n        .setDirectoryToUse(newBlkFile.getParentFile())\n        .setWriterThread(Thread.currentThread())\n        .setBytesToReserve(bytesReserved)\n        .buildLocalReplicaInPipeline();\n\n    // Only a finalized replica can be appended.\n    FinalizedReplica finalized \u003d (FinalizedReplica)replicaInfo;\n    // load last checksum and datalen\n    newReplicaInfo.setLastChecksumAndDataLen(\n        finalized.getVisibleLength(), finalized.getLastPartialChunkChecksum());\n\n    // rename meta file to rbw directory\n    // rename block file to rbw directory\n    newReplicaInfo.moveReplicaFrom(replicaInfo, newBlkFile);\n\n    reserveSpaceForReplica(bytesReserved);\n    return newReplicaInfo;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "c619e9b43fd00ba0e59a98ae09685ff719bb722b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11056. Concurrent append and read operations lead to checksum error. Contributed by Wei-Chiu Chuang.\n",
+      "commitDate": "09/11/16 9:16 AM",
+      "commitName": "c619e9b43fd00ba0e59a98ae09685ff719bb722b",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "06/11/16 6:16 PM",
+      "commitNameOld": "049e7d27bea13d4254baccf49401daae820b71df",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 2.63,
+      "commitsBetweenForRepo": 23,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,38 @@\n   public ReplicaInPipeline append(String bpid, ReplicaInfo replicaInfo,\n       long newGS, long estimateBlockLen) throws IOException {\n \n     long bytesReserved \u003d estimateBlockLen - replicaInfo.getNumBytes();\n     if (getAvailable() \u003c bytesReserved) {\n       throw new DiskOutOfSpaceException(\"Insufficient space for appending to \"\n           + replicaInfo);\n     }\n \n     assert replicaInfo.getVolume() \u003d\u003d this:\n       \"The volume of the replica should be the same as this volume\";\n \n     // construct a RBW replica with the new GS\n     File newBlkFile \u003d new File(getRbwDir(bpid), replicaInfo.getBlockName());\n     LocalReplicaInPipeline newReplicaInfo \u003d new ReplicaBuilder(ReplicaState.RBW)\n         .setBlockId(replicaInfo.getBlockId())\n         .setLength(replicaInfo.getNumBytes())\n         .setGenerationStamp(newGS)\n         .setFsVolume(this)\n         .setDirectoryToUse(newBlkFile.getParentFile())\n         .setWriterThread(Thread.currentThread())\n         .setBytesToReserve(bytesReserved)\n         .buildLocalReplicaInPipeline();\n \n+    // load last checksum and datalen\n+    LocalReplica localReplica \u003d (LocalReplica)replicaInfo;\n+    byte[] lastChunkChecksum \u003d loadLastPartialChunkChecksum(\n+        localReplica.getBlockFile(), localReplica.getMetaFile());\n+    newReplicaInfo.setLastChecksumAndDataLen(\n+        replicaInfo.getNumBytes(), lastChunkChecksum);\n+\n     // rename meta file to rbw directory\n     // rename block file to rbw directory\n     newReplicaInfo.moveReplicaFrom(replicaInfo, newBlkFile);\n \n     reserveSpaceForReplica(bytesReserved);\n     return newReplicaInfo;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ReplicaInPipeline append(String bpid, ReplicaInfo replicaInfo,\n      long newGS, long estimateBlockLen) throws IOException {\n\n    long bytesReserved \u003d estimateBlockLen - replicaInfo.getNumBytes();\n    if (getAvailable() \u003c bytesReserved) {\n      throw new DiskOutOfSpaceException(\"Insufficient space for appending to \"\n          + replicaInfo);\n    }\n\n    assert replicaInfo.getVolume() \u003d\u003d this:\n      \"The volume of the replica should be the same as this volume\";\n\n    // construct a RBW replica with the new GS\n    File newBlkFile \u003d new File(getRbwDir(bpid), replicaInfo.getBlockName());\n    LocalReplicaInPipeline newReplicaInfo \u003d new ReplicaBuilder(ReplicaState.RBW)\n        .setBlockId(replicaInfo.getBlockId())\n        .setLength(replicaInfo.getNumBytes())\n        .setGenerationStamp(newGS)\n        .setFsVolume(this)\n        .setDirectoryToUse(newBlkFile.getParentFile())\n        .setWriterThread(Thread.currentThread())\n        .setBytesToReserve(bytesReserved)\n        .buildLocalReplicaInPipeline();\n\n    // load last checksum and datalen\n    LocalReplica localReplica \u003d (LocalReplica)replicaInfo;\n    byte[] lastChunkChecksum \u003d loadLastPartialChunkChecksum(\n        localReplica.getBlockFile(), localReplica.getMetaFile());\n    newReplicaInfo.setLastChecksumAndDataLen(\n        replicaInfo.getNumBytes(), lastChunkChecksum);\n\n    // rename meta file to rbw directory\n    // rename block file to rbw directory\n    newReplicaInfo.moveReplicaFrom(replicaInfo, newBlkFile);\n\n    reserveSpaceForReplica(bytesReserved);\n    return newReplicaInfo;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "86c9862bec0248d671e657aa56094a2919b8ac14": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10636. Modify ReplicaInfo to remove the assumption that replica metadata and data are stored in java.io.File. (Virajith Jalaparti via lei)\n",
+      "commitDate": "13/09/16 12:54 PM",
+      "commitName": "86c9862bec0248d671e657aa56094a2919b8ac14",
+      "commitAuthor": "Lei Xu",
+      "diff": "@@ -0,0 +1,31 @@\n+  public ReplicaInPipeline append(String bpid, ReplicaInfo replicaInfo,\n+      long newGS, long estimateBlockLen) throws IOException {\n+\n+    long bytesReserved \u003d estimateBlockLen - replicaInfo.getNumBytes();\n+    if (getAvailable() \u003c bytesReserved) {\n+      throw new DiskOutOfSpaceException(\"Insufficient space for appending to \"\n+          + replicaInfo);\n+    }\n+\n+    assert replicaInfo.getVolume() \u003d\u003d this:\n+      \"The volume of the replica should be the same as this volume\";\n+\n+    // construct a RBW replica with the new GS\n+    File newBlkFile \u003d new File(getRbwDir(bpid), replicaInfo.getBlockName());\n+    LocalReplicaInPipeline newReplicaInfo \u003d new ReplicaBuilder(ReplicaState.RBW)\n+        .setBlockId(replicaInfo.getBlockId())\n+        .setLength(replicaInfo.getNumBytes())\n+        .setGenerationStamp(newGS)\n+        .setFsVolume(this)\n+        .setDirectoryToUse(newBlkFile.getParentFile())\n+        .setWriterThread(Thread.currentThread())\n+        .setBytesToReserve(bytesReserved)\n+        .buildLocalReplicaInPipeline();\n+\n+    // rename meta file to rbw directory\n+    // rename block file to rbw directory\n+    newReplicaInfo.moveReplicaFrom(replicaInfo, newBlkFile);\n+\n+    reserveSpaceForReplica(bytesReserved);\n+    return newReplicaInfo;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public ReplicaInPipeline append(String bpid, ReplicaInfo replicaInfo,\n      long newGS, long estimateBlockLen) throws IOException {\n\n    long bytesReserved \u003d estimateBlockLen - replicaInfo.getNumBytes();\n    if (getAvailable() \u003c bytesReserved) {\n      throw new DiskOutOfSpaceException(\"Insufficient space for appending to \"\n          + replicaInfo);\n    }\n\n    assert replicaInfo.getVolume() \u003d\u003d this:\n      \"The volume of the replica should be the same as this volume\";\n\n    // construct a RBW replica with the new GS\n    File newBlkFile \u003d new File(getRbwDir(bpid), replicaInfo.getBlockName());\n    LocalReplicaInPipeline newReplicaInfo \u003d new ReplicaBuilder(ReplicaState.RBW)\n        .setBlockId(replicaInfo.getBlockId())\n        .setLength(replicaInfo.getNumBytes())\n        .setGenerationStamp(newGS)\n        .setFsVolume(this)\n        .setDirectoryToUse(newBlkFile.getParentFile())\n        .setWriterThread(Thread.currentThread())\n        .setBytesToReserve(bytesReserved)\n        .buildLocalReplicaInPipeline();\n\n    // rename meta file to rbw directory\n    // rename block file to rbw directory\n    newReplicaInfo.moveReplicaFrom(replicaInfo, newBlkFile);\n\n    reserveSpaceForReplica(bytesReserved);\n    return newReplicaInfo;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java"
+    }
+  }
+}

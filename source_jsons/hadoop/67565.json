@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NativeSingleLineParser.java",
+  "functionName": "parseLine",
+  "functionId": "parseLine___logLine-String__jobMetas-Map__String,JobMetaData____skylineRecords-Map__RecurrenceId,List__ResourceSkyline____",
+  "sourceFilePath": "hadoop-tools/hadoop-resourceestimator/src/main/java/org/apache/hadoop/resourceestimator/translator/impl/NativeSingleLineParser.java",
+  "functionStartLine": 74,
+  "functionEndLine": 119,
+  "numCommitsSeen": 1,
+  "timeTaken": 446,
+  "changeHistory": [
+    "625039ef20e6011ab360131d70582a6e4bf2ec1d"
+  ],
+  "changeHistoryShort": {
+    "625039ef20e6011ab360131d70582a6e4bf2ec1d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "625039ef20e6011ab360131d70582a6e4bf2ec1d": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14840. Tool to estimate resource requirements of an application pipeline based on prior executions. (Rui Li via Subru).\n",
+      "commitDate": "25/10/17 3:51 PM",
+      "commitName": "625039ef20e6011ab360131d70582a6e4bf2ec1d",
+      "commitAuthor": "Subru Krishnan",
+      "diff": "@@ -0,0 +1,46 @@\n+  @Override public void parseLine(String logLine,\n+      Map\u003cString, JobMetaData\u003e jobMetas,\n+      Map\u003cRecurrenceId, List\u003cResourceSkyline\u003e\u003e skylineRecords)\n+      throws DataFieldNotFoundException, ParseException {\n+    Configuration config \u003d new Configuration();\n+    config.addResource(new org.apache.hadoop.fs.Path(\n+        ResourceEstimatorConfiguration.CONFIG_FILE));\n+    int timeInterval \u003d\n+        config.getInt(ResourceEstimatorConfiguration.TIME_INTERVAL_KEY, 5);\n+    // note that for native log, we assume each container is allocated \u003c1 core,\n+    // 1GB RAM\u003e\n+    long containerMemAlloc \u003d 1024;\n+    int containerCpuAlloc \u003d 1;\n+    String[] splitString \u003d logLine.split(\"\\\\s+\");\n+    String pipelineId \u003d splitString[0];\n+    String jobId \u003d splitString[5];\n+    String[] skylineUnits \u003d splitString[7].split(\"\\\\|\");\n+\n+    JobMetaData appMeta \u003d new JobMetaData(0);\n+    RecurrenceId recurrenceId \u003d new RecurrenceId(pipelineId, jobId);\n+    appMeta.setRecurrenceId(recurrenceId);\n+    Resource containerAlloc;\n+    int numContainers;\n+    ResourceSkyline resourceSkyline \u003d appMeta.getResourceSkyline();\n+    final TreeMap\u003cLong, Resource\u003e resourceOverTime \u003d new TreeMap\u003c\u003e();\n+    final RLESparseResourceAllocation skylineList \u003d\n+        new RLESparseResourceAllocation(resourceOverTime,\n+            new DefaultResourceCalculator());\n+    resourceSkyline.setSkylineList(skylineList);\n+    for (String elem : skylineUnits) {\n+      numContainers \u003d Integer.parseInt(elem.split(\"\\\\:\")[0]);\n+      containerAlloc \u003d Resource.newInstance(containerMemAlloc * numContainers,\n+          containerCpuAlloc * numContainers);\n+      final ReservationInterval riAdd \u003d\n+          new ReservationInterval(Long.parseLong(elem.split(\"\\\\:\")[1]),\n+              Long.parseLong(elem.split(\"\\\\:\")[1]) + timeInterval);\n+      resourceSkyline.getSkylineList().addInterval(riAdd, containerAlloc);\n+    }\n+    resourceSkyline.setContainerSpec(\n+        Resource.newInstance(containerMemAlloc, containerCpuAlloc));\n+    appMeta.setJobFinishTime(\n+        appMeta.getResourceSkyline().getSkylineList().getLatestNonNullTime());\n+    resourceSkyline.setJobInputDataSize(0);\n+    resourceSkyline.setJobId(jobId);\n+    aggregateSkyline(resourceSkyline, recurrenceId, skylineRecords);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  @Override public void parseLine(String logLine,\n      Map\u003cString, JobMetaData\u003e jobMetas,\n      Map\u003cRecurrenceId, List\u003cResourceSkyline\u003e\u003e skylineRecords)\n      throws DataFieldNotFoundException, ParseException {\n    Configuration config \u003d new Configuration();\n    config.addResource(new org.apache.hadoop.fs.Path(\n        ResourceEstimatorConfiguration.CONFIG_FILE));\n    int timeInterval \u003d\n        config.getInt(ResourceEstimatorConfiguration.TIME_INTERVAL_KEY, 5);\n    // note that for native log, we assume each container is allocated \u003c1 core,\n    // 1GB RAM\u003e\n    long containerMemAlloc \u003d 1024;\n    int containerCpuAlloc \u003d 1;\n    String[] splitString \u003d logLine.split(\"\\\\s+\");\n    String pipelineId \u003d splitString[0];\n    String jobId \u003d splitString[5];\n    String[] skylineUnits \u003d splitString[7].split(\"\\\\|\");\n\n    JobMetaData appMeta \u003d new JobMetaData(0);\n    RecurrenceId recurrenceId \u003d new RecurrenceId(pipelineId, jobId);\n    appMeta.setRecurrenceId(recurrenceId);\n    Resource containerAlloc;\n    int numContainers;\n    ResourceSkyline resourceSkyline \u003d appMeta.getResourceSkyline();\n    final TreeMap\u003cLong, Resource\u003e resourceOverTime \u003d new TreeMap\u003c\u003e();\n    final RLESparseResourceAllocation skylineList \u003d\n        new RLESparseResourceAllocation(resourceOverTime,\n            new DefaultResourceCalculator());\n    resourceSkyline.setSkylineList(skylineList);\n    for (String elem : skylineUnits) {\n      numContainers \u003d Integer.parseInt(elem.split(\"\\\\:\")[0]);\n      containerAlloc \u003d Resource.newInstance(containerMemAlloc * numContainers,\n          containerCpuAlloc * numContainers);\n      final ReservationInterval riAdd \u003d\n          new ReservationInterval(Long.parseLong(elem.split(\"\\\\:\")[1]),\n              Long.parseLong(elem.split(\"\\\\:\")[1]) + timeInterval);\n      resourceSkyline.getSkylineList().addInterval(riAdd, containerAlloc);\n    }\n    resourceSkyline.setContainerSpec(\n        Resource.newInstance(containerMemAlloc, containerCpuAlloc));\n    appMeta.setJobFinishTime(\n        appMeta.getResourceSkyline().getSkylineList().getLatestNonNullTime());\n    resourceSkyline.setJobInputDataSize(0);\n    resourceSkyline.setJobId(jobId);\n    aggregateSkyline(resourceSkyline, recurrenceId, skylineRecords);\n  }",
+      "path": "hadoop-tools/hadoop-resourceestimator/src/main/java/org/apache/hadoop/resourceestimator/translator/impl/NativeSingleLineParser.java"
+    }
+  }
+}

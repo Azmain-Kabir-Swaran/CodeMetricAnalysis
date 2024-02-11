@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockBlobInputStream.java",
+  "functionName": "seek",
+  "functionId": "seek___pos-long",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java",
+  "functionStartLine": 118,
+  "functionEndLine": 163,
+  "numCommitsSeen": 3,
+  "timeTaken": 1283,
+  "changeHistory": [
+    "d91b7a8451489f97bdde928cea774764155cfe03",
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0"
+  ],
+  "changeHistoryShort": {
+    "d91b7a8451489f97bdde928cea774764155cfe03": "Ybodychange",
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d91b7a8451489f97bdde928cea774764155cfe03": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14722. Azure: BlockBlobInputStream position incorrect after seek.\nContributed by Thomas Marquardt\n",
+      "commitDate": "06/08/17 12:19 PM",
+      "commitName": "d91b7a8451489f97bdde928cea774764155cfe03",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "25/07/17 4:26 PM",
+      "commitNameOld": "a92bf39e2313d4bfccd641ce0ccefe26f4903a69",
+      "commitAuthorOld": "Jitendra Pandey",
+      "daysBetweenCommits": 11.83,
+      "commitsBetweenForRepo": 120,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,46 @@\n   public synchronized void seek(long pos) throws IOException {\n     checkState();\n     if (pos \u003c 0) {\n       throw new EOFException(FSExceptionMessages.NEGATIVE_SEEK + \" \" + pos);\n     }\n     if (pos \u003e streamLength) {\n       throw new EOFException(\n           FSExceptionMessages.CANNOT_SEEK_PAST_EOF + \" \" + pos);\n     }\n-    if (pos \u003d\u003d getPos()) {\n+\n+    // calculate offset between the target and current position in the stream\n+    long offset \u003d pos - getPos();\n+\n+    if (offset \u003d\u003d 0) {\n       // no\u003dop, no state change\n       return;\n     }\n \n-    if (streamBuffer !\u003d null) {\n-      long offset \u003d streamPosition - pos;\n-      if (offset \u003e 0 \u0026\u0026 offset \u003c streamBufferLength) {\n-        streamBufferPosition \u003d streamBufferLength - (int) offset;\n-      } else {\n-        streamBufferPosition \u003d streamBufferLength;\n+    if (offset \u003e 0) {\n+      // forward seek, data can be skipped as an optimization\n+      if (skip(offset) !\u003d offset) {\n+        throw new EOFException(FSExceptionMessages.EOF_IN_READ_FULLY);\n       }\n+      return;\n     }\n \n-    streamPosition \u003d pos;\n+    // reverse seek, offset is negative\n+    if (streamBuffer !\u003d null) {\n+      if (streamBufferPosition + offset \u003e\u003d 0) {\n+        // target position is inside the stream buffer,\n+        // only need to move backwards within the stream buffer\n+        streamBufferPosition +\u003d offset;\n+      } else {\n+        // target position is outside the stream buffer,\n+        // need to reset stream buffer and move position for next network read\n+        resetStreamBuffer();\n+        streamPosition \u003d pos;\n+      }\n+    } else {\n+      streamPosition \u003d pos;\n+    }\n+\n     // close BlobInputStream after seek is invoked because BlobInputStream\n     // does not support seek\n     closeBlobInputStream();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void seek(long pos) throws IOException {\n    checkState();\n    if (pos \u003c 0) {\n      throw new EOFException(FSExceptionMessages.NEGATIVE_SEEK + \" \" + pos);\n    }\n    if (pos \u003e streamLength) {\n      throw new EOFException(\n          FSExceptionMessages.CANNOT_SEEK_PAST_EOF + \" \" + pos);\n    }\n\n    // calculate offset between the target and current position in the stream\n    long offset \u003d pos - getPos();\n\n    if (offset \u003d\u003d 0) {\n      // no\u003dop, no state change\n      return;\n    }\n\n    if (offset \u003e 0) {\n      // forward seek, data can be skipped as an optimization\n      if (skip(offset) !\u003d offset) {\n        throw new EOFException(FSExceptionMessages.EOF_IN_READ_FULLY);\n      }\n      return;\n    }\n\n    // reverse seek, offset is negative\n    if (streamBuffer !\u003d null) {\n      if (streamBufferPosition + offset \u003e\u003d 0) {\n        // target position is inside the stream buffer,\n        // only need to move backwards within the stream buffer\n        streamBufferPosition +\u003d offset;\n      } else {\n        // target position is outside the stream buffer,\n        // need to reset stream buffer and move position for next network read\n        resetStreamBuffer();\n        streamPosition \u003d pos;\n      }\n    } else {\n      streamPosition \u003d pos;\n    }\n\n    // close BlobInputStream after seek is invoked because BlobInputStream\n    // does not support seek\n    closeBlobInputStream();\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java",
+      "extendedDetails": {}
+    },
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14535 wasb: implement high-performance random access and seek of block blobs.\nContributed by Thomas Marquardt\n",
+      "commitDate": "11/07/17 1:34 PM",
+      "commitName": "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,28 @@\n+  public synchronized void seek(long pos) throws IOException {\n+    checkState();\n+    if (pos \u003c 0) {\n+      throw new EOFException(FSExceptionMessages.NEGATIVE_SEEK + \" \" + pos);\n+    }\n+    if (pos \u003e streamLength) {\n+      throw new EOFException(\n+          FSExceptionMessages.CANNOT_SEEK_PAST_EOF + \" \" + pos);\n+    }\n+    if (pos \u003d\u003d getPos()) {\n+      // no\u003dop, no state change\n+      return;\n+    }\n+\n+    if (streamBuffer !\u003d null) {\n+      long offset \u003d streamPosition - pos;\n+      if (offset \u003e 0 \u0026\u0026 offset \u003c streamBufferLength) {\n+        streamBufferPosition \u003d streamBufferLength - (int) offset;\n+      } else {\n+        streamBufferPosition \u003d streamBufferLength;\n+      }\n+    }\n+\n+    streamPosition \u003d pos;\n+    // close BlobInputStream after seek is invoked because BlobInputStream\n+    // does not support seek\n+    closeBlobInputStream();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void seek(long pos) throws IOException {\n    checkState();\n    if (pos \u003c 0) {\n      throw new EOFException(FSExceptionMessages.NEGATIVE_SEEK + \" \" + pos);\n    }\n    if (pos \u003e streamLength) {\n      throw new EOFException(\n          FSExceptionMessages.CANNOT_SEEK_PAST_EOF + \" \" + pos);\n    }\n    if (pos \u003d\u003d getPos()) {\n      // no\u003dop, no state change\n      return;\n    }\n\n    if (streamBuffer !\u003d null) {\n      long offset \u003d streamPosition - pos;\n      if (offset \u003e 0 \u0026\u0026 offset \u003c streamBufferLength) {\n        streamBufferPosition \u003d streamBufferLength - (int) offset;\n      } else {\n        streamBufferPosition \u003d streamBufferLength;\n      }\n    }\n\n    streamPosition \u003d pos;\n    // close BlobInputStream after seek is invoked because BlobInputStream\n    // does not support seek\n    closeBlobInputStream();\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java"
+    }
+  }
+}

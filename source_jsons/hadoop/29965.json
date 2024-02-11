@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LogInfo.java",
+  "functionName": "doParse",
+  "functionId": "doParse___tdm-TimelineDataManager__parser-JsonParser__objMapper-ObjectMapper__ugi-UserGroupInformation__appCompleted-boolean",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timeline-pluginstorage/src/main/java/org/apache/hadoop/yarn/server/timeline/LogInfo.java",
+  "functionStartLine": 179,
+  "functionEndLine": 234,
+  "numCommitsSeen": 5,
+  "timeTaken": 790,
+  "changeHistory": [
+    "02f597c5db36ded385413958bdee793ad7eda40e"
+  ],
+  "changeHistoryShort": {
+    "02f597c5db36ded385413958bdee793ad7eda40e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "02f597c5db36ded385413958bdee793ad7eda40e": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4265. Provide new timeline plugin storage to support fine-grained entity caching. Contributed by Li Lu and Jason Lowe\n",
+      "commitDate": "17/01/16 5:37 PM",
+      "commitName": "02f597c5db36ded385413958bdee793ad7eda40e",
+      "commitAuthor": "Junping Du",
+      "diff": "@@ -0,0 +1,44 @@\n+  protected long doParse(TimelineDataManager tdm, JsonParser parser,\n+      ObjectMapper objMapper, UserGroupInformation ugi, boolean appCompleted)\n+      throws IOException {\n+    long count \u003d 0;\n+    long bytesParsed;\n+    long bytesParsedLastBatch \u003d 0;\n+    boolean putError \u003d false;\n+    try {\n+      MappingIterator\u003cTimelineDomain\u003e iter \u003d objMapper.readValues(parser,\n+          TimelineDomain.class);\n+\n+      while (iter.hasNext()) {\n+        TimelineDomain domain \u003d iter.next();\n+        domain.setOwner(ugi.getShortUserName());\n+        LOG.trace(\"Read domain {}\", domain.getId());\n+        ++count;\n+        bytesParsed \u003d parser.getCurrentLocation().getCharOffset() + 1;\n+        LOG.trace(\"Parser now at offset {}\", bytesParsed);\n+\n+        try {\n+          tdm.putDomain(domain, ugi);\n+          setOffset(getOffset() + bytesParsed - bytesParsedLastBatch);\n+          bytesParsedLastBatch \u003d bytesParsed;\n+        } catch (YarnException e) {\n+          putError \u003d true;\n+          throw new IOException(\"Error posting domain\", e);\n+        } catch (IOException e) {\n+          putError \u003d true;\n+          throw new IOException(\"Error posting domain\", e);\n+        }\n+      }\n+    } catch (IOException e) {\n+      // if app hasn\u0027t completed then there may be errors due to the\n+      // incomplete file which are treated as EOF until app completes\n+      if (appCompleted || putError) {\n+        throw e;\n+      }\n+    } catch (RuntimeException e) {\n+      if (appCompleted || !(e.getCause() instanceof JsonParseException)) {\n+        throw e;\n+      }\n+    }\n+    return count;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected long doParse(TimelineDataManager tdm, JsonParser parser,\n      ObjectMapper objMapper, UserGroupInformation ugi, boolean appCompleted)\n      throws IOException {\n    long count \u003d 0;\n    long bytesParsed;\n    long bytesParsedLastBatch \u003d 0;\n    boolean putError \u003d false;\n    try {\n      MappingIterator\u003cTimelineDomain\u003e iter \u003d objMapper.readValues(parser,\n          TimelineDomain.class);\n\n      while (iter.hasNext()) {\n        TimelineDomain domain \u003d iter.next();\n        domain.setOwner(ugi.getShortUserName());\n        LOG.trace(\"Read domain {}\", domain.getId());\n        ++count;\n        bytesParsed \u003d parser.getCurrentLocation().getCharOffset() + 1;\n        LOG.trace(\"Parser now at offset {}\", bytesParsed);\n\n        try {\n          tdm.putDomain(domain, ugi);\n          setOffset(getOffset() + bytesParsed - bytesParsedLastBatch);\n          bytesParsedLastBatch \u003d bytesParsed;\n        } catch (YarnException e) {\n          putError \u003d true;\n          throw new IOException(\"Error posting domain\", e);\n        } catch (IOException e) {\n          putError \u003d true;\n          throw new IOException(\"Error posting domain\", e);\n        }\n      }\n    } catch (IOException e) {\n      // if app hasn\u0027t completed then there may be errors due to the\n      // incomplete file which are treated as EOF until app completes\n      if (appCompleted || putError) {\n        throw e;\n      }\n    } catch (RuntimeException e) {\n      if (appCompleted || !(e.getCause() instanceof JsonParseException)) {\n        throw e;\n      }\n    }\n    return count;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timeline-pluginstorage/src/main/java/org/apache/hadoop/yarn/server/timeline/LogInfo.java"
+    }
+  }
+}

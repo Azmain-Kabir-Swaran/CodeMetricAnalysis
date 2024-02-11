@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ServiceClient.java",
+  "functionName": "addYarnSysFs",
+  "functionId": "addYarnSysFs___path-Path__localResources-Map__String,LocalResource____app-Service",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-core/src/main/java/org/apache/hadoop/yarn/service/client/ServiceClient.java",
+  "functionStartLine": 1121,
+  "functionEndLine": 1175,
+  "numCommitsSeen": 53,
+  "timeTaken": 1083,
+  "changeHistory": [
+    "d07e873b7db6cb317eccb4768607c1afb505c99b"
+  ],
+  "changeHistoryShort": {
+    "d07e873b7db6cb317eccb4768607c1afb505c99b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d07e873b7db6cb317eccb4768607c1afb505c99b": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-8569. Create an interface to provide cluster information to application. Contributed by Eric Yang\n",
+      "commitDate": "26/10/18 5:57 PM",
+      "commitName": "d07e873b7db6cb317eccb4768607c1afb505c99b",
+      "commitAuthor": "Billie Rinaldi",
+      "diff": "@@ -0,0 +1,55 @@\n+  private void addYarnSysFs(Path path,\n+      Map\u003cString, LocalResource\u003e localResources, Service app)\n+          throws IOException {\n+    List\u003cComponent\u003e componentsWithYarnSysFS \u003d new ArrayList\u003cComponent\u003e();\n+    for(Component c : app.getComponents()) {\n+      boolean enabled \u003d Boolean.parseBoolean(c.getConfiguration()\n+          .getEnv(ApplicationConstants.Environment\n+              .YARN_CONTAINER_RUNTIME_YARN_SYSFS_ENABLE.name()));\n+      if (enabled) {\n+        componentsWithYarnSysFS.add(c);\n+      }\n+    }\n+    if(componentsWithYarnSysFS.size() \u003d\u003d 0) {\n+      return;\n+    }\n+    String buffer \u003d ServiceApiUtil.jsonSerDeser.toJson(app);\n+    File tmpDir \u003d Files.createTempDir();\n+    if (tmpDir.exists()) {\n+      String serviceJsonPath \u003d tmpDir.getAbsolutePath() + \"/app.json\";\n+      File localFile \u003d new File(serviceJsonPath);\n+      if (localFile.createNewFile()) {\n+        try (Writer writer \u003d new OutputStreamWriter(\n+            new FileOutputStream(localFile), StandardCharsets.UTF_8)) {\n+          writer.write(buffer);\n+        }\n+      } else {\n+        throw new IOException(\"Fail to write app.json to temp directory\");\n+      }\n+      File destinationFile \u003d new File(tmpDir.getAbsolutePath() + \"/sysfs.tar\");\n+      if (!destinationFile.createNewFile()) {\n+        throw new IOException(\"Fail to localize sysfs.tar.\");\n+      }\n+      List\u003cFile\u003e files \u003d new ArrayList\u003cFile\u003e();\n+      files.add(localFile);\n+      compressFiles(files, destinationFile, \"sysfs\");\n+      LocalResource localResource \u003d\n+          fs.submitFile(destinationFile, path, \".\", \"sysfs.tar\");\n+      Path serviceJson \u003d new Path(path, \"sysfs.tar\");\n+      for (Component c  : componentsWithYarnSysFS) {\n+        ConfigFile e \u003d new ConfigFile();\n+        e.type(TypeEnum.ARCHIVE);\n+        e.srcFile(serviceJson.toString());\n+        e.destFile(\"/hadoop/yarn\");\n+        if (!c.getConfiguration().getFiles().contains(e)) {\n+          c.getConfiguration().getFiles().add(e);\n+        }\n+      }\n+      localResources.put(\"sysfs\", localResource);\n+      if (!tmpDir.delete()) {\n+        LOG.warn(\"Failed to delete temp file: \" + tmpDir.getAbsolutePath());\n+      }\n+    } else {\n+      throw new IOException(\"Fail to localize sysfs resource.\");\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void addYarnSysFs(Path path,\n      Map\u003cString, LocalResource\u003e localResources, Service app)\n          throws IOException {\n    List\u003cComponent\u003e componentsWithYarnSysFS \u003d new ArrayList\u003cComponent\u003e();\n    for(Component c : app.getComponents()) {\n      boolean enabled \u003d Boolean.parseBoolean(c.getConfiguration()\n          .getEnv(ApplicationConstants.Environment\n              .YARN_CONTAINER_RUNTIME_YARN_SYSFS_ENABLE.name()));\n      if (enabled) {\n        componentsWithYarnSysFS.add(c);\n      }\n    }\n    if(componentsWithYarnSysFS.size() \u003d\u003d 0) {\n      return;\n    }\n    String buffer \u003d ServiceApiUtil.jsonSerDeser.toJson(app);\n    File tmpDir \u003d Files.createTempDir();\n    if (tmpDir.exists()) {\n      String serviceJsonPath \u003d tmpDir.getAbsolutePath() + \"/app.json\";\n      File localFile \u003d new File(serviceJsonPath);\n      if (localFile.createNewFile()) {\n        try (Writer writer \u003d new OutputStreamWriter(\n            new FileOutputStream(localFile), StandardCharsets.UTF_8)) {\n          writer.write(buffer);\n        }\n      } else {\n        throw new IOException(\"Fail to write app.json to temp directory\");\n      }\n      File destinationFile \u003d new File(tmpDir.getAbsolutePath() + \"/sysfs.tar\");\n      if (!destinationFile.createNewFile()) {\n        throw new IOException(\"Fail to localize sysfs.tar.\");\n      }\n      List\u003cFile\u003e files \u003d new ArrayList\u003cFile\u003e();\n      files.add(localFile);\n      compressFiles(files, destinationFile, \"sysfs\");\n      LocalResource localResource \u003d\n          fs.submitFile(destinationFile, path, \".\", \"sysfs.tar\");\n      Path serviceJson \u003d new Path(path, \"sysfs.tar\");\n      for (Component c  : componentsWithYarnSysFS) {\n        ConfigFile e \u003d new ConfigFile();\n        e.type(TypeEnum.ARCHIVE);\n        e.srcFile(serviceJson.toString());\n        e.destFile(\"/hadoop/yarn\");\n        if (!c.getConfiguration().getFiles().contains(e)) {\n          c.getConfiguration().getFiles().add(e);\n        }\n      }\n      localResources.put(\"sysfs\", localResource);\n      if (!tmpDir.delete()) {\n        LOG.warn(\"Failed to delete temp file: \" + tmpDir.getAbsolutePath());\n      }\n    } else {\n      throw new IOException(\"Fail to localize sysfs resource.\");\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-core/src/main/java/org/apache/hadoop/yarn/service/client/ServiceClient.java"
+    }
+  }
+}

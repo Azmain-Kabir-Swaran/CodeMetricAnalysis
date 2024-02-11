@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RollingLevelDBTimelineStore.java",
+  "functionName": "checkStartTimeInDb",
+  "functionId": "checkStartTimeInDb___entity-EntityIdentifier__suggestedStartTime-Long",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/RollingLevelDBTimelineStore.java",
+  "functionStartLine": 1301,
+  "functionEndLine": 1326,
+  "numCommitsSeen": 12,
+  "timeTaken": 1333,
+  "changeHistory": [
+    "1c9d2ab503ea5a3f16757351af9603041059b390",
+    "daf3e4ef8bf73cbe4a799d51b4765809cd81089f"
+  ],
+  "changeHistoryShort": {
+    "1c9d2ab503ea5a3f16757351af9603041059b390": "Ybodychange",
+    "daf3e4ef8bf73cbe4a799d51b4765809cd81089f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1c9d2ab503ea5a3f16757351af9603041059b390": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-5340. Fixed a race condition in RollingLevelDBTimelineStore that caused loss of Timeline events. Contributed by Li Lu.\n",
+      "commitDate": "20/07/16 8:36 AM",
+      "commitName": "1c9d2ab503ea5a3f16757351af9603041059b390",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "07/05/15 10:01 AM",
+      "commitNameOld": "daf3e4ef8bf73cbe4a799d51b4765809cd81089f",
+      "commitAuthorOld": "Zhijie Shen",
+      "daysBetweenCommits": 439.94,
+      "commitsBetweenForRepo": 3303,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,26 @@\n   private Long checkStartTimeInDb(EntityIdentifier entity,\n       Long suggestedStartTime) throws IOException {\n     Long startAndInsertTime \u003d null;\n     // create lookup key for start time\n     byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n-    // retrieve value for key\n-    byte[] v \u003d starttimedb.get(b);\n-    if (v \u003d\u003d null) {\n-      // start time doesn\u0027t exist in db\n-      if (suggestedStartTime \u003d\u003d null) {\n-        return null;\n-      }\n-      startAndInsertTime \u003d suggestedStartTime;\n+    synchronized (this) {\n+      // retrieve value for key\n+      byte[] v \u003d starttimedb.get(b);\n+      if (v \u003d\u003d null) {\n+        // start time doesn\u0027t exist in db\n+        if (suggestedStartTime \u003d\u003d null) {\n+          return null;\n+        }\n+        startAndInsertTime \u003d suggestedStartTime;\n \n-      // write suggested start time\n-      starttimedb.put(b, writeReverseOrderedLong(suggestedStartTime));\n-    } else {\n-      // found start time in db, so ignore suggested start time\n-      startAndInsertTime \u003d readReverseOrderedLong(v, 0);\n+        // write suggested start time\n+        starttimedb.put(b, writeReverseOrderedLong(suggestedStartTime));\n+      } else {\n+        // found start time in db, so ignore suggested start time\n+        startAndInsertTime \u003d readReverseOrderedLong(v, 0);\n+      }\n     }\n     startTimeWriteCache.put(entity, startAndInsertTime);\n     startTimeReadCache.put(entity, startAndInsertTime);\n     return startAndInsertTime;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Long checkStartTimeInDb(EntityIdentifier entity,\n      Long suggestedStartTime) throws IOException {\n    Long startAndInsertTime \u003d null;\n    // create lookup key for start time\n    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n    synchronized (this) {\n      // retrieve value for key\n      byte[] v \u003d starttimedb.get(b);\n      if (v \u003d\u003d null) {\n        // start time doesn\u0027t exist in db\n        if (suggestedStartTime \u003d\u003d null) {\n          return null;\n        }\n        startAndInsertTime \u003d suggestedStartTime;\n\n        // write suggested start time\n        starttimedb.put(b, writeReverseOrderedLong(suggestedStartTime));\n      } else {\n        // found start time in db, so ignore suggested start time\n        startAndInsertTime \u003d readReverseOrderedLong(v, 0);\n      }\n    }\n    startTimeWriteCache.put(entity, startAndInsertTime);\n    startTimeReadCache.put(entity, startAndInsertTime);\n    return startAndInsertTime;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/RollingLevelDBTimelineStore.java",
+      "extendedDetails": {}
+    },
+    "daf3e4ef8bf73cbe4a799d51b4765809cd81089f": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3448. Added a rolling time-to-live LevelDB timeline store implementation. Contributed by Jonathan Eagles.\n",
+      "commitDate": "07/05/15 10:01 AM",
+      "commitName": "daf3e4ef8bf73cbe4a799d51b4765809cd81089f",
+      "commitAuthor": "Zhijie Shen",
+      "diff": "@@ -0,0 +1,24 @@\n+  private Long checkStartTimeInDb(EntityIdentifier entity,\n+      Long suggestedStartTime) throws IOException {\n+    Long startAndInsertTime \u003d null;\n+    // create lookup key for start time\n+    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n+    // retrieve value for key\n+    byte[] v \u003d starttimedb.get(b);\n+    if (v \u003d\u003d null) {\n+      // start time doesn\u0027t exist in db\n+      if (suggestedStartTime \u003d\u003d null) {\n+        return null;\n+      }\n+      startAndInsertTime \u003d suggestedStartTime;\n+\n+      // write suggested start time\n+      starttimedb.put(b, writeReverseOrderedLong(suggestedStartTime));\n+    } else {\n+      // found start time in db, so ignore suggested start time\n+      startAndInsertTime \u003d readReverseOrderedLong(v, 0);\n+    }\n+    startTimeWriteCache.put(entity, startAndInsertTime);\n+    startTimeReadCache.put(entity, startAndInsertTime);\n+    return startAndInsertTime;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Long checkStartTimeInDb(EntityIdentifier entity,\n      Long suggestedStartTime) throws IOException {\n    Long startAndInsertTime \u003d null;\n    // create lookup key for start time\n    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n    // retrieve value for key\n    byte[] v \u003d starttimedb.get(b);\n    if (v \u003d\u003d null) {\n      // start time doesn\u0027t exist in db\n      if (suggestedStartTime \u003d\u003d null) {\n        return null;\n      }\n      startAndInsertTime \u003d suggestedStartTime;\n\n      // write suggested start time\n      starttimedb.put(b, writeReverseOrderedLong(suggestedStartTime));\n    } else {\n      // found start time in db, so ignore suggested start time\n      startAndInsertTime \u003d readReverseOrderedLong(v, 0);\n    }\n    startTimeWriteCache.put(entity, startAndInsertTime);\n    startTimeReadCache.put(entity, startAndInsertTime);\n    return startAndInsertTime;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/RollingLevelDBTimelineStore.java"
+    }
+  }
+}

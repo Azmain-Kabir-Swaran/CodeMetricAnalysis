@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DelegationTokenRenewer.java",
+  "functionName": "obtainSystemTokensForUser",
+  "functionId": "obtainSystemTokensForUser___user-String__credentials-Credentials(modifiers-final)",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java",
+  "functionStartLine": 756,
+  "functionEndLine": 779,
+  "numCommitsSeen": 37,
+  "timeTaken": 2200,
+  "changeHistory": [
+    "6ca1f12024fd7cec7b01df0f039ca59f3f365dc1",
+    "a16d022ca4313a41425c8e97841c841a2d6f2f54"
+  ],
+  "changeHistoryShort": {
+    "6ca1f12024fd7cec7b01df0f039ca59f3f365dc1": "Ybodychange",
+    "a16d022ca4313a41425c8e97841c841a2d6f2f54": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6ca1f12024fd7cec7b01df0f039ca59f3f365dc1": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3336. FileSystem memory leak in DelegationTokenRenewer.\n",
+      "commitDate": "23/03/15 10:45 AM",
+      "commitName": "6ca1f12024fd7cec7b01df0f039ca59f3f365dc1",
+      "commitAuthor": "cnauroth",
+      "commitDateOld": "16/03/15 7:19 AM",
+      "commitNameOld": "3da9a97cfbcc3a1c50aaf85b1a129d4d269cd5fd",
+      "commitAuthorOld": "Tsuyoshi Ozawa",
+      "daysBetweenCommits": 7.14,
+      "commitsBetweenForRepo": 85,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,24 @@\n   protected Token\u003c?\u003e[] obtainSystemTokensForUser(String user,\n       final Credentials credentials) throws IOException, InterruptedException {\n     // Get new hdfs tokens on behalf of this user\n     UserGroupInformation proxyUser \u003d\n         UserGroupInformation.createProxyUser(user,\n           UserGroupInformation.getLoginUser());\n     Token\u003c?\u003e[] newTokens \u003d\n         proxyUser.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e[]\u003e() {\n           @Override\n           public Token\u003c?\u003e[] run() throws Exception {\n-            return FileSystem.get(getConfig()).addDelegationTokens(\n-              UserGroupInformation.getLoginUser().getUserName(), credentials);\n+            FileSystem fs \u003d FileSystem.get(getConfig());\n+            try {\n+              return fs.addDelegationTokens(\n+                  UserGroupInformation.getLoginUser().getUserName(),\n+                  credentials);\n+            } finally {\n+              // Close the FileSystem created by the new proxy user,\n+              // So that we don\u0027t leave an entry in the FileSystem cache\n+              fs.close();\n+            }\n           }\n         });\n     return newTokens;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected Token\u003c?\u003e[] obtainSystemTokensForUser(String user,\n      final Credentials credentials) throws IOException, InterruptedException {\n    // Get new hdfs tokens on behalf of this user\n    UserGroupInformation proxyUser \u003d\n        UserGroupInformation.createProxyUser(user,\n          UserGroupInformation.getLoginUser());\n    Token\u003c?\u003e[] newTokens \u003d\n        proxyUser.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e[]\u003e() {\n          @Override\n          public Token\u003c?\u003e[] run() throws Exception {\n            FileSystem fs \u003d FileSystem.get(getConfig());\n            try {\n              return fs.addDelegationTokens(\n                  UserGroupInformation.getLoginUser().getUserName(),\n                  credentials);\n            } finally {\n              // Close the FileSystem created by the new proxy user,\n              // So that we don\u0027t leave an entry in the FileSystem cache\n              fs.close();\n            }\n          }\n        });\n    return newTokens;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java",
+      "extendedDetails": {}
+    },
+    "a16d022ca4313a41425c8e97841c841a2d6f2f54": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2704. Changed ResourceManager to optionally obtain tokens itself for the sake of localization and log-aggregation for long-running services. Contributed by Jian He.\n",
+      "commitDate": "27/10/14 3:49 PM",
+      "commitName": "a16d022ca4313a41425c8e97841c841a2d6f2f54",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,16 @@\n+  protected Token\u003c?\u003e[] obtainSystemTokensForUser(String user,\n+      final Credentials credentials) throws IOException, InterruptedException {\n+    // Get new hdfs tokens on behalf of this user\n+    UserGroupInformation proxyUser \u003d\n+        UserGroupInformation.createProxyUser(user,\n+          UserGroupInformation.getLoginUser());\n+    Token\u003c?\u003e[] newTokens \u003d\n+        proxyUser.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e[]\u003e() {\n+          @Override\n+          public Token\u003c?\u003e[] run() throws Exception {\n+            return FileSystem.get(getConfig()).addDelegationTokens(\n+              UserGroupInformation.getLoginUser().getUserName(), credentials);\n+          }\n+        });\n+    return newTokens;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected Token\u003c?\u003e[] obtainSystemTokensForUser(String user,\n      final Credentials credentials) throws IOException, InterruptedException {\n    // Get new hdfs tokens on behalf of this user\n    UserGroupInformation proxyUser \u003d\n        UserGroupInformation.createProxyUser(user,\n          UserGroupInformation.getLoginUser());\n    Token\u003c?\u003e[] newTokens \u003d\n        proxyUser.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e[]\u003e() {\n          @Override\n          public Token\u003c?\u003e[] run() throws Exception {\n            return FileSystem.get(getConfig()).addDelegationTokens(\n              UserGroupInformation.getLoginUser().getUserName(), credentials);\n          }\n        });\n    return newTokens;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "HostRestrictingAuthorizationFilter.java",
+  "functionName": "loadRuleMap",
+  "functionId": "loadRuleMap___ruleString-String",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/HostRestrictingAuthorizationFilter.java",
+  "functionStartLine": 160,
+  "functionEndLine": 205,
+  "numCommitsSeen": 2,
+  "timeTaken": 720,
+  "changeHistory": [
+    "101d5b5f865f94e4772051ea8ce4ee0f92ddedca"
+  ],
+  "changeHistoryShort": {
+    "101d5b5f865f94e4772051ea8ce4ee0f92ddedca": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "101d5b5f865f94e4772051ea8ce4ee0f92ddedca": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-14234. Limit WebHDFS to specifc user, host, directory triples.\nContributed by Clay B.\n",
+      "commitDate": "10/06/19 5:55 PM",
+      "commitName": "101d5b5f865f94e4772051ea8ce4ee0f92ddedca",
+      "commitAuthor": "Anu Engineer",
+      "diff": "@@ -0,0 +1,46 @@\n+  private void loadRuleMap(String ruleString) throws IllegalArgumentException {\n+    if (ruleString \u003d\u003d null || ruleString.equals(\"\")) {\n+      LOG.debug(\"Got no rules - will disallow anyone access\");\n+    } else {\n+      // value: user1,network/bits1,path_glob1|user2,network/bits2,path_glob2...\n+      Pattern comma_split \u003d Pattern.compile(\",\");\n+      Pattern rule_split \u003d Pattern.compile(\"\\\\||\\n\");\n+      // split all rule lines\n+      Map\u003cInteger, List\u003cString[]\u003e\u003e splits \u003d rule_split.splitAsStream(ruleString)\n+          .map(x -\u003e comma_split.split(x, 3))\n+          .collect(Collectors.groupingBy(x -\u003e x.length));\n+      // verify all rules have three parts\n+      if (!splits.keySet().equals(Collections.singleton(3))) {\n+        // instead of re-joining parts, re-materialize lines which do not split\n+        // correctly for the exception\n+        String bad_lines \u003d rule_split.splitAsStream(ruleString)\n+            .filter(x -\u003e comma_split.split(x, 3).length !\u003d 3)\n+            .collect(Collectors.joining(\"\\n\"));\n+        throw new IllegalArgumentException(\"Bad rule definition: \" + bad_lines);\n+      }\n+      // create a list of Rules\n+      int user \u003d 0;\n+      int cidr \u003d 1;\n+      int path \u003d 2;\n+      BiFunction\u003cCopyOnWriteArrayList\u003cRule\u003e, CopyOnWriteArrayList\u003cRule\u003e,\n+          CopyOnWriteArrayList\u003cRule\u003e\u003e arrayListMerge \u003d (v1, v2) -\u003e {\n+        v1.addAll(v2);\n+        return v1;\n+      };\n+      for (String[] split : splits.get(3)) {\n+        LOG.debug(\"Loaded rule: user: {}, network/bits: {} path: {}\",\n+            split[user], split[cidr], split[path]);\n+        Rule rule \u003d (split[cidr].trim().equals(\"*\") ? new Rule(null,\n+            split[path]) : new Rule(new SubnetUtils(split[cidr]).getInfo(),\n+            split[path]));\n+        // Rule map is {\"user\": [rule1, rule2, ...]}, update the user\u0027s array\n+        CopyOnWriteArrayList\u003cRule\u003e arrayListRule \u003d\n+            new CopyOnWriteArrayList\u003cRule\u003e() {\n+          {\n+            add(rule);\n+          }\n+        };\n+        rulemap.merge(split[user], arrayListRule, arrayListMerge);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void loadRuleMap(String ruleString) throws IllegalArgumentException {\n    if (ruleString \u003d\u003d null || ruleString.equals(\"\")) {\n      LOG.debug(\"Got no rules - will disallow anyone access\");\n    } else {\n      // value: user1,network/bits1,path_glob1|user2,network/bits2,path_glob2...\n      Pattern comma_split \u003d Pattern.compile(\",\");\n      Pattern rule_split \u003d Pattern.compile(\"\\\\||\\n\");\n      // split all rule lines\n      Map\u003cInteger, List\u003cString[]\u003e\u003e splits \u003d rule_split.splitAsStream(ruleString)\n          .map(x -\u003e comma_split.split(x, 3))\n          .collect(Collectors.groupingBy(x -\u003e x.length));\n      // verify all rules have three parts\n      if (!splits.keySet().equals(Collections.singleton(3))) {\n        // instead of re-joining parts, re-materialize lines which do not split\n        // correctly for the exception\n        String bad_lines \u003d rule_split.splitAsStream(ruleString)\n            .filter(x -\u003e comma_split.split(x, 3).length !\u003d 3)\n            .collect(Collectors.joining(\"\\n\"));\n        throw new IllegalArgumentException(\"Bad rule definition: \" + bad_lines);\n      }\n      // create a list of Rules\n      int user \u003d 0;\n      int cidr \u003d 1;\n      int path \u003d 2;\n      BiFunction\u003cCopyOnWriteArrayList\u003cRule\u003e, CopyOnWriteArrayList\u003cRule\u003e,\n          CopyOnWriteArrayList\u003cRule\u003e\u003e arrayListMerge \u003d (v1, v2) -\u003e {\n        v1.addAll(v2);\n        return v1;\n      };\n      for (String[] split : splits.get(3)) {\n        LOG.debug(\"Loaded rule: user: {}, network/bits: {} path: {}\",\n            split[user], split[cidr], split[path]);\n        Rule rule \u003d (split[cidr].trim().equals(\"*\") ? new Rule(null,\n            split[path]) : new Rule(new SubnetUtils(split[cidr]).getInfo(),\n            split[path]));\n        // Rule map is {\"user\": [rule1, rule2, ...]}, update the user\u0027s array\n        CopyOnWriteArrayList\u003cRule\u003e arrayListRule \u003d\n            new CopyOnWriteArrayList\u003cRule\u003e() {\n          {\n            add(rule);\n          }\n        };\n        rulemap.merge(split[user], arrayListRule, arrayListMerge);\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/HostRestrictingAuthorizationFilter.java"
+    }
+  }
+}

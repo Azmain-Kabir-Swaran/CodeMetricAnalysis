@@ -1,0 +1,154 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DataXceiver.java",
+  "functionName": "checkAccess",
+  "functionId": "checkAccess___out-OutputStream__reply-boolean(modifiers-final)__blk-ExtendedBlock__t-Token__BlockTokenIdentifier____op-Op__mode-BlockTokenIdentifier.AccessMode",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+  "functionStartLine": 1415,
+  "functionEndLine": 1419,
+  "numCommitsSeen": 183,
+  "timeTaken": 4676,
+  "changeHistory": [
+    "a3954ccab148bddc290cb96528e63ff19799bcc9",
+    "2f73396b5901fd5fe29f6cd76fc1b3134b854b37",
+    "38c4c14472996562eb3d610649246770c2888c6b",
+    "36e4cd3be6f7fec8db82d3d1bcb258af470ece2e"
+  ],
+  "changeHistoryShort": {
+    "a3954ccab148bddc290cb96528e63ff19799bcc9": "Ybodychange",
+    "2f73396b5901fd5fe29f6cd76fc1b3134b854b37": "Ymultichange(Ybodychange,Yparametermetachange)",
+    "38c4c14472996562eb3d610649246770c2888c6b": "Ybodychange",
+    "36e4cd3be6f7fec8db82d3d1bcb258af470ece2e": "Ymultichange(Yparameterchange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "a3954ccab148bddc290cb96528e63ff19799bcc9": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9807. Add an optional StorageID to writes. Contributed by Ewan Higgs\n",
+      "commitDate": "05/05/17 12:01 PM",
+      "commitName": "a3954ccab148bddc290cb96528e63ff19799bcc9",
+      "commitAuthor": "Chris Douglas",
+      "commitDateOld": "25/04/17 11:57 PM",
+      "commitNameOld": "2f73396b5901fd5fe29f6cd76fc1b3134b854b37",
+      "commitAuthorOld": "Chris Douglas",
+      "daysBetweenCommits": 9.5,
+      "commitsBetweenForRepo": 64,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,5 +1,5 @@\n   private void checkAccess(OutputStream out, final boolean reply,\n       ExtendedBlock blk, Token\u003cBlockTokenIdentifier\u003e t, Op op,\n       BlockTokenIdentifier.AccessMode mode) throws IOException {\n-    checkAccess(out, reply, blk, t, op, mode, null);\n+    checkAccess(out, reply, blk, t, op, mode, null, null);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void checkAccess(OutputStream out, final boolean reply,\n      ExtendedBlock blk, Token\u003cBlockTokenIdentifier\u003e t, Op op,\n      BlockTokenIdentifier.AccessMode mode) throws IOException {\n    checkAccess(out, reply, blk, t, op, mode, null, null);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+      "extendedDetails": {}
+    },
+    "2f73396b5901fd5fe29f6cd76fc1b3134b854b37": {
+      "type": "Ymultichange(Ybodychange,Yparametermetachange)",
+      "commitMessage": "HDFS-6708. StorageType should be encoded in the block token. Contributed by Ewan Higgs\n",
+      "commitDate": "25/04/17 11:57 PM",
+      "commitName": "2f73396b5901fd5fe29f6cd76fc1b3134b854b37",
+      "commitAuthor": "Chris Douglas",
+      "subchanges": [
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6708. StorageType should be encoded in the block token. Contributed by Ewan Higgs\n",
+          "commitDate": "25/04/17 11:57 PM",
+          "commitName": "2f73396b5901fd5fe29f6cd76fc1b3134b854b37",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "12/04/17 11:40 AM",
+          "commitNameOld": "abce61335678da753cd0f7965a236370274abee8",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 13.51,
+          "commitsBetweenForRepo": 57,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,37 +1,5 @@\n-  private void checkAccess(OutputStream out, final boolean reply, \n-      final ExtendedBlock blk,\n-      final Token\u003cBlockTokenIdentifier\u003e t,\n-      final Op op,\n-      final BlockTokenIdentifier.AccessMode mode) throws IOException {\n-    checkAndWaitForBP(blk);\n-    if (datanode.isBlockTokenEnabled) {\n-      if (LOG.isDebugEnabled()) {\n-        LOG.debug(\"Checking block access token for block \u0027\" + blk.getBlockId()\n-            + \"\u0027 with mode \u0027\" + mode + \"\u0027\");\n-      }\n-      try {\n-        datanode.blockPoolTokenSecretManager.checkAccess(t, null, blk, mode);\n-      } catch(InvalidToken e) {\n-        try {\n-          if (reply) {\n-            BlockOpResponseProto.Builder resp \u003d BlockOpResponseProto.newBuilder()\n-              .setStatus(ERROR_ACCESS_TOKEN);\n-            if (mode \u003d\u003d BlockTokenIdentifier.AccessMode.WRITE) {\n-              DatanodeRegistration dnR \u003d \n-                datanode.getDNRegistrationForBP(blk.getBlockPoolId());\n-              // NB: Unconditionally using the xfer addr w/o hostname\n-              resp.setFirstBadLink(dnR.getXferAddr());\n-            }\n-            resp.build().writeDelimitedTo(out);\n-            out.flush();\n-          }\n-          LOG.warn(\"Block token verification failed: op\u003d\" + op\n-              + \", remoteAddress\u003d\" + remoteAddress\n-              + \", message\u003d\" + e.getLocalizedMessage());\n-          throw e;\n-        } finally {\n-          IOUtils.closeStream(out);\n-        }\n-      }\n-    }\n+  private void checkAccess(OutputStream out, final boolean reply,\n+      ExtendedBlock blk, Token\u003cBlockTokenIdentifier\u003e t, Op op,\n+      BlockTokenIdentifier.AccessMode mode) throws IOException {\n+    checkAccess(out, reply, blk, t, op, mode, null);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkAccess(OutputStream out, final boolean reply,\n      ExtendedBlock blk, Token\u003cBlockTokenIdentifier\u003e t, Op op,\n      BlockTokenIdentifier.AccessMode mode) throws IOException {\n    checkAccess(out, reply, blk, t, op, mode, null);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HDFS-6708. StorageType should be encoded in the block token. Contributed by Ewan Higgs\n",
+          "commitDate": "25/04/17 11:57 PM",
+          "commitName": "2f73396b5901fd5fe29f6cd76fc1b3134b854b37",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "12/04/17 11:40 AM",
+          "commitNameOld": "abce61335678da753cd0f7965a236370274abee8",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 13.51,
+          "commitsBetweenForRepo": 57,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,37 +1,5 @@\n-  private void checkAccess(OutputStream out, final boolean reply, \n-      final ExtendedBlock blk,\n-      final Token\u003cBlockTokenIdentifier\u003e t,\n-      final Op op,\n-      final BlockTokenIdentifier.AccessMode mode) throws IOException {\n-    checkAndWaitForBP(blk);\n-    if (datanode.isBlockTokenEnabled) {\n-      if (LOG.isDebugEnabled()) {\n-        LOG.debug(\"Checking block access token for block \u0027\" + blk.getBlockId()\n-            + \"\u0027 with mode \u0027\" + mode + \"\u0027\");\n-      }\n-      try {\n-        datanode.blockPoolTokenSecretManager.checkAccess(t, null, blk, mode);\n-      } catch(InvalidToken e) {\n-        try {\n-          if (reply) {\n-            BlockOpResponseProto.Builder resp \u003d BlockOpResponseProto.newBuilder()\n-              .setStatus(ERROR_ACCESS_TOKEN);\n-            if (mode \u003d\u003d BlockTokenIdentifier.AccessMode.WRITE) {\n-              DatanodeRegistration dnR \u003d \n-                datanode.getDNRegistrationForBP(blk.getBlockPoolId());\n-              // NB: Unconditionally using the xfer addr w/o hostname\n-              resp.setFirstBadLink(dnR.getXferAddr());\n-            }\n-            resp.build().writeDelimitedTo(out);\n-            out.flush();\n-          }\n-          LOG.warn(\"Block token verification failed: op\u003d\" + op\n-              + \", remoteAddress\u003d\" + remoteAddress\n-              + \", message\u003d\" + e.getLocalizedMessage());\n-          throw e;\n-        } finally {\n-          IOUtils.closeStream(out);\n-        }\n-      }\n-    }\n+  private void checkAccess(OutputStream out, final boolean reply,\n+      ExtendedBlock blk, Token\u003cBlockTokenIdentifier\u003e t, Op op,\n+      BlockTokenIdentifier.AccessMode mode) throws IOException {\n+    checkAccess(out, reply, blk, t, op, mode, null);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkAccess(OutputStream out, final boolean reply,\n      ExtendedBlock blk, Token\u003cBlockTokenIdentifier\u003e t, Op op,\n      BlockTokenIdentifier.AccessMode mode) throws IOException {\n    checkAccess(out, reply, blk, t, op, mode, null);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+          "extendedDetails": {
+            "oldValue": "[out-OutputStream, reply-boolean(modifiers-final), blk-ExtendedBlock(modifiers-final), t-Token\u003cBlockTokenIdentifier\u003e(modifiers-final), op-Op(modifiers-final), mode-BlockTokenIdentifier.AccessMode(modifiers-final)]",
+            "newValue": "[out-OutputStream, reply-boolean(modifiers-final), blk-ExtendedBlock, t-Token\u003cBlockTokenIdentifier\u003e, op-Op, mode-BlockTokenIdentifier.AccessMode]"
+          }
+        }
+      ]
+    },
+    "38c4c14472996562eb3d610649246770c2888c6b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9574. Reduce client failures during datanode restart. Contributed by Kihwal Lee.\n",
+      "commitDate": "08/01/16 9:13 AM",
+      "commitName": "38c4c14472996562eb3d610649246770c2888c6b",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "04/01/16 2:32 PM",
+      "commitNameOld": "778146eaae5b1e17928a1f26fb1e46536a6ee510",
+      "commitAuthorOld": "Uma Mahesh",
+      "daysBetweenCommits": 3.78,
+      "commitsBetweenForRepo": 30,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,37 @@\n   private void checkAccess(OutputStream out, final boolean reply, \n       final ExtendedBlock blk,\n       final Token\u003cBlockTokenIdentifier\u003e t,\n       final Op op,\n       final BlockTokenIdentifier.AccessMode mode) throws IOException {\n+    checkAndWaitForBP(blk);\n     if (datanode.isBlockTokenEnabled) {\n       if (LOG.isDebugEnabled()) {\n         LOG.debug(\"Checking block access token for block \u0027\" + blk.getBlockId()\n             + \"\u0027 with mode \u0027\" + mode + \"\u0027\");\n       }\n       try {\n         datanode.blockPoolTokenSecretManager.checkAccess(t, null, blk, mode);\n       } catch(InvalidToken e) {\n         try {\n           if (reply) {\n             BlockOpResponseProto.Builder resp \u003d BlockOpResponseProto.newBuilder()\n               .setStatus(ERROR_ACCESS_TOKEN);\n             if (mode \u003d\u003d BlockTokenIdentifier.AccessMode.WRITE) {\n               DatanodeRegistration dnR \u003d \n                 datanode.getDNRegistrationForBP(blk.getBlockPoolId());\n               // NB: Unconditionally using the xfer addr w/o hostname\n               resp.setFirstBadLink(dnR.getXferAddr());\n             }\n             resp.build().writeDelimitedTo(out);\n             out.flush();\n           }\n           LOG.warn(\"Block token verification failed: op\u003d\" + op\n               + \", remoteAddress\u003d\" + remoteAddress\n               + \", message\u003d\" + e.getLocalizedMessage());\n           throw e;\n         } finally {\n           IOUtils.closeStream(out);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void checkAccess(OutputStream out, final boolean reply, \n      final ExtendedBlock blk,\n      final Token\u003cBlockTokenIdentifier\u003e t,\n      final Op op,\n      final BlockTokenIdentifier.AccessMode mode) throws IOException {\n    checkAndWaitForBP(blk);\n    if (datanode.isBlockTokenEnabled) {\n      if (LOG.isDebugEnabled()) {\n        LOG.debug(\"Checking block access token for block \u0027\" + blk.getBlockId()\n            + \"\u0027 with mode \u0027\" + mode + \"\u0027\");\n      }\n      try {\n        datanode.blockPoolTokenSecretManager.checkAccess(t, null, blk, mode);\n      } catch(InvalidToken e) {\n        try {\n          if (reply) {\n            BlockOpResponseProto.Builder resp \u003d BlockOpResponseProto.newBuilder()\n              .setStatus(ERROR_ACCESS_TOKEN);\n            if (mode \u003d\u003d BlockTokenIdentifier.AccessMode.WRITE) {\n              DatanodeRegistration dnR \u003d \n                datanode.getDNRegistrationForBP(blk.getBlockPoolId());\n              // NB: Unconditionally using the xfer addr w/o hostname\n              resp.setFirstBadLink(dnR.getXferAddr());\n            }\n            resp.build().writeDelimitedTo(out);\n            out.flush();\n          }\n          LOG.warn(\"Block token verification failed: op\u003d\" + op\n              + \", remoteAddress\u003d\" + remoteAddress\n              + \", message\u003d\" + e.getLocalizedMessage());\n          throw e;\n        } finally {\n          IOUtils.closeStream(out);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+      "extendedDetails": {}
+    },
+    "36e4cd3be6f7fec8db82d3d1bcb258af470ece2e": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-8103. Move BlockTokenSecretManager.AccessMode into BlockTokenIdentifier. Contributed by Haohui Mai.\n",
+      "commitDate": "10/04/15 4:36 PM",
+      "commitName": "36e4cd3be6f7fec8db82d3d1bcb258af470ece2e",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-8103. Move BlockTokenSecretManager.AccessMode into BlockTokenIdentifier. Contributed by Haohui Mai.\n",
+          "commitDate": "10/04/15 4:36 PM",
+          "commitName": "36e4cd3be6f7fec8db82d3d1bcb258af470ece2e",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "20/03/15 12:02 PM",
+          "commitNameOld": "75ead273bea8a7dad61c4f99c3a16cab2697c498",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 21.19,
+          "commitsBetweenForRepo": 196,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,36 @@\n   private void checkAccess(OutputStream out, final boolean reply, \n       final ExtendedBlock blk,\n       final Token\u003cBlockTokenIdentifier\u003e t,\n       final Op op,\n-      final BlockTokenSecretManager.AccessMode mode) throws IOException {\n+      final BlockTokenIdentifier.AccessMode mode) throws IOException {\n     if (datanode.isBlockTokenEnabled) {\n       if (LOG.isDebugEnabled()) {\n         LOG.debug(\"Checking block access token for block \u0027\" + blk.getBlockId()\n             + \"\u0027 with mode \u0027\" + mode + \"\u0027\");\n       }\n       try {\n         datanode.blockPoolTokenSecretManager.checkAccess(t, null, blk, mode);\n       } catch(InvalidToken e) {\n         try {\n           if (reply) {\n             BlockOpResponseProto.Builder resp \u003d BlockOpResponseProto.newBuilder()\n               .setStatus(ERROR_ACCESS_TOKEN);\n-            if (mode \u003d\u003d BlockTokenSecretManager.AccessMode.WRITE) {\n+            if (mode \u003d\u003d BlockTokenIdentifier.AccessMode.WRITE) {\n               DatanodeRegistration dnR \u003d \n                 datanode.getDNRegistrationForBP(blk.getBlockPoolId());\n               // NB: Unconditionally using the xfer addr w/o hostname\n               resp.setFirstBadLink(dnR.getXferAddr());\n             }\n             resp.build().writeDelimitedTo(out);\n             out.flush();\n           }\n           LOG.warn(\"Block token verification failed: op\u003d\" + op\n               + \", remoteAddress\u003d\" + remoteAddress\n               + \", message\u003d\" + e.getLocalizedMessage());\n           throw e;\n         } finally {\n           IOUtils.closeStream(out);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkAccess(OutputStream out, final boolean reply, \n      final ExtendedBlock blk,\n      final Token\u003cBlockTokenIdentifier\u003e t,\n      final Op op,\n      final BlockTokenIdentifier.AccessMode mode) throws IOException {\n    if (datanode.isBlockTokenEnabled) {\n      if (LOG.isDebugEnabled()) {\n        LOG.debug(\"Checking block access token for block \u0027\" + blk.getBlockId()\n            + \"\u0027 with mode \u0027\" + mode + \"\u0027\");\n      }\n      try {\n        datanode.blockPoolTokenSecretManager.checkAccess(t, null, blk, mode);\n      } catch(InvalidToken e) {\n        try {\n          if (reply) {\n            BlockOpResponseProto.Builder resp \u003d BlockOpResponseProto.newBuilder()\n              .setStatus(ERROR_ACCESS_TOKEN);\n            if (mode \u003d\u003d BlockTokenIdentifier.AccessMode.WRITE) {\n              DatanodeRegistration dnR \u003d \n                datanode.getDNRegistrationForBP(blk.getBlockPoolId());\n              // NB: Unconditionally using the xfer addr w/o hostname\n              resp.setFirstBadLink(dnR.getXferAddr());\n            }\n            resp.build().writeDelimitedTo(out);\n            out.flush();\n          }\n          LOG.warn(\"Block token verification failed: op\u003d\" + op\n              + \", remoteAddress\u003d\" + remoteAddress\n              + \", message\u003d\" + e.getLocalizedMessage());\n          throw e;\n        } finally {\n          IOUtils.closeStream(out);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+          "extendedDetails": {
+            "oldValue": "[out-OutputStream, reply-boolean(modifiers-final), blk-ExtendedBlock(modifiers-final), t-Token\u003cBlockTokenIdentifier\u003e(modifiers-final), op-Op(modifiers-final), mode-BlockTokenSecretManager.AccessMode(modifiers-final)]",
+            "newValue": "[out-OutputStream, reply-boolean(modifiers-final), blk-ExtendedBlock(modifiers-final), t-Token\u003cBlockTokenIdentifier\u003e(modifiers-final), op-Op(modifiers-final), mode-BlockTokenIdentifier.AccessMode(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-8103. Move BlockTokenSecretManager.AccessMode into BlockTokenIdentifier. Contributed by Haohui Mai.\n",
+          "commitDate": "10/04/15 4:36 PM",
+          "commitName": "36e4cd3be6f7fec8db82d3d1bcb258af470ece2e",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "20/03/15 12:02 PM",
+          "commitNameOld": "75ead273bea8a7dad61c4f99c3a16cab2697c498",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 21.19,
+          "commitsBetweenForRepo": 196,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,36 @@\n   private void checkAccess(OutputStream out, final boolean reply, \n       final ExtendedBlock blk,\n       final Token\u003cBlockTokenIdentifier\u003e t,\n       final Op op,\n-      final BlockTokenSecretManager.AccessMode mode) throws IOException {\n+      final BlockTokenIdentifier.AccessMode mode) throws IOException {\n     if (datanode.isBlockTokenEnabled) {\n       if (LOG.isDebugEnabled()) {\n         LOG.debug(\"Checking block access token for block \u0027\" + blk.getBlockId()\n             + \"\u0027 with mode \u0027\" + mode + \"\u0027\");\n       }\n       try {\n         datanode.blockPoolTokenSecretManager.checkAccess(t, null, blk, mode);\n       } catch(InvalidToken e) {\n         try {\n           if (reply) {\n             BlockOpResponseProto.Builder resp \u003d BlockOpResponseProto.newBuilder()\n               .setStatus(ERROR_ACCESS_TOKEN);\n-            if (mode \u003d\u003d BlockTokenSecretManager.AccessMode.WRITE) {\n+            if (mode \u003d\u003d BlockTokenIdentifier.AccessMode.WRITE) {\n               DatanodeRegistration dnR \u003d \n                 datanode.getDNRegistrationForBP(blk.getBlockPoolId());\n               // NB: Unconditionally using the xfer addr w/o hostname\n               resp.setFirstBadLink(dnR.getXferAddr());\n             }\n             resp.build().writeDelimitedTo(out);\n             out.flush();\n           }\n           LOG.warn(\"Block token verification failed: op\u003d\" + op\n               + \", remoteAddress\u003d\" + remoteAddress\n               + \", message\u003d\" + e.getLocalizedMessage());\n           throw e;\n         } finally {\n           IOUtils.closeStream(out);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkAccess(OutputStream out, final boolean reply, \n      final ExtendedBlock blk,\n      final Token\u003cBlockTokenIdentifier\u003e t,\n      final Op op,\n      final BlockTokenIdentifier.AccessMode mode) throws IOException {\n    if (datanode.isBlockTokenEnabled) {\n      if (LOG.isDebugEnabled()) {\n        LOG.debug(\"Checking block access token for block \u0027\" + blk.getBlockId()\n            + \"\u0027 with mode \u0027\" + mode + \"\u0027\");\n      }\n      try {\n        datanode.blockPoolTokenSecretManager.checkAccess(t, null, blk, mode);\n      } catch(InvalidToken e) {\n        try {\n          if (reply) {\n            BlockOpResponseProto.Builder resp \u003d BlockOpResponseProto.newBuilder()\n              .setStatus(ERROR_ACCESS_TOKEN);\n            if (mode \u003d\u003d BlockTokenIdentifier.AccessMode.WRITE) {\n              DatanodeRegistration dnR \u003d \n                datanode.getDNRegistrationForBP(blk.getBlockPoolId());\n              // NB: Unconditionally using the xfer addr w/o hostname\n              resp.setFirstBadLink(dnR.getXferAddr());\n            }\n            resp.build().writeDelimitedTo(out);\n            out.flush();\n          }\n          LOG.warn(\"Block token verification failed: op\u003d\" + op\n              + \", remoteAddress\u003d\" + remoteAddress\n              + \", message\u003d\" + e.getLocalizedMessage());\n          throw e;\n        } finally {\n          IOUtils.closeStream(out);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

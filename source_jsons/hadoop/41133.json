@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FairSharePolicy.java",
+  "functionName": "compareMinShareUsage",
+  "functionId": "compareMinShareUsage___s1-Schedulable__s2-Schedulable__resourceUsage1-Resource__resourceUsage2-Resource",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/policies/FairSharePolicy.java",
+  "functionStartLine": 133,
+  "functionEndLine": 165,
+  "numCommitsSeen": 25,
+  "timeTaken": 1415,
+  "changeHistory": [
+    "8a6bb8409c2dc695c0ffc70df0528d7f8bd5d795",
+    "f81a4efb8c40f99a9a6b7b42d3b6eeedf43eb27a"
+  ],
+  "changeHistoryShort": {
+    "8a6bb8409c2dc695c0ffc70df0528d7f8bd5d795": "Ybodychange",
+    "f81a4efb8c40f99a9a6b7b42d3b6eeedf43eb27a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8a6bb8409c2dc695c0ffc70df0528d7f8bd5d795": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6964. Fair scheduler misuses Resources operations. (Daniel Templeton and Szilard Nemeth via Haibo Chen)\n",
+      "commitDate": "20/07/18 10:46 AM",
+      "commitName": "8a6bb8409c2dc695c0ffc70df0528d7f8bd5d795",
+      "commitAuthor": "Haibo Chen",
+      "commitDateOld": "14/09/17 11:23 AM",
+      "commitNameOld": "09b476e6dabe8039a41dde7930c8a9c0d14bb750",
+      "commitAuthorOld": "Yufei Gu",
+      "daysBetweenCommits": 308.97,
+      "commitsBetweenForRepo": 2762,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,33 @@\n     private int compareMinShareUsage(Schedulable s1, Schedulable s2,\n         Resource resourceUsage1, Resource resourceUsage2) {\n       int res;\n-      Resource minShare1 \u003d Resources.min(RESOURCE_CALCULATOR, null,\n-          s1.getMinShare(), s1.getDemand());\n-      Resource minShare2 \u003d Resources.min(RESOURCE_CALCULATOR, null,\n-          s2.getMinShare(), s2.getDemand());\n-      boolean s1Needy \u003d Resources.lessThan(RESOURCE_CALCULATOR, null,\n-          resourceUsage1, minShare1);\n-      boolean s2Needy \u003d Resources.lessThan(RESOURCE_CALCULATOR, null,\n-          resourceUsage2, minShare2);\n+      long minShare1 \u003d Math.min(s1.getMinShare().getMemorySize(),\n+          s1.getDemand().getMemorySize());\n+      long minShare2 \u003d Math.min(s2.getMinShare().getMemorySize(),\n+          s2.getDemand().getMemorySize());\n+      boolean s1Needy \u003d resourceUsage1.getMemorySize() \u003c minShare1;\n+      boolean s2Needy \u003d resourceUsage2.getMemorySize() \u003c minShare2;\n \n       if (s1Needy \u0026\u0026 !s2Needy) {\n         res \u003d -1;\n       } else if (s2Needy \u0026\u0026 !s1Needy) {\n         res \u003d 1;\n       } else if (s1Needy \u0026\u0026 s2Needy) {\n-        double minShareRatio1 \u003d (double) resourceUsage1.getMemorySize() /\n-            Resources.max(RESOURCE_CALCULATOR, null, minShare1, ONE)\n-                .getMemorySize();\n-        double minShareRatio2 \u003d (double) resourceUsage2.getMemorySize() /\n-            Resources.max(RESOURCE_CALCULATOR, null, minShare2, ONE)\n-                .getMemorySize();\n+        double minShareRatio1 \u003d (double) resourceUsage1.getMemorySize();\n+        double minShareRatio2 \u003d (double) resourceUsage2.getMemorySize();\n+\n+        if (minShare1 \u003e 1) {\n+          minShareRatio1 /\u003d minShare1;\n+        }\n+\n+        if (minShare2 \u003e 1) {\n+          minShareRatio2 /\u003d minShare2;\n+        }\n+\n         res \u003d (int) Math.signum(minShareRatio1 - minShareRatio2);\n       } else {\n         res \u003d 0;\n       }\n \n       return res;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private int compareMinShareUsage(Schedulable s1, Schedulable s2,\n        Resource resourceUsage1, Resource resourceUsage2) {\n      int res;\n      long minShare1 \u003d Math.min(s1.getMinShare().getMemorySize(),\n          s1.getDemand().getMemorySize());\n      long minShare2 \u003d Math.min(s2.getMinShare().getMemorySize(),\n          s2.getDemand().getMemorySize());\n      boolean s1Needy \u003d resourceUsage1.getMemorySize() \u003c minShare1;\n      boolean s2Needy \u003d resourceUsage2.getMemorySize() \u003c minShare2;\n\n      if (s1Needy \u0026\u0026 !s2Needy) {\n        res \u003d -1;\n      } else if (s2Needy \u0026\u0026 !s1Needy) {\n        res \u003d 1;\n      } else if (s1Needy \u0026\u0026 s2Needy) {\n        double minShareRatio1 \u003d (double) resourceUsage1.getMemorySize();\n        double minShareRatio2 \u003d (double) resourceUsage2.getMemorySize();\n\n        if (minShare1 \u003e 1) {\n          minShareRatio1 /\u003d minShare1;\n        }\n\n        if (minShare2 \u003e 1) {\n          minShareRatio2 /\u003d minShare2;\n        }\n\n        res \u003d (int) Math.signum(minShareRatio1 - minShareRatio2);\n      } else {\n        res \u003d 0;\n      }\n\n      return res;\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/policies/FairSharePolicy.java",
+      "extendedDetails": {}
+    },
+    "f81a4efb8c40f99a9a6b7b42d3b6eeedf43eb27a": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6307. Refactor FairShareComparator#compare (Contributed by Yufei Gu via Daniel Templeton)\n",
+      "commitDate": "25/07/17 1:00 PM",
+      "commitName": "f81a4efb8c40f99a9a6b7b42d3b6eeedf43eb27a",
+      "commitAuthor": "Daniel Templeton",
+      "diff": "@@ -0,0 +1,30 @@\n+    private int compareMinShareUsage(Schedulable s1, Schedulable s2,\n+        Resource resourceUsage1, Resource resourceUsage2) {\n+      int res;\n+      Resource minShare1 \u003d Resources.min(RESOURCE_CALCULATOR, null,\n+          s1.getMinShare(), s1.getDemand());\n+      Resource minShare2 \u003d Resources.min(RESOURCE_CALCULATOR, null,\n+          s2.getMinShare(), s2.getDemand());\n+      boolean s1Needy \u003d Resources.lessThan(RESOURCE_CALCULATOR, null,\n+          resourceUsage1, minShare1);\n+      boolean s2Needy \u003d Resources.lessThan(RESOURCE_CALCULATOR, null,\n+          resourceUsage2, minShare2);\n+\n+      if (s1Needy \u0026\u0026 !s2Needy) {\n+        res \u003d -1;\n+      } else if (s2Needy \u0026\u0026 !s1Needy) {\n+        res \u003d 1;\n+      } else if (s1Needy \u0026\u0026 s2Needy) {\n+        double minShareRatio1 \u003d (double) resourceUsage1.getMemorySize() /\n+            Resources.max(RESOURCE_CALCULATOR, null, minShare1, ONE)\n+                .getMemorySize();\n+        double minShareRatio2 \u003d (double) resourceUsage2.getMemorySize() /\n+            Resources.max(RESOURCE_CALCULATOR, null, minShare2, ONE)\n+                .getMemorySize();\n+        res \u003d (int) Math.signum(minShareRatio1 - minShareRatio2);\n+      } else {\n+        res \u003d 0;\n+      }\n+\n+      return res;\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private int compareMinShareUsage(Schedulable s1, Schedulable s2,\n        Resource resourceUsage1, Resource resourceUsage2) {\n      int res;\n      Resource minShare1 \u003d Resources.min(RESOURCE_CALCULATOR, null,\n          s1.getMinShare(), s1.getDemand());\n      Resource minShare2 \u003d Resources.min(RESOURCE_CALCULATOR, null,\n          s2.getMinShare(), s2.getDemand());\n      boolean s1Needy \u003d Resources.lessThan(RESOURCE_CALCULATOR, null,\n          resourceUsage1, minShare1);\n      boolean s2Needy \u003d Resources.lessThan(RESOURCE_CALCULATOR, null,\n          resourceUsage2, minShare2);\n\n      if (s1Needy \u0026\u0026 !s2Needy) {\n        res \u003d -1;\n      } else if (s2Needy \u0026\u0026 !s1Needy) {\n        res \u003d 1;\n      } else if (s1Needy \u0026\u0026 s2Needy) {\n        double minShareRatio1 \u003d (double) resourceUsage1.getMemorySize() /\n            Resources.max(RESOURCE_CALCULATOR, null, minShare1, ONE)\n                .getMemorySize();\n        double minShareRatio2 \u003d (double) resourceUsage2.getMemorySize() /\n            Resources.max(RESOURCE_CALCULATOR, null, minShare2, ONE)\n                .getMemorySize();\n        res \u003d (int) Math.signum(minShareRatio1 - minShareRatio2);\n      } else {\n        res \u003d 0;\n      }\n\n      return res;\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/policies/FairSharePolicy.java"
+    }
+  }
+}

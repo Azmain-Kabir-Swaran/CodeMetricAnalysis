@@ -1,0 +1,95 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TotalOrderPartitioner.java",
+  "functionName": "setConf",
+  "functionId": "setConf___conf-Configuration",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/partition/TotalOrderPartitioner.java",
+  "functionStartLine": 78,
+  "functionEndLine": 119,
+  "numCommitsSeen": 7,
+  "timeTaken": 4417,
+  "changeHistory": [
+    "bd69fb2d44403e930d1fc0868ed1dd2a49dd9659",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "bd69fb2d44403e930d1fc0868ed1dd2a49dd9659": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "bd69fb2d44403e930d1fc0868ed1dd2a49dd9659": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-5800. Use Job#getInstance instead of deprecated constructors. (aajisaka)\n",
+      "commitDate": "03/02/15 2:30 PM",
+      "commitName": "bd69fb2d44403e930d1fc0868ed1dd2a49dd9659",
+      "commitAuthor": "Akira Ajisaka",
+      "commitDateOld": "09/10/12 2:58 AM",
+      "commitNameOld": "5c3a3310402c37320c6b28eb3dd72cfb79c39971",
+      "commitAuthorOld": "Harsh J",
+      "daysBetweenCommits": 847.52,
+      "commitsBetweenForRepo": 5761,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,42 +1,42 @@\n   public void setConf(Configuration conf) {\n     try {\n       this.conf \u003d conf;\n       String parts \u003d getPartitionFile(conf);\n       final Path partFile \u003d new Path(parts);\n       final FileSystem fs \u003d (DEFAULT_PATH.equals(parts))\n         ? FileSystem.getLocal(conf)     // assume in DistributedCache\n         : partFile.getFileSystem(conf);\n \n-      Job job \u003d new Job(conf);\n+      Job job \u003d Job.getInstance(conf);\n       Class\u003cK\u003e keyClass \u003d (Class\u003cK\u003e)job.getMapOutputKeyClass();\n       K[] splitPoints \u003d readPartitions(fs, partFile, keyClass, conf);\n       if (splitPoints.length !\u003d job.getNumReduceTasks() - 1) {\n         throw new IOException(\"Wrong number of partitions in keyset\");\n       }\n       RawComparator\u003cK\u003e comparator \u003d\n         (RawComparator\u003cK\u003e) job.getSortComparator();\n       for (int i \u003d 0; i \u003c splitPoints.length - 1; ++i) {\n         if (comparator.compare(splitPoints[i], splitPoints[i+1]) \u003e\u003d 0) {\n           throw new IOException(\"Split points are out of order\");\n         }\n       }\n       boolean natOrder \u003d\n         conf.getBoolean(NATURAL_ORDER, true);\n       if (natOrder \u0026\u0026 BinaryComparable.class.isAssignableFrom(keyClass)) {\n         partitions \u003d buildTrie((BinaryComparable[])splitPoints, 0,\n             splitPoints.length, new byte[0],\n             // Now that blocks of identical splitless trie nodes are \n             // represented reentrantly, and we develop a leaf for any trie\n             // node with only one split point, the only reason for a depth\n             // limit is to refute stack overflow or bloat in the pathological\n             // case where the split points are long and mostly look like bytes \n             // iii...iixii...iii   .  Therefore, we make the default depth\n             // limit large but not huge.\n             conf.getInt(MAX_TRIE_DEPTH, 200));\n       } else {\n         partitions \u003d new BinarySearchNode(splitPoints, comparator);\n       }\n     } catch (IOException e) {\n       throw new IllegalArgumentException(\"Can\u0027t read partitions file\", e);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void setConf(Configuration conf) {\n    try {\n      this.conf \u003d conf;\n      String parts \u003d getPartitionFile(conf);\n      final Path partFile \u003d new Path(parts);\n      final FileSystem fs \u003d (DEFAULT_PATH.equals(parts))\n        ? FileSystem.getLocal(conf)     // assume in DistributedCache\n        : partFile.getFileSystem(conf);\n\n      Job job \u003d Job.getInstance(conf);\n      Class\u003cK\u003e keyClass \u003d (Class\u003cK\u003e)job.getMapOutputKeyClass();\n      K[] splitPoints \u003d readPartitions(fs, partFile, keyClass, conf);\n      if (splitPoints.length !\u003d job.getNumReduceTasks() - 1) {\n        throw new IOException(\"Wrong number of partitions in keyset\");\n      }\n      RawComparator\u003cK\u003e comparator \u003d\n        (RawComparator\u003cK\u003e) job.getSortComparator();\n      for (int i \u003d 0; i \u003c splitPoints.length - 1; ++i) {\n        if (comparator.compare(splitPoints[i], splitPoints[i+1]) \u003e\u003d 0) {\n          throw new IOException(\"Split points are out of order\");\n        }\n      }\n      boolean natOrder \u003d\n        conf.getBoolean(NATURAL_ORDER, true);\n      if (natOrder \u0026\u0026 BinaryComparable.class.isAssignableFrom(keyClass)) {\n        partitions \u003d buildTrie((BinaryComparable[])splitPoints, 0,\n            splitPoints.length, new byte[0],\n            // Now that blocks of identical splitless trie nodes are \n            // represented reentrantly, and we develop a leaf for any trie\n            // node with only one split point, the only reason for a depth\n            // limit is to refute stack overflow or bloat in the pathological\n            // case where the split points are long and mostly look like bytes \n            // iii...iixii...iii   .  Therefore, we make the default depth\n            // limit large but not huge.\n            conf.getInt(MAX_TRIE_DEPTH, 200));\n      } else {\n        partitions \u003d new BinarySearchNode(splitPoints, comparator);\n      }\n    } catch (IOException e) {\n      throw new IllegalArgumentException(\"Can\u0027t read partitions file\", e);\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/partition/TotalOrderPartitioner.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void setConf(Configuration conf) {\n    try {\n      this.conf \u003d conf;\n      String parts \u003d getPartitionFile(conf);\n      final Path partFile \u003d new Path(parts);\n      final FileSystem fs \u003d (DEFAULT_PATH.equals(parts))\n        ? FileSystem.getLocal(conf)     // assume in DistributedCache\n        : partFile.getFileSystem(conf);\n\n      Job job \u003d new Job(conf);\n      Class\u003cK\u003e keyClass \u003d (Class\u003cK\u003e)job.getMapOutputKeyClass();\n      K[] splitPoints \u003d readPartitions(fs, partFile, keyClass, conf);\n      if (splitPoints.length !\u003d job.getNumReduceTasks() - 1) {\n        throw new IOException(\"Wrong number of partitions in keyset\");\n      }\n      RawComparator\u003cK\u003e comparator \u003d\n        (RawComparator\u003cK\u003e) job.getSortComparator();\n      for (int i \u003d 0; i \u003c splitPoints.length - 1; ++i) {\n        if (comparator.compare(splitPoints[i], splitPoints[i+1]) \u003e\u003d 0) {\n          throw new IOException(\"Split points are out of order\");\n        }\n      }\n      boolean natOrder \u003d\n        conf.getBoolean(NATURAL_ORDER, true);\n      if (natOrder \u0026\u0026 BinaryComparable.class.isAssignableFrom(keyClass)) {\n        partitions \u003d buildTrie((BinaryComparable[])splitPoints, 0,\n            splitPoints.length, new byte[0],\n            // Now that blocks of identical splitless trie nodes are \n            // represented reentrantly, and we develop a leaf for any trie\n            // node with only one split point, the only reason for a depth\n            // limit is to refute stack overflow or bloat in the pathological\n            // case where the split points are long and mostly look like bytes \n            // iii...iixii...iii   .  Therefore, we make the default depth\n            // limit large but not huge.\n            conf.getInt(MAX_TRIE_DEPTH, 200));\n      } else {\n        partitions \u003d new BinarySearchNode(splitPoints, comparator);\n      }\n    } catch (IOException e) {\n      throw new IllegalArgumentException(\"Can\u0027t read partitions file\", e);\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/partition/TotalOrderPartitioner.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/partition/TotalOrderPartitioner.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/partition/TotalOrderPartitioner.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yfilerename",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "17/08/11 8:02 PM",
+      "commitNameOld": "dd86860633d2ed64705b669a75bf318442ed6225",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 0.34,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void setConf(Configuration conf) {\n    try {\n      this.conf \u003d conf;\n      String parts \u003d getPartitionFile(conf);\n      final Path partFile \u003d new Path(parts);\n      final FileSystem fs \u003d (DEFAULT_PATH.equals(parts))\n        ? FileSystem.getLocal(conf)     // assume in DistributedCache\n        : partFile.getFileSystem(conf);\n\n      Job job \u003d new Job(conf);\n      Class\u003cK\u003e keyClass \u003d (Class\u003cK\u003e)job.getMapOutputKeyClass();\n      K[] splitPoints \u003d readPartitions(fs, partFile, keyClass, conf);\n      if (splitPoints.length !\u003d job.getNumReduceTasks() - 1) {\n        throw new IOException(\"Wrong number of partitions in keyset\");\n      }\n      RawComparator\u003cK\u003e comparator \u003d\n        (RawComparator\u003cK\u003e) job.getSortComparator();\n      for (int i \u003d 0; i \u003c splitPoints.length - 1; ++i) {\n        if (comparator.compare(splitPoints[i], splitPoints[i+1]) \u003e\u003d 0) {\n          throw new IOException(\"Split points are out of order\");\n        }\n      }\n      boolean natOrder \u003d\n        conf.getBoolean(NATURAL_ORDER, true);\n      if (natOrder \u0026\u0026 BinaryComparable.class.isAssignableFrom(keyClass)) {\n        partitions \u003d buildTrie((BinaryComparable[])splitPoints, 0,\n            splitPoints.length, new byte[0],\n            // Now that blocks of identical splitless trie nodes are \n            // represented reentrantly, and we develop a leaf for any trie\n            // node with only one split point, the only reason for a depth\n            // limit is to refute stack overflow or bloat in the pathological\n            // case where the split points are long and mostly look like bytes \n            // iii...iixii...iii   .  Therefore, we make the default depth\n            // limit large but not huge.\n            conf.getInt(MAX_TRIE_DEPTH, 200));\n      } else {\n        partitions \u003d new BinarySearchNode(splitPoints, comparator);\n      }\n    } catch (IOException e) {\n      throw new IllegalArgumentException(\"Can\u0027t read partitions file\", e);\n    }\n  }",
+      "path": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/partition/TotalOrderPartitioner.java",
+      "extendedDetails": {
+        "oldPath": "mapreduce/src/java/org/apache/hadoop/mapreduce/lib/partition/TotalOrderPartitioner.java",
+        "newPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/lib/partition/TotalOrderPartitioner.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,42 @@\n+  public void setConf(Configuration conf) {\n+    try {\n+      this.conf \u003d conf;\n+      String parts \u003d getPartitionFile(conf);\n+      final Path partFile \u003d new Path(parts);\n+      final FileSystem fs \u003d (DEFAULT_PATH.equals(parts))\n+        ? FileSystem.getLocal(conf)     // assume in DistributedCache\n+        : partFile.getFileSystem(conf);\n+\n+      Job job \u003d new Job(conf);\n+      Class\u003cK\u003e keyClass \u003d (Class\u003cK\u003e)job.getMapOutputKeyClass();\n+      K[] splitPoints \u003d readPartitions(fs, partFile, keyClass, conf);\n+      if (splitPoints.length !\u003d job.getNumReduceTasks() - 1) {\n+        throw new IOException(\"Wrong number of partitions in keyset\");\n+      }\n+      RawComparator\u003cK\u003e comparator \u003d\n+        (RawComparator\u003cK\u003e) job.getSortComparator();\n+      for (int i \u003d 0; i \u003c splitPoints.length - 1; ++i) {\n+        if (comparator.compare(splitPoints[i], splitPoints[i+1]) \u003e\u003d 0) {\n+          throw new IOException(\"Split points are out of order\");\n+        }\n+      }\n+      boolean natOrder \u003d\n+        conf.getBoolean(NATURAL_ORDER, true);\n+      if (natOrder \u0026\u0026 BinaryComparable.class.isAssignableFrom(keyClass)) {\n+        partitions \u003d buildTrie((BinaryComparable[])splitPoints, 0,\n+            splitPoints.length, new byte[0],\n+            // Now that blocks of identical splitless trie nodes are \n+            // represented reentrantly, and we develop a leaf for any trie\n+            // node with only one split point, the only reason for a depth\n+            // limit is to refute stack overflow or bloat in the pathological\n+            // case where the split points are long and mostly look like bytes \n+            // iii...iixii...iii   .  Therefore, we make the default depth\n+            // limit large but not huge.\n+            conf.getInt(MAX_TRIE_DEPTH, 200));\n+      } else {\n+        partitions \u003d new BinarySearchNode(splitPoints, comparator);\n+      }\n+    } catch (IOException e) {\n+      throw new IllegalArgumentException(\"Can\u0027t read partitions file\", e);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void setConf(Configuration conf) {\n    try {\n      this.conf \u003d conf;\n      String parts \u003d getPartitionFile(conf);\n      final Path partFile \u003d new Path(parts);\n      final FileSystem fs \u003d (DEFAULT_PATH.equals(parts))\n        ? FileSystem.getLocal(conf)     // assume in DistributedCache\n        : partFile.getFileSystem(conf);\n\n      Job job \u003d new Job(conf);\n      Class\u003cK\u003e keyClass \u003d (Class\u003cK\u003e)job.getMapOutputKeyClass();\n      K[] splitPoints \u003d readPartitions(fs, partFile, keyClass, conf);\n      if (splitPoints.length !\u003d job.getNumReduceTasks() - 1) {\n        throw new IOException(\"Wrong number of partitions in keyset\");\n      }\n      RawComparator\u003cK\u003e comparator \u003d\n        (RawComparator\u003cK\u003e) job.getSortComparator();\n      for (int i \u003d 0; i \u003c splitPoints.length - 1; ++i) {\n        if (comparator.compare(splitPoints[i], splitPoints[i+1]) \u003e\u003d 0) {\n          throw new IOException(\"Split points are out of order\");\n        }\n      }\n      boolean natOrder \u003d\n        conf.getBoolean(NATURAL_ORDER, true);\n      if (natOrder \u0026\u0026 BinaryComparable.class.isAssignableFrom(keyClass)) {\n        partitions \u003d buildTrie((BinaryComparable[])splitPoints, 0,\n            splitPoints.length, new byte[0],\n            // Now that blocks of identical splitless trie nodes are \n            // represented reentrantly, and we develop a leaf for any trie\n            // node with only one split point, the only reason for a depth\n            // limit is to refute stack overflow or bloat in the pathological\n            // case where the split points are long and mostly look like bytes \n            // iii...iixii...iii   .  Therefore, we make the default depth\n            // limit large but not huge.\n            conf.getInt(MAX_TRIE_DEPTH, 200));\n      } else {\n        partitions \u003d new BinarySearchNode(splitPoints, comparator);\n      }\n    } catch (IOException e) {\n      throw new IllegalArgumentException(\"Can\u0027t read partitions file\", e);\n    }\n  }",
+      "path": "mapreduce/src/java/org/apache/hadoop/mapreduce/lib/partition/TotalOrderPartitioner.java"
+    }
+  }
+}

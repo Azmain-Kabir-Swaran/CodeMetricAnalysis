@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CGroupsResourceCalculator.java",
+  "functionName": "getCGroupRelativePathForPid",
+  "functionId": "getCGroupRelativePathForPid___controller-CGroupsHandler.CGroupController",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/CGroupsResourceCalculator.java",
+  "functionStartLine": 274,
+  "functionEndLine": 313,
+  "numCommitsSeen": 2,
+  "timeTaken": 872,
+  "changeHistory": [
+    "649ef7ac334e63a7c676f8e7406f59d9466eb6f2"
+  ],
+  "changeHistoryShort": {
+    "649ef7ac334e63a7c676f8e7406f59d9466eb6f2": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "649ef7ac334e63a7c676f8e7406f59d9466eb6f2": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-7064. Use cgroup to get container resource utilization. (Miklos Szegedi via Haibo Chen)\n",
+      "commitDate": "26/01/18 4:27 PM",
+      "commitName": "649ef7ac334e63a7c676f8e7406f59d9466eb6f2",
+      "commitAuthor": "Haibo Chen",
+      "diff": "@@ -0,0 +1,40 @@\n+  private String getCGroupRelativePathForPid(\n+      CGroupsHandler.CGroupController controller)\n+      throws YarnException {\n+    File pidCgroupFile \u003d new File(new File(procfsDir, pid), CGROUP);\n+    String[] result \u003d new String[1];\n+    processFile(pidCgroupFile, (String line)-\u003e{\n+      Matcher m \u003d CGROUP_FILE_FORMAT.matcher(line);\n+      boolean mat \u003d m.find();\n+      if (mat) {\n+        if (m.group(2).contains(controller.getName())) {\n+          // Instead of returning the full path we compose it\n+          // based on the last item as the container id\n+          // This helps to avoid confusion within a privileged Docker container\n+          // where the path is referred in /proc/\u003cpid\u003e/cgroup as\n+          // /docker/\u003cdcontainerid\u003e/hadoop-yarn/\u003ccontainerid\u003e\n+          // but it is /hadoop-yarn/\u003ccontainerid\u003e in the cgroups hierarchy\n+          String cgroupPath \u003d m.group(3);\n+\n+          if (cgroupPath !\u003d null) {\n+            String cgroup \u003d\n+                new File(cgroupPath).toPath().getFileName().toString();\n+            result[0] \u003d cGroupsHandler.getRelativePathForCGroup(cgroup);\n+          } else {\n+            LOG.warn(\"Invalid cgroup path for \" + pidCgroupFile);\n+          }\n+          return Result.Exit;\n+        }\n+      } else {\n+        LOG.warn(\n+            \"Unexpected: cgroup file is not in the expected format\"\n+                + \" for process with pid \" + pid);\n+      }\n+      return Result.Continue;\n+    });\n+    if (result[0] \u003d\u003d null) {\n+      throw new YarnException(controller.getName() + \" CGroup for pid \" + pid +\n+          \" not found \" + pidCgroupFile);\n+    }\n+    return result[0];\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private String getCGroupRelativePathForPid(\n      CGroupsHandler.CGroupController controller)\n      throws YarnException {\n    File pidCgroupFile \u003d new File(new File(procfsDir, pid), CGROUP);\n    String[] result \u003d new String[1];\n    processFile(pidCgroupFile, (String line)-\u003e{\n      Matcher m \u003d CGROUP_FILE_FORMAT.matcher(line);\n      boolean mat \u003d m.find();\n      if (mat) {\n        if (m.group(2).contains(controller.getName())) {\n          // Instead of returning the full path we compose it\n          // based on the last item as the container id\n          // This helps to avoid confusion within a privileged Docker container\n          // where the path is referred in /proc/\u003cpid\u003e/cgroup as\n          // /docker/\u003cdcontainerid\u003e/hadoop-yarn/\u003ccontainerid\u003e\n          // but it is /hadoop-yarn/\u003ccontainerid\u003e in the cgroups hierarchy\n          String cgroupPath \u003d m.group(3);\n\n          if (cgroupPath !\u003d null) {\n            String cgroup \u003d\n                new File(cgroupPath).toPath().getFileName().toString();\n            result[0] \u003d cGroupsHandler.getRelativePathForCGroup(cgroup);\n          } else {\n            LOG.warn(\"Invalid cgroup path for \" + pidCgroupFile);\n          }\n          return Result.Exit;\n        }\n      } else {\n        LOG.warn(\n            \"Unexpected: cgroup file is not in the expected format\"\n                + \" for process with pid \" + pid);\n      }\n      return Result.Continue;\n    });\n    if (result[0] \u003d\u003d null) {\n      throw new YarnException(controller.getName() + \" CGroup for pid \" + pid +\n          \" not found \" + pidCgroupFile);\n    }\n    return result[0];\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/CGroupsResourceCalculator.java"
+    }
+  }
+}

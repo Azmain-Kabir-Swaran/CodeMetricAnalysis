@@ -1,0 +1,155 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSNamesystem.java",
+  "functionName": "removeLeasesAndINodes",
+  "functionId": "removeLeasesAndINodes___removedUCFiles-List__Long____removedINodes-List__INode____acquireINodeMapLock-boolean(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+  "functionStartLine": 3333,
+  "functionEndLine": 3354,
+  "numCommitsSeen": 1914,
+  "timeTaken": 30752,
+  "changeHistory": [
+    "bd909ed9f2d853f614f04a50e2230a7932732776",
+    "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+    "24315e7d374a1ddd4329b64350cf96fc9ab6f59c"
+  ],
+  "changeHistoryShort": {
+    "bd909ed9f2d853f614f04a50e2230a7932732776": "Ybodychange",
+    "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63": "Ymultichange(Yparameterchange,Ybodychange)",
+    "24315e7d374a1ddd4329b64350cf96fc9ab6f59c": "Ymultichange(Yrename,Yparameterchange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "bd909ed9f2d853f614f04a50e2230a7932732776": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8999. Allow a file to be closed with COMMITTED but not yet COMPLETE blocks.\n",
+      "commitDate": "25/01/16 6:32 PM",
+      "commitName": "bd909ed9f2d853f614f04a50e2230a7932732776",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "24/01/16 2:19 PM",
+      "commitNameOld": "10a2bc0dffaece216eb9a6bac3236a086b9ece31",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 1.18,
+      "commitsBetweenForRepo": 11,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,22 @@\n   void removeLeasesAndINodes(List\u003cLong\u003e removedUCFiles,\n       List\u003cINode\u003e removedINodes,\n       final boolean acquireINodeMapLock) {\n     assert hasWriteLock();\n-    leaseManager.removeLeases(removedUCFiles);\n+    for(long i : removedUCFiles) {\n+      leaseManager.removeLease(i);\n+    }\n     // remove inodes from inodesMap\n     if (removedINodes !\u003d null) {\n       if (acquireINodeMapLock) {\n         dir.writeLock();\n       }\n       try {\n         dir.removeFromInodeMap(removedINodes);\n       } finally {\n         if (acquireINodeMapLock) {\n           dir.writeUnlock();\n         }\n       }\n       removedINodes.clear();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void removeLeasesAndINodes(List\u003cLong\u003e removedUCFiles,\n      List\u003cINode\u003e removedINodes,\n      final boolean acquireINodeMapLock) {\n    assert hasWriteLock();\n    for(long i : removedUCFiles) {\n      leaseManager.removeLease(i);\n    }\n    // remove inodes from inodesMap\n    if (removedINodes !\u003d null) {\n      if (acquireINodeMapLock) {\n        dir.writeLock();\n      }\n      try {\n        dir.removeFromInodeMap(removedINodes);\n      } finally {\n        if (acquireINodeMapLock) {\n          dir.writeUnlock();\n        }\n      }\n      removedINodes.clear();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+      "extendedDetails": {}
+    },
+    "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-6757. Simplify lease manager with INodeID. Contributed by Haohui Mai.\n",
+      "commitDate": "08/05/15 11:04 PM",
+      "commitName": "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-6757. Simplify lease manager with INodeID. Contributed by Haohui Mai.\n",
+          "commitDate": "08/05/15 11:04 PM",
+          "commitName": "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "08/05/15 7:30 AM",
+          "commitNameOld": "6f622672b62aa8d719060063ef0e47480cdc8655",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 0.65,
+          "commitsBetweenForRepo": 28,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,20 @@\n-  void removeLeasesAndINodes(String src, List\u003cINode\u003e removedINodes,\n+  void removeLeasesAndINodes(List\u003cLong\u003e removedUCFiles,\n+      List\u003cINode\u003e removedINodes,\n       final boolean acquireINodeMapLock) {\n     assert hasWriteLock();\n-    leaseManager.removeLeaseWithPrefixPath(src);\n+    leaseManager.removeLeases(removedUCFiles);\n     // remove inodes from inodesMap\n     if (removedINodes !\u003d null) {\n       if (acquireINodeMapLock) {\n         dir.writeLock();\n       }\n       try {\n         dir.removeFromInodeMap(removedINodes);\n       } finally {\n         if (acquireINodeMapLock) {\n           dir.writeUnlock();\n         }\n       }\n       removedINodes.clear();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeLeasesAndINodes(List\u003cLong\u003e removedUCFiles,\n      List\u003cINode\u003e removedINodes,\n      final boolean acquireINodeMapLock) {\n    assert hasWriteLock();\n    leaseManager.removeLeases(removedUCFiles);\n    // remove inodes from inodesMap\n    if (removedINodes !\u003d null) {\n      if (acquireINodeMapLock) {\n        dir.writeLock();\n      }\n      try {\n        dir.removeFromInodeMap(removedINodes);\n      } finally {\n        if (acquireINodeMapLock) {\n          dir.writeUnlock();\n        }\n      }\n      removedINodes.clear();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+          "extendedDetails": {
+            "oldValue": "[src-String, removedINodes-List\u003cINode\u003e, acquireINodeMapLock-boolean(modifiers-final)]",
+            "newValue": "[removedUCFiles-List\u003cLong\u003e, removedINodes-List\u003cINode\u003e, acquireINodeMapLock-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6757. Simplify lease manager with INodeID. Contributed by Haohui Mai.\n",
+          "commitDate": "08/05/15 11:04 PM",
+          "commitName": "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "08/05/15 7:30 AM",
+          "commitNameOld": "6f622672b62aa8d719060063ef0e47480cdc8655",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 0.65,
+          "commitsBetweenForRepo": 28,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,20 @@\n-  void removeLeasesAndINodes(String src, List\u003cINode\u003e removedINodes,\n+  void removeLeasesAndINodes(List\u003cLong\u003e removedUCFiles,\n+      List\u003cINode\u003e removedINodes,\n       final boolean acquireINodeMapLock) {\n     assert hasWriteLock();\n-    leaseManager.removeLeaseWithPrefixPath(src);\n+    leaseManager.removeLeases(removedUCFiles);\n     // remove inodes from inodesMap\n     if (removedINodes !\u003d null) {\n       if (acquireINodeMapLock) {\n         dir.writeLock();\n       }\n       try {\n         dir.removeFromInodeMap(removedINodes);\n       } finally {\n         if (acquireINodeMapLock) {\n           dir.writeUnlock();\n         }\n       }\n       removedINodes.clear();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeLeasesAndINodes(List\u003cLong\u003e removedUCFiles,\n      List\u003cINode\u003e removedINodes,\n      final boolean acquireINodeMapLock) {\n    assert hasWriteLock();\n    leaseManager.removeLeases(removedUCFiles);\n    // remove inodes from inodesMap\n    if (removedINodes !\u003d null) {\n      if (acquireINodeMapLock) {\n        dir.writeLock();\n      }\n      try {\n        dir.removeFromInodeMap(removedINodes);\n      } finally {\n        if (acquireINodeMapLock) {\n          dir.writeUnlock();\n        }\n      }\n      removedINodes.clear();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "24315e7d374a1ddd4329b64350cf96fc9ab6f59c": {
+      "type": "Ymultichange(Yrename,Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-7573. Consolidate the implementation of delete() into a single class. Contributed by Haohui Mai.\n",
+      "commitDate": "17/01/15 12:56 PM",
+      "commitName": "24315e7d374a1ddd4329b64350cf96fc9ab6f59c",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-7573. Consolidate the implementation of delete() into a single class. Contributed by Haohui Mai.\n",
+          "commitDate": "17/01/15 12:56 PM",
+          "commitName": "24315e7d374a1ddd4329b64350cf96fc9ab6f59c",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "15/01/15 2:39 PM",
+          "commitNameOld": "44eed6cbc97649c15177f9b36f6b119cc1900f7a",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 1.93,
+          "commitsBetweenForRepo": 10,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,19 @@\n-  void removePathAndBlocks(String src, BlocksMapUpdateInfo blocks,\n-      List\u003cINode\u003e removedINodes, final boolean acquireINodeMapLock) {\n+  void removeLeasesAndINodes(String src, List\u003cINode\u003e removedINodes,\n+      final boolean acquireINodeMapLock) {\n     assert hasWriteLock();\n     leaseManager.removeLeaseWithPrefixPath(src);\n     // remove inodes from inodesMap\n     if (removedINodes !\u003d null) {\n       if (acquireINodeMapLock) {\n         dir.writeLock();\n       }\n       try {\n         dir.removeFromInodeMap(removedINodes);\n       } finally {\n         if (acquireINodeMapLock) {\n           dir.writeUnlock();\n         }\n       }\n       removedINodes.clear();\n     }\n-    if (blocks \u003d\u003d null) {\n-      return;\n-    }\n-    \n-    removeBlocksAndUpdateSafemodeTotal(blocks);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeLeasesAndINodes(String src, List\u003cINode\u003e removedINodes,\n      final boolean acquireINodeMapLock) {\n    assert hasWriteLock();\n    leaseManager.removeLeaseWithPrefixPath(src);\n    // remove inodes from inodesMap\n    if (removedINodes !\u003d null) {\n      if (acquireINodeMapLock) {\n        dir.writeLock();\n      }\n      try {\n        dir.removeFromInodeMap(removedINodes);\n      } finally {\n        if (acquireINodeMapLock) {\n          dir.writeUnlock();\n        }\n      }\n      removedINodes.clear();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+          "extendedDetails": {
+            "oldValue": "removePathAndBlocks",
+            "newValue": "removeLeasesAndINodes"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-7573. Consolidate the implementation of delete() into a single class. Contributed by Haohui Mai.\n",
+          "commitDate": "17/01/15 12:56 PM",
+          "commitName": "24315e7d374a1ddd4329b64350cf96fc9ab6f59c",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "15/01/15 2:39 PM",
+          "commitNameOld": "44eed6cbc97649c15177f9b36f6b119cc1900f7a",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 1.93,
+          "commitsBetweenForRepo": 10,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,19 @@\n-  void removePathAndBlocks(String src, BlocksMapUpdateInfo blocks,\n-      List\u003cINode\u003e removedINodes, final boolean acquireINodeMapLock) {\n+  void removeLeasesAndINodes(String src, List\u003cINode\u003e removedINodes,\n+      final boolean acquireINodeMapLock) {\n     assert hasWriteLock();\n     leaseManager.removeLeaseWithPrefixPath(src);\n     // remove inodes from inodesMap\n     if (removedINodes !\u003d null) {\n       if (acquireINodeMapLock) {\n         dir.writeLock();\n       }\n       try {\n         dir.removeFromInodeMap(removedINodes);\n       } finally {\n         if (acquireINodeMapLock) {\n           dir.writeUnlock();\n         }\n       }\n       removedINodes.clear();\n     }\n-    if (blocks \u003d\u003d null) {\n-      return;\n-    }\n-    \n-    removeBlocksAndUpdateSafemodeTotal(blocks);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeLeasesAndINodes(String src, List\u003cINode\u003e removedINodes,\n      final boolean acquireINodeMapLock) {\n    assert hasWriteLock();\n    leaseManager.removeLeaseWithPrefixPath(src);\n    // remove inodes from inodesMap\n    if (removedINodes !\u003d null) {\n      if (acquireINodeMapLock) {\n        dir.writeLock();\n      }\n      try {\n        dir.removeFromInodeMap(removedINodes);\n      } finally {\n        if (acquireINodeMapLock) {\n          dir.writeUnlock();\n        }\n      }\n      removedINodes.clear();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+          "extendedDetails": {
+            "oldValue": "[src-String, blocks-BlocksMapUpdateInfo, removedINodes-List\u003cINode\u003e, acquireINodeMapLock-boolean(modifiers-final)]",
+            "newValue": "[src-String, removedINodes-List\u003cINode\u003e, acquireINodeMapLock-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7573. Consolidate the implementation of delete() into a single class. Contributed by Haohui Mai.\n",
+          "commitDate": "17/01/15 12:56 PM",
+          "commitName": "24315e7d374a1ddd4329b64350cf96fc9ab6f59c",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "15/01/15 2:39 PM",
+          "commitNameOld": "44eed6cbc97649c15177f9b36f6b119cc1900f7a",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 1.93,
+          "commitsBetweenForRepo": 10,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,19 @@\n-  void removePathAndBlocks(String src, BlocksMapUpdateInfo blocks,\n-      List\u003cINode\u003e removedINodes, final boolean acquireINodeMapLock) {\n+  void removeLeasesAndINodes(String src, List\u003cINode\u003e removedINodes,\n+      final boolean acquireINodeMapLock) {\n     assert hasWriteLock();\n     leaseManager.removeLeaseWithPrefixPath(src);\n     // remove inodes from inodesMap\n     if (removedINodes !\u003d null) {\n       if (acquireINodeMapLock) {\n         dir.writeLock();\n       }\n       try {\n         dir.removeFromInodeMap(removedINodes);\n       } finally {\n         if (acquireINodeMapLock) {\n           dir.writeUnlock();\n         }\n       }\n       removedINodes.clear();\n     }\n-    if (blocks \u003d\u003d null) {\n-      return;\n-    }\n-    \n-    removeBlocksAndUpdateSafemodeTotal(blocks);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeLeasesAndINodes(String src, List\u003cINode\u003e removedINodes,\n      final boolean acquireINodeMapLock) {\n    assert hasWriteLock();\n    leaseManager.removeLeaseWithPrefixPath(src);\n    // remove inodes from inodesMap\n    if (removedINodes !\u003d null) {\n      if (acquireINodeMapLock) {\n        dir.writeLock();\n      }\n      try {\n        dir.removeFromInodeMap(removedINodes);\n      } finally {\n        if (acquireINodeMapLock) {\n          dir.writeUnlock();\n        }\n      }\n      removedINodes.clear();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

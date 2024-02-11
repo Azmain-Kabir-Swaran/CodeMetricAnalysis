@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "HttpFSFileSystem.java",
+  "functionName": "getConnection",
+  "functionId": "getConnection___method-String(modifiers-final)__params-Map__String,String____multiValuedParams-Map__String,List__String______path-Path__makeQualified-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-httpfs/src/main/java/org/apache/hadoop/fs/http/client/HttpFSFileSystem.java",
+  "functionStartLine": 332,
+  "functionEndLine": 355,
+  "numCommitsSeen": 51,
+  "timeTaken": 1818,
+  "changeHistory": [
+    "be9c67930b57c516723d566625f9036a88a84055",
+    "46162a213f60f915df76c60b0412f45a021e1e7e"
+  ],
+  "changeHistoryShort": {
+    "be9c67930b57c516723d566625f9036a88a84055": "Ybodychange",
+    "46162a213f60f915df76c60b0412f45a021e1e7e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "be9c67930b57c516723d566625f9036a88a84055": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10771. Refactor HTTP delegation support out of httpfs to common, PART 2. (tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1616672 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/14 9:58 PM",
+      "commitName": "be9c67930b57c516723d566625f9036a88a84055",
+      "commitAuthor": "Alejandro Abdelnur",
+      "commitDateOld": "24/06/14 8:59 AM",
+      "commitNameOld": "46162a213f60f915df76c60b0412f45a021e1e7e",
+      "commitAuthorOld": "Alejandro Abdelnur",
+      "daysBetweenCommits": 44.54,
+      "commitsBetweenForRepo": 316,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,24 @@\n   private HttpURLConnection getConnection(final String method,\n       Map\u003cString, String\u003e params, Map\u003cString, List\u003cString\u003e\u003e multiValuedParams,\n       Path path, boolean makeQualified) throws IOException {\n-    if (!realUser.getShortUserName().equals(doAs)) {\n-      params.put(DO_AS_PARAM, doAs);\n-    }\n-    HttpFSKerberosAuthenticator.injectDelegationToken(params, delegationToken);\n     if (makeQualified) {\n       path \u003d makeQualified(path);\n     }\n     final URL url \u003d HttpFSUtils.createURL(path, params, multiValuedParams);\n-    return doAsRealUserIfNecessary(new Callable\u003cHttpURLConnection\u003e() {\n-      @Override\n-      public HttpURLConnection call() throws Exception {\n-        return getConnection(url, method);\n+    try {\n+      return UserGroupInformation.getCurrentUser().doAs(\n+          new PrivilegedExceptionAction\u003cHttpURLConnection\u003e() {\n+            @Override\n+            public HttpURLConnection run() throws Exception {\n+              return getConnection(url, method);\n+            }\n+          }\n+      );\n+    } catch (Exception ex) {\n+      if (ex instanceof IOException) {\n+        throw (IOException) ex;\n+      } else {\n+        throw new IOException(ex);\n       }\n-    });\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private HttpURLConnection getConnection(final String method,\n      Map\u003cString, String\u003e params, Map\u003cString, List\u003cString\u003e\u003e multiValuedParams,\n      Path path, boolean makeQualified) throws IOException {\n    if (makeQualified) {\n      path \u003d makeQualified(path);\n    }\n    final URL url \u003d HttpFSUtils.createURL(path, params, multiValuedParams);\n    try {\n      return UserGroupInformation.getCurrentUser().doAs(\n          new PrivilegedExceptionAction\u003cHttpURLConnection\u003e() {\n            @Override\n            public HttpURLConnection run() throws Exception {\n              return getConnection(url, method);\n            }\n          }\n      );\n    } catch (Exception ex) {\n      if (ex instanceof IOException) {\n        throw (IOException) ex;\n      } else {\n        throw new IOException(ex);\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-httpfs/src/main/java/org/apache/hadoop/fs/http/client/HttpFSFileSystem.java",
+      "extendedDetails": {}
+    },
+    "46162a213f60f915df76c60b0412f45a021e1e7e": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-6430. HTTPFS - Implement XAttr support. (Yi Liu via tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1605118 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/06/14 8:59 AM",
+      "commitName": "46162a213f60f915df76c60b0412f45a021e1e7e",
+      "commitAuthor": "Alejandro Abdelnur",
+      "diff": "@@ -0,0 +1,18 @@\n+  private HttpURLConnection getConnection(final String method,\n+      Map\u003cString, String\u003e params, Map\u003cString, List\u003cString\u003e\u003e multiValuedParams,\n+      Path path, boolean makeQualified) throws IOException {\n+    if (!realUser.getShortUserName().equals(doAs)) {\n+      params.put(DO_AS_PARAM, doAs);\n+    }\n+    HttpFSKerberosAuthenticator.injectDelegationToken(params, delegationToken);\n+    if (makeQualified) {\n+      path \u003d makeQualified(path);\n+    }\n+    final URL url \u003d HttpFSUtils.createURL(path, params, multiValuedParams);\n+    return doAsRealUserIfNecessary(new Callable\u003cHttpURLConnection\u003e() {\n+      @Override\n+      public HttpURLConnection call() throws Exception {\n+        return getConnection(url, method);\n+      }\n+    });\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private HttpURLConnection getConnection(final String method,\n      Map\u003cString, String\u003e params, Map\u003cString, List\u003cString\u003e\u003e multiValuedParams,\n      Path path, boolean makeQualified) throws IOException {\n    if (!realUser.getShortUserName().equals(doAs)) {\n      params.put(DO_AS_PARAM, doAs);\n    }\n    HttpFSKerberosAuthenticator.injectDelegationToken(params, delegationToken);\n    if (makeQualified) {\n      path \u003d makeQualified(path);\n    }\n    final URL url \u003d HttpFSUtils.createURL(path, params, multiValuedParams);\n    return doAsRealUserIfNecessary(new Callable\u003cHttpURLConnection\u003e() {\n      @Override\n      public HttpURLConnection call() throws Exception {\n        return getConnection(url, method);\n      }\n    });\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-httpfs/src/main/java/org/apache/hadoop/fs/http/client/HttpFSFileSystem.java"
+    }
+  }
+}

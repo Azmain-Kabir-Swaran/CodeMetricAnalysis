@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FsVolumeImpl.java",
+  "functionName": "releaseReservedSpace",
+  "functionId": "releaseReservedSpace___bytesToRelease-long",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+  "functionStartLine": 571,
+  "functionEndLine": 584,
+  "numCommitsSeen": 71,
+  "timeTaken": 2782,
+  "changeHistory": [
+    "73c660b43f3d5311947d2acc9488f17c1caf4de0",
+    "92c1af1646b1d91a2ab7821e4f7d450e3b6e10bb",
+    "b2d5ed36bcb80e2581191dcdc3976e825c959142",
+    "d1fa58292e87bc29b4ef1278368c2be938a0afc4"
+  ],
+  "changeHistoryShort": {
+    "73c660b43f3d5311947d2acc9488f17c1caf4de0": "Ybodychange",
+    "92c1af1646b1d91a2ab7821e4f7d450e3b6e10bb": "Ybodychange",
+    "b2d5ed36bcb80e2581191dcdc3976e825c959142": "Ybodychange",
+    "d1fa58292e87bc29b4ef1278368c2be938a0afc4": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "73c660b43f3d5311947d2acc9488f17c1caf4de0": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13958. Miscellaneous Improvements for FsVolumeSpi. Contributed by BELUGA BEHR.\n",
+      "commitDate": "05/10/18 9:32 AM",
+      "commitName": "73c660b43f3d5311947d2acc9488f17c1caf4de0",
+      "commitAuthor": "Inigo Goiri",
+      "commitDateOld": "30/04/18 1:28 PM",
+      "commitNameOld": "fc074a359c44e84dd9612be2bd772763f943eb04",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 157.84,
+      "commitsBetweenForRepo": 1255,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,14 @@\n   public void releaseReservedSpace(long bytesToRelease) {\n-    if (bytesToRelease !\u003d 0) {\n-\n+    if (bytesToRelease !\u003d 0L) {\n       long oldReservation, newReservation;\n       do {\n         oldReservation \u003d reservedForReplicas.get();\n         newReservation \u003d oldReservation - bytesToRelease;\n-        if (newReservation \u003c 0) {\n-          // Failsafe, this should never occur in practice, but if it does we\n-          // don\u0027t want to start advertising more space than we have available.\n-          newReservation \u003d 0;\n-        }\n+\n+        // Fail-safe, this should never be less than zero in practice, but if it\n+        // does, do not advertise more space than is have available.\n+        newReservation \u003d Math.max(newReservation, 0L);\n       } while (!reservedForReplicas.compareAndSet(oldReservation,\n           newReservation));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void releaseReservedSpace(long bytesToRelease) {\n    if (bytesToRelease !\u003d 0L) {\n      long oldReservation, newReservation;\n      do {\n        oldReservation \u003d reservedForReplicas.get();\n        newReservation \u003d oldReservation - bytesToRelease;\n\n        // Fail-safe, this should never be less than zero in practice, but if it\n        // does, do not advertise more space than is have available.\n        newReservation \u003d Math.max(newReservation, 0L);\n      } while (!reservedForReplicas.compareAndSet(oldReservation,\n          newReservation));\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "92c1af1646b1d91a2ab7821e4f7d450e3b6e10bb": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6955. DN should reserve disk space for a full block when creating tmp files (Contributed by Kanaka Kumar Avvaru)\n",
+      "commitDate": "18/09/15 4:07 AM",
+      "commitName": "92c1af1646b1d91a2ab7821e4f7d450e3b6e10bb",
+      "commitAuthor": "Vinayakumar B",
+      "commitDateOld": "19/06/15 6:23 PM",
+      "commitNameOld": "55278c012fbd5dcabee0276f8f42d0ab920cec93",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 90.41,
+      "commitsBetweenForRepo": 533,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,16 @@\n   public void releaseReservedSpace(long bytesToRelease) {\n     if (bytesToRelease !\u003d 0) {\n \n       long oldReservation, newReservation;\n       do {\n-        oldReservation \u003d reservedForRbw.get();\n+        oldReservation \u003d reservedForReplicas.get();\n         newReservation \u003d oldReservation - bytesToRelease;\n         if (newReservation \u003c 0) {\n-          // Failsafe, this should never occur in practice, but if it does we don\u0027t\n-          // want to start advertising more space than we have available.\n+          // Failsafe, this should never occur in practice, but if it does we\n+          // don\u0027t want to start advertising more space than we have available.\n           newReservation \u003d 0;\n         }\n-      } while (!reservedForRbw.compareAndSet(oldReservation, newReservation));\n+      } while (!reservedForReplicas.compareAndSet(oldReservation,\n+          newReservation));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void releaseReservedSpace(long bytesToRelease) {\n    if (bytesToRelease !\u003d 0) {\n\n      long oldReservation, newReservation;\n      do {\n        oldReservation \u003d reservedForReplicas.get();\n        newReservation \u003d oldReservation - bytesToRelease;\n        if (newReservation \u003c 0) {\n          // Failsafe, this should never occur in practice, but if it does we\n          // don\u0027t want to start advertising more space than we have available.\n          newReservation \u003d 0;\n        }\n      } while (!reservedForReplicas.compareAndSet(oldReservation,\n          newReservation));\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "b2d5ed36bcb80e2581191dcdc3976e825c959142": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7100. Make eviction scheme pluggable. (Arpit Agarwal)\n",
+      "commitDate": "20/09/14 1:25 PM",
+      "commitName": "b2d5ed36bcb80e2581191dcdc3976e825c959142",
+      "commitAuthor": "arp",
+      "commitDateOld": "16/09/14 3:45 PM",
+      "commitNameOld": "4603e4481f0486afcce6b106d4a92a6e90e5b6d9",
+      "commitAuthorOld": "arp",
+      "daysBetweenCommits": 3.9,
+      "commitsBetweenForRepo": 71,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,15 @@\n   public void releaseReservedSpace(long bytesToRelease) {\n     if (bytesToRelease !\u003d 0) {\n-      if (FsDatasetImpl.LOG.isDebugEnabled()) {\n-        FsDatasetImpl.LOG.debug(\"Releasing \" + bytesToRelease + \" on volume \" + getBasePath());\n-      }\n \n       long oldReservation, newReservation;\n       do {\n         oldReservation \u003d reservedForRbw.get();\n         newReservation \u003d oldReservation - bytesToRelease;\n         if (newReservation \u003c 0) {\n           // Failsafe, this should never occur in practice, but if it does we don\u0027t\n           // want to start advertising more space than we have available.\n           newReservation \u003d 0;\n         }\n       } while (!reservedForRbw.compareAndSet(oldReservation, newReservation));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void releaseReservedSpace(long bytesToRelease) {\n    if (bytesToRelease !\u003d 0) {\n\n      long oldReservation, newReservation;\n      do {\n        oldReservation \u003d reservedForRbw.get();\n        newReservation \u003d oldReservation - bytesToRelease;\n        if (newReservation \u003c 0) {\n          // Failsafe, this should never occur in practice, but if it does we don\u0027t\n          // want to start advertising more space than we have available.\n          newReservation \u003d 0;\n        }\n      } while (!reservedForRbw.compareAndSet(oldReservation, newReservation));\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "d1fa58292e87bc29b4ef1278368c2be938a0afc4": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-6898. DN must reserve space for a full block when an RBW block is created. (Contributed by Arpit Agarwal)\n",
+      "commitDate": "06/09/14 9:04 PM",
+      "commitName": "d1fa58292e87bc29b4ef1278368c2be938a0afc4",
+      "commitAuthor": "arp",
+      "diff": "@@ -0,0 +1,18 @@\n+  public void releaseReservedSpace(long bytesToRelease) {\n+    if (bytesToRelease !\u003d 0) {\n+      if (FsDatasetImpl.LOG.isDebugEnabled()) {\n+        FsDatasetImpl.LOG.debug(\"Releasing \" + bytesToRelease + \" on volume \" + getBasePath());\n+      }\n+\n+      long oldReservation, newReservation;\n+      do {\n+        oldReservation \u003d reservedForRbw.get();\n+        newReservation \u003d oldReservation - bytesToRelease;\n+        if (newReservation \u003c 0) {\n+          // Failsafe, this should never occur in practice, but if it does we don\u0027t\n+          // want to start advertising more space than we have available.\n+          newReservation \u003d 0;\n+        }\n+      } while (!reservedForRbw.compareAndSet(oldReservation, newReservation));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void releaseReservedSpace(long bytesToRelease) {\n    if (bytesToRelease !\u003d 0) {\n      if (FsDatasetImpl.LOG.isDebugEnabled()) {\n        FsDatasetImpl.LOG.debug(\"Releasing \" + bytesToRelease + \" on volume \" + getBasePath());\n      }\n\n      long oldReservation, newReservation;\n      do {\n        oldReservation \u003d reservedForRbw.get();\n        newReservation \u003d oldReservation - bytesToRelease;\n        if (newReservation \u003c 0) {\n          // Failsafe, this should never occur in practice, but if it does we don\u0027t\n          // want to start advertising more space than we have available.\n          newReservation \u003d 0;\n        }\n      } while (!reservedForRbw.compareAndSet(oldReservation, newReservation));\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java"
+    }
+  }
+}

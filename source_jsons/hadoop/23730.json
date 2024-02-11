@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CachedHistoryStorage.java",
+  "functionName": "createLoadedJobCache",
+  "functionId": "createLoadedJobCache___conf-Configuration",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-hs/src/main/java/org/apache/hadoop/mapreduce/v2/hs/CachedHistoryStorage.java",
+  "functionStartLine": 78,
+  "functionEndLine": 143,
+  "numCommitsSeen": 10,
+  "timeTaken": 1101,
+  "changeHistory": [
+    "0f72da7e281376f4fcbfbf3fb33f5d7fedcdb1aa",
+    "8bb035509ea195ec03b8295a7abd11ce675a4d85"
+  ],
+  "changeHistoryShort": {
+    "0f72da7e281376f4fcbfbf3fb33f5d7fedcdb1aa": "Ybodychange",
+    "8bb035509ea195ec03b8295a7abd11ce675a4d85": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0f72da7e281376f4fcbfbf3fb33f5d7fedcdb1aa": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6622. Add capability to set JHS job cache to a task-based limit (rchiang via rkanter)\n",
+      "commitDate": "26/02/16 5:57 PM",
+      "commitName": "0f72da7e281376f4fcbfbf3fb33f5d7fedcdb1aa",
+      "commitAuthor": "Robert Kanter",
+      "commitDateOld": "29/07/13 3:33 PM",
+      "commitNameOld": "8bb035509ea195ec03b8295a7abd11ce675a4d85",
+      "commitAuthorOld": "Jason Darrell Lowe",
+      "daysBetweenCommits": 942.14,
+      "commitsBetweenForRepo": 7216,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,66 @@\n   private void createLoadedJobCache(Configuration conf) {\n+    // Set property for old \"loaded jobs\" cache\n     loadedJobCacheSize \u003d conf.getInt(\n         JHAdminConfig.MR_HISTORY_LOADED_JOB_CACHE_SIZE,\n         JHAdminConfig.DEFAULT_MR_HISTORY_LOADED_JOB_CACHE_SIZE);\n \n-    loadedJobCache \u003d Collections.synchronizedMap(new LinkedHashMap\u003cJobId, Job\u003e(\n-        loadedJobCacheSize + 1, 0.75f, true) {\n-      @Override\n-      public boolean removeEldestEntry(final Map.Entry\u003cJobId, Job\u003e eldest) {\n-        return super.size() \u003e loadedJobCacheSize;\n+    // Check property for new \"loaded tasks\" cache perform sanity checking\n+    useLoadedTasksCache \u003d false;\n+    try {\n+      String taskSizeString \u003d conf\n+          .get(JHAdminConfig.MR_HISTORY_LOADED_TASKS_CACHE_SIZE);\n+      if (taskSizeString !\u003d null) {\n+        loadedTasksCacheSize \u003d Math.max(Integer.parseInt(taskSizeString), 1);\n+        useLoadedTasksCache \u003d true;\n       }\n-    });\n+    } catch (NumberFormatException nfe) {\n+      LOG.error(\"The property \" +\n+          JHAdminConfig.MR_HISTORY_LOADED_TASKS_CACHE_SIZE +\n+          \" is not an integer value.  Please set it to a positive\" +\n+          \" integer value.\");\n+    }\n+\n+    CacheLoader\u003cJobId, Job\u003e loader;\n+    loader \u003d new CacheLoader\u003cJobId, Job\u003e() {\n+      @Override\n+      public Job load(JobId key) throws Exception {\n+        return loadJob(key);\n+      }\n+    };\n+\n+    if (!useLoadedTasksCache) {\n+      loadedJobCache \u003d CacheBuilder.newBuilder()\n+          .maximumSize(loadedJobCacheSize)\n+          .initialCapacity(loadedJobCacheSize)\n+          .concurrencyLevel(1)\n+          .build(loader);\n+    } else {\n+      Weigher\u003cJobId, Job\u003e weightByTasks;\n+      weightByTasks \u003d new Weigher\u003cJobId, Job\u003e() {\n+        /**\n+         * Method for calculating Job weight by total task count.  If\n+         * the total task count is greater than the size of the tasks\n+         * cache, then cap it at the cache size.  This allows the cache\n+         * to always hold one large job.\n+         * @param key JobId object\n+         * @param value Job object\n+         * @return Weight of the job as calculated by total task count\n+         */\n+        @Override\n+        public int weigh(JobId key, Job value) {\n+          int taskCount \u003d Math.min(loadedTasksCacheSize,\n+              value.getTotalMaps() + value.getTotalReduces());\n+          return taskCount;\n+        }\n+      };\n+      // Keep concurrencyLevel at 1.  Otherwise, two problems:\n+      // 1) The largest job that can be initially loaded is\n+      //    cache size / 4.\n+      // 2) Unit tests are not deterministic.\n+      loadedJobCache \u003d CacheBuilder.newBuilder()\n+          .maximumWeight(loadedTasksCacheSize)\n+          .weigher(weightByTasks)\n+          .concurrencyLevel(1)\n+          .build(loader);\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void createLoadedJobCache(Configuration conf) {\n    // Set property for old \"loaded jobs\" cache\n    loadedJobCacheSize \u003d conf.getInt(\n        JHAdminConfig.MR_HISTORY_LOADED_JOB_CACHE_SIZE,\n        JHAdminConfig.DEFAULT_MR_HISTORY_LOADED_JOB_CACHE_SIZE);\n\n    // Check property for new \"loaded tasks\" cache perform sanity checking\n    useLoadedTasksCache \u003d false;\n    try {\n      String taskSizeString \u003d conf\n          .get(JHAdminConfig.MR_HISTORY_LOADED_TASKS_CACHE_SIZE);\n      if (taskSizeString !\u003d null) {\n        loadedTasksCacheSize \u003d Math.max(Integer.parseInt(taskSizeString), 1);\n        useLoadedTasksCache \u003d true;\n      }\n    } catch (NumberFormatException nfe) {\n      LOG.error(\"The property \" +\n          JHAdminConfig.MR_HISTORY_LOADED_TASKS_CACHE_SIZE +\n          \" is not an integer value.  Please set it to a positive\" +\n          \" integer value.\");\n    }\n\n    CacheLoader\u003cJobId, Job\u003e loader;\n    loader \u003d new CacheLoader\u003cJobId, Job\u003e() {\n      @Override\n      public Job load(JobId key) throws Exception {\n        return loadJob(key);\n      }\n    };\n\n    if (!useLoadedTasksCache) {\n      loadedJobCache \u003d CacheBuilder.newBuilder()\n          .maximumSize(loadedJobCacheSize)\n          .initialCapacity(loadedJobCacheSize)\n          .concurrencyLevel(1)\n          .build(loader);\n    } else {\n      Weigher\u003cJobId, Job\u003e weightByTasks;\n      weightByTasks \u003d new Weigher\u003cJobId, Job\u003e() {\n        /**\n         * Method for calculating Job weight by total task count.  If\n         * the total task count is greater than the size of the tasks\n         * cache, then cap it at the cache size.  This allows the cache\n         * to always hold one large job.\n         * @param key JobId object\n         * @param value Job object\n         * @return Weight of the job as calculated by total task count\n         */\n        @Override\n        public int weigh(JobId key, Job value) {\n          int taskCount \u003d Math.min(loadedTasksCacheSize,\n              value.getTotalMaps() + value.getTotalReduces());\n          return taskCount;\n        }\n      };\n      // Keep concurrencyLevel at 1.  Otherwise, two problems:\n      // 1) The largest job that can be initially loaded is\n      //    cache size / 4.\n      // 2) Unit tests are not deterministic.\n      loadedJobCache \u003d CacheBuilder.newBuilder()\n          .maximumWeight(loadedTasksCacheSize)\n          .weigher(weightByTasks)\n          .concurrencyLevel(1)\n          .build(loader);\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-hs/src/main/java/org/apache/hadoop/mapreduce/v2/hs/CachedHistoryStorage.java",
+      "extendedDetails": {}
+    },
+    "8bb035509ea195ec03b8295a7abd11ce675a4d85": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-5411. Refresh size of loaded job cache on history server. Contributed by Ashwin Shankar\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1508220 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "29/07/13 3:33 PM",
+      "commitName": "8bb035509ea195ec03b8295a7abd11ce675a4d85",
+      "commitAuthor": "Jason Darrell Lowe",
+      "diff": "@@ -0,0 +1,13 @@\n+  private void createLoadedJobCache(Configuration conf) {\n+    loadedJobCacheSize \u003d conf.getInt(\n+        JHAdminConfig.MR_HISTORY_LOADED_JOB_CACHE_SIZE,\n+        JHAdminConfig.DEFAULT_MR_HISTORY_LOADED_JOB_CACHE_SIZE);\n+\n+    loadedJobCache \u003d Collections.synchronizedMap(new LinkedHashMap\u003cJobId, Job\u003e(\n+        loadedJobCacheSize + 1, 0.75f, true) {\n+      @Override\n+      public boolean removeEldestEntry(final Map.Entry\u003cJobId, Job\u003e eldest) {\n+        return super.size() \u003e loadedJobCacheSize;\n+      }\n+    });\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void createLoadedJobCache(Configuration conf) {\n    loadedJobCacheSize \u003d conf.getInt(\n        JHAdminConfig.MR_HISTORY_LOADED_JOB_CACHE_SIZE,\n        JHAdminConfig.DEFAULT_MR_HISTORY_LOADED_JOB_CACHE_SIZE);\n\n    loadedJobCache \u003d Collections.synchronizedMap(new LinkedHashMap\u003cJobId, Job\u003e(\n        loadedJobCacheSize + 1, 0.75f, true) {\n      @Override\n      public boolean removeEldestEntry(final Map.Entry\u003cJobId, Job\u003e eldest) {\n        return super.size() \u003e loadedJobCacheSize;\n      }\n    });\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-hs/src/main/java/org/apache/hadoop/mapreduce/v2/hs/CachedHistoryStorage.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CosNFileSystem.java",
+  "functionName": "delete",
+  "functionId": "delete___f-Path__recursive-boolean",
+  "sourceFilePath": "hadoop-cloud-storage-project/hadoop-cos/src/main/java/org/apache/hadoop/fs/cosn/CosNFileSystem.java",
+  "functionStartLine": 294,
+  "functionEndLine": 350,
+  "numCommitsSeen": 1,
+  "timeTaken": 357,
+  "changeHistory": [
+    "8a9ede5cff816b66afc37e7c9d2b33aee48795d2"
+  ],
+  "changeHistoryShort": {
+    "8a9ede5cff816b66afc37e7c9d2b33aee48795d2": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8a9ede5cff816b66afc37e7c9d2b33aee48795d2": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15616. Incorporate Tencent Cloud COS File System Implementation. Contributed by Yang Yu.\n",
+      "commitDate": "27/09/19 1:53 AM",
+      "commitName": "8a9ede5cff816b66afc37e7c9d2b33aee48795d2",
+      "commitAuthor": "Sammi Chen",
+      "diff": "@@ -0,0 +1,57 @@\n+  public boolean delete(Path f, boolean recursive) throws IOException {\n+    LOG.debug(\"Ready to delete path: [{}]. recursive: [{}].\", f, recursive);\n+    FileStatus status;\n+    try {\n+      status \u003d getFileStatus(f);\n+    } catch (FileNotFoundException e) {\n+      LOG.debug(\"Ready to delete the file: [{}], but it does not exist.\", f);\n+      return false;\n+    }\n+    Path absolutePath \u003d makeAbsolute(f);\n+    String key \u003d pathToKey(absolutePath);\n+    if (key.compareToIgnoreCase(\"/\") \u003d\u003d 0) {\n+      FileStatus[] fileStatuses \u003d listStatus(f);\n+      return this.rejectRootDirectoryDelete(\n+          fileStatuses.length \u003d\u003d 0, recursive);\n+    }\n+\n+    if (status.isDirectory()) {\n+      if (!key.endsWith(PATH_DELIMITER)) {\n+        key +\u003d PATH_DELIMITER;\n+      }\n+      if (!recursive \u0026\u0026 listStatus(f).length \u003e 0) {\n+        String errMsg \u003d String.format(\"Can not delete the directory: [%s], as\"\n+            + \" it is not empty and option recursive is false.\", f);\n+        throw new IOException(errMsg);\n+      }\n+\n+      createParent(f);\n+\n+      String priorLastKey \u003d null;\n+      do {\n+        PartialListing listing \u003d store.list(\n+            key,\n+            Constants.COS_MAX_LISTING_LENGTH,\n+            priorLastKey,\n+            true);\n+        for (FileMetadata file : listing.getFiles()) {\n+          store.delete(file.getKey());\n+        }\n+        for (FileMetadata commonPrefix : listing.getCommonPrefixes()) {\n+          store.delete(commonPrefix.getKey());\n+        }\n+        priorLastKey \u003d listing.getPriorLastKey();\n+      } while (priorLastKey !\u003d null);\n+      try {\n+        store.delete(key);\n+      } catch (Exception e) {\n+        LOG.error(\"Deleting the COS key: [{}] occurs an exception.\", key, e);\n+      }\n+\n+    } else {\n+      LOG.debug(\"Delete the file: {}\", f);\n+      createParent(f);\n+      store.delete(key);\n+    }\n+    return true;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public boolean delete(Path f, boolean recursive) throws IOException {\n    LOG.debug(\"Ready to delete path: [{}]. recursive: [{}].\", f, recursive);\n    FileStatus status;\n    try {\n      status \u003d getFileStatus(f);\n    } catch (FileNotFoundException e) {\n      LOG.debug(\"Ready to delete the file: [{}], but it does not exist.\", f);\n      return false;\n    }\n    Path absolutePath \u003d makeAbsolute(f);\n    String key \u003d pathToKey(absolutePath);\n    if (key.compareToIgnoreCase(\"/\") \u003d\u003d 0) {\n      FileStatus[] fileStatuses \u003d listStatus(f);\n      return this.rejectRootDirectoryDelete(\n          fileStatuses.length \u003d\u003d 0, recursive);\n    }\n\n    if (status.isDirectory()) {\n      if (!key.endsWith(PATH_DELIMITER)) {\n        key +\u003d PATH_DELIMITER;\n      }\n      if (!recursive \u0026\u0026 listStatus(f).length \u003e 0) {\n        String errMsg \u003d String.format(\"Can not delete the directory: [%s], as\"\n            + \" it is not empty and option recursive is false.\", f);\n        throw new IOException(errMsg);\n      }\n\n      createParent(f);\n\n      String priorLastKey \u003d null;\n      do {\n        PartialListing listing \u003d store.list(\n            key,\n            Constants.COS_MAX_LISTING_LENGTH,\n            priorLastKey,\n            true);\n        for (FileMetadata file : listing.getFiles()) {\n          store.delete(file.getKey());\n        }\n        for (FileMetadata commonPrefix : listing.getCommonPrefixes()) {\n          store.delete(commonPrefix.getKey());\n        }\n        priorLastKey \u003d listing.getPriorLastKey();\n      } while (priorLastKey !\u003d null);\n      try {\n        store.delete(key);\n      } catch (Exception e) {\n        LOG.error(\"Deleting the COS key: [{}] occurs an exception.\", key, e);\n      }\n\n    } else {\n      LOG.debug(\"Delete the file: {}\", f);\n      createParent(f);\n      store.delete(key);\n    }\n    return true;\n  }",
+      "path": "hadoop-cloud-storage-project/hadoop-cos/src/main/java/org/apache/hadoop/fs/cosn/CosNFileSystem.java"
+    }
+  }
+}

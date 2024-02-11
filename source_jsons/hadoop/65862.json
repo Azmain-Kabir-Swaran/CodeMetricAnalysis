@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DynamoDBMetadataStore.java",
+  "functionName": "logPut",
+  "functionId": "logPut___state-AncestorState(annotations-@Nullable)__items-Item[]",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+  "functionStartLine": 2223,
+  "functionEndLine": 2241,
+  "numCommitsSeen": 42,
+  "timeTaken": 2438,
+  "changeHistory": [
+    "49df83899543586bbcaf80f01399ade031cf68b0",
+    "511df1e837b19ccb9271520589452d82d50ac69d",
+    "b15ef7dc3d91c6d50fa515158104fba29f43e6b0"
+  ],
+  "changeHistoryShort": {
+    "49df83899543586bbcaf80f01399ade031cf68b0": "Ybodychange",
+    "511df1e837b19ccb9271520589452d82d50ac69d": "Ybodychange",
+    "b15ef7dc3d91c6d50fa515158104fba29f43e6b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "49df83899543586bbcaf80f01399ade031cf68b0": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16697. Tune/audit S3A authoritative mode.\n\nContains:\n\nHADOOP-16474. S3Guard ProgressiveRenameTracker to mark destination\n              dirirectory as authoritative on success.\nHADOOP-16684. S3guard bucket info to list a bit more about\n              authoritative paths.\nHADOOP-16722. S3GuardTool to support FilterFileSystem.\n\nThis patch improves the marking of newly created/import directory\ntrees in S3Guard DynamoDB tables as authoritative.\n\nSpecific changes:\n\n * Renamed directories are marked as authoritative if the entire\n   operation succeeded (HADOOP-16474).\n * When updating parent table entries as part of any table write,\n   there\u0027s no overwriting of their authoritative flag.\n\ns3guard import changes:\n\n* new -verbose flag to print out what is going on.\n\n* The \"s3guard import\" command lets you declare that a directory tree\nis to be marked as authoritative\n\n  hadoop s3guard import -authoritative -verbose s3a://bucket/path\n\nWhen importing a listing and a file is found, the import tool queries\nthe metastore and only updates the entry if the file is different from\nbefore, where different \u003d\u003d new timestamp, etag, or length. S3Guard can get\ntimestamp differences due to clock skew in PUT operations.\n\nAs the recursive list performed by the import command doesn\u0027t retrieve the\nversionID, the existing entry may in fact be more complete.\nWhen updating an existing due to clock skew the existing version ID\nis propagated to the new entry (note: the etags must match; this is needed\nto deal with inconsistent listings).\n\nThere is a new s3guard command to audit a s3guard bucket/path\u0027s\nauthoritative state:\n\n  hadoop s3guard authoritative -check-config s3a://bucket/path\n\nThis is primarily for testing/auditing.\n\nThe s3guard bucket-info command also provides some more details on the\nauthoritative state of a store (HADOOP-16684).\n\nChange-Id: I58001341c04f6f3597fcb4fcb1581ccefeb77d91\n",
+      "commitDate": "10/01/20 3:11 AM",
+      "commitName": "49df83899543586bbcaf80f01399ade031cf68b0",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "26/11/19 7:36 AM",
+      "commitNameOld": "ea25f4de236611d388e14a710ebe5d6872c421b6",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 44.82,
+      "commitsBetweenForRepo": 155,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,19 @@\n   private static void logPut(\n       @Nullable AncestorState state,\n       Item[] items) {\n     if (OPERATIONS_LOG.isDebugEnabled()) {\n       // log the operations\n       String stateStr \u003d AncestorState.stateAsString(state);\n       for (Item item : items) {\n         boolean tombstone \u003d !itemExists(item);\n-        OPERATIONS_LOG.debug(\"{} {} {}\",\n+        boolean isDir \u003d getBoolAttribute(item, IS_DIR, false);\n+        boolean auth \u003d getBoolAttribute(item, IS_AUTHORITATIVE, false);\n+        OPERATIONS_LOG.debug(\"{} {} {}{}{}\",\n             stateStr,\n             tombstone ? \"TOMBSTONE\" : \"PUT\",\n-            itemPrimaryKeyToString(item));\n+            itemPrimaryKeyToString(item),\n+            auth ? \" [auth]\" : \"\",\n+            isDir ? \" directory\" : \"\");\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void logPut(\n      @Nullable AncestorState state,\n      Item[] items) {\n    if (OPERATIONS_LOG.isDebugEnabled()) {\n      // log the operations\n      String stateStr \u003d AncestorState.stateAsString(state);\n      for (Item item : items) {\n        boolean tombstone \u003d !itemExists(item);\n        boolean isDir \u003d getBoolAttribute(item, IS_DIR, false);\n        boolean auth \u003d getBoolAttribute(item, IS_AUTHORITATIVE, false);\n        OPERATIONS_LOG.debug(\"{} {} {}{}{}\",\n            stateStr,\n            tombstone ? \"TOMBSTONE\" : \"PUT\",\n            itemPrimaryKeyToString(item),\n            auth ? \" [auth]\" : \"\",\n            isDir ? \" directory\" : \"\");\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "511df1e837b19ccb9271520589452d82d50ac69d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16430. S3AFilesystem.delete to incrementally update s3guard with deletions\n\nContributed by Steve Loughran.\n\nThis overlaps the scanning for directory entries with batched calls to S3 DELETE and updates of the S3Guard tables.\nIt also uses S3Guard to list the files to delete, so find newly created files even when S3 listings are not use consistent.\n\nFor path which the client considers S3Guard to be authoritative, we also do a recursive LIST of the store and delete files; this is to find unindexed files and do guarantee that the delete(path, true) call really does delete everything underneath.\n\nChange-Id: Ice2f6e940c506e0b3a78fa534a99721b1698708e\n",
+      "commitDate": "05/09/19 6:25 AM",
+      "commitName": "511df1e837b19ccb9271520589452d82d50ac69d",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "27/08/19 4:17 PM",
+      "commitNameOld": "6f068cf53faef564ea6b63a0f4591feb8119cc5e",
+      "commitAuthorOld": "HUAN-PING SU",
+      "daysBetweenCommits": 8.59,
+      "commitsBetweenForRepo": 78,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,15 @@\n   private static void logPut(\n       @Nullable AncestorState state,\n       Item[] items) {\n     if (OPERATIONS_LOG.isDebugEnabled()) {\n       // log the operations\n       String stateStr \u003d AncestorState.stateAsString(state);\n       for (Item item : items) {\n-        boolean tombstone \u003d itemExists(item);\n+        boolean tombstone \u003d !itemExists(item);\n         OPERATIONS_LOG.debug(\"{} {} {}\",\n             stateStr,\n             tombstone ? \"TOMBSTONE\" : \"PUT\",\n             itemPrimaryKeyToString(item));\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void logPut(\n      @Nullable AncestorState state,\n      Item[] items) {\n    if (OPERATIONS_LOG.isDebugEnabled()) {\n      // log the operations\n      String stateStr \u003d AncestorState.stateAsString(state);\n      for (Item item : items) {\n        boolean tombstone \u003d !itemExists(item);\n        OPERATIONS_LOG.debug(\"{} {} {}\",\n            stateStr,\n            tombstone ? \"TOMBSTONE\" : \"PUT\",\n            itemPrimaryKeyToString(item));\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "b15ef7dc3d91c6d50fa515158104fba29f43e6b0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-16384: S3A: Avoid inconsistencies between DDB and S3.\n\nContributed by Steve Loughran\n\nContains\n\n- HADOOP-16397. Hadoop S3Guard Prune command to support a -tombstone option.\n- HADOOP-16406. ITestDynamoDBMetadataStore.testProvisionTable times out intermittently\n\nThis patch doesn\u0027t fix the underlying problem but it\n\n* changes some tests to clean up better\n* does a lot more in logging operations in against DDB, if enabled\n* adds an entry point to dump the state of the metastore and s3 tables (precursor to fsck)\n* adds a purge entry point to help clean up after a test run has got a store into a mess\n* s3guard prune command adds -tombstone option to only clear tombstones\n\nThe outcome is that tests should pass consistently and if problems occur we have better diagnostics.\n\nChange-Id: I3eca3f5529d7f6fec398c0ff0472919f08f054eb\n",
+      "commitDate": "12/07/19 5:02 AM",
+      "commitName": "b15ef7dc3d91c6d50fa515158104fba29f43e6b0",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,15 @@\n+  private static void logPut(\n+      @Nullable AncestorState state,\n+      Item[] items) {\n+    if (OPERATIONS_LOG.isDebugEnabled()) {\n+      // log the operations\n+      String stateStr \u003d AncestorState.stateAsString(state);\n+      for (Item item : items) {\n+        boolean tombstone \u003d itemExists(item);\n+        OPERATIONS_LOG.debug(\"{} {} {}\",\n+            stateStr,\n+            tombstone ? \"TOMBSTONE\" : \"PUT\",\n+            itemPrimaryKeyToString(item));\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void logPut(\n      @Nullable AncestorState state,\n      Item[] items) {\n    if (OPERATIONS_LOG.isDebugEnabled()) {\n      // log the operations\n      String stateStr \u003d AncestorState.stateAsString(state);\n      for (Item item : items) {\n        boolean tombstone \u003d itemExists(item);\n        OPERATIONS_LOG.debug(\"{} {} {}\",\n            stateStr,\n            tombstone ? \"TOMBSTONE\" : \"PUT\",\n            itemPrimaryKeyToString(item));\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java"
+    }
+  }
+}

@@ -1,0 +1,243 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LocalMetadataStore.java",
+  "functionName": "deleteCacheEntries",
+  "functionId": "deleteCacheEntries___path-Path__tombstone-boolean",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+  "functionStartLine": 517,
+  "functionEndLine": 563,
+  "numCommitsSeen": 67,
+  "timeTaken": 6214,
+  "changeHistory": [
+    "7b219778e05a50e33cca75d727e62783322b7f80",
+    "c58e11bf521d746842ce16724211a2a0339d7b61",
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+    "c687a6617d73293019d8d91ac48bbfd2ccca3b40",
+    "69aac696d9d4e32a55ba9b6992f41a9ad13424f1",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "7b219778e05a50e33cca75d727e62783322b7f80": "Ymultichange(Yparameterchange,Ybodychange)",
+    "c58e11bf521d746842ce16724211a2a0339d7b61": "Ymultichange(Yparameterchange,Ybodychange)",
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c": "Ymultichange(Yparameterchange,Ybodychange)",
+    "c687a6617d73293019d8d91ac48bbfd2ccca3b40": "Ybodychange",
+    "69aac696d9d4e32a55ba9b6992f41a9ad13424f1": "Ymultichange(Yrename,Ybodychange)",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7b219778e05a50e33cca75d727e62783322b7f80": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16433. S3Guard: Filter expired entries and tombstones when listing with MetadataStore.listChildren().\n\nContributed by Gabor Bota.\n\nThis pulls the tracking of the lastUpdated timestamp of metadata entries up from the DDB metastore into all s3guard stores, and then uses this to filter out expired tombstones from listings.\n\nChange-Id: I80f121236b49c75a024116f65a3ef29d3580b462\n",
+      "commitDate": "24/07/19 10:11 AM",
+      "commitName": "7b219778e05a50e33cca75d727e62783322b7f80",
+      "commitAuthor": "Gabor Bota",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16433. S3Guard: Filter expired entries and tombstones when listing with MetadataStore.listChildren().\n\nContributed by Gabor Bota.\n\nThis pulls the tracking of the lastUpdated timestamp of metadata entries up from the DDB metastore into all s3guard stores, and then uses this to filter out expired tombstones from listings.\n\nChange-Id: I80f121236b49c75a024116f65a3ef29d3580b462\n",
+          "commitDate": "24/07/19 10:11 AM",
+          "commitName": "7b219778e05a50e33cca75d727e62783322b7f80",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "17/07/19 7:24 AM",
+          "commitNameOld": "c58e11bf521d746842ce16724211a2a0339d7b61",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 7.12,
+          "commitsBetweenForRepo": 47,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,49 +1,47 @@\n-  private void deleteCacheEntries(Path path, boolean tombstone,\n-      ITtlTimeProvider ttlTp) {\n+  private void deleteCacheEntries(Path path, boolean tombstone) {\n     LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n     // If there\u0027s no entry, delete should silently succeed\n     // (based on MetadataStoreTestBase#testDeleteNonExisting)\n     if(entry \u003d\u003d null){\n       LOG.warn(\"Delete: path {} is missing from cache.\", path);\n       return;\n     }\n \n     // Remove target file entry\n     LOG.debug(\"delete file entry for {}\", path);\n     if(entry.hasPathMeta()){\n       if (tombstone) {\n-        PathMetadata pmd \u003d PathMetadata.tombstone(path);\n-        pmd.setLastUpdated(ttlTp.getNow());\n+        PathMetadata pmd \u003d PathMetadata.tombstone(path,\n+            ttlTimeProvider.getNow());\n         entry.setPathMetadata(pmd);\n       } else {\n         entry.setPathMetadata(null);\n       }\n     }\n \n     // If this path is a dir, remove its listing\n     if(entry.hasDirMeta()) {\n       LOG.debug(\"removing listing of {}\", path);\n       entry.setDirListingMetadata(null);\n     }\n \n     // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n     // the cache.\n     if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n       localCache.invalidate(entry);\n     }\n \n     /* Remove this path from parent\u0027s dir listing */\n     Path parent \u003d path.getParent();\n     if (parent !\u003d null) {\n       DirListingMetadata dir \u003d getDirListingMeta(parent);\n       if (dir !\u003d null) {\n         LOG.debug(\"removing parent\u0027s entry for {} \", path);\n         if (tombstone) {\n-          dir.markDeleted(path);\n-          dir.setLastUpdated(ttlTp.getNow());\n+          dir.markDeleted(path, ttlTimeProvider.getNow());\n         } else {\n           dir.remove(path);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void deleteCacheEntries(Path path, boolean tombstone) {\n    LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n    // If there\u0027s no entry, delete should silently succeed\n    // (based on MetadataStoreTestBase#testDeleteNonExisting)\n    if(entry \u003d\u003d null){\n      LOG.warn(\"Delete: path {} is missing from cache.\", path);\n      return;\n    }\n\n    // Remove target file entry\n    LOG.debug(\"delete file entry for {}\", path);\n    if(entry.hasPathMeta()){\n      if (tombstone) {\n        PathMetadata pmd \u003d PathMetadata.tombstone(path,\n            ttlTimeProvider.getNow());\n        entry.setPathMetadata(pmd);\n      } else {\n        entry.setPathMetadata(null);\n      }\n    }\n\n    // If this path is a dir, remove its listing\n    if(entry.hasDirMeta()) {\n      LOG.debug(\"removing listing of {}\", path);\n      entry.setDirListingMetadata(null);\n    }\n\n    // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n    // the cache.\n    if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n      localCache.invalidate(entry);\n    }\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d getDirListingMeta(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path, ttlTimeProvider.getNow());\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[path-Path, tombstone-boolean, ttlTp-ITtlTimeProvider]",
+            "newValue": "[path-Path, tombstone-boolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16433. S3Guard: Filter expired entries and tombstones when listing with MetadataStore.listChildren().\n\nContributed by Gabor Bota.\n\nThis pulls the tracking of the lastUpdated timestamp of metadata entries up from the DDB metastore into all s3guard stores, and then uses this to filter out expired tombstones from listings.\n\nChange-Id: I80f121236b49c75a024116f65a3ef29d3580b462\n",
+          "commitDate": "24/07/19 10:11 AM",
+          "commitName": "7b219778e05a50e33cca75d727e62783322b7f80",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "17/07/19 7:24 AM",
+          "commitNameOld": "c58e11bf521d746842ce16724211a2a0339d7b61",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 7.12,
+          "commitsBetweenForRepo": 47,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,49 +1,47 @@\n-  private void deleteCacheEntries(Path path, boolean tombstone,\n-      ITtlTimeProvider ttlTp) {\n+  private void deleteCacheEntries(Path path, boolean tombstone) {\n     LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n     // If there\u0027s no entry, delete should silently succeed\n     // (based on MetadataStoreTestBase#testDeleteNonExisting)\n     if(entry \u003d\u003d null){\n       LOG.warn(\"Delete: path {} is missing from cache.\", path);\n       return;\n     }\n \n     // Remove target file entry\n     LOG.debug(\"delete file entry for {}\", path);\n     if(entry.hasPathMeta()){\n       if (tombstone) {\n-        PathMetadata pmd \u003d PathMetadata.tombstone(path);\n-        pmd.setLastUpdated(ttlTp.getNow());\n+        PathMetadata pmd \u003d PathMetadata.tombstone(path,\n+            ttlTimeProvider.getNow());\n         entry.setPathMetadata(pmd);\n       } else {\n         entry.setPathMetadata(null);\n       }\n     }\n \n     // If this path is a dir, remove its listing\n     if(entry.hasDirMeta()) {\n       LOG.debug(\"removing listing of {}\", path);\n       entry.setDirListingMetadata(null);\n     }\n \n     // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n     // the cache.\n     if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n       localCache.invalidate(entry);\n     }\n \n     /* Remove this path from parent\u0027s dir listing */\n     Path parent \u003d path.getParent();\n     if (parent !\u003d null) {\n       DirListingMetadata dir \u003d getDirListingMeta(parent);\n       if (dir !\u003d null) {\n         LOG.debug(\"removing parent\u0027s entry for {} \", path);\n         if (tombstone) {\n-          dir.markDeleted(path);\n-          dir.setLastUpdated(ttlTp.getNow());\n+          dir.markDeleted(path, ttlTimeProvider.getNow());\n         } else {\n           dir.remove(path);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void deleteCacheEntries(Path path, boolean tombstone) {\n    LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n    // If there\u0027s no entry, delete should silently succeed\n    // (based on MetadataStoreTestBase#testDeleteNonExisting)\n    if(entry \u003d\u003d null){\n      LOG.warn(\"Delete: path {} is missing from cache.\", path);\n      return;\n    }\n\n    // Remove target file entry\n    LOG.debug(\"delete file entry for {}\", path);\n    if(entry.hasPathMeta()){\n      if (tombstone) {\n        PathMetadata pmd \u003d PathMetadata.tombstone(path,\n            ttlTimeProvider.getNow());\n        entry.setPathMetadata(pmd);\n      } else {\n        entry.setPathMetadata(null);\n      }\n    }\n\n    // If this path is a dir, remove its listing\n    if(entry.hasDirMeta()) {\n      LOG.debug(\"removing listing of {}\", path);\n      entry.setDirListingMetadata(null);\n    }\n\n    // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n    // the cache.\n    if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n      localCache.invalidate(entry);\n    }\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d getDirListingMeta(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path, ttlTimeProvider.getNow());\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "c58e11bf521d746842ce16724211a2a0339d7b61": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16383. Pass ITtlTimeProvider instance in initialize method in MetadataStore interface.  Contributed by Gabor Bota. (#1009) \n\n\r\n",
+      "commitDate": "17/07/19 7:24 AM",
+      "commitName": "c58e11bf521d746842ce16724211a2a0339d7b61",
+      "commitAuthor": "Gabor Bota",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16383. Pass ITtlTimeProvider instance in initialize method in MetadataStore interface.  Contributed by Gabor Bota. (#1009) \n\n\r\n",
+          "commitDate": "17/07/19 7:24 AM",
+          "commitName": "c58e11bf521d746842ce16724211a2a0339d7b61",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "20/06/19 1:56 AM",
+          "commitNameOld": "e02eb24e0a9139418120027b694492e0738df20a",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 27.23,
+          "commitsBetweenForRepo": 235,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,49 +1,49 @@\n   private void deleteCacheEntries(Path path, boolean tombstone,\n-      ITtlTimeProvider ttlTimeProvider) {\n+      ITtlTimeProvider ttlTp) {\n     LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n     // If there\u0027s no entry, delete should silently succeed\n     // (based on MetadataStoreTestBase#testDeleteNonExisting)\n     if(entry \u003d\u003d null){\n       LOG.warn(\"Delete: path {} is missing from cache.\", path);\n       return;\n     }\n \n     // Remove target file entry\n     LOG.debug(\"delete file entry for {}\", path);\n     if(entry.hasPathMeta()){\n       if (tombstone) {\n         PathMetadata pmd \u003d PathMetadata.tombstone(path);\n-        pmd.setLastUpdated(ttlTimeProvider.getNow());\n+        pmd.setLastUpdated(ttlTp.getNow());\n         entry.setPathMetadata(pmd);\n       } else {\n         entry.setPathMetadata(null);\n       }\n     }\n \n     // If this path is a dir, remove its listing\n     if(entry.hasDirMeta()) {\n       LOG.debug(\"removing listing of {}\", path);\n       entry.setDirListingMetadata(null);\n     }\n \n     // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n     // the cache.\n     if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n       localCache.invalidate(entry);\n     }\n \n     /* Remove this path from parent\u0027s dir listing */\n     Path parent \u003d path.getParent();\n     if (parent !\u003d null) {\n       DirListingMetadata dir \u003d getDirListingMeta(parent);\n       if (dir !\u003d null) {\n         LOG.debug(\"removing parent\u0027s entry for {} \", path);\n         if (tombstone) {\n           dir.markDeleted(path);\n-          dir.setLastUpdated(ttlTimeProvider.getNow());\n+          dir.setLastUpdated(ttlTp.getNow());\n         } else {\n           dir.remove(path);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void deleteCacheEntries(Path path, boolean tombstone,\n      ITtlTimeProvider ttlTp) {\n    LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n    // If there\u0027s no entry, delete should silently succeed\n    // (based on MetadataStoreTestBase#testDeleteNonExisting)\n    if(entry \u003d\u003d null){\n      LOG.warn(\"Delete: path {} is missing from cache.\", path);\n      return;\n    }\n\n    // Remove target file entry\n    LOG.debug(\"delete file entry for {}\", path);\n    if(entry.hasPathMeta()){\n      if (tombstone) {\n        PathMetadata pmd \u003d PathMetadata.tombstone(path);\n        pmd.setLastUpdated(ttlTp.getNow());\n        entry.setPathMetadata(pmd);\n      } else {\n        entry.setPathMetadata(null);\n      }\n    }\n\n    // If this path is a dir, remove its listing\n    if(entry.hasDirMeta()) {\n      LOG.debug(\"removing listing of {}\", path);\n      entry.setDirListingMetadata(null);\n    }\n\n    // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n    // the cache.\n    if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n      localCache.invalidate(entry);\n    }\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d getDirListingMeta(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path);\n          dir.setLastUpdated(ttlTp.getNow());\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[path-Path, tombstone-boolean, ttlTimeProvider-ITtlTimeProvider]",
+            "newValue": "[path-Path, tombstone-boolean, ttlTp-ITtlTimeProvider]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16383. Pass ITtlTimeProvider instance in initialize method in MetadataStore interface.  Contributed by Gabor Bota. (#1009) \n\n\r\n",
+          "commitDate": "17/07/19 7:24 AM",
+          "commitName": "c58e11bf521d746842ce16724211a2a0339d7b61",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "20/06/19 1:56 AM",
+          "commitNameOld": "e02eb24e0a9139418120027b694492e0738df20a",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 27.23,
+          "commitsBetweenForRepo": 235,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,49 +1,49 @@\n   private void deleteCacheEntries(Path path, boolean tombstone,\n-      ITtlTimeProvider ttlTimeProvider) {\n+      ITtlTimeProvider ttlTp) {\n     LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n     // If there\u0027s no entry, delete should silently succeed\n     // (based on MetadataStoreTestBase#testDeleteNonExisting)\n     if(entry \u003d\u003d null){\n       LOG.warn(\"Delete: path {} is missing from cache.\", path);\n       return;\n     }\n \n     // Remove target file entry\n     LOG.debug(\"delete file entry for {}\", path);\n     if(entry.hasPathMeta()){\n       if (tombstone) {\n         PathMetadata pmd \u003d PathMetadata.tombstone(path);\n-        pmd.setLastUpdated(ttlTimeProvider.getNow());\n+        pmd.setLastUpdated(ttlTp.getNow());\n         entry.setPathMetadata(pmd);\n       } else {\n         entry.setPathMetadata(null);\n       }\n     }\n \n     // If this path is a dir, remove its listing\n     if(entry.hasDirMeta()) {\n       LOG.debug(\"removing listing of {}\", path);\n       entry.setDirListingMetadata(null);\n     }\n \n     // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n     // the cache.\n     if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n       localCache.invalidate(entry);\n     }\n \n     /* Remove this path from parent\u0027s dir listing */\n     Path parent \u003d path.getParent();\n     if (parent !\u003d null) {\n       DirListingMetadata dir \u003d getDirListingMeta(parent);\n       if (dir !\u003d null) {\n         LOG.debug(\"removing parent\u0027s entry for {} \", path);\n         if (tombstone) {\n           dir.markDeleted(path);\n-          dir.setLastUpdated(ttlTimeProvider.getNow());\n+          dir.setLastUpdated(ttlTp.getNow());\n         } else {\n           dir.remove(path);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void deleteCacheEntries(Path path, boolean tombstone,\n      ITtlTimeProvider ttlTp) {\n    LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n    // If there\u0027s no entry, delete should silently succeed\n    // (based on MetadataStoreTestBase#testDeleteNonExisting)\n    if(entry \u003d\u003d null){\n      LOG.warn(\"Delete: path {} is missing from cache.\", path);\n      return;\n    }\n\n    // Remove target file entry\n    LOG.debug(\"delete file entry for {}\", path);\n    if(entry.hasPathMeta()){\n      if (tombstone) {\n        PathMetadata pmd \u003d PathMetadata.tombstone(path);\n        pmd.setLastUpdated(ttlTp.getNow());\n        entry.setPathMetadata(pmd);\n      } else {\n        entry.setPathMetadata(null);\n      }\n    }\n\n    // If this path is a dir, remove its listing\n    if(entry.hasDirMeta()) {\n      LOG.debug(\"removing listing of {}\", path);\n      entry.setDirListingMetadata(null);\n    }\n\n    // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n    // the cache.\n    if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n      localCache.invalidate(entry);\n    }\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d getDirListingMeta(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path);\n          dir.setLastUpdated(ttlTp.getNow());\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+      "commitDate": "16/06/19 9:05 AM",
+      "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+      "commitAuthor": "Gabor Bota",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+          "commitDate": "16/06/19 9:05 AM",
+          "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "19/05/19 2:29 PM",
+          "commitNameOld": "a36274d69947648dbe82721220cc5240ec5d396d",
+          "commitAuthorOld": "Ben Roling",
+          "daysBetweenCommits": 27.77,
+          "commitsBetweenForRepo": 198,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,46 +1,49 @@\n-  private void deleteCacheEntries(Path path, boolean tombstone) {\n+  private void deleteCacheEntries(Path path, boolean tombstone,\n+      ITtlTimeProvider ttlTimeProvider) {\n     LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n     // If there\u0027s no entry, delete should silently succeed\n     // (based on MetadataStoreTestBase#testDeleteNonExisting)\n     if(entry \u003d\u003d null){\n       LOG.warn(\"Delete: path {} is missing from cache.\", path);\n       return;\n     }\n \n     // Remove target file entry\n     LOG.debug(\"delete file entry for {}\", path);\n     if(entry.hasPathMeta()){\n       if (tombstone) {\n         PathMetadata pmd \u003d PathMetadata.tombstone(path);\n+        pmd.setLastUpdated(ttlTimeProvider.getNow());\n         entry.setPathMetadata(pmd);\n       } else {\n         entry.setPathMetadata(null);\n       }\n     }\n \n     // If this path is a dir, remove its listing\n     if(entry.hasDirMeta()) {\n       LOG.debug(\"removing listing of {}\", path);\n       entry.setDirListingMetadata(null);\n     }\n \n     // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n     // the cache.\n     if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n       localCache.invalidate(entry);\n     }\n \n     /* Remove this path from parent\u0027s dir listing */\n     Path parent \u003d path.getParent();\n     if (parent !\u003d null) {\n       DirListingMetadata dir \u003d getDirListingMeta(parent);\n       if (dir !\u003d null) {\n         LOG.debug(\"removing parent\u0027s entry for {} \", path);\n         if (tombstone) {\n           dir.markDeleted(path);\n+          dir.setLastUpdated(ttlTimeProvider.getNow());\n         } else {\n           dir.remove(path);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void deleteCacheEntries(Path path, boolean tombstone,\n      ITtlTimeProvider ttlTimeProvider) {\n    LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n    // If there\u0027s no entry, delete should silently succeed\n    // (based on MetadataStoreTestBase#testDeleteNonExisting)\n    if(entry \u003d\u003d null){\n      LOG.warn(\"Delete: path {} is missing from cache.\", path);\n      return;\n    }\n\n    // Remove target file entry\n    LOG.debug(\"delete file entry for {}\", path);\n    if(entry.hasPathMeta()){\n      if (tombstone) {\n        PathMetadata pmd \u003d PathMetadata.tombstone(path);\n        pmd.setLastUpdated(ttlTimeProvider.getNow());\n        entry.setPathMetadata(pmd);\n      } else {\n        entry.setPathMetadata(null);\n      }\n    }\n\n    // If this path is a dir, remove its listing\n    if(entry.hasDirMeta()) {\n      LOG.debug(\"removing listing of {}\", path);\n      entry.setDirListingMetadata(null);\n    }\n\n    // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n    // the cache.\n    if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n      localCache.invalidate(entry);\n    }\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d getDirListingMeta(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path);\n          dir.setLastUpdated(ttlTimeProvider.getNow());\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[path-Path, tombstone-boolean]",
+            "newValue": "[path-Path, tombstone-boolean, ttlTimeProvider-ITtlTimeProvider]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+          "commitDate": "16/06/19 9:05 AM",
+          "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "19/05/19 2:29 PM",
+          "commitNameOld": "a36274d69947648dbe82721220cc5240ec5d396d",
+          "commitAuthorOld": "Ben Roling",
+          "daysBetweenCommits": 27.77,
+          "commitsBetweenForRepo": 198,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,46 +1,49 @@\n-  private void deleteCacheEntries(Path path, boolean tombstone) {\n+  private void deleteCacheEntries(Path path, boolean tombstone,\n+      ITtlTimeProvider ttlTimeProvider) {\n     LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n     // If there\u0027s no entry, delete should silently succeed\n     // (based on MetadataStoreTestBase#testDeleteNonExisting)\n     if(entry \u003d\u003d null){\n       LOG.warn(\"Delete: path {} is missing from cache.\", path);\n       return;\n     }\n \n     // Remove target file entry\n     LOG.debug(\"delete file entry for {}\", path);\n     if(entry.hasPathMeta()){\n       if (tombstone) {\n         PathMetadata pmd \u003d PathMetadata.tombstone(path);\n+        pmd.setLastUpdated(ttlTimeProvider.getNow());\n         entry.setPathMetadata(pmd);\n       } else {\n         entry.setPathMetadata(null);\n       }\n     }\n \n     // If this path is a dir, remove its listing\n     if(entry.hasDirMeta()) {\n       LOG.debug(\"removing listing of {}\", path);\n       entry.setDirListingMetadata(null);\n     }\n \n     // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n     // the cache.\n     if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n       localCache.invalidate(entry);\n     }\n \n     /* Remove this path from parent\u0027s dir listing */\n     Path parent \u003d path.getParent();\n     if (parent !\u003d null) {\n       DirListingMetadata dir \u003d getDirListingMeta(parent);\n       if (dir !\u003d null) {\n         LOG.debug(\"removing parent\u0027s entry for {} \", path);\n         if (tombstone) {\n           dir.markDeleted(path);\n+          dir.setLastUpdated(ttlTimeProvider.getNow());\n         } else {\n           dir.remove(path);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void deleteCacheEntries(Path path, boolean tombstone,\n      ITtlTimeProvider ttlTimeProvider) {\n    LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n    // If there\u0027s no entry, delete should silently succeed\n    // (based on MetadataStoreTestBase#testDeleteNonExisting)\n    if(entry \u003d\u003d null){\n      LOG.warn(\"Delete: path {} is missing from cache.\", path);\n      return;\n    }\n\n    // Remove target file entry\n    LOG.debug(\"delete file entry for {}\", path);\n    if(entry.hasPathMeta()){\n      if (tombstone) {\n        PathMetadata pmd \u003d PathMetadata.tombstone(path);\n        pmd.setLastUpdated(ttlTimeProvider.getNow());\n        entry.setPathMetadata(pmd);\n      } else {\n        entry.setPathMetadata(null);\n      }\n    }\n\n    // If this path is a dir, remove its listing\n    if(entry.hasDirMeta()) {\n      LOG.debug(\"removing listing of {}\", path);\n      entry.setDirListingMetadata(null);\n    }\n\n    // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n    // the cache.\n    if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n      localCache.invalidate(entry);\n    }\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d getDirListingMeta(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path);\n          dir.setLastUpdated(ttlTimeProvider.getNow());\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "c687a6617d73293019d8d91ac48bbfd2ccca3b40": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15423. Merge fileCache and dirCache into ine single cache in LocalMetadataStore. Contributed by Gabor Bota.\n",
+      "commitDate": "25/06/18 1:59 PM",
+      "commitName": "c687a6617d73293019d8d91ac48bbfd2ccca3b40",
+      "commitAuthor": "Sean Mackrory",
+      "commitDateOld": "08/05/18 6:58 PM",
+      "commitNameOld": "8981674bbcff0663af820f3e87a3eaea5789968a",
+      "commitAuthorOld": "Aaron Fabbri",
+      "daysBetweenCommits": 47.79,
+      "commitsBetweenForRepo": 363,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,46 @@\n   private void deleteCacheEntries(Path path, boolean tombstone) {\n-\n-    // Remove target file/dir\n-    LOG.debug(\"delete file entry for {}\", path);\n-    if (tombstone) {\n-      fileCache.put(path, PathMetadata.tombstone(path));\n-    } else {\n-      fileCache.invalidate(path);\n+    LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n+    // If there\u0027s no entry, delete should silently succeed\n+    // (based on MetadataStoreTestBase#testDeleteNonExisting)\n+    if(entry \u003d\u003d null){\n+      LOG.warn(\"Delete: path {} is missing from cache.\", path);\n+      return;\n     }\n \n-    // Update this and parent dir listing, if any\n+    // Remove target file entry\n+    LOG.debug(\"delete file entry for {}\", path);\n+    if(entry.hasPathMeta()){\n+      if (tombstone) {\n+        PathMetadata pmd \u003d PathMetadata.tombstone(path);\n+        entry.setPathMetadata(pmd);\n+      } else {\n+        entry.setPathMetadata(null);\n+      }\n+    }\n \n-    /* If this path is a dir, remove its listing */\n-    LOG.debug(\"removing listing of {}\", path);\n+    // If this path is a dir, remove its listing\n+    if(entry.hasDirMeta()) {\n+      LOG.debug(\"removing listing of {}\", path);\n+      entry.setDirListingMetadata(null);\n+    }\n \n-    dirCache.invalidate(path);\n+    // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n+    // the cache.\n+    if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n+      localCache.invalidate(entry);\n+    }\n \n     /* Remove this path from parent\u0027s dir listing */\n     Path parent \u003d path.getParent();\n     if (parent !\u003d null) {\n-      DirListingMetadata dir \u003d null;\n-      dir \u003d dirCache.getIfPresent(parent);\n+      DirListingMetadata dir \u003d getDirListingMeta(parent);\n       if (dir !\u003d null) {\n         LOG.debug(\"removing parent\u0027s entry for {} \", path);\n         if (tombstone) {\n           dir.markDeleted(path);\n         } else {\n           dir.remove(path);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void deleteCacheEntries(Path path, boolean tombstone) {\n    LocalMetadataEntry entry \u003d localCache.getIfPresent(path);\n    // If there\u0027s no entry, delete should silently succeed\n    // (based on MetadataStoreTestBase#testDeleteNonExisting)\n    if(entry \u003d\u003d null){\n      LOG.warn(\"Delete: path {} is missing from cache.\", path);\n      return;\n    }\n\n    // Remove target file entry\n    LOG.debug(\"delete file entry for {}\", path);\n    if(entry.hasPathMeta()){\n      if (tombstone) {\n        PathMetadata pmd \u003d PathMetadata.tombstone(path);\n        entry.setPathMetadata(pmd);\n      } else {\n        entry.setPathMetadata(null);\n      }\n    }\n\n    // If this path is a dir, remove its listing\n    if(entry.hasDirMeta()) {\n      LOG.debug(\"removing listing of {}\", path);\n      entry.setDirListingMetadata(null);\n    }\n\n    // If the entry is empty (contains no dirMeta or pathMeta) remove it from\n    // the cache.\n    if(!entry.hasDirMeta() \u0026\u0026 !entry.hasPathMeta()){\n      localCache.invalidate(entry);\n    }\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d getDirListingMeta(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path);\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "69aac696d9d4e32a55ba9b6992f41a9ad13424f1": {
+      "type": "Ymultichange(Yrename,Ybodychange)",
+      "commitMessage": "HADOOP-13649 s3guard: implement time-based (TTL) expiry for LocalMetadataStore (Gabor Bota)\n",
+      "commitDate": "08/05/18 3:29 PM",
+      "commitName": "69aac696d9d4e32a55ba9b6992f41a9ad13424f1",
+      "commitAuthor": "Aaron Fabbri",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HADOOP-13649 s3guard: implement time-based (TTL) expiry for LocalMetadataStore (Gabor Bota)\n",
+          "commitDate": "08/05/18 3:29 PM",
+          "commitName": "69aac696d9d4e32a55ba9b6992f41a9ad13424f1",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "26/04/18 8:41 PM",
+          "commitNameOld": "7d8bcf534acce52fb8cfb745a8671f9350d3b5be",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 11.78,
+          "commitsBetweenForRepo": 72,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,32 @@\n-  private void deleteHashEntries(Path path, boolean tombstone) {\n+  private void deleteCacheEntries(Path path, boolean tombstone) {\n \n     // Remove target file/dir\n     LOG.debug(\"delete file entry for {}\", path);\n     if (tombstone) {\n-      fileHash.put(path, PathMetadata.tombstone(path));\n+      fileCache.put(path, PathMetadata.tombstone(path));\n     } else {\n-      fileHash.remove(path);\n+      fileCache.invalidate(path);\n     }\n \n     // Update this and parent dir listing, if any\n \n     /* If this path is a dir, remove its listing */\n     LOG.debug(\"removing listing of {}\", path);\n \n-    dirHash.remove(path);\n+    dirCache.invalidate(path);\n \n     /* Remove this path from parent\u0027s dir listing */\n     Path parent \u003d path.getParent();\n     if (parent !\u003d null) {\n-      DirListingMetadata dir \u003d dirHash.get(parent);\n+      DirListingMetadata dir \u003d null;\n+      dir \u003d dirCache.getIfPresent(parent);\n       if (dir !\u003d null) {\n         LOG.debug(\"removing parent\u0027s entry for {} \", path);\n         if (tombstone) {\n           dir.markDeleted(path);\n         } else {\n           dir.remove(path);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void deleteCacheEntries(Path path, boolean tombstone) {\n\n    // Remove target file/dir\n    LOG.debug(\"delete file entry for {}\", path);\n    if (tombstone) {\n      fileCache.put(path, PathMetadata.tombstone(path));\n    } else {\n      fileCache.invalidate(path);\n    }\n\n    // Update this and parent dir listing, if any\n\n    /* If this path is a dir, remove its listing */\n    LOG.debug(\"removing listing of {}\", path);\n\n    dirCache.invalidate(path);\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d null;\n      dir \u003d dirCache.getIfPresent(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path);\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "deleteHashEntries",
+            "newValue": "deleteCacheEntries"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13649 s3guard: implement time-based (TTL) expiry for LocalMetadataStore (Gabor Bota)\n",
+          "commitDate": "08/05/18 3:29 PM",
+          "commitName": "69aac696d9d4e32a55ba9b6992f41a9ad13424f1",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "26/04/18 8:41 PM",
+          "commitNameOld": "7d8bcf534acce52fb8cfb745a8671f9350d3b5be",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 11.78,
+          "commitsBetweenForRepo": 72,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,32 @@\n-  private void deleteHashEntries(Path path, boolean tombstone) {\n+  private void deleteCacheEntries(Path path, boolean tombstone) {\n \n     // Remove target file/dir\n     LOG.debug(\"delete file entry for {}\", path);\n     if (tombstone) {\n-      fileHash.put(path, PathMetadata.tombstone(path));\n+      fileCache.put(path, PathMetadata.tombstone(path));\n     } else {\n-      fileHash.remove(path);\n+      fileCache.invalidate(path);\n     }\n \n     // Update this and parent dir listing, if any\n \n     /* If this path is a dir, remove its listing */\n     LOG.debug(\"removing listing of {}\", path);\n \n-    dirHash.remove(path);\n+    dirCache.invalidate(path);\n \n     /* Remove this path from parent\u0027s dir listing */\n     Path parent \u003d path.getParent();\n     if (parent !\u003d null) {\n-      DirListingMetadata dir \u003d dirHash.get(parent);\n+      DirListingMetadata dir \u003d null;\n+      dir \u003d dirCache.getIfPresent(parent);\n       if (dir !\u003d null) {\n         LOG.debug(\"removing parent\u0027s entry for {} \", path);\n         if (tombstone) {\n           dir.markDeleted(path);\n         } else {\n           dir.remove(path);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void deleteCacheEntries(Path path, boolean tombstone) {\n\n    // Remove target file/dir\n    LOG.debug(\"delete file entry for {}\", path);\n    if (tombstone) {\n      fileCache.put(path, PathMetadata.tombstone(path));\n    } else {\n      fileCache.invalidate(path);\n    }\n\n    // Update this and parent dir listing, if any\n\n    /* If this path is a dir, remove its listing */\n    LOG.debug(\"removing listing of {}\", path);\n\n    dirCache.invalidate(path);\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d null;\n      dir \u003d dirCache.getIfPresent(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path);\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,31 @@\n+  private void deleteHashEntries(Path path, boolean tombstone) {\n+\n+    // Remove target file/dir\n+    LOG.debug(\"delete file entry for {}\", path);\n+    if (tombstone) {\n+      fileHash.put(path, PathMetadata.tombstone(path));\n+    } else {\n+      fileHash.remove(path);\n+    }\n+\n+    // Update this and parent dir listing, if any\n+\n+    /* If this path is a dir, remove its listing */\n+    LOG.debug(\"removing listing of {}\", path);\n+\n+    dirHash.remove(path);\n+\n+    /* Remove this path from parent\u0027s dir listing */\n+    Path parent \u003d path.getParent();\n+    if (parent !\u003d null) {\n+      DirListingMetadata dir \u003d dirHash.get(parent);\n+      if (dir !\u003d null) {\n+        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n+        if (tombstone) {\n+          dir.markDeleted(path);\n+        } else {\n+          dir.remove(path);\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void deleteHashEntries(Path path, boolean tombstone) {\n\n    // Remove target file/dir\n    LOG.debug(\"delete file entry for {}\", path);\n    if (tombstone) {\n      fileHash.put(path, PathMetadata.tombstone(path));\n    } else {\n      fileHash.remove(path);\n    }\n\n    // Update this and parent dir listing, if any\n\n    /* If this path is a dir, remove its listing */\n    LOG.debug(\"removing listing of {}\", path);\n\n    dirHash.remove(path);\n\n    /* Remove this path from parent\u0027s dir listing */\n    Path parent \u003d path.getParent();\n    if (parent !\u003d null) {\n      DirListingMetadata dir \u003d dirHash.get(parent);\n      if (dir !\u003d null) {\n        LOG.debug(\"removing parent\u0027s entry for {} \", path);\n        if (tombstone) {\n          dir.markDeleted(path);\n        } else {\n          dir.remove(path);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java"
+    }
+  }
+}

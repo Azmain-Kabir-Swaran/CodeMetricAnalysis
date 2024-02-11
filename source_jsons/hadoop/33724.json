@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RuncContainerRuntime.java",
+  "functionName": "addUserMounts",
+  "functionId": "addUserMounts___mounts-List__OCIMount____environment-Map__String,String____localizedResources-Map__Path,List__String____",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/runtime/RuncContainerRuntime.java",
+  "functionStartLine": 472,
+  "functionEndLine": 519,
+  "numCommitsSeen": 1,
+  "timeTaken": 1393,
+  "changeHistory": [
+    "0e22e9ab83438af37d821cb2f96e31f9a19ace2c"
+  ],
+  "changeHistoryShort": {
+    "0e22e9ab83438af37d821cb2f96e31f9a19ace2c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0e22e9ab83438af37d821cb2f96e31f9a19ace2c": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-9562. Add Java changes for the new RuncContainerRuntime. Contributed by Eric Badger\n",
+      "commitDate": "18/11/19 1:56 PM",
+      "commitName": "0e22e9ab83438af37d821cb2f96e31f9a19ace2c",
+      "commitAuthor": "Eric Badger",
+      "diff": "@@ -0,0 +1,48 @@\n+  private void addUserMounts(List\u003cOCIMount\u003e mounts,\n+      Map\u003cString, String\u003e environment,\n+      Map\u003cPath, List\u003cString\u003e\u003e localizedResources)\n+      throws ContainerExecutionException {\n+    if (environment.containsKey(ENV_RUNC_CONTAINER_MOUNTS)) {\n+      Matcher parsedMounts \u003d USER_MOUNT_PATTERN.matcher(\n+          environment.get(ENV_RUNC_CONTAINER_MOUNTS));\n+      if (!parsedMounts.find()) {\n+        throw new ContainerExecutionException(\n+            \"Unable to parse user supplied mount list: \"\n+            + environment.get(ENV_RUNC_CONTAINER_MOUNTS));\n+      }\n+      parsedMounts.reset();\n+      long mountCount \u003d 0;\n+      while (parsedMounts.find()) {\n+        mountCount++;\n+        String src \u003d parsedMounts.group(1);\n+        java.nio.file.Path srcPath \u003d java.nio.file.Paths.get(src);\n+        if (!srcPath.isAbsolute()) {\n+          src \u003d mountReadOnlyPath(src, localizedResources);\n+        }\n+        String dst \u003d parsedMounts.group(2);\n+        String mode \u003d parsedMounts.group(4);\n+        boolean isReadWrite;\n+        if (mode \u003d\u003d null) {\n+          isReadWrite \u003d true;\n+        } else if (mode.equals(\"rw\")) {\n+          isReadWrite \u003d true;\n+        } else if (mode.equals(\"ro\")) {\n+          isReadWrite \u003d false;\n+        } else {\n+          throw new ContainerExecutionException(\n+              \"Unable to parse mode of some mounts in user supplied \"\n+              + \"mount list: \"\n+              + environment.get(ENV_RUNC_CONTAINER_MOUNTS));\n+        }\n+        addRuncMountLocation(mounts, src, dst, false, isReadWrite);\n+      }\n+      long commaCount \u003d environment.get(ENV_RUNC_CONTAINER_MOUNTS).chars()\n+          .filter(c -\u003e c \u003d\u003d \u0027,\u0027).count();\n+      if (mountCount !\u003d commaCount + 1) {\n+        // this means the matcher skipped an improperly formatted mount\n+        throw new ContainerExecutionException(\n+            \"Unable to parse some mounts in user supplied mount list: \"\n+            + environment.get(ENV_RUNC_CONTAINER_MOUNTS));\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void addUserMounts(List\u003cOCIMount\u003e mounts,\n      Map\u003cString, String\u003e environment,\n      Map\u003cPath, List\u003cString\u003e\u003e localizedResources)\n      throws ContainerExecutionException {\n    if (environment.containsKey(ENV_RUNC_CONTAINER_MOUNTS)) {\n      Matcher parsedMounts \u003d USER_MOUNT_PATTERN.matcher(\n          environment.get(ENV_RUNC_CONTAINER_MOUNTS));\n      if (!parsedMounts.find()) {\n        throw new ContainerExecutionException(\n            \"Unable to parse user supplied mount list: \"\n            + environment.get(ENV_RUNC_CONTAINER_MOUNTS));\n      }\n      parsedMounts.reset();\n      long mountCount \u003d 0;\n      while (parsedMounts.find()) {\n        mountCount++;\n        String src \u003d parsedMounts.group(1);\n        java.nio.file.Path srcPath \u003d java.nio.file.Paths.get(src);\n        if (!srcPath.isAbsolute()) {\n          src \u003d mountReadOnlyPath(src, localizedResources);\n        }\n        String dst \u003d parsedMounts.group(2);\n        String mode \u003d parsedMounts.group(4);\n        boolean isReadWrite;\n        if (mode \u003d\u003d null) {\n          isReadWrite \u003d true;\n        } else if (mode.equals(\"rw\")) {\n          isReadWrite \u003d true;\n        } else if (mode.equals(\"ro\")) {\n          isReadWrite \u003d false;\n        } else {\n          throw new ContainerExecutionException(\n              \"Unable to parse mode of some mounts in user supplied \"\n              + \"mount list: \"\n              + environment.get(ENV_RUNC_CONTAINER_MOUNTS));\n        }\n        addRuncMountLocation(mounts, src, dst, false, isReadWrite);\n      }\n      long commaCount \u003d environment.get(ENV_RUNC_CONTAINER_MOUNTS).chars()\n          .filter(c -\u003e c \u003d\u003d \u0027,\u0027).count();\n      if (mountCount !\u003d commaCount + 1) {\n        // this means the matcher skipped an improperly formatted mount\n        throw new ContainerExecutionException(\n            \"Unable to parse some mounts in user supplied mount list: \"\n            + environment.get(ENV_RUNC_CONTAINER_MOUNTS));\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/runtime/RuncContainerRuntime.java"
+    }
+  }
+}

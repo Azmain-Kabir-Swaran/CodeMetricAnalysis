@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DistributedFileSystem.java",
+  "functionName": "getSnapshotDiffReportInternal",
+  "functionId": "getSnapshotDiffReportInternal___snapshotDir-String(modifiers-final)__fromSnapshot-String(modifiers-final)__toSnapshot-String(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+  "functionStartLine": 2259,
+  "functionEndLine": 2291,
+  "numCommitsSeen": 96,
+  "timeTaken": 3206,
+  "changeHistory": [
+    "55c77bf722f2b6fcde135c0f71454647a8d2a3db",
+    "b1c7654ee40b372ed777525a42981c7cf55b5c72"
+  ],
+  "changeHistoryShort": {
+    "55c77bf722f2b6fcde135c0f71454647a8d2a3db": "Ybodychange",
+    "b1c7654ee40b372ed777525a42981c7cf55b5c72": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "55c77bf722f2b6fcde135c0f71454647a8d2a3db": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13143. SnapshotDiff - snapshotDiffReport might be inconsistent if the snapshotDiff calculation happens between a snapshot and the current tree.  Contributed by Shashikant Banerjee\n",
+      "commitDate": "27/02/18 3:28 PM",
+      "commitName": "55c77bf722f2b6fcde135c0f71454647a8d2a3db",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "18/02/18 7:42 PM",
+      "commitNameOld": "83e2bb98eea45ddcb598080f68a2f69de1f04485",
+      "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+      "daysBetweenCommits": 8.82,
+      "commitsBetweenForRepo": 54,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,33 @@\n   private SnapshotDiffReport getSnapshotDiffReportInternal(\n       final String snapshotDir, final String fromSnapshot,\n       final String toSnapshot) throws IOException {\n+    // In case the diff needs to be computed between a snapshot and the current\n+    // tree, we should not do iterative diffReport computation as the iterative\n+    // approach might fail if in between the rpc calls the current tree\n+    // changes in absence of the global fsn lock.\n+    if (!isValidSnapshotName(fromSnapshot) || !isValidSnapshotName(\n+        toSnapshot)) {\n+      return dfs.getSnapshotDiffReport(snapshotDir, fromSnapshot, toSnapshot);\n+    }\n     byte[] startPath \u003d DFSUtilClient.EMPTY_BYTES;\n     int index \u003d -1;\n     SnapshotDiffReportGenerator snapshotDiffReport;\n     List\u003cDiffReportListingEntry\u003e modifiedList \u003d new TreeList();\n     List\u003cDiffReportListingEntry\u003e createdList \u003d new ChunkedArrayList\u003c\u003e();\n     List\u003cDiffReportListingEntry\u003e deletedList \u003d new ChunkedArrayList\u003c\u003e();\n     SnapshotDiffReportListing report;\n     do {\n       report \u003d dfs.getSnapshotDiffReportListing(snapshotDir, fromSnapshot,\n           toSnapshot, startPath, index);\n       startPath \u003d report.getLastPath();\n       index \u003d report.getLastIndex();\n       modifiedList.addAll(report.getModifyList());\n       createdList.addAll(report.getCreateList());\n       deletedList.addAll(report.getDeleteList());\n     } while (!(Arrays.equals(startPath, DFSUtilClient.EMPTY_BYTES)\n         \u0026\u0026 index \u003d\u003d -1));\n     snapshotDiffReport \u003d\n         new SnapshotDiffReportGenerator(snapshotDir, fromSnapshot, toSnapshot,\n             report.getIsFromEarlier(), modifiedList, createdList, deletedList);\n     return snapshotDiffReport.generateReport();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private SnapshotDiffReport getSnapshotDiffReportInternal(\n      final String snapshotDir, final String fromSnapshot,\n      final String toSnapshot) throws IOException {\n    // In case the diff needs to be computed between a snapshot and the current\n    // tree, we should not do iterative diffReport computation as the iterative\n    // approach might fail if in between the rpc calls the current tree\n    // changes in absence of the global fsn lock.\n    if (!isValidSnapshotName(fromSnapshot) || !isValidSnapshotName(\n        toSnapshot)) {\n      return dfs.getSnapshotDiffReport(snapshotDir, fromSnapshot, toSnapshot);\n    }\n    byte[] startPath \u003d DFSUtilClient.EMPTY_BYTES;\n    int index \u003d -1;\n    SnapshotDiffReportGenerator snapshotDiffReport;\n    List\u003cDiffReportListingEntry\u003e modifiedList \u003d new TreeList();\n    List\u003cDiffReportListingEntry\u003e createdList \u003d new ChunkedArrayList\u003c\u003e();\n    List\u003cDiffReportListingEntry\u003e deletedList \u003d new ChunkedArrayList\u003c\u003e();\n    SnapshotDiffReportListing report;\n    do {\n      report \u003d dfs.getSnapshotDiffReportListing(snapshotDir, fromSnapshot,\n          toSnapshot, startPath, index);\n      startPath \u003d report.getLastPath();\n      index \u003d report.getLastIndex();\n      modifiedList.addAll(report.getModifyList());\n      createdList.addAll(report.getCreateList());\n      deletedList.addAll(report.getDeleteList());\n    } while (!(Arrays.equals(startPath, DFSUtilClient.EMPTY_BYTES)\n        \u0026\u0026 index \u003d\u003d -1));\n    snapshotDiffReport \u003d\n        new SnapshotDiffReportGenerator(snapshotDir, fromSnapshot, toSnapshot,\n            report.getIsFromEarlier(), modifiedList, createdList, deletedList);\n    return snapshotDiffReport.generateReport();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+      "extendedDetails": {}
+    },
+    "b1c7654ee40b372ed777525a42981c7cf55b5c72": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-12594. snapshotDiff fails if the report exceeds the RPC response limit. Contributed by Shashikant Banerjee\n",
+      "commitDate": "30/11/17 12:18 PM",
+      "commitName": "b1c7654ee40b372ed777525a42981c7cf55b5c72",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "diff": "@@ -0,0 +1,25 @@\n+  private SnapshotDiffReport getSnapshotDiffReportInternal(\n+      final String snapshotDir, final String fromSnapshot,\n+      final String toSnapshot) throws IOException {\n+    byte[] startPath \u003d DFSUtilClient.EMPTY_BYTES;\n+    int index \u003d -1;\n+    SnapshotDiffReportGenerator snapshotDiffReport;\n+    List\u003cDiffReportListingEntry\u003e modifiedList \u003d new TreeList();\n+    List\u003cDiffReportListingEntry\u003e createdList \u003d new ChunkedArrayList\u003c\u003e();\n+    List\u003cDiffReportListingEntry\u003e deletedList \u003d new ChunkedArrayList\u003c\u003e();\n+    SnapshotDiffReportListing report;\n+    do {\n+      report \u003d dfs.getSnapshotDiffReportListing(snapshotDir, fromSnapshot,\n+          toSnapshot, startPath, index);\n+      startPath \u003d report.getLastPath();\n+      index \u003d report.getLastIndex();\n+      modifiedList.addAll(report.getModifyList());\n+      createdList.addAll(report.getCreateList());\n+      deletedList.addAll(report.getDeleteList());\n+    } while (!(Arrays.equals(startPath, DFSUtilClient.EMPTY_BYTES)\n+        \u0026\u0026 index \u003d\u003d -1));\n+    snapshotDiffReport \u003d\n+        new SnapshotDiffReportGenerator(snapshotDir, fromSnapshot, toSnapshot,\n+            report.getIsFromEarlier(), modifiedList, createdList, deletedList);\n+    return snapshotDiffReport.generateReport();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private SnapshotDiffReport getSnapshotDiffReportInternal(\n      final String snapshotDir, final String fromSnapshot,\n      final String toSnapshot) throws IOException {\n    byte[] startPath \u003d DFSUtilClient.EMPTY_BYTES;\n    int index \u003d -1;\n    SnapshotDiffReportGenerator snapshotDiffReport;\n    List\u003cDiffReportListingEntry\u003e modifiedList \u003d new TreeList();\n    List\u003cDiffReportListingEntry\u003e createdList \u003d new ChunkedArrayList\u003c\u003e();\n    List\u003cDiffReportListingEntry\u003e deletedList \u003d new ChunkedArrayList\u003c\u003e();\n    SnapshotDiffReportListing report;\n    do {\n      report \u003d dfs.getSnapshotDiffReportListing(snapshotDir, fromSnapshot,\n          toSnapshot, startPath, index);\n      startPath \u003d report.getLastPath();\n      index \u003d report.getLastIndex();\n      modifiedList.addAll(report.getModifyList());\n      createdList.addAll(report.getCreateList());\n      deletedList.addAll(report.getDeleteList());\n    } while (!(Arrays.equals(startPath, DFSUtilClient.EMPTY_BYTES)\n        \u0026\u0026 index \u003d\u003d -1));\n    snapshotDiffReport \u003d\n        new SnapshotDiffReportGenerator(snapshotDir, fromSnapshot, toSnapshot,\n            report.getIsFromEarlier(), modifiedList, createdList, deletedList);\n    return snapshotDiffReport.generateReport();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java"
+    }
+  }
+}

@@ -1,0 +1,468 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "Client.java",
+  "functionName": "getConnection",
+  "functionId": "getConnection___remoteId-ConnectionId__call-Call__serviceClass-int__fallbackToSimpleAuth-AtomicBoolean",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+  "functionStartLine": 1587,
+  "functionEndLine": 1638,
+  "numCommitsSeen": 292,
+  "timeTaken": 6007,
+  "changeHistory": [
+    "9192f71e21847ad86bc9ff23847d8957dfe8ae58",
+    "8d2d3eb7bb938cc06ea3cc74040cfe0be13a2ba8",
+    "18f680977684710037c07bb068383791e8a33a9e",
+    "fb6b38d67d8b997eca498fc5010b037e3081ace7",
+    "f85cc14eb49a46e81d2edcdc1ffe4d0852f193a5",
+    "3eb61be352589491117ac2781bb18f55988a8084",
+    "5319818487d5c139de06155834deecb18c10b7a1",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+    "1c75bcc76baf6bcd2cb700d3efb4e2489b19cae7",
+    "714e5f7165b101f72a43e8c3fb27be5def93fe42",
+    "940389afce6a1b9b9e1519aed528cbc444786756",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36"
+  ],
+  "changeHistoryShort": {
+    "9192f71e21847ad86bc9ff23847d8957dfe8ae58": "Ybodychange",
+    "8d2d3eb7bb938cc06ea3cc74040cfe0be13a2ba8": "Ymultichange(Ybodychange,Yparametermetachange)",
+    "18f680977684710037c07bb068383791e8a33a9e": "Ybodychange",
+    "fb6b38d67d8b997eca498fc5010b037e3081ace7": "Ymultichange(Ybodychange,Yparametermetachange)",
+    "f85cc14eb49a46e81d2edcdc1ffe4d0852f193a5": "Ymultichange(Yparameterchange,Ybodychange)",
+    "3eb61be352589491117ac2781bb18f55988a8084": "Yexceptionschange",
+    "5319818487d5c139de06155834deecb18c10b7a1": "Ymultichange(Yparameterchange,Ybodychange)",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yfilerename",
+    "1c75bcc76baf6bcd2cb700d3efb4e2489b19cae7": "Ymultichange(Yparameterchange,Ybodychange)",
+    "714e5f7165b101f72a43e8c3fb27be5def93fe42": "Ymultichange(Yparameterchange,Ybodychange)",
+    "940389afce6a1b9b9e1519aed528cbc444786756": "Yexceptionschange",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9192f71e21847ad86bc9ff23847d8957dfe8ae58": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16127. In ipc.Client, put a new connection could happen after stop.\n",
+      "commitDate": "26/02/19 3:14 PM",
+      "commitName": "9192f71e21847ad86bc9ff23847d8957dfe8ae58",
+      "commitAuthor": "Tsz Wo Nicholas Sze",
+      "commitDateOld": "25/02/19 1:15 PM",
+      "commitNameOld": "0edb0c51dc2c4ae2f353e260f01912e28033d70f",
+      "commitAuthorOld": "Tsz Wo Nicholas Sze",
+      "daysBetweenCommits": 1.08,
+      "commitsBetweenForRepo": 12,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,39 +1,52 @@\n   private Connection getConnection(ConnectionId remoteId,\n       Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n       throws IOException {\n-    if (!running.get()) {\n-      // the client is stopped\n-      throw new IOException(\"The client is stopped\");\n+    final InetSocketAddress address \u003d remoteId.getAddress();\n+    if (address.isUnresolved()) {\n+      throw NetUtils.wrapException(address.getHostName(),\n+          address.getPort(),\n+          null,\n+          0,\n+          new UnknownHostException());\n     }\n+\n+    final Consumer\u003cConnection\u003e removeMethod \u003d c -\u003e {\n+      final boolean removed \u003d connections.remove(remoteId, c);\n+      if (removed \u0026\u0026 connections.isEmpty()) {\n+        synchronized (emptyCondition) {\n+          emptyCondition.notify();\n+        }\n+      }\n+    };\n+\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n     while (true) {\n-      // These lines below can be shorten with computeIfAbsent in Java8\n-      connection \u003d connections.get(remoteId);\n-      if (connection \u003d\u003d null) {\n-        connection \u003d new Connection(remoteId, serviceClass);\n-        Connection existing \u003d connections.putIfAbsent(remoteId, connection);\n-        if (existing !\u003d null) {\n-          connection \u003d existing;\n+      synchronized (putLock) { // synchronized to avoid put after stop\n+        if (!running.get()) {\n+          throw new IOException(\"Failed to get connection for \" + remoteId\n+              + \", \" + call + \": \" + this + \" is already stopped\");\n         }\n+        connection \u003d connections.computeIfAbsent(remoteId,\n+            id -\u003e new Connection(id, serviceClass, removeMethod));\n       }\n \n       if (connection.addCall(call)) {\n         break;\n       } else {\n         // This connection is closed, should be removed. But other thread could\n         // have already known this closedConnection, and replace it with a new\n         // connection. So we should call conditional remove to make sure we only\n         // remove this closedConnection.\n-        connections.remove(remoteId, connection);\n+        removeMethod.accept(connection);\n       }\n     }\n \n     // If the server happens to be slow, the method below will take longer to\n     // establish a connection.\n     connection.setupIOstreams(fallbackToSimpleAuth);\n     return connection;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n      throws IOException {\n    final InetSocketAddress address \u003d remoteId.getAddress();\n    if (address.isUnresolved()) {\n      throw NetUtils.wrapException(address.getHostName(),\n          address.getPort(),\n          null,\n          0,\n          new UnknownHostException());\n    }\n\n    final Consumer\u003cConnection\u003e removeMethod \u003d c -\u003e {\n      final boolean removed \u003d connections.remove(remoteId, c);\n      if (removed \u0026\u0026 connections.isEmpty()) {\n        synchronized (emptyCondition) {\n          emptyCondition.notify();\n        }\n      }\n    };\n\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    while (true) {\n      synchronized (putLock) { // synchronized to avoid put after stop\n        if (!running.get()) {\n          throw new IOException(\"Failed to get connection for \" + remoteId\n              + \", \" + call + \": \" + this + \" is already stopped\");\n        }\n        connection \u003d connections.computeIfAbsent(remoteId,\n            id -\u003e new Connection(id, serviceClass, removeMethod));\n      }\n\n      if (connection.addCall(call)) {\n        break;\n      } else {\n        // This connection is closed, should be removed. But other thread could\n        // have already known this closedConnection, and replace it with a new\n        // connection. So we should call conditional remove to make sure we only\n        // remove this closedConnection.\n        removeMethod.accept(connection);\n      }\n    }\n\n    // If the server happens to be slow, the method below will take longer to\n    // establish a connection.\n    connection.setupIOstreams(fallbackToSimpleAuth);\n    return connection;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+      "extendedDetails": {}
+    },
+    "8d2d3eb7bb938cc06ea3cc74040cfe0be13a2ba8": {
+      "type": "Ymultichange(Ybodychange,Yparametermetachange)",
+      "commitMessage": "HADOOP-12475. Replace guava Cache with ConcurrentHashMap for caching Connection in ipc Client (Walter Su via sjlee)\n",
+      "commitDate": "15/10/15 11:43 AM",
+      "commitName": "8d2d3eb7bb938cc06ea3cc74040cfe0be13a2ba8",
+      "commitAuthor": "Sangjin Lee",
+      "subchanges": [
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-12475. Replace guava Cache with ConcurrentHashMap for caching Connection in ipc Client (Walter Su via sjlee)\n",
+          "commitDate": "15/10/15 11:43 AM",
+          "commitName": "8d2d3eb7bb938cc06ea3cc74040cfe0be13a2ba8",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "28/09/15 7:42 AM",
+          "commitNameOld": "892ade689f9bcce76daae8f66fc00a49bee8548e",
+          "commitAuthorOld": "Colin Patrick Mccabe",
+          "daysBetweenCommits": 17.17,
+          "commitsBetweenForRepo": 137,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,44 +1,39 @@\n-  private Connection getConnection(\n-      final ConnectionId remoteId,\n-      Call call, final int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n+  private Connection getConnection(ConnectionId remoteId,\n+      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n       throws IOException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n-    while(true) {\n-      try {\n-        connection \u003d connections.get(remoteId, new Callable\u003cConnection\u003e() {\n-          @Override\n-          public Connection call() throws Exception {\n-            return new Connection(remoteId, serviceClass);\n-          }\n-        });\n-      } catch (ExecutionException e) {\n-        Throwable cause \u003d e.getCause();\n-        // the underlying exception should normally be IOException\n-        if (cause instanceof IOException) {\n-          throw (IOException) cause;\n-        } else {\n-          throw new IOException(cause);\n+    while (true) {\n+      // These lines below can be shorten with computeIfAbsent in Java8\n+      connection \u003d connections.get(remoteId);\n+      if (connection \u003d\u003d null) {\n+        connection \u003d new Connection(remoteId, serviceClass);\n+        Connection existing \u003d connections.putIfAbsent(remoteId, connection);\n+        if (existing !\u003d null) {\n+          connection \u003d existing;\n         }\n       }\n+\n       if (connection.addCall(call)) {\n         break;\n       } else {\n-        connections.invalidate(remoteId);\n+        // This connection is closed, should be removed. But other thread could\n+        // have already known this closedConnection, and replace it with a new\n+        // connection. So we should call conditional remove to make sure we only\n+        // remove this closedConnection.\n+        connections.remove(remoteId, connection);\n       }\n     }\n-    \n-    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n-    //block above. The reason for that is if the server happens to be slow,\n-    //it will take longer to establish a connection and that will slow the\n-    //entire system down.\n+\n+    // If the server happens to be slow, the method below will take longer to\n+    // establish a connection.\n     connection.setupIOstreams(fallbackToSimpleAuth);\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n      throws IOException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    while (true) {\n      // These lines below can be shorten with computeIfAbsent in Java8\n      connection \u003d connections.get(remoteId);\n      if (connection \u003d\u003d null) {\n        connection \u003d new Connection(remoteId, serviceClass);\n        Connection existing \u003d connections.putIfAbsent(remoteId, connection);\n        if (existing !\u003d null) {\n          connection \u003d existing;\n        }\n      }\n\n      if (connection.addCall(call)) {\n        break;\n      } else {\n        // This connection is closed, should be removed. But other thread could\n        // have already known this closedConnection, and replace it with a new\n        // connection. So we should call conditional remove to make sure we only\n        // remove this closedConnection.\n        connections.remove(remoteId, connection);\n      }\n    }\n\n    // If the server happens to be slow, the method below will take longer to\n    // establish a connection.\n    connection.setupIOstreams(fallbackToSimpleAuth);\n    return connection;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HADOOP-12475. Replace guava Cache with ConcurrentHashMap for caching Connection in ipc Client (Walter Su via sjlee)\n",
+          "commitDate": "15/10/15 11:43 AM",
+          "commitName": "8d2d3eb7bb938cc06ea3cc74040cfe0be13a2ba8",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "28/09/15 7:42 AM",
+          "commitNameOld": "892ade689f9bcce76daae8f66fc00a49bee8548e",
+          "commitAuthorOld": "Colin Patrick Mccabe",
+          "daysBetweenCommits": 17.17,
+          "commitsBetweenForRepo": 137,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,44 +1,39 @@\n-  private Connection getConnection(\n-      final ConnectionId remoteId,\n-      Call call, final int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n+  private Connection getConnection(ConnectionId remoteId,\n+      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n       throws IOException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n-    while(true) {\n-      try {\n-        connection \u003d connections.get(remoteId, new Callable\u003cConnection\u003e() {\n-          @Override\n-          public Connection call() throws Exception {\n-            return new Connection(remoteId, serviceClass);\n-          }\n-        });\n-      } catch (ExecutionException e) {\n-        Throwable cause \u003d e.getCause();\n-        // the underlying exception should normally be IOException\n-        if (cause instanceof IOException) {\n-          throw (IOException) cause;\n-        } else {\n-          throw new IOException(cause);\n+    while (true) {\n+      // These lines below can be shorten with computeIfAbsent in Java8\n+      connection \u003d connections.get(remoteId);\n+      if (connection \u003d\u003d null) {\n+        connection \u003d new Connection(remoteId, serviceClass);\n+        Connection existing \u003d connections.putIfAbsent(remoteId, connection);\n+        if (existing !\u003d null) {\n+          connection \u003d existing;\n         }\n       }\n+\n       if (connection.addCall(call)) {\n         break;\n       } else {\n-        connections.invalidate(remoteId);\n+        // This connection is closed, should be removed. But other thread could\n+        // have already known this closedConnection, and replace it with a new\n+        // connection. So we should call conditional remove to make sure we only\n+        // remove this closedConnection.\n+        connections.remove(remoteId, connection);\n       }\n     }\n-    \n-    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n-    //block above. The reason for that is if the server happens to be slow,\n-    //it will take longer to establish a connection and that will slow the\n-    //entire system down.\n+\n+    // If the server happens to be slow, the method below will take longer to\n+    // establish a connection.\n     connection.setupIOstreams(fallbackToSimpleAuth);\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n      throws IOException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    while (true) {\n      // These lines below can be shorten with computeIfAbsent in Java8\n      connection \u003d connections.get(remoteId);\n      if (connection \u003d\u003d null) {\n        connection \u003d new Connection(remoteId, serviceClass);\n        Connection existing \u003d connections.putIfAbsent(remoteId, connection);\n        if (existing !\u003d null) {\n          connection \u003d existing;\n        }\n      }\n\n      if (connection.addCall(call)) {\n        break;\n      } else {\n        // This connection is closed, should be removed. But other thread could\n        // have already known this closedConnection, and replace it with a new\n        // connection. So we should call conditional remove to make sure we only\n        // remove this closedConnection.\n        connections.remove(remoteId, connection);\n      }\n    }\n\n    // If the server happens to be slow, the method below will take longer to\n    // establish a connection.\n    connection.setupIOstreams(fallbackToSimpleAuth);\n    return connection;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {
+            "oldValue": "[remoteId-ConnectionId(modifiers-final), call-Call, serviceClass-int(modifiers-final), fallbackToSimpleAuth-AtomicBoolean]",
+            "newValue": "[remoteId-ConnectionId, call-Call, serviceClass-int, fallbackToSimpleAuth-AtomicBoolean]"
+          }
+        }
+      ]
+    },
+    "18f680977684710037c07bb068383791e8a33a9e": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-12052 IPC client downgrades all exception types to IOE, breaks callers trying to use them. (Brahma Reddy Battula via stevel)\n",
+      "commitDate": "08/06/15 5:02 AM",
+      "commitName": "18f680977684710037c07bb068383791e8a33a9e",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "20/05/15 8:10 PM",
+      "commitNameOld": "fb6b38d67d8b997eca498fc5010b037e3081ace7",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 18.37,
+      "commitsBetweenForRepo": 131,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,38 +1,44 @@\n   private Connection getConnection(\n       final ConnectionId remoteId,\n       Call call, final int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n       throws IOException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n     while(true) {\n       try {\n         connection \u003d connections.get(remoteId, new Callable\u003cConnection\u003e() {\n           @Override\n           public Connection call() throws Exception {\n             return new Connection(remoteId, serviceClass);\n           }\n         });\n       } catch (ExecutionException e) {\n-        throw new IOException(e);\n+        Throwable cause \u003d e.getCause();\n+        // the underlying exception should normally be IOException\n+        if (cause instanceof IOException) {\n+          throw (IOException) cause;\n+        } else {\n+          throw new IOException(cause);\n+        }\n       }\n       if (connection.addCall(call)) {\n         break;\n       } else {\n         connections.invalidate(remoteId);\n       }\n     }\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams(fallbackToSimpleAuth);\n     return connection;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Connection getConnection(\n      final ConnectionId remoteId,\n      Call call, final int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n      throws IOException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    while(true) {\n      try {\n        connection \u003d connections.get(remoteId, new Callable\u003cConnection\u003e() {\n          @Override\n          public Connection call() throws Exception {\n            return new Connection(remoteId, serviceClass);\n          }\n        });\n      } catch (ExecutionException e) {\n        Throwable cause \u003d e.getCause();\n        // the underlying exception should normally be IOException\n        if (cause instanceof IOException) {\n          throw (IOException) cause;\n        } else {\n          throw new IOException(cause);\n        }\n      }\n      if (connection.addCall(call)) {\n        break;\n      } else {\n        connections.invalidate(remoteId);\n      }\n    }\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams(fallbackToSimpleAuth);\n    return connection;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+      "extendedDetails": {}
+    },
+    "fb6b38d67d8b997eca498fc5010b037e3081ace7": {
+      "type": "Ymultichange(Ybodychange,Yparametermetachange)",
+      "commitMessage": "HADOOP-11772. RPC Invoker relies on static ClientCache which has synchronized(this) blocks. Contributed by Haohui Mai.\n",
+      "commitDate": "20/05/15 8:10 PM",
+      "commitName": "fb6b38d67d8b997eca498fc5010b037e3081ace7",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-11772. RPC Invoker relies on static ClientCache which has synchronized(this) blocks. Contributed by Haohui Mai.\n",
+          "commitDate": "20/05/15 8:10 PM",
+          "commitName": "fb6b38d67d8b997eca498fc5010b037e3081ace7",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "19/05/15 2:11 AM",
+          "commitNameOld": "d4a2830b63f0819979b592f4ea6ea3abd5885b71",
+          "commitAuthorOld": "Vinayakumar B",
+          "daysBetweenCommits": 1.75,
+          "commitsBetweenForRepo": 21,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,38 @@\n-  private Connection getConnection(ConnectionId remoteId,\n-      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n+  private Connection getConnection(\n+      final ConnectionId remoteId,\n+      Call call, final int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n       throws IOException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n-    do {\n-      synchronized (connections) {\n-        connection \u003d connections.get(remoteId);\n-        if (connection \u003d\u003d null) {\n-          connection \u003d new Connection(remoteId, serviceClass);\n-          connections.put(remoteId, connection);\n-        }\n+    while(true) {\n+      try {\n+        connection \u003d connections.get(remoteId, new Callable\u003cConnection\u003e() {\n+          @Override\n+          public Connection call() throws Exception {\n+            return new Connection(remoteId, serviceClass);\n+          }\n+        });\n+      } catch (ExecutionException e) {\n+        throw new IOException(e);\n       }\n-    } while (!connection.addCall(call));\n+      if (connection.addCall(call)) {\n+        break;\n+      } else {\n+        connections.invalidate(remoteId);\n+      }\n+    }\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams(fallbackToSimpleAuth);\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(\n      final ConnectionId remoteId,\n      Call call, final int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n      throws IOException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    while(true) {\n      try {\n        connection \u003d connections.get(remoteId, new Callable\u003cConnection\u003e() {\n          @Override\n          public Connection call() throws Exception {\n            return new Connection(remoteId, serviceClass);\n          }\n        });\n      } catch (ExecutionException e) {\n        throw new IOException(e);\n      }\n      if (connection.addCall(call)) {\n        break;\n      } else {\n        connections.invalidate(remoteId);\n      }\n    }\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams(fallbackToSimpleAuth);\n    return connection;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HADOOP-11772. RPC Invoker relies on static ClientCache which has synchronized(this) blocks. Contributed by Haohui Mai.\n",
+          "commitDate": "20/05/15 8:10 PM",
+          "commitName": "fb6b38d67d8b997eca498fc5010b037e3081ace7",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "19/05/15 2:11 AM",
+          "commitNameOld": "d4a2830b63f0819979b592f4ea6ea3abd5885b71",
+          "commitAuthorOld": "Vinayakumar B",
+          "daysBetweenCommits": 1.75,
+          "commitsBetweenForRepo": 21,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,38 @@\n-  private Connection getConnection(ConnectionId remoteId,\n-      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n+  private Connection getConnection(\n+      final ConnectionId remoteId,\n+      Call call, final int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n       throws IOException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n-    do {\n-      synchronized (connections) {\n-        connection \u003d connections.get(remoteId);\n-        if (connection \u003d\u003d null) {\n-          connection \u003d new Connection(remoteId, serviceClass);\n-          connections.put(remoteId, connection);\n-        }\n+    while(true) {\n+      try {\n+        connection \u003d connections.get(remoteId, new Callable\u003cConnection\u003e() {\n+          @Override\n+          public Connection call() throws Exception {\n+            return new Connection(remoteId, serviceClass);\n+          }\n+        });\n+      } catch (ExecutionException e) {\n+        throw new IOException(e);\n       }\n-    } while (!connection.addCall(call));\n+      if (connection.addCall(call)) {\n+        break;\n+      } else {\n+        connections.invalidate(remoteId);\n+      }\n+    }\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams(fallbackToSimpleAuth);\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(\n      final ConnectionId remoteId,\n      Call call, final int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n      throws IOException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    while(true) {\n      try {\n        connection \u003d connections.get(remoteId, new Callable\u003cConnection\u003e() {\n          @Override\n          public Connection call() throws Exception {\n            return new Connection(remoteId, serviceClass);\n          }\n        });\n      } catch (ExecutionException e) {\n        throw new IOException(e);\n      }\n      if (connection.addCall(call)) {\n        break;\n      } else {\n        connections.invalidate(remoteId);\n      }\n    }\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams(fallbackToSimpleAuth);\n    return connection;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {
+            "oldValue": "[remoteId-ConnectionId, call-Call, serviceClass-int, fallbackToSimpleAuth-AtomicBoolean]",
+            "newValue": "[remoteId-ConnectionId(modifiers-final), call-Call, serviceClass-int(modifiers-final), fallbackToSimpleAuth-AtomicBoolean]"
+          }
+        }
+      ]
+    },
+    "f85cc14eb49a46e81d2edcdc1ffe4d0852f193a5": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-7073. Allow falling back to a non-SASL connection on DataTransferProtocol in several edge cases. Contributed by Chris Nauroth.\n",
+      "commitDate": "19/09/14 9:23 PM",
+      "commitName": "f85cc14eb49a46e81d2edcdc1ffe4d0852f193a5",
+      "commitAuthor": "cnauroth",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-7073. Allow falling back to a non-SASL connection on DataTransferProtocol in several edge cases. Contributed by Chris Nauroth.\n",
+          "commitDate": "19/09/14 9:23 PM",
+          "commitName": "f85cc14eb49a46e81d2edcdc1ffe4d0852f193a5",
+          "commitAuthor": "cnauroth",
+          "commitDateOld": "27/08/14 2:12 PM",
+          "commitNameOld": "6962510f729717f776929708813f99a28e582f34",
+          "commitAuthorOld": "Colin Patrick Mccabe",
+          "daysBetweenCommits": 23.3,
+          "commitsBetweenForRepo": 247,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n   private Connection getConnection(ConnectionId remoteId,\n-      Call call, int serviceClass) throws IOException {\n+      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n+      throws IOException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n           connection \u003d new Connection(remoteId, serviceClass);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n-    connection.setupIOstreams();\n+    connection.setupIOstreams(fallbackToSimpleAuth);\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n      throws IOException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId, serviceClass);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams(fallbackToSimpleAuth);\n    return connection;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {
+            "oldValue": "[remoteId-ConnectionId, call-Call, serviceClass-int]",
+            "newValue": "[remoteId-ConnectionId, call-Call, serviceClass-int, fallbackToSimpleAuth-AtomicBoolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7073. Allow falling back to a non-SASL connection on DataTransferProtocol in several edge cases. Contributed by Chris Nauroth.\n",
+          "commitDate": "19/09/14 9:23 PM",
+          "commitName": "f85cc14eb49a46e81d2edcdc1ffe4d0852f193a5",
+          "commitAuthor": "cnauroth",
+          "commitDateOld": "27/08/14 2:12 PM",
+          "commitNameOld": "6962510f729717f776929708813f99a28e582f34",
+          "commitAuthorOld": "Colin Patrick Mccabe",
+          "daysBetweenCommits": 23.3,
+          "commitsBetweenForRepo": 247,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n   private Connection getConnection(ConnectionId remoteId,\n-      Call call, int serviceClass) throws IOException {\n+      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n+      throws IOException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n           connection \u003d new Connection(remoteId, serviceClass);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n-    connection.setupIOstreams();\n+    connection.setupIOstreams(fallbackToSimpleAuth);\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n      Call call, int serviceClass, AtomicBoolean fallbackToSimpleAuth)\n      throws IOException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId, serviceClass);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams(fallbackToSimpleAuth);\n    return connection;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "3eb61be352589491117ac2781bb18f55988a8084": {
+      "type": "Yexceptionschange",
+      "commitMessage": "HADOOP-9754. Remove unnecessary \"throws IOException/InterruptedException\", and fix generic and other javac warnings.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1505610 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "22/07/13 12:22 AM",
+      "commitName": "3eb61be352589491117ac2781bb18f55988a8084",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "19/07/13 2:49 PM",
+      "commitNameOld": "9ff01d626118a97ea4bf2fd72f022e11e69ee17d",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 2.4,
+      "commitsBetweenForRepo": 5,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,28 @@\n   private Connection getConnection(ConnectionId remoteId,\n-                                   Call call, int serviceClass)\n-                                   throws IOException, InterruptedException {\n+      Call call, int serviceClass) throws IOException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n           connection \u003d new Connection(remoteId, serviceClass);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams();\n     return connection;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n      Call call, int serviceClass) throws IOException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId, serviceClass);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+      "extendedDetails": {
+        "oldValue": "[IOException, InterruptedException]",
+        "newValue": "[IOException]"
+      }
+    },
+    "5319818487d5c139de06155834deecb18c10b7a1": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-9194. RPC Support for QoS. (Junping Du via llu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1461370 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "26/03/13 4:29 PM",
+      "commitName": "5319818487d5c139de06155834deecb18c10b7a1",
+      "commitAuthor": "Luke Lu",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-9194. RPC Support for QoS. (Junping Du via llu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1461370 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "26/03/13 4:29 PM",
+          "commitName": "5319818487d5c139de06155834deecb18c10b7a1",
+          "commitAuthor": "Luke Lu",
+          "commitDateOld": "21/03/13 9:41 AM",
+          "commitNameOld": "357472001725e786f28b27560bac8aca54c3c983",
+          "commitAuthorOld": "Sanjay Radia",
+          "daysBetweenCommits": 5.28,
+          "commitsBetweenForRepo": 39,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,29 @@\n   private Connection getConnection(ConnectionId remoteId,\n-                                   Call call)\n+                                   Call call, int serviceClass)\n                                    throws IOException, InterruptedException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n-          connection \u003d new Connection(remoteId);\n+          connection \u003d new Connection(remoteId, serviceClass);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams();\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n                                   Call call, int serviceClass)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId, serviceClass);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {
+            "oldValue": "[remoteId-ConnectionId, call-Call]",
+            "newValue": "[remoteId-ConnectionId, call-Call, serviceClass-int]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-9194. RPC Support for QoS. (Junping Du via llu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1461370 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "26/03/13 4:29 PM",
+          "commitName": "5319818487d5c139de06155834deecb18c10b7a1",
+          "commitAuthor": "Luke Lu",
+          "commitDateOld": "21/03/13 9:41 AM",
+          "commitNameOld": "357472001725e786f28b27560bac8aca54c3c983",
+          "commitAuthorOld": "Sanjay Radia",
+          "daysBetweenCommits": 5.28,
+          "commitsBetweenForRepo": 39,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,29 @@\n   private Connection getConnection(ConnectionId remoteId,\n-                                   Call call)\n+                                   Call call, int serviceClass)\n                                    throws IOException, InterruptedException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n-          connection \u003d new Connection(remoteId);\n+          connection \u003d new Connection(remoteId, serviceClass);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams();\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n                                   Call call, int serviceClass)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId, serviceClass);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n                                   Call call)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+        "newPath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java"
+      }
+    },
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-6671. Use maven for hadoop common builds. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153184 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/08/11 9:37 AM",
+      "commitName": "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "01/08/11 3:53 PM",
+      "commitNameOld": "9bac807cedbcff34e1a144fb475eff267e5ed86d",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n                                   Call call)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+      "path": "hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java",
+      "extendedDetails": {
+        "oldPath": "common/src/java/org/apache/hadoop/ipc/Client.java",
+        "newPath": "hadoop-common/src/main/java/org/apache/hadoop/ipc/Client.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "11/06/11 9:13 PM",
+      "commitNameOld": "a285fb5effe9ba3be4ec5f942afaf5ddd1186151",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n                                   Call call)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+      "path": "common/src/java/org/apache/hadoop/ipc/Client.java",
+      "extendedDetails": {
+        "oldPath": "src/java/org/apache/hadoop/ipc/Client.java",
+        "newPath": "common/src/java/org/apache/hadoop/ipc/Client.java"
+      }
+    },
+    "1c75bcc76baf6bcd2cb700d3efb4e2489b19cae7": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-6907. Rpc client doesn\u0027t use the per-connection conf to figure out server\u0027s Kerberos principal. Contributed by Kan Zhang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@991780 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "01/09/10 5:35 PM",
+      "commitName": "1c75bcc76baf6bcd2cb700d3efb4e2489b19cae7",
+      "commitAuthor": "Hairong Kuang",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-6907. Rpc client doesn\u0027t use the per-connection conf to figure out server\u0027s Kerberos principal. Contributed by Kan Zhang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@991780 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "01/09/10 5:35 PM",
+          "commitName": "1c75bcc76baf6bcd2cb700d3efb4e2489b19cae7",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "28/08/10 3:44 PM",
+          "commitNameOld": "7efb9640be26aabe3878310e82248a1b6b767a9a",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 4.08,
+          "commitsBetweenForRepo": 4,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,34 +1,29 @@\n-  private Connection getConnection(InetSocketAddress addr,\n-                                   Class\u003c?\u003e protocol,\n-                                   UserGroupInformation ticket,\n-                                   int rpcTimeout,\n+  private Connection getConnection(ConnectionId remoteId,\n                                    Call call)\n                                    throws IOException, InterruptedException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n-    ConnectionId remoteId \u003d new ConnectionId(\n-        addr, protocol, ticket, rpcTimeout);\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n           connection \u003d new Connection(remoteId);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams();\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n                                   Call call)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {
+            "oldValue": "[addr-InetSocketAddress, protocol-Class\u003c?\u003e, ticket-UserGroupInformation, rpcTimeout-int, call-Call]",
+            "newValue": "[remoteId-ConnectionId, call-Call]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-6907. Rpc client doesn\u0027t use the per-connection conf to figure out server\u0027s Kerberos principal. Contributed by Kan Zhang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@991780 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "01/09/10 5:35 PM",
+          "commitName": "1c75bcc76baf6bcd2cb700d3efb4e2489b19cae7",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "28/08/10 3:44 PM",
+          "commitNameOld": "7efb9640be26aabe3878310e82248a1b6b767a9a",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 4.08,
+          "commitsBetweenForRepo": 4,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,34 +1,29 @@\n-  private Connection getConnection(InetSocketAddress addr,\n-                                   Class\u003c?\u003e protocol,\n-                                   UserGroupInformation ticket,\n-                                   int rpcTimeout,\n+  private Connection getConnection(ConnectionId remoteId,\n                                    Call call)\n                                    throws IOException, InterruptedException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n-    ConnectionId remoteId \u003d new ConnectionId(\n-        addr, protocol, ticket, rpcTimeout);\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n           connection \u003d new Connection(remoteId);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams();\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(ConnectionId remoteId,\n                                   Call call)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "714e5f7165b101f72a43e8c3fb27be5def93fe42": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-6889. Make RPC to have an option to timeout. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@982681 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "05/08/10 9:39 AM",
+      "commitName": "714e5f7165b101f72a43e8c3fb27be5def93fe42",
+      "commitAuthor": "Hairong Kuang",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-6889. Make RPC to have an option to timeout. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@982681 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "05/08/10 9:39 AM",
+          "commitName": "714e5f7165b101f72a43e8c3fb27be5def93fe42",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "02/08/10 5:51 PM",
+          "commitNameOld": "c47d34a8660923f6f6e21e91aa48ca5780c0ff9f",
+          "commitAuthorOld": "Devaraj Das",
+          "daysBetweenCommits": 2.66,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,34 @@\n   private Connection getConnection(InetSocketAddress addr,\n                                    Class\u003c?\u003e protocol,\n                                    UserGroupInformation ticket,\n+                                   int rpcTimeout,\n                                    Call call)\n                                    throws IOException, InterruptedException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n-    ConnectionId remoteId \u003d new ConnectionId(addr, protocol, ticket);\n+    ConnectionId remoteId \u003d new ConnectionId(\n+        addr, protocol, ticket, rpcTimeout);\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n           connection \u003d new Connection(remoteId);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams();\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(InetSocketAddress addr,\n                                   Class\u003c?\u003e protocol,\n                                   UserGroupInformation ticket,\n                                   int rpcTimeout,\n                                   Call call)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    ConnectionId remoteId \u003d new ConnectionId(\n        addr, protocol, ticket, rpcTimeout);\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {
+            "oldValue": "[addr-InetSocketAddress, protocol-Class\u003c?\u003e, ticket-UserGroupInformation, call-Call]",
+            "newValue": "[addr-InetSocketAddress, protocol-Class\u003c?\u003e, ticket-UserGroupInformation, rpcTimeout-int, call-Call]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-6889. Make RPC to have an option to timeout. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@982681 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "05/08/10 9:39 AM",
+          "commitName": "714e5f7165b101f72a43e8c3fb27be5def93fe42",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "02/08/10 5:51 PM",
+          "commitNameOld": "c47d34a8660923f6f6e21e91aa48ca5780c0ff9f",
+          "commitAuthorOld": "Devaraj Das",
+          "daysBetweenCommits": 2.66,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,34 @@\n   private Connection getConnection(InetSocketAddress addr,\n                                    Class\u003c?\u003e protocol,\n                                    UserGroupInformation ticket,\n+                                   int rpcTimeout,\n                                    Call call)\n                                    throws IOException, InterruptedException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n-    ConnectionId remoteId \u003d new ConnectionId(addr, protocol, ticket);\n+    ConnectionId remoteId \u003d new ConnectionId(\n+        addr, protocol, ticket, rpcTimeout);\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n           connection \u003d new Connection(remoteId);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams();\n     return connection;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Connection getConnection(InetSocketAddress addr,\n                                   Class\u003c?\u003e protocol,\n                                   UserGroupInformation ticket,\n                                   int rpcTimeout,\n                                   Call call)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    ConnectionId remoteId \u003d new ConnectionId(\n        addr, protocol, ticket, rpcTimeout);\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/Client.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "940389afce6a1b9b9e1519aed528cbc444786756": {
+      "type": "Yexceptionschange",
+      "commitMessage": "HADOOP-6419. Adds SASL based authentication to RPC. Contributed by Kan Zhang.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@905860 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/02/10 5:30 PM",
+      "commitName": "940389afce6a1b9b9e1519aed528cbc444786756",
+      "commitAuthor": "Devaraj Das",
+      "commitDateOld": "26/01/10 2:55 PM",
+      "commitNameOld": "34d1b39c7525898b43e44a7c5cbd86768714baf0",
+      "commitAuthorOld": "Hairong Kuang",
+      "daysBetweenCommits": 7.11,
+      "commitsBetweenForRepo": 6,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,32 @@\n   private Connection getConnection(InetSocketAddress addr,\n                                    Class\u003c?\u003e protocol,\n                                    UserGroupInformation ticket,\n                                    Call call)\n-                                   throws IOException {\n+                                   throws IOException, InterruptedException {\n     if (!running.get()) {\n       // the client is stopped\n       throw new IOException(\"The client is stopped\");\n     }\n     Connection connection;\n     /* we could avoid this allocation for each RPC by having a  \n      * connectionsId object and with set() method. We need to manage the\n      * refs for keys in HashMap properly. For now its ok.\n      */\n     ConnectionId remoteId \u003d new ConnectionId(addr, protocol, ticket);\n     do {\n       synchronized (connections) {\n         connection \u003d connections.get(remoteId);\n         if (connection \u003d\u003d null) {\n           connection \u003d new Connection(remoteId);\n           connections.put(remoteId, connection);\n         }\n       }\n     } while (!connection.addCall(call));\n     \n     //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n     //block above. The reason for that is if the server happens to be slow,\n     //it will take longer to establish a connection and that will slow the\n     //entire system down.\n     connection.setupIOstreams();\n     return connection;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Connection getConnection(InetSocketAddress addr,\n                                   Class\u003c?\u003e protocol,\n                                   UserGroupInformation ticket,\n                                   Call call)\n                                   throws IOException, InterruptedException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    ConnectionId remoteId \u003d new ConnectionId(addr, protocol, ticket);\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+      "path": "src/java/org/apache/hadoop/ipc/Client.java",
+      "extendedDetails": {
+        "oldValue": "[IOException]",
+        "newValue": "[IOException, InterruptedException]"
+      }
+    },
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-4687 Moving src directories on branch\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/core/branches/HADOOP-4687/core@776174 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/05/09 9:20 PM",
+      "commitName": "5128a9a453d64bfe1ed978cf9ffed27985eeef36",
+      "commitAuthor": "Owen O\u0027Malley",
+      "diff": "@@ -0,0 +1,32 @@\n+  private Connection getConnection(InetSocketAddress addr,\n+                                   Class\u003c?\u003e protocol,\n+                                   UserGroupInformation ticket,\n+                                   Call call)\n+                                   throws IOException {\n+    if (!running.get()) {\n+      // the client is stopped\n+      throw new IOException(\"The client is stopped\");\n+    }\n+    Connection connection;\n+    /* we could avoid this allocation for each RPC by having a  \n+     * connectionsId object and with set() method. We need to manage the\n+     * refs for keys in HashMap properly. For now its ok.\n+     */\n+    ConnectionId remoteId \u003d new ConnectionId(addr, protocol, ticket);\n+    do {\n+      synchronized (connections) {\n+        connection \u003d connections.get(remoteId);\n+        if (connection \u003d\u003d null) {\n+          connection \u003d new Connection(remoteId);\n+          connections.put(remoteId, connection);\n+        }\n+      }\n+    } while (!connection.addCall(call));\n+    \n+    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n+    //block above. The reason for that is if the server happens to be slow,\n+    //it will take longer to establish a connection and that will slow the\n+    //entire system down.\n+    connection.setupIOstreams();\n+    return connection;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Connection getConnection(InetSocketAddress addr,\n                                   Class\u003c?\u003e protocol,\n                                   UserGroupInformation ticket,\n                                   Call call)\n                                   throws IOException {\n    if (!running.get()) {\n      // the client is stopped\n      throw new IOException(\"The client is stopped\");\n    }\n    Connection connection;\n    /* we could avoid this allocation for each RPC by having a  \n     * connectionsId object and with set() method. We need to manage the\n     * refs for keys in HashMap properly. For now its ok.\n     */\n    ConnectionId remoteId \u003d new ConnectionId(addr, protocol, ticket);\n    do {\n      synchronized (connections) {\n        connection \u003d connections.get(remoteId);\n        if (connection \u003d\u003d null) {\n          connection \u003d new Connection(remoteId);\n          connections.put(remoteId, connection);\n        }\n      }\n    } while (!connection.addCall(call));\n    \n    //we don\u0027t invoke the method below inside \"synchronized (connections)\"\n    //block above. The reason for that is if the server happens to be slow,\n    //it will take longer to establish a connection and that will slow the\n    //entire system down.\n    connection.setupIOstreams();\n    return connection;\n  }",
+      "path": "src/java/org/apache/hadoop/ipc/Client.java"
+    }
+  }
+}

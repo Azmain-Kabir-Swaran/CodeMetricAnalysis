@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSLeafQueue.java",
+  "functionName": "updateStarvedApps",
+  "functionId": "updateStarvedApps",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSLeafQueue.java",
+  "functionStartLine": 284,
+  "functionEndLine": 299,
+  "numCommitsSeen": 69,
+  "timeTaken": 2281,
+  "changeHistory": [
+    "d5b71e4175c13679d451710be150fc461a661263",
+    "6c25dbcdc0517a825b92fb16444aa1d3761e160c",
+    "10468529a9b858bd945e7ecb063c9c1438efa474"
+  ],
+  "changeHistoryShort": {
+    "d5b71e4175c13679d451710be150fc461a661263": "Ymodifierchange",
+    "6c25dbcdc0517a825b92fb16444aa1d3761e160c": "Ybodychange",
+    "10468529a9b858bd945e7ecb063c9c1438efa474": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d5b71e4175c13679d451710be150fc461a661263": {
+      "type": "Ymodifierchange",
+      "commitMessage": "YARN-6246. Identifying starved apps does not need the scheduler writelock\n(Contributed by Karthik Kambatla via Daniel Templeton)\n",
+      "commitDate": "31/05/17 3:48 PM",
+      "commitName": "d5b71e4175c13679d451710be150fc461a661263",
+      "commitAuthor": "Daniel Templeton",
+      "commitDateOld": "10/03/17 4:13 PM",
+      "commitNameOld": "4db9cc70d0178703fb28f451eb84d97f2bf63af8",
+      "commitAuthorOld": "Ray Chiang",
+      "daysBetweenCommits": 81.94,
+      "commitsBetweenForRepo": 446,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,16 @@\n-  private void updateStarvedApps() {\n+  void updateStarvedApps() {\n     // Fetch apps with pending demand\n     TreeSet\u003cFSAppAttempt\u003e appsWithDemand \u003d fetchAppsWithDemand(false);\n \n     // Process apps with fairshare starvation\n     Resource fairShareStarvation \u003d updateStarvedAppsFairshare(appsWithDemand);\n \n     // Compute extent of minshare starvation\n     Resource minShareStarvation \u003d minShareStarvation();\n \n     // Compute minshare starvation that is not subsumed by fairshare starvation\n     Resources.subtractFromNonNegative(minShareStarvation, fairShareStarvation);\n \n     // Assign this minshare to apps with pending demand over fairshare\n     updateStarvedAppsMinshare(appsWithDemand, minShareStarvation);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void updateStarvedApps() {\n    // Fetch apps with pending demand\n    TreeSet\u003cFSAppAttempt\u003e appsWithDemand \u003d fetchAppsWithDemand(false);\n\n    // Process apps with fairshare starvation\n    Resource fairShareStarvation \u003d updateStarvedAppsFairshare(appsWithDemand);\n\n    // Compute extent of minshare starvation\n    Resource minShareStarvation \u003d minShareStarvation();\n\n    // Compute minshare starvation that is not subsumed by fairshare starvation\n    Resources.subtractFromNonNegative(minShareStarvation, fairShareStarvation);\n\n    // Assign this minshare to apps with pending demand over fairshare\n    updateStarvedAppsMinshare(appsWithDemand, minShareStarvation);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSLeafQueue.java",
+      "extendedDetails": {
+        "oldValue": "[private]",
+        "newValue": "[]"
+      }
+    },
+    "6c25dbcdc0517a825b92fb16444aa1d3761e160c": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6163. FS Preemption is a trickle for severely starved applications. (kasha)\n",
+      "commitDate": "15/02/17 11:16 PM",
+      "commitName": "6c25dbcdc0517a825b92fb16444aa1d3761e160c",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "09/02/17 10:23 AM",
+      "commitNameOld": "5fb723bb77722d41df6959eee23e1b0cfeb5584e",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 6.54,
+      "commitsBetweenForRepo": 41,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,40 +1,16 @@\n   private void updateStarvedApps() {\n-    // First identify starved applications and track total amount of\n-    // starvation (in resources)\n-    Resource fairShareStarvation \u003d Resources.clone(none());\n+    // Fetch apps with pending demand\n+    TreeSet\u003cFSAppAttempt\u003e appsWithDemand \u003d fetchAppsWithDemand(false);\n \n-    // Fetch apps with unmet demand sorted by fairshare starvation\n-    TreeSet\u003cFSAppAttempt\u003e appsWithDemand \u003d fetchAppsWithDemand();\n-    for (FSAppAttempt app : appsWithDemand) {\n-      Resource appStarvation \u003d app.fairShareStarvation();\n-      if (!Resources.equals(Resources.none(), appStarvation))  {\n-        context.getStarvedApps().addStarvedApp(app);\n-        Resources.addTo(fairShareStarvation, appStarvation);\n-      } else {\n-        break;\n-      }\n-    }\n+    // Process apps with fairshare starvation\n+    Resource fairShareStarvation \u003d updateStarvedAppsFairshare(appsWithDemand);\n \n     // Compute extent of minshare starvation\n     Resource minShareStarvation \u003d minShareStarvation();\n \n     // Compute minshare starvation that is not subsumed by fairshare starvation\n-    Resources.subtractFrom(minShareStarvation, fairShareStarvation);\n+    Resources.subtractFromNonNegative(minShareStarvation, fairShareStarvation);\n \n-    // Keep adding apps to the starved list until the unmet demand goes over\n-    // the remaining minshare\n-    for (FSAppAttempt app : appsWithDemand) {\n-      if (Resources.greaterThan(policy.getResourceCalculator(),\n-          scheduler.getClusterResource(), minShareStarvation, none())) {\n-        Resource appPendingDemand \u003d\n-            Resources.subtract(app.getDemand(), app.getResourceUsage());\n-        Resources.subtractFrom(minShareStarvation, appPendingDemand);\n-        app.setMinshareStarvation(appPendingDemand);\n-        context.getStarvedApps().addStarvedApp(app);\n-      } else {\n-        // Reset minshare starvation in case we had set it in a previous\n-        // iteration\n-        app.resetMinshareStarvation();\n-      }\n-    }\n+    // Assign this minshare to apps with pending demand over fairshare\n+    updateStarvedAppsMinshare(appsWithDemand, minShareStarvation);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void updateStarvedApps() {\n    // Fetch apps with pending demand\n    TreeSet\u003cFSAppAttempt\u003e appsWithDemand \u003d fetchAppsWithDemand(false);\n\n    // Process apps with fairshare starvation\n    Resource fairShareStarvation \u003d updateStarvedAppsFairshare(appsWithDemand);\n\n    // Compute extent of minshare starvation\n    Resource minShareStarvation \u003d minShareStarvation();\n\n    // Compute minshare starvation that is not subsumed by fairshare starvation\n    Resources.subtractFromNonNegative(minShareStarvation, fairShareStarvation);\n\n    // Assign this minshare to apps with pending demand over fairshare\n    updateStarvedAppsMinshare(appsWithDemand, minShareStarvation);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSLeafQueue.java",
+      "extendedDetails": {}
+    },
+    "10468529a9b858bd945e7ecb063c9c1438efa474": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4752. Improved preemption in FairScheduler. (kasha)\n\nContains:\nYARN-5605. Preempt containers (all on one node) to meet the requirement of starved applications\nYARN-5821. Drop left-over preemption-related code and clean up method visibilities in the Schedulable hierarchy\nYARN-5783. Verify identification of starved applications.\nYARN-5819. Verify fairshare and minshare preemption\nYARN-5885. Cleanup YARN-4752 branch for merge\n\nChange-Id: Iee0962377d019dd64dc69a020725d2eaf360858c\n",
+      "commitDate": "23/11/16 9:48 PM",
+      "commitName": "10468529a9b858bd945e7ecb063c9c1438efa474",
+      "commitAuthor": "Daniel Templeton",
+      "diff": "@@ -0,0 +1,40 @@\n+  private void updateStarvedApps() {\n+    // First identify starved applications and track total amount of\n+    // starvation (in resources)\n+    Resource fairShareStarvation \u003d Resources.clone(none());\n+\n+    // Fetch apps with unmet demand sorted by fairshare starvation\n+    TreeSet\u003cFSAppAttempt\u003e appsWithDemand \u003d fetchAppsWithDemand();\n+    for (FSAppAttempt app : appsWithDemand) {\n+      Resource appStarvation \u003d app.fairShareStarvation();\n+      if (!Resources.equals(Resources.none(), appStarvation))  {\n+        context.getStarvedApps().addStarvedApp(app);\n+        Resources.addTo(fairShareStarvation, appStarvation);\n+      } else {\n+        break;\n+      }\n+    }\n+\n+    // Compute extent of minshare starvation\n+    Resource minShareStarvation \u003d minShareStarvation();\n+\n+    // Compute minshare starvation that is not subsumed by fairshare starvation\n+    Resources.subtractFrom(minShareStarvation, fairShareStarvation);\n+\n+    // Keep adding apps to the starved list until the unmet demand goes over\n+    // the remaining minshare\n+    for (FSAppAttempt app : appsWithDemand) {\n+      if (Resources.greaterThan(policy.getResourceCalculator(),\n+          scheduler.getClusterResource(), minShareStarvation, none())) {\n+        Resource appPendingDemand \u003d\n+            Resources.subtract(app.getDemand(), app.getResourceUsage());\n+        Resources.subtractFrom(minShareStarvation, appPendingDemand);\n+        app.setMinshareStarvation(appPendingDemand);\n+        context.getStarvedApps().addStarvedApp(app);\n+      } else {\n+        // Reset minshare starvation in case we had set it in a previous\n+        // iteration\n+        app.resetMinshareStarvation();\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void updateStarvedApps() {\n    // First identify starved applications and track total amount of\n    // starvation (in resources)\n    Resource fairShareStarvation \u003d Resources.clone(none());\n\n    // Fetch apps with unmet demand sorted by fairshare starvation\n    TreeSet\u003cFSAppAttempt\u003e appsWithDemand \u003d fetchAppsWithDemand();\n    for (FSAppAttempt app : appsWithDemand) {\n      Resource appStarvation \u003d app.fairShareStarvation();\n      if (!Resources.equals(Resources.none(), appStarvation))  {\n        context.getStarvedApps().addStarvedApp(app);\n        Resources.addTo(fairShareStarvation, appStarvation);\n      } else {\n        break;\n      }\n    }\n\n    // Compute extent of minshare starvation\n    Resource minShareStarvation \u003d minShareStarvation();\n\n    // Compute minshare starvation that is not subsumed by fairshare starvation\n    Resources.subtractFrom(minShareStarvation, fairShareStarvation);\n\n    // Keep adding apps to the starved list until the unmet demand goes over\n    // the remaining minshare\n    for (FSAppAttempt app : appsWithDemand) {\n      if (Resources.greaterThan(policy.getResourceCalculator(),\n          scheduler.getClusterResource(), minShareStarvation, none())) {\n        Resource appPendingDemand \u003d\n            Resources.subtract(app.getDemand(), app.getResourceUsage());\n        Resources.subtractFrom(minShareStarvation, appPendingDemand);\n        app.setMinshareStarvation(appPendingDemand);\n        context.getStarvedApps().addStarvedApp(app);\n      } else {\n        // Reset minshare starvation in case we had set it in a previous\n        // iteration\n        app.resetMinshareStarvation();\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSLeafQueue.java"
+    }
+  }
+}

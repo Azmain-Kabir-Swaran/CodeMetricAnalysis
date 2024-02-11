@@ -1,0 +1,100 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AUtils.java",
+  "functionName": "translateDynamoDBException",
+  "functionId": "translateDynamoDBException___path-String(modifiers-final)__message-String(modifiers-final)__ddbException-AmazonDynamoDBException(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+  "functionStartLine": 433,
+  "functionEndLine": 466,
+  "numCommitsSeen": 82,
+  "timeTaken": 3426,
+  "changeHistory": [
+    "da9a39eed138210de29b59b90c449b28da1c04f9",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "da9a39eed138210de29b59b90c449b28da1c04f9": "Ymultichange(Yparameterchange,Ybodychange,Yparametermetachange)",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "da9a39eed138210de29b59b90c449b28da1c04f9": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange,Yparametermetachange)",
+      "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+      "commitDate": "08/08/18 10:57 PM",
+      "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+          "commitDate": "08/08/18 10:57 PM",
+          "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "27/06/18 10:37 PM",
+          "commitNameOld": "2b2399d623539ab68e71a38fa9fbfc9a405bddb8",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 42.01,
+          "commitsBetweenForRepo": 267,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,34 @@\n-  public static IOException translateDynamoDBException(String message,\n-      AmazonDynamoDBException ex) {\n-    if (isThrottleException(ex)) {\n-      return new AWSServiceThrottledException(message, ex);\n+  public static IOException translateDynamoDBException(final String path,\n+      final String message,\n+      final AmazonDynamoDBException ddbException) {\n+    if (isThrottleException(ddbException)) {\n+      return new AWSServiceThrottledException(message, ddbException);\n     }\n-    if (ex instanceof ResourceNotFoundException) {\n+    if (ddbException instanceof ResourceNotFoundException) {\n       return (FileNotFoundException) new FileNotFoundException(message)\n-          .initCause(ex);\n+          .initCause(ddbException);\n     }\n-    return new AWSServiceIOException(message, ex);\n+    final int statusCode \u003d ddbException.getStatusCode();\n+    final String errorCode \u003d ddbException.getErrorCode();\n+    IOException result \u003d null;\n+    // 400 gets used a lot by DDB\n+    if (statusCode \u003d\u003d 400) {\n+      switch (errorCode) {\n+      case \"AccessDeniedException\":\n+        result \u003d (IOException) new AccessDeniedException(\n+            path,\n+            null,\n+            ddbException.toString())\n+            .initCause(ddbException);\n+        break;\n+\n+      default:\n+        result \u003d new AWSBadRequestException(message, ddbException);\n+      }\n+\n+    }\n+    if (result \u003d\u003d  null) {\n+      result \u003d new AWSServiceIOException(message, ddbException);\n+    }\n+    return result;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static IOException translateDynamoDBException(final String path,\n      final String message,\n      final AmazonDynamoDBException ddbException) {\n    if (isThrottleException(ddbException)) {\n      return new AWSServiceThrottledException(message, ddbException);\n    }\n    if (ddbException instanceof ResourceNotFoundException) {\n      return (FileNotFoundException) new FileNotFoundException(message)\n          .initCause(ddbException);\n    }\n    final int statusCode \u003d ddbException.getStatusCode();\n    final String errorCode \u003d ddbException.getErrorCode();\n    IOException result \u003d null;\n    // 400 gets used a lot by DDB\n    if (statusCode \u003d\u003d 400) {\n      switch (errorCode) {\n      case \"AccessDeniedException\":\n        result \u003d (IOException) new AccessDeniedException(\n            path,\n            null,\n            ddbException.toString())\n            .initCause(ddbException);\n        break;\n\n      default:\n        result \u003d new AWSBadRequestException(message, ddbException);\n      }\n\n    }\n    if (result \u003d\u003d  null) {\n      result \u003d new AWSServiceIOException(message, ddbException);\n    }\n    return result;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {
+            "oldValue": "[message-String, ex-AmazonDynamoDBException]",
+            "newValue": "[path-String(modifiers-final), message-String(modifiers-final), ddbException-AmazonDynamoDBException(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+          "commitDate": "08/08/18 10:57 PM",
+          "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "27/06/18 10:37 PM",
+          "commitNameOld": "2b2399d623539ab68e71a38fa9fbfc9a405bddb8",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 42.01,
+          "commitsBetweenForRepo": 267,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,34 @@\n-  public static IOException translateDynamoDBException(String message,\n-      AmazonDynamoDBException ex) {\n-    if (isThrottleException(ex)) {\n-      return new AWSServiceThrottledException(message, ex);\n+  public static IOException translateDynamoDBException(final String path,\n+      final String message,\n+      final AmazonDynamoDBException ddbException) {\n+    if (isThrottleException(ddbException)) {\n+      return new AWSServiceThrottledException(message, ddbException);\n     }\n-    if (ex instanceof ResourceNotFoundException) {\n+    if (ddbException instanceof ResourceNotFoundException) {\n       return (FileNotFoundException) new FileNotFoundException(message)\n-          .initCause(ex);\n+          .initCause(ddbException);\n     }\n-    return new AWSServiceIOException(message, ex);\n+    final int statusCode \u003d ddbException.getStatusCode();\n+    final String errorCode \u003d ddbException.getErrorCode();\n+    IOException result \u003d null;\n+    // 400 gets used a lot by DDB\n+    if (statusCode \u003d\u003d 400) {\n+      switch (errorCode) {\n+      case \"AccessDeniedException\":\n+        result \u003d (IOException) new AccessDeniedException(\n+            path,\n+            null,\n+            ddbException.toString())\n+            .initCause(ddbException);\n+        break;\n+\n+      default:\n+        result \u003d new AWSBadRequestException(message, ddbException);\n+      }\n+\n+    }\n+    if (result \u003d\u003d  null) {\n+      result \u003d new AWSServiceIOException(message, ddbException);\n+    }\n+    return result;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static IOException translateDynamoDBException(final String path,\n      final String message,\n      final AmazonDynamoDBException ddbException) {\n    if (isThrottleException(ddbException)) {\n      return new AWSServiceThrottledException(message, ddbException);\n    }\n    if (ddbException instanceof ResourceNotFoundException) {\n      return (FileNotFoundException) new FileNotFoundException(message)\n          .initCause(ddbException);\n    }\n    final int statusCode \u003d ddbException.getStatusCode();\n    final String errorCode \u003d ddbException.getErrorCode();\n    IOException result \u003d null;\n    // 400 gets used a lot by DDB\n    if (statusCode \u003d\u003d 400) {\n      switch (errorCode) {\n      case \"AccessDeniedException\":\n        result \u003d (IOException) new AccessDeniedException(\n            path,\n            null,\n            ddbException.toString())\n            .initCause(ddbException);\n        break;\n\n      default:\n        result \u003d new AWSBadRequestException(message, ddbException);\n      }\n\n    }\n    if (result \u003d\u003d  null) {\n      result \u003d new AWSServiceIOException(message, ddbException);\n    }\n    return result;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+          "commitDate": "08/08/18 10:57 PM",
+          "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "27/06/18 10:37 PM",
+          "commitNameOld": "2b2399d623539ab68e71a38fa9fbfc9a405bddb8",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 42.01,
+          "commitsBetweenForRepo": 267,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,34 @@\n-  public static IOException translateDynamoDBException(String message,\n-      AmazonDynamoDBException ex) {\n-    if (isThrottleException(ex)) {\n-      return new AWSServiceThrottledException(message, ex);\n+  public static IOException translateDynamoDBException(final String path,\n+      final String message,\n+      final AmazonDynamoDBException ddbException) {\n+    if (isThrottleException(ddbException)) {\n+      return new AWSServiceThrottledException(message, ddbException);\n     }\n-    if (ex instanceof ResourceNotFoundException) {\n+    if (ddbException instanceof ResourceNotFoundException) {\n       return (FileNotFoundException) new FileNotFoundException(message)\n-          .initCause(ex);\n+          .initCause(ddbException);\n     }\n-    return new AWSServiceIOException(message, ex);\n+    final int statusCode \u003d ddbException.getStatusCode();\n+    final String errorCode \u003d ddbException.getErrorCode();\n+    IOException result \u003d null;\n+    // 400 gets used a lot by DDB\n+    if (statusCode \u003d\u003d 400) {\n+      switch (errorCode) {\n+      case \"AccessDeniedException\":\n+        result \u003d (IOException) new AccessDeniedException(\n+            path,\n+            null,\n+            ddbException.toString())\n+            .initCause(ddbException);\n+        break;\n+\n+      default:\n+        result \u003d new AWSBadRequestException(message, ddbException);\n+      }\n+\n+    }\n+    if (result \u003d\u003d  null) {\n+      result \u003d new AWSServiceIOException(message, ddbException);\n+    }\n+    return result;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static IOException translateDynamoDBException(final String path,\n      final String message,\n      final AmazonDynamoDBException ddbException) {\n    if (isThrottleException(ddbException)) {\n      return new AWSServiceThrottledException(message, ddbException);\n    }\n    if (ddbException instanceof ResourceNotFoundException) {\n      return (FileNotFoundException) new FileNotFoundException(message)\n          .initCause(ddbException);\n    }\n    final int statusCode \u003d ddbException.getStatusCode();\n    final String errorCode \u003d ddbException.getErrorCode();\n    IOException result \u003d null;\n    // 400 gets used a lot by DDB\n    if (statusCode \u003d\u003d 400) {\n      switch (errorCode) {\n      case \"AccessDeniedException\":\n        result \u003d (IOException) new AccessDeniedException(\n            path,\n            null,\n            ddbException.toString())\n            .initCause(ddbException);\n        break;\n\n      default:\n        result \u003d new AWSBadRequestException(message, ddbException);\n      }\n\n    }\n    if (result \u003d\u003d  null) {\n      result \u003d new AWSServiceIOException(message, ddbException);\n    }\n    return result;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {
+            "oldValue": "[message-String, ex-AmazonDynamoDBException]",
+            "newValue": "[path-String(modifiers-final), message-String(modifiers-final), ddbException-AmazonDynamoDBException(modifiers-final)]"
+          }
+        }
+      ]
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,11 @@\n+  public static IOException translateDynamoDBException(String message,\n+      AmazonDynamoDBException ex) {\n+    if (isThrottleException(ex)) {\n+      return new AWSServiceThrottledException(message, ex);\n+    }\n+    if (ex instanceof ResourceNotFoundException) {\n+      return (FileNotFoundException) new FileNotFoundException(message)\n+          .initCause(ex);\n+    }\n+    return new AWSServiceIOException(message, ex);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static IOException translateDynamoDBException(String message,\n      AmazonDynamoDBException ex) {\n    if (isThrottleException(ex)) {\n      return new AWSServiceThrottledException(message, ex);\n    }\n    if (ex instanceof ResourceNotFoundException) {\n      return (FileNotFoundException) new FileNotFoundException(message)\n          .initCause(ex);\n    }\n    return new AWSServiceIOException(message, ex);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java"
+    }
+  }
+}

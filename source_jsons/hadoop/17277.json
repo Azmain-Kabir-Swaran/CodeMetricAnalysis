@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "MembershipNamenodeResolver.java",
+  "functionName": "getNamenodesForNameserviceId",
+  "functionId": "getNamenodesForNameserviceId___nsId-String(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MembershipNamenodeResolver.java",
+  "functionStartLine": 177,
+  "functionEndLine": 223,
+  "numCommitsSeen": 13,
+  "timeTaken": 1754,
+  "changeHistory": [
+    "48269c370c8981244b9d3d5cf1c82a2897ca502e",
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+    "55da7fd7ebe2f3fa1c1c828dda727fddc75a1b81"
+  ],
+  "changeHistoryShort": {
+    "48269c370c8981244b9d3d5cf1c82a2897ca502e": "Ybodychange",
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": "Yfilerename",
+    "55da7fd7ebe2f3fa1c1c828dda727fddc75a1b81": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "48269c370c8981244b9d3d5cf1c82a2897ca502e": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13484. RBF: Disable Nameservices from the federation. Contributed by Inigo Goiri.\n",
+      "commitDate": "26/04/18 1:54 PM",
+      "commitName": "48269c370c8981244b9d3d5cf1c82a2897ca502e",
+      "commitAuthor": "Yiqun Lin",
+      "commitDateOld": "19/03/18 10:13 PM",
+      "commitNameOld": "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+      "commitAuthorOld": "weiy",
+      "daysBetweenCommits": 37.65,
+      "commitsBetweenForRepo": 870,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,47 @@\n   public List\u003c? extends FederationNamenodeContext\u003e getNamenodesForNameserviceId(\n       final String nsId) throws IOException {\n \n     List\u003c? extends FederationNamenodeContext\u003e ret \u003d cacheNS.get(nsId);\n-    if (ret \u003d\u003d null) {\n-      try {\n-        MembershipState partial \u003d MembershipState.newInstance();\n-        partial.setNameserviceId(nsId);\n-        GetNamenodeRegistrationsRequest request \u003d\n-            GetNamenodeRegistrationsRequest.newInstance(partial);\n-\n-        final List\u003cMembershipState\u003e result \u003d\n-            getRecentRegistrationForQuery(request, true, false);\n-        if (result \u003d\u003d null || result.isEmpty()) {\n-          LOG.error(\"Cannot locate eligible NNs for {}\", nsId);\n-          return null;\n-        } else {\n-          cacheNS.put(nsId, result);\n-          ret \u003d result;\n-        }\n-      } catch (StateStoreUnavailableException e) {\n-        LOG.error(\"Cannot get active NN for {}, State Store unavailable\", nsId);\n-      }\n+    if (ret !\u003d null) {\n+      return ret;\n     }\n-    if (ret \u003d\u003d null) {\n+\n+    // Not cached, generate the value\n+    final List\u003cMembershipState\u003e result;\n+    try {\n+      MembershipState partial \u003d MembershipState.newInstance();\n+      partial.setNameserviceId(nsId);\n+      GetNamenodeRegistrationsRequest request \u003d\n+          GetNamenodeRegistrationsRequest.newInstance(partial);\n+      result \u003d getRecentRegistrationForQuery(request, true, false);\n+    } catch (StateStoreUnavailableException e) {\n+      LOG.error(\"Cannot get active NN for {}, State Store unavailable\", nsId);\n       return null;\n     }\n-    return Collections.unmodifiableList(ret);\n+    if (result \u003d\u003d null || result.isEmpty()) {\n+      LOG.error(\"Cannot locate eligible NNs for {}\", nsId);\n+      return null;\n+    }\n+\n+    // Mark disabled name services\n+    try {\n+      Set\u003cString\u003e disabled \u003d\n+          getDisabledNameserviceStore().getDisabledNameservices();\n+      if (disabled \u003d\u003d null) {\n+        LOG.error(\"Cannot get disabled name services\");\n+      } else {\n+        for (MembershipState nn : result) {\n+          if (disabled.contains(nn.getNameserviceId())) {\n+            nn.setState(FederationNamenodeServiceState.DISABLED);\n+          }\n+        }\n+      }\n+    } catch (StateStoreUnavailableException e) {\n+      LOG.error(\"Cannot get disabled name services, State Store unavailable\");\n+    }\n+\n+    // Cache the response\n+    ret \u003d Collections.unmodifiableList(result);\n+    cacheNS.put(nsId, result);\n+    return ret;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public List\u003c? extends FederationNamenodeContext\u003e getNamenodesForNameserviceId(\n      final String nsId) throws IOException {\n\n    List\u003c? extends FederationNamenodeContext\u003e ret \u003d cacheNS.get(nsId);\n    if (ret !\u003d null) {\n      return ret;\n    }\n\n    // Not cached, generate the value\n    final List\u003cMembershipState\u003e result;\n    try {\n      MembershipState partial \u003d MembershipState.newInstance();\n      partial.setNameserviceId(nsId);\n      GetNamenodeRegistrationsRequest request \u003d\n          GetNamenodeRegistrationsRequest.newInstance(partial);\n      result \u003d getRecentRegistrationForQuery(request, true, false);\n    } catch (StateStoreUnavailableException e) {\n      LOG.error(\"Cannot get active NN for {}, State Store unavailable\", nsId);\n      return null;\n    }\n    if (result \u003d\u003d null || result.isEmpty()) {\n      LOG.error(\"Cannot locate eligible NNs for {}\", nsId);\n      return null;\n    }\n\n    // Mark disabled name services\n    try {\n      Set\u003cString\u003e disabled \u003d\n          getDisabledNameserviceStore().getDisabledNameservices();\n      if (disabled \u003d\u003d null) {\n        LOG.error(\"Cannot get disabled name services\");\n      } else {\n        for (MembershipState nn : result) {\n          if (disabled.contains(nn.getNameserviceId())) {\n            nn.setState(FederationNamenodeServiceState.DISABLED);\n          }\n        }\n      }\n    } catch (StateStoreUnavailableException e) {\n      LOG.error(\"Cannot get disabled name services, State Store unavailable\");\n    }\n\n    // Cache the response\n    ret \u003d Collections.unmodifiableList(result);\n    cacheNS.put(nsId, result);\n    return ret;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MembershipNamenodeResolver.java",
+      "extendedDetails": {}
+    },
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-13215. RBF: Move Router to its own module. Contributed by Wei Yan\n",
+      "commitDate": "19/03/18 10:13 PM",
+      "commitName": "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+      "commitAuthor": "weiy",
+      "commitDateOld": "19/03/18 5:19 PM",
+      "commitNameOld": "e65ff1c8be48ef4f04ed96f96ac4caef4974944d",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.2,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public List\u003c? extends FederationNamenodeContext\u003e getNamenodesForNameserviceId(\n      final String nsId) throws IOException {\n\n    List\u003c? extends FederationNamenodeContext\u003e ret \u003d cacheNS.get(nsId);\n    if (ret \u003d\u003d null) {\n      try {\n        MembershipState partial \u003d MembershipState.newInstance();\n        partial.setNameserviceId(nsId);\n        GetNamenodeRegistrationsRequest request \u003d\n            GetNamenodeRegistrationsRequest.newInstance(partial);\n\n        final List\u003cMembershipState\u003e result \u003d\n            getRecentRegistrationForQuery(request, true, false);\n        if (result \u003d\u003d null || result.isEmpty()) {\n          LOG.error(\"Cannot locate eligible NNs for {}\", nsId);\n          return null;\n        } else {\n          cacheNS.put(nsId, result);\n          ret \u003d result;\n        }\n      } catch (StateStoreUnavailableException e) {\n        LOG.error(\"Cannot get active NN for {}, State Store unavailable\", nsId);\n      }\n    }\n    if (ret \u003d\u003d null) {\n      return null;\n    }\n    return Collections.unmodifiableList(ret);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MembershipNamenodeResolver.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MembershipNamenodeResolver.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MembershipNamenodeResolver.java"
+      }
+    },
+    "55da7fd7ebe2f3fa1c1c828dda727fddc75a1b81": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10687. Federation Membership State Store internal API. Contributed by Jason Kace and Inigo Goiri.\n\n(cherry picked from commit 95cae08849d23cf12c5d280c29f90908e6a90d40)\n",
+      "commitDate": "06/10/17 6:50 PM",
+      "commitName": "55da7fd7ebe2f3fa1c1c828dda727fddc75a1b81",
+      "commitAuthor": "Inigo Goiri",
+      "diff": "@@ -0,0 +1,29 @@\n+  public List\u003c? extends FederationNamenodeContext\u003e getNamenodesForNameserviceId(\n+      final String nsId) throws IOException {\n+\n+    List\u003c? extends FederationNamenodeContext\u003e ret \u003d cacheNS.get(nsId);\n+    if (ret \u003d\u003d null) {\n+      try {\n+        MembershipState partial \u003d MembershipState.newInstance();\n+        partial.setNameserviceId(nsId);\n+        GetNamenodeRegistrationsRequest request \u003d\n+            GetNamenodeRegistrationsRequest.newInstance(partial);\n+\n+        final List\u003cMembershipState\u003e result \u003d\n+            getRecentRegistrationForQuery(request, true, false);\n+        if (result \u003d\u003d null || result.isEmpty()) {\n+          LOG.error(\"Cannot locate eligible NNs for {}\", nsId);\n+          return null;\n+        } else {\n+          cacheNS.put(nsId, result);\n+          ret \u003d result;\n+        }\n+      } catch (StateStoreUnavailableException e) {\n+        LOG.error(\"Cannot get active NN for {}, State Store unavailable\", nsId);\n+      }\n+    }\n+    if (ret \u003d\u003d null) {\n+      return null;\n+    }\n+    return Collections.unmodifiableList(ret);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public List\u003c? extends FederationNamenodeContext\u003e getNamenodesForNameserviceId(\n      final String nsId) throws IOException {\n\n    List\u003c? extends FederationNamenodeContext\u003e ret \u003d cacheNS.get(nsId);\n    if (ret \u003d\u003d null) {\n      try {\n        MembershipState partial \u003d MembershipState.newInstance();\n        partial.setNameserviceId(nsId);\n        GetNamenodeRegistrationsRequest request \u003d\n            GetNamenodeRegistrationsRequest.newInstance(partial);\n\n        final List\u003cMembershipState\u003e result \u003d\n            getRecentRegistrationForQuery(request, true, false);\n        if (result \u003d\u003d null || result.isEmpty()) {\n          LOG.error(\"Cannot locate eligible NNs for {}\", nsId);\n          return null;\n        } else {\n          cacheNS.put(nsId, result);\n          ret \u003d result;\n        }\n      } catch (StateStoreUnavailableException e) {\n        LOG.error(\"Cannot get active NN for {}, State Store unavailable\", nsId);\n      }\n    }\n    if (ret \u003d\u003d null) {\n      return null;\n    }\n    return Collections.unmodifiableList(ret);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MembershipNamenodeResolver.java"
+    }
+  }
+}

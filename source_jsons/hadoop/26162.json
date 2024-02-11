@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AMWebServices.java",
+  "functionName": "killJobTaskAttempt",
+  "functionId": "killJobTaskAttempt___ta-TaskAttempt__callerUGI-UserGroupInformation__hsr-HttpServletRequest",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AMWebServices.java",
+  "functionStartLine": 500,
+  "functionEndLine": 541,
+  "numCommitsSeen": 12,
+  "timeTaken": 1359,
+  "changeHistory": [
+    "d18f10ad1b3e497fa1aaaeb85ba055f87d9849f7"
+  ],
+  "changeHistoryShort": {
+    "d18f10ad1b3e497fa1aaaeb85ba055f87d9849f7": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d18f10ad1b3e497fa1aaaeb85ba055f87d9849f7": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-6284. Add Task Attempt State API to MapReduce Application Master REST API. Contributed by Ryu Kobayashi.\n",
+      "commitDate": "07/05/15 11:59 PM",
+      "commitName": "d18f10ad1b3e497fa1aaaeb85ba055f87d9849f7",
+      "commitAuthor": "Tsuyoshi Ozawa",
+      "diff": "@@ -0,0 +1,42 @@\n+  protected Response killJobTaskAttempt(TaskAttempt ta,\n+      UserGroupInformation callerUGI, HttpServletRequest hsr)\n+          throws IOException, InterruptedException {\n+    Preconditions.checkNotNull(ta, \"ta cannot be null\");\n+\n+    String userName \u003d callerUGI.getUserName();\n+    final TaskAttemptId attemptId \u003d ta.getID();\n+    try {\n+      callerUGI\n+          .doAs(new PrivilegedExceptionAction\u003cKillTaskAttemptResponse\u003e() {\n+            @Override\n+            public KillTaskAttemptResponse run()\n+                throws IOException, YarnException {\n+              KillTaskAttemptRequest req \u003d  new KillTaskAttemptRequestPBImpl();\n+              req.setTaskAttemptId(attemptId);\n+              return service.forceKillTaskAttempt(req);\n+            }\n+          });\n+    } catch (UndeclaredThrowableException ue) {\n+      // if the root cause is a permissions issue\n+      // bubble that up to the user\n+      if (ue.getCause() instanceof YarnException) {\n+        YarnException ye \u003d (YarnException) ue.getCause();\n+        if (ye.getCause() instanceof AccessControlException) {\n+          String taId \u003d attemptId.toString();\n+          String msg \u003d\n+              \"Unauthorized attempt to kill task attempt \" + taId\n+                  + \" by remote user \" + userName;\n+          return Response.status(Status.FORBIDDEN).entity(msg).build();\n+        } else {\n+          throw ue;\n+        }\n+      } else {\n+        throw ue;\n+      }\n+    }\n+\n+    JobTaskAttemptState ret \u003d new JobTaskAttemptState();\n+    ret.setState(TaskAttemptState.KILLED.toString());\n+\n+    return Response.status(Status.OK).entity(ret).build();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected Response killJobTaskAttempt(TaskAttempt ta,\n      UserGroupInformation callerUGI, HttpServletRequest hsr)\n          throws IOException, InterruptedException {\n    Preconditions.checkNotNull(ta, \"ta cannot be null\");\n\n    String userName \u003d callerUGI.getUserName();\n    final TaskAttemptId attemptId \u003d ta.getID();\n    try {\n      callerUGI\n          .doAs(new PrivilegedExceptionAction\u003cKillTaskAttemptResponse\u003e() {\n            @Override\n            public KillTaskAttemptResponse run()\n                throws IOException, YarnException {\n              KillTaskAttemptRequest req \u003d  new KillTaskAttemptRequestPBImpl();\n              req.setTaskAttemptId(attemptId);\n              return service.forceKillTaskAttempt(req);\n            }\n          });\n    } catch (UndeclaredThrowableException ue) {\n      // if the root cause is a permissions issue\n      // bubble that up to the user\n      if (ue.getCause() instanceof YarnException) {\n        YarnException ye \u003d (YarnException) ue.getCause();\n        if (ye.getCause() instanceof AccessControlException) {\n          String taId \u003d attemptId.toString();\n          String msg \u003d\n              \"Unauthorized attempt to kill task attempt \" + taId\n                  + \" by remote user \" + userName;\n          return Response.status(Status.FORBIDDEN).entity(msg).build();\n        } else {\n          throw ue;\n        }\n      } else {\n        throw ue;\n      }\n    }\n\n    JobTaskAttemptState ret \u003d new JobTaskAttemptState();\n    ret.setState(TaskAttemptState.KILLED.toString());\n\n    return Response.status(Status.OK).entity(ret).build();\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AMWebServices.java"
+    }
+  }
+}

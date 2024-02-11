@@ -1,0 +1,129 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockManagerSafeMode.java",
+  "functionName": "incrementSafeBlockCount",
+  "functionId": "incrementSafeBlockCount___storageNum-int__storedBlock-BlockInfo",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+  "functionStartLine": 434,
+  "functionEndLine": 458,
+  "numCommitsSeen": 663,
+  "timeTaken": 5130,
+  "changeHistory": [
+    "78bd3b1db9dc9eb533c2379ee71f133ecfc5cdeb",
+    "a49cc74b4c72195dee1dfb6f9548e5e411dff553"
+  ],
+  "changeHistoryShort": {
+    "78bd3b1db9dc9eb533c2379ee71f133ecfc5cdeb": "Ybodychange",
+    "a49cc74b4c72195dee1dfb6f9548e5e411dff553": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparameterchange)"
+  },
+  "changeHistoryDetails": {
+    "78bd3b1db9dc9eb533c2379ee71f133ecfc5cdeb": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13846. Safe blocks counter is not decremented correctly if the block is striped\n(Contributed by Kitti Nanasi via Daniel Templeton)\n\nChange-Id: Id41747a67dc946fdf0dbde90643bb1ea7e9e0f70\n",
+      "commitDate": "12/09/18 11:18 AM",
+      "commitName": "78bd3b1db9dc9eb533c2379ee71f133ecfc5cdeb",
+      "commitAuthor": "Daniel Templeton",
+      "commitDateOld": "05/04/18 9:59 AM",
+      "commitNameOld": "d737bf99d44ce34cd01baad716d23df269267c95",
+      "commitAuthorOld": "Lei Xu",
+      "daysBetweenCommits": 160.06,
+      "commitsBetweenForRepo": 1698,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,25 @@\n   synchronized void incrementSafeBlockCount(int storageNum,\n       BlockInfo storedBlock) {\n     assert namesystem.hasWriteLock();\n     if (status \u003d\u003d BMSafeModeStatus.OFF) {\n       return;\n     }\n \n-    final int safe \u003d storedBlock.isStriped() ?\n+    final int safeNumberOfNodes \u003d storedBlock.isStriped() ?\n         ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n-    if (storageNum \u003d\u003d safe) {\n+    if (storageNum \u003d\u003d safeNumberOfNodes) {\n       this.blockSafe++;\n \n       // Report startup progress only if we haven\u0027t completed startup yet.\n       StartupProgress prog \u003d NameNode.getStartupProgress();\n       if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n         if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n           this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n               STEP_AWAITING_REPORTED_BLOCKS);\n         }\n         this.awaitingReportedBlocksCounter.increment();\n       }\n \n       checkSafeMode();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  synchronized void incrementSafeBlockCount(int storageNum,\n      BlockInfo storedBlock) {\n    assert namesystem.hasWriteLock();\n    if (status \u003d\u003d BMSafeModeStatus.OFF) {\n      return;\n    }\n\n    final int safeNumberOfNodes \u003d storedBlock.isStriped() ?\n        ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n    if (storageNum \u003d\u003d safeNumberOfNodes) {\n      this.blockSafe++;\n\n      // Report startup progress only if we haven\u0027t completed startup yet.\n      StartupProgress prog \u003d NameNode.getStartupProgress();\n      if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n        if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n          this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n              STEP_AWAITING_REPORTED_BLOCKS);\n        }\n        this.awaitingReportedBlocksCounter.increment();\n      }\n\n      checkSafeMode();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+      "extendedDetails": {}
+    },
+    "a49cc74b4c72195dee1dfb6f9548e5e411dff553": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparameterchange)",
+      "commitMessage": "HDFS-9129. Move the safemode block count into BlockManager. Contributed by Mingliang Liu.\n",
+      "commitDate": "01/12/15 4:09 PM",
+      "commitName": "a49cc74b4c72195dee1dfb6f9548e5e411dff553",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-9129. Move the safemode block count into BlockManager. Contributed by Mingliang Liu.\n",
+          "commitDate": "01/12/15 4:09 PM",
+          "commitName": "a49cc74b4c72195dee1dfb6f9548e5e411dff553",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "01/12/15 1:32 PM",
+          "commitNameOld": "58f6f54eeac779428ac995d196b60ffb90563f97",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 0.11,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,25 @@\n-    private synchronized void incrementSafeBlockCount(short storageNum,\n-        BlockInfo storedBlock) {\n-      final int safe \u003d storedBlock.isStriped() ?\n-          ((BlockInfoStriped) storedBlock).getRealDataBlockNum() : safeReplication;\n-      if (storageNum \u003d\u003d safe) {\n-        this.blockSafe++;\n+  synchronized void incrementSafeBlockCount(int storageNum,\n+      BlockInfo storedBlock) {\n+    assert namesystem.hasWriteLock();\n+    if (status \u003d\u003d BMSafeModeStatus.OFF) {\n+      return;\n+    }\n \n-        // Report startup progress only if we haven\u0027t completed startup yet.\n-        StartupProgress prog \u003d NameNode.getStartupProgress();\n-        if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n-          if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n-            this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n+    final int safe \u003d storedBlock.isStriped() ?\n+        ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n+    if (storageNum \u003d\u003d safe) {\n+      this.blockSafe++;\n+\n+      // Report startup progress only if we haven\u0027t completed startup yet.\n+      StartupProgress prog \u003d NameNode.getStartupProgress();\n+      if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n+        if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n+          this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n               STEP_AWAITING_REPORTED_BLOCKS);\n-          }\n-          this.awaitingReportedBlocksCounter.increment();\n         }\n-\n-        checkMode();\n+        this.awaitingReportedBlocksCounter.increment();\n       }\n-    }\n\\ No newline at end of file\n+\n+      checkSafeMode();\n+    }\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized void incrementSafeBlockCount(int storageNum,\n      BlockInfo storedBlock) {\n    assert namesystem.hasWriteLock();\n    if (status \u003d\u003d BMSafeModeStatus.OFF) {\n      return;\n    }\n\n    final int safe \u003d storedBlock.isStriped() ?\n        ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n    if (storageNum \u003d\u003d safe) {\n      this.blockSafe++;\n\n      // Report startup progress only if we haven\u0027t completed startup yet.\n      StartupProgress prog \u003d NameNode.getStartupProgress();\n      if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n        if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n          this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n              STEP_AWAITING_REPORTED_BLOCKS);\n        }\n        this.awaitingReportedBlocksCounter.increment();\n      }\n\n      checkSafeMode();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+            "oldMethodName": "incrementSafeBlockCount",
+            "newMethodName": "incrementSafeBlockCount"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-9129. Move the safemode block count into BlockManager. Contributed by Mingliang Liu.\n",
+          "commitDate": "01/12/15 4:09 PM",
+          "commitName": "a49cc74b4c72195dee1dfb6f9548e5e411dff553",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "01/12/15 1:32 PM",
+          "commitNameOld": "58f6f54eeac779428ac995d196b60ffb90563f97",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 0.11,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,25 @@\n-    private synchronized void incrementSafeBlockCount(short storageNum,\n-        BlockInfo storedBlock) {\n-      final int safe \u003d storedBlock.isStriped() ?\n-          ((BlockInfoStriped) storedBlock).getRealDataBlockNum() : safeReplication;\n-      if (storageNum \u003d\u003d safe) {\n-        this.blockSafe++;\n+  synchronized void incrementSafeBlockCount(int storageNum,\n+      BlockInfo storedBlock) {\n+    assert namesystem.hasWriteLock();\n+    if (status \u003d\u003d BMSafeModeStatus.OFF) {\n+      return;\n+    }\n \n-        // Report startup progress only if we haven\u0027t completed startup yet.\n-        StartupProgress prog \u003d NameNode.getStartupProgress();\n-        if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n-          if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n-            this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n+    final int safe \u003d storedBlock.isStriped() ?\n+        ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n+    if (storageNum \u003d\u003d safe) {\n+      this.blockSafe++;\n+\n+      // Report startup progress only if we haven\u0027t completed startup yet.\n+      StartupProgress prog \u003d NameNode.getStartupProgress();\n+      if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n+        if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n+          this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n               STEP_AWAITING_REPORTED_BLOCKS);\n-          }\n-          this.awaitingReportedBlocksCounter.increment();\n         }\n-\n-        checkMode();\n+        this.awaitingReportedBlocksCounter.increment();\n       }\n-    }\n\\ No newline at end of file\n+\n+      checkSafeMode();\n+    }\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized void incrementSafeBlockCount(int storageNum,\n      BlockInfo storedBlock) {\n    assert namesystem.hasWriteLock();\n    if (status \u003d\u003d BMSafeModeStatus.OFF) {\n      return;\n    }\n\n    final int safe \u003d storedBlock.isStriped() ?\n        ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n    if (storageNum \u003d\u003d safe) {\n      this.blockSafe++;\n\n      // Report startup progress only if we haven\u0027t completed startup yet.\n      StartupProgress prog \u003d NameNode.getStartupProgress();\n      if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n        if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n          this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n              STEP_AWAITING_REPORTED_BLOCKS);\n        }\n        this.awaitingReportedBlocksCounter.increment();\n      }\n\n      checkSafeMode();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+          "extendedDetails": {
+            "oldValue": "[private, synchronized]",
+            "newValue": "[synchronized]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-9129. Move the safemode block count into BlockManager. Contributed by Mingliang Liu.\n",
+          "commitDate": "01/12/15 4:09 PM",
+          "commitName": "a49cc74b4c72195dee1dfb6f9548e5e411dff553",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "01/12/15 1:32 PM",
+          "commitNameOld": "58f6f54eeac779428ac995d196b60ffb90563f97",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 0.11,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,25 @@\n-    private synchronized void incrementSafeBlockCount(short storageNum,\n-        BlockInfo storedBlock) {\n-      final int safe \u003d storedBlock.isStriped() ?\n-          ((BlockInfoStriped) storedBlock).getRealDataBlockNum() : safeReplication;\n-      if (storageNum \u003d\u003d safe) {\n-        this.blockSafe++;\n+  synchronized void incrementSafeBlockCount(int storageNum,\n+      BlockInfo storedBlock) {\n+    assert namesystem.hasWriteLock();\n+    if (status \u003d\u003d BMSafeModeStatus.OFF) {\n+      return;\n+    }\n \n-        // Report startup progress only if we haven\u0027t completed startup yet.\n-        StartupProgress prog \u003d NameNode.getStartupProgress();\n-        if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n-          if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n-            this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n+    final int safe \u003d storedBlock.isStriped() ?\n+        ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n+    if (storageNum \u003d\u003d safe) {\n+      this.blockSafe++;\n+\n+      // Report startup progress only if we haven\u0027t completed startup yet.\n+      StartupProgress prog \u003d NameNode.getStartupProgress();\n+      if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n+        if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n+          this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n               STEP_AWAITING_REPORTED_BLOCKS);\n-          }\n-          this.awaitingReportedBlocksCounter.increment();\n         }\n-\n-        checkMode();\n+        this.awaitingReportedBlocksCounter.increment();\n       }\n-    }\n\\ No newline at end of file\n+\n+      checkSafeMode();\n+    }\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized void incrementSafeBlockCount(int storageNum,\n      BlockInfo storedBlock) {\n    assert namesystem.hasWriteLock();\n    if (status \u003d\u003d BMSafeModeStatus.OFF) {\n      return;\n    }\n\n    final int safe \u003d storedBlock.isStriped() ?\n        ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n    if (storageNum \u003d\u003d safe) {\n      this.blockSafe++;\n\n      // Report startup progress only if we haven\u0027t completed startup yet.\n      StartupProgress prog \u003d NameNode.getStartupProgress();\n      if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n        if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n          this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n              STEP_AWAITING_REPORTED_BLOCKS);\n        }\n        this.awaitingReportedBlocksCounter.increment();\n      }\n\n      checkSafeMode();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-9129. Move the safemode block count into BlockManager. Contributed by Mingliang Liu.\n",
+          "commitDate": "01/12/15 4:09 PM",
+          "commitName": "a49cc74b4c72195dee1dfb6f9548e5e411dff553",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "01/12/15 1:32 PM",
+          "commitNameOld": "58f6f54eeac779428ac995d196b60ffb90563f97",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 0.11,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,25 @@\n-    private synchronized void incrementSafeBlockCount(short storageNum,\n-        BlockInfo storedBlock) {\n-      final int safe \u003d storedBlock.isStriped() ?\n-          ((BlockInfoStriped) storedBlock).getRealDataBlockNum() : safeReplication;\n-      if (storageNum \u003d\u003d safe) {\n-        this.blockSafe++;\n+  synchronized void incrementSafeBlockCount(int storageNum,\n+      BlockInfo storedBlock) {\n+    assert namesystem.hasWriteLock();\n+    if (status \u003d\u003d BMSafeModeStatus.OFF) {\n+      return;\n+    }\n \n-        // Report startup progress only if we haven\u0027t completed startup yet.\n-        StartupProgress prog \u003d NameNode.getStartupProgress();\n-        if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n-          if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n-            this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n+    final int safe \u003d storedBlock.isStriped() ?\n+        ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n+    if (storageNum \u003d\u003d safe) {\n+      this.blockSafe++;\n+\n+      // Report startup progress only if we haven\u0027t completed startup yet.\n+      StartupProgress prog \u003d NameNode.getStartupProgress();\n+      if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n+        if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n+          this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n               STEP_AWAITING_REPORTED_BLOCKS);\n-          }\n-          this.awaitingReportedBlocksCounter.increment();\n         }\n-\n-        checkMode();\n+        this.awaitingReportedBlocksCounter.increment();\n       }\n-    }\n\\ No newline at end of file\n+\n+      checkSafeMode();\n+    }\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized void incrementSafeBlockCount(int storageNum,\n      BlockInfo storedBlock) {\n    assert namesystem.hasWriteLock();\n    if (status \u003d\u003d BMSafeModeStatus.OFF) {\n      return;\n    }\n\n    final int safe \u003d storedBlock.isStriped() ?\n        ((BlockInfoStriped)storedBlock).getRealDataBlockNum() : safeReplication;\n    if (storageNum \u003d\u003d safe) {\n      this.blockSafe++;\n\n      // Report startup progress only if we haven\u0027t completed startup yet.\n      StartupProgress prog \u003d NameNode.getStartupProgress();\n      if (prog.getStatus(Phase.SAFEMODE) !\u003d Status.COMPLETE) {\n        if (this.awaitingReportedBlocksCounter \u003d\u003d null) {\n          this.awaitingReportedBlocksCounter \u003d prog.getCounter(Phase.SAFEMODE,\n              STEP_AWAITING_REPORTED_BLOCKS);\n        }\n        this.awaitingReportedBlocksCounter.increment();\n      }\n\n      checkSafeMode();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+          "extendedDetails": {
+            "oldValue": "[storageNum-short, storedBlock-BlockInfo]",
+            "newValue": "[storageNum-int, storedBlock-BlockInfo]"
+          }
+        }
+      ]
+    }
+  }
+}

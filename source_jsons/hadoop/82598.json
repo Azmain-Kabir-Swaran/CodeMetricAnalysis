@@ -1,0 +1,121 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "JsonSerialization.java",
+  "functionName": "load",
+  "functionId": "load___fs-FileSystem__path-Path",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/JsonSerialization.java",
+  "functionStartLine": 245,
+  "functionEndLine": 257,
+  "numCommitsSeen": 8,
+  "timeTaken": 2909,
+  "changeHistory": [
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+    "1670578018b3210d518408530858a869e37b23cb",
+    "6a326711aa27e84fd4c53937afc5c41a746ec65a"
+  ],
+  "changeHistoryShort": {
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Ymultichange(Ymovefromfile,Yexceptionschange,Ybodychange)",
+    "1670578018b3210d518408530858a869e37b23cb": "Ybodychange",
+    "6a326711aa27e84fd4c53937afc5c41a746ec65a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Ymultichange(Ymovefromfile,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "21/11/17 8:42 PM",
+          "commitNameOld": "782ba3bf9da52699b27405a3f147464975d1df99",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 0.45,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,13 @@\n-  public T load(FileSystem fs, Path path)\n-      throws IOException, JsonParseException, JsonMappingException {\n-    FileStatus status \u003d fs.getFileStatus(path);\n-    long len \u003d status.getLen();\n-    byte[] b \u003d new byte[(int) len];\n-    FSDataInputStream dataInputStream \u003d fs.open(path);\n-    int count \u003d dataInputStream.read(b);\n-    if (count !\u003d len) {\n-      throw new EOFException(path.toString() + \": read finished prematurely\");\n+  public T load(FileSystem fs, Path path) throws IOException {\n+    try (FSDataInputStream dataInputStream \u003d fs.open(path)) {\n+      // throw an EOF exception if there is no data available.\n+      if (dataInputStream.available() \u003d\u003d 0) {\n+        throw new EOFException(\"No data in \" + path);\n+      }\n+      return fromJsonStream(dataInputStream);\n+    } catch (JsonProcessingException e) {\n+      throw new IOException(\n+          String.format(\"Failed to read JSON file \\\"%s\\\": %s\", path, e),\n+          e);\n     }\n-    return fromBytes(path.toString(), b);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public T load(FileSystem fs, Path path) throws IOException {\n    try (FSDataInputStream dataInputStream \u003d fs.open(path)) {\n      // throw an EOF exception if there is no data available.\n      if (dataInputStream.available() \u003d\u003d 0) {\n        throw new EOFException(\"No data in \" + path);\n      }\n      return fromJsonStream(dataInputStream);\n    } catch (JsonProcessingException e) {\n      throw new IOException(\n          String.format(\"Failed to read JSON file \\\"%s\\\": %s\", path, e),\n          e);\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/JsonSerialization.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/client/binding/JsonSerDeser.java",
+            "newPath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/JsonSerialization.java",
+            "oldMethodName": "load",
+            "newMethodName": "load"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "21/11/17 8:42 PM",
+          "commitNameOld": "782ba3bf9da52699b27405a3f147464975d1df99",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 0.45,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,13 @@\n-  public T load(FileSystem fs, Path path)\n-      throws IOException, JsonParseException, JsonMappingException {\n-    FileStatus status \u003d fs.getFileStatus(path);\n-    long len \u003d status.getLen();\n-    byte[] b \u003d new byte[(int) len];\n-    FSDataInputStream dataInputStream \u003d fs.open(path);\n-    int count \u003d dataInputStream.read(b);\n-    if (count !\u003d len) {\n-      throw new EOFException(path.toString() + \": read finished prematurely\");\n+  public T load(FileSystem fs, Path path) throws IOException {\n+    try (FSDataInputStream dataInputStream \u003d fs.open(path)) {\n+      // throw an EOF exception if there is no data available.\n+      if (dataInputStream.available() \u003d\u003d 0) {\n+        throw new EOFException(\"No data in \" + path);\n+      }\n+      return fromJsonStream(dataInputStream);\n+    } catch (JsonProcessingException e) {\n+      throw new IOException(\n+          String.format(\"Failed to read JSON file \\\"%s\\\": %s\", path, e),\n+          e);\n     }\n-    return fromBytes(path.toString(), b);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public T load(FileSystem fs, Path path) throws IOException {\n    try (FSDataInputStream dataInputStream \u003d fs.open(path)) {\n      // throw an EOF exception if there is no data available.\n      if (dataInputStream.available() \u003d\u003d 0) {\n        throw new EOFException(\"No data in \" + path);\n      }\n      return fromJsonStream(dataInputStream);\n    } catch (JsonProcessingException e) {\n      throw new IOException(\n          String.format(\"Failed to read JSON file \\\"%s\\\": %s\", path, e),\n          e);\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/JsonSerialization.java",
+          "extendedDetails": {
+            "oldValue": "[IOException, JsonParseException, JsonMappingException]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "21/11/17 8:42 PM",
+          "commitNameOld": "782ba3bf9da52699b27405a3f147464975d1df99",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 0.45,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,13 @@\n-  public T load(FileSystem fs, Path path)\n-      throws IOException, JsonParseException, JsonMappingException {\n-    FileStatus status \u003d fs.getFileStatus(path);\n-    long len \u003d status.getLen();\n-    byte[] b \u003d new byte[(int) len];\n-    FSDataInputStream dataInputStream \u003d fs.open(path);\n-    int count \u003d dataInputStream.read(b);\n-    if (count !\u003d len) {\n-      throw new EOFException(path.toString() + \": read finished prematurely\");\n+  public T load(FileSystem fs, Path path) throws IOException {\n+    try (FSDataInputStream dataInputStream \u003d fs.open(path)) {\n+      // throw an EOF exception if there is no data available.\n+      if (dataInputStream.available() \u003d\u003d 0) {\n+        throw new EOFException(\"No data in \" + path);\n+      }\n+      return fromJsonStream(dataInputStream);\n+    } catch (JsonProcessingException e) {\n+      throw new IOException(\n+          String.format(\"Failed to read JSON file \\\"%s\\\": %s\", path, e),\n+          e);\n     }\n-    return fromBytes(path.toString(), b);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public T load(FileSystem fs, Path path) throws IOException {\n    try (FSDataInputStream dataInputStream \u003d fs.open(path)) {\n      // throw an EOF exception if there is no data available.\n      if (dataInputStream.available() \u003d\u003d 0) {\n        throw new EOFException(\"No data in \" + path);\n      }\n      return fromJsonStream(dataInputStream);\n    } catch (JsonProcessingException e) {\n      throw new IOException(\n          String.format(\"Failed to read JSON file \\\"%s\\\": %s\", path, e),\n          e);\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/JsonSerialization.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "1670578018b3210d518408530858a869e37b23cb": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-2768 Improved Yarn Registry service record structure (stevel)\n",
+      "commitDate": "06/11/14 12:22 PM",
+      "commitName": "1670578018b3210d518408530858a869e37b23cb",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "08/10/14 1:02 PM",
+      "commitNameOld": "6a326711aa27e84fd4c53937afc5c41a746ec65a",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 29.01,
+      "commitsBetweenForRepo": 281,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,12 @@\n   public T load(FileSystem fs, Path path)\n       throws IOException, JsonParseException, JsonMappingException {\n     FileStatus status \u003d fs.getFileStatus(path);\n     long len \u003d status.getLen();\n     byte[] b \u003d new byte[(int) len];\n     FSDataInputStream dataInputStream \u003d fs.open(path);\n     int count \u003d dataInputStream.read(b);\n     if (count !\u003d len) {\n       throw new EOFException(path.toString() + \": read finished prematurely\");\n     }\n-    return fromBytes(path.toString(), b, 0);\n+    return fromBytes(path.toString(), b);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public T load(FileSystem fs, Path path)\n      throws IOException, JsonParseException, JsonMappingException {\n    FileStatus status \u003d fs.getFileStatus(path);\n    long len \u003d status.getLen();\n    byte[] b \u003d new byte[(int) len];\n    FSDataInputStream dataInputStream \u003d fs.open(path);\n    int count \u003d dataInputStream.read(b);\n    if (count !\u003d len) {\n      throw new EOFException(path.toString() + \": read finished prematurely\");\n    }\n    return fromBytes(path.toString(), b);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/client/binding/JsonSerDeser.java",
+      "extendedDetails": {}
+    },
+    "6a326711aa27e84fd4c53937afc5c41a746ec65a": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-913 service registry: YARN-2652 add hadoop-yarn-registry package under hadoop-yarn\n",
+      "commitDate": "08/10/14 1:02 PM",
+      "commitName": "6a326711aa27e84fd4c53937afc5c41a746ec65a",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,12 @@\n+  public T load(FileSystem fs, Path path)\n+      throws IOException, JsonParseException, JsonMappingException {\n+    FileStatus status \u003d fs.getFileStatus(path);\n+    long len \u003d status.getLen();\n+    byte[] b \u003d new byte[(int) len];\n+    FSDataInputStream dataInputStream \u003d fs.open(path);\n+    int count \u003d dataInputStream.read(b);\n+    if (count !\u003d len) {\n+      throw new EOFException(path.toString() + \": read finished prematurely\");\n+    }\n+    return fromBytes(path.toString(), b, 0);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public T load(FileSystem fs, Path path)\n      throws IOException, JsonParseException, JsonMappingException {\n    FileStatus status \u003d fs.getFileStatus(path);\n    long len \u003d status.getLen();\n    byte[] b \u003d new byte[(int) len];\n    FSDataInputStream dataInputStream \u003d fs.open(path);\n    int count \u003d dataInputStream.read(b);\n    if (count !\u003d len) {\n      throw new EOFException(path.toString() + \": read finished prematurely\");\n    }\n    return fromBytes(path.toString(), b, 0);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/client/binding/JsonSerDeser.java"
+    }
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NonAppendableFSNodeLabelStore.java",
+  "functionName": "writeNewMirror",
+  "functionId": "writeNewMirror",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/nodelabels/NonAppendableFSNodeLabelStore.java",
+  "functionStartLine": 92,
+  "functionEndLine": 117,
+  "numCommitsSeen": 7,
+  "timeTaken": 1681,
+  "changeHistory": [
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+    "6f4bc49c6d153e03edcc9b3a796fb1ccc95334b0",
+    "5af572b6443715b7a741296c1bd520a1840f9a7c",
+    "e84d6ca2df775bb4c93f6c08b345ac30b3a4525b"
+  ],
+  "changeHistoryShort": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": "Ybodychange",
+    "6f4bc49c6d153e03edcc9b3a796fb1ccc95334b0": "Ybodychange",
+    "5af572b6443715b7a741296c1bd520a1840f9a7c": "Ybodychange",
+    "e84d6ca2df775bb4c93f6c08b345ac30b3a4525b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9341.  Fixed enentrant lock usage in YARN project.\n            Contributed by Prabhu Joseph\n",
+      "commitDate": "07/03/19 1:47 PM",
+      "commitName": "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "03/03/19 11:59 PM",
+      "commitNameOld": "bd8d299ded742813cabd4b4e7ce1e33e0d1f9509",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 3.58,
+      "commitsBetweenForRepo": 49,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,26 @@\n   private void writeNewMirror() throws IOException {\n     ReentrantReadWriteLock.ReadLock readLock \u003d manager.readLock;\n+    // Acquire readlock to make sure we get cluster node labels and\n+    // node-to-labels mapping atomically.\n+    readLock.lock();\n     try {\n-      // Acquire readlock to make sure we get cluster node labels and\n-      // node-to-labels mapping atomically.\n-      readLock.lock();\n       // Write mirror to mirror.new.tmp file\n       Path newTmpPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new.tmp\");\n       try (FSDataOutputStream os \u003d fs.create(newTmpPath, true)) {\n         StoreOp op \u003d FSStoreOpHandler.getMirrorOp(getStoreType());\n         op.write(os, manager);\n       }\n       \n       // Rename mirror.new.tmp to mirror.new (will remove .new if it\u0027s existed)\n       Path newPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new\"); \n       fs.delete(newPath, false);\n       fs.rename(newTmpPath, newPath);\n       \n       // Remove existing mirror and rename mirror.new to mirror\n       Path mirrorPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME);\n       fs.delete(mirrorPath, false);\n       fs.rename(newPath, mirrorPath);\n     } finally {\n       readLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void writeNewMirror() throws IOException {\n    ReentrantReadWriteLock.ReadLock readLock \u003d manager.readLock;\n    // Acquire readlock to make sure we get cluster node labels and\n    // node-to-labels mapping atomically.\n    readLock.lock();\n    try {\n      // Write mirror to mirror.new.tmp file\n      Path newTmpPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new.tmp\");\n      try (FSDataOutputStream os \u003d fs.create(newTmpPath, true)) {\n        StoreOp op \u003d FSStoreOpHandler.getMirrorOp(getStoreType());\n        op.write(os, manager);\n      }\n      \n      // Rename mirror.new.tmp to mirror.new (will remove .new if it\u0027s existed)\n      Path newPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new\"); \n      fs.delete(newPath, false);\n      fs.rename(newTmpPath, newPath);\n      \n      // Remove existing mirror and rename mirror.new to mirror\n      Path mirrorPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME);\n      fs.delete(mirrorPath, false);\n      fs.rename(newPath, mirrorPath);\n    } finally {\n      readLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/nodelabels/NonAppendableFSNodeLabelStore.java",
+      "extendedDetails": {}
+    },
+    "6f4bc49c6d153e03edcc9b3a796fb1ccc95334b0": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7988. Refactor FSNodeLabelStore code for Node Attributes store support. Contributed by Bibin A Chundatt.\n",
+      "commitDate": "12/09/18 3:31 AM",
+      "commitName": "6f4bc49c6d153e03edcc9b3a796fb1ccc95334b0",
+      "commitAuthor": "Sunil G",
+      "commitDateOld": "15/11/16 10:57 AM",
+      "commitNameOld": "5af572b6443715b7a741296c1bd520a1840f9a7c",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 665.65,
+      "commitsBetweenForRepo": 4995,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,37 +1,26 @@\n   private void writeNewMirror() throws IOException {\n-    ReentrantReadWriteLock.ReadLock readLock \u003d mgr.readLock;\n+    ReentrantReadWriteLock.ReadLock readLock \u003d manager.readLock;\n     try {\n       // Acquire readlock to make sure we get cluster node labels and\n       // node-to-labels mapping atomically.\n       readLock.lock();\n-      List\u003cNodeLabel\u003e nodeLabels \u003d mgr.getClusterNodeLabels();\n-      Map\u003cNodeId, Set\u003cString\u003e\u003e nodeToLabels \u003d mgr.getNodeLabels();\n-      \n       // Write mirror to mirror.new.tmp file\n-      Path newTmpPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new.tmp\"); \n-      FSDataOutputStream os \u003d fs\n-          .create(newTmpPath, true);\n-      ((AddToClusterNodeLabelsRequestPBImpl) AddToClusterNodeLabelsRequest\n-          .newInstance(nodeLabels)).getProto().writeDelimitedTo(os);\n-\n-      if (mgr.isCentralizedConfiguration()) {\n-        // Only save node-to-labels mapping while using centralized configuration\n-        ((ReplaceLabelsOnNodeRequestPBImpl) ReplaceLabelsOnNodeRequest\n-            .newInstance(nodeToLabels)).getProto().writeDelimitedTo(os);\n+      Path newTmpPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new.tmp\");\n+      try (FSDataOutputStream os \u003d fs.create(newTmpPath, true)) {\n+        StoreOp op \u003d FSStoreOpHandler.getMirrorOp(getStoreType());\n+        op.write(os, manager);\n       }\n       \n-      os.close();\n-      \n       // Rename mirror.new.tmp to mirror.new (will remove .new if it\u0027s existed)\n       Path newPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new\"); \n       fs.delete(newPath, false);\n       fs.rename(newTmpPath, newPath);\n       \n       // Remove existing mirror and rename mirror.new to mirror\n       Path mirrorPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME);\n       fs.delete(mirrorPath, false);\n       fs.rename(newPath, mirrorPath);\n     } finally {\n       readLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void writeNewMirror() throws IOException {\n    ReentrantReadWriteLock.ReadLock readLock \u003d manager.readLock;\n    try {\n      // Acquire readlock to make sure we get cluster node labels and\n      // node-to-labels mapping atomically.\n      readLock.lock();\n      // Write mirror to mirror.new.tmp file\n      Path newTmpPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new.tmp\");\n      try (FSDataOutputStream os \u003d fs.create(newTmpPath, true)) {\n        StoreOp op \u003d FSStoreOpHandler.getMirrorOp(getStoreType());\n        op.write(os, manager);\n      }\n      \n      // Rename mirror.new.tmp to mirror.new (will remove .new if it\u0027s existed)\n      Path newPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new\"); \n      fs.delete(newPath, false);\n      fs.rename(newTmpPath, newPath);\n      \n      // Remove existing mirror and rename mirror.new to mirror\n      Path mirrorPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME);\n      fs.delete(mirrorPath, false);\n      fs.rename(newPath, mirrorPath);\n    } finally {\n      readLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/nodelabels/NonAppendableFSNodeLabelStore.java",
+      "extendedDetails": {}
+    },
+    "5af572b6443715b7a741296c1bd520a1840f9a7c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13427. Eliminate needless uses of FileSystem#{exists(), isFile(), isDirectory()}. Contributed by Steve Loughran and Mingliang Liu\n",
+      "commitDate": "15/11/16 10:57 AM",
+      "commitName": "5af572b6443715b7a741296c1bd520a1840f9a7c",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "03/12/15 7:07 PM",
+      "commitNameOld": "e84d6ca2df775bb4c93f6c08b345ac30b3a4525b",
+      "commitAuthorOld": "Jian He",
+      "daysBetweenCommits": 347.66,
+      "commitsBetweenForRepo": 2455,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,41 +1,37 @@\n   private void writeNewMirror() throws IOException {\n     ReentrantReadWriteLock.ReadLock readLock \u003d mgr.readLock;\n     try {\n       // Acquire readlock to make sure we get cluster node labels and\n       // node-to-labels mapping atomically.\n       readLock.lock();\n       List\u003cNodeLabel\u003e nodeLabels \u003d mgr.getClusterNodeLabels();\n       Map\u003cNodeId, Set\u003cString\u003e\u003e nodeToLabels \u003d mgr.getNodeLabels();\n       \n       // Write mirror to mirror.new.tmp file\n       Path newTmpPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new.tmp\"); \n       FSDataOutputStream os \u003d fs\n           .create(newTmpPath, true);\n       ((AddToClusterNodeLabelsRequestPBImpl) AddToClusterNodeLabelsRequest\n           .newInstance(nodeLabels)).getProto().writeDelimitedTo(os);\n \n       if (mgr.isCentralizedConfiguration()) {\n         // Only save node-to-labels mapping while using centralized configuration\n         ((ReplaceLabelsOnNodeRequestPBImpl) ReplaceLabelsOnNodeRequest\n             .newInstance(nodeToLabels)).getProto().writeDelimitedTo(os);\n       }\n       \n       os.close();\n       \n       // Rename mirror.new.tmp to mirror.new (will remove .new if it\u0027s existed)\n       Path newPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new\"); \n-      if (fs.exists(newPath)) {\n-        fs.delete(newPath, false);\n-      }\n+      fs.delete(newPath, false);\n       fs.rename(newTmpPath, newPath);\n       \n       // Remove existing mirror and rename mirror.new to mirror\n       Path mirrorPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME);\n-      if (fs.exists(mirrorPath)) {\n-        fs.delete(mirrorPath, false);\n-      }\n+      fs.delete(mirrorPath, false);\n       fs.rename(newPath, mirrorPath);\n     } finally {\n       readLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void writeNewMirror() throws IOException {\n    ReentrantReadWriteLock.ReadLock readLock \u003d mgr.readLock;\n    try {\n      // Acquire readlock to make sure we get cluster node labels and\n      // node-to-labels mapping atomically.\n      readLock.lock();\n      List\u003cNodeLabel\u003e nodeLabels \u003d mgr.getClusterNodeLabels();\n      Map\u003cNodeId, Set\u003cString\u003e\u003e nodeToLabels \u003d mgr.getNodeLabels();\n      \n      // Write mirror to mirror.new.tmp file\n      Path newTmpPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new.tmp\"); \n      FSDataOutputStream os \u003d fs\n          .create(newTmpPath, true);\n      ((AddToClusterNodeLabelsRequestPBImpl) AddToClusterNodeLabelsRequest\n          .newInstance(nodeLabels)).getProto().writeDelimitedTo(os);\n\n      if (mgr.isCentralizedConfiguration()) {\n        // Only save node-to-labels mapping while using centralized configuration\n        ((ReplaceLabelsOnNodeRequestPBImpl) ReplaceLabelsOnNodeRequest\n            .newInstance(nodeToLabels)).getProto().writeDelimitedTo(os);\n      }\n      \n      os.close();\n      \n      // Rename mirror.new.tmp to mirror.new (will remove .new if it\u0027s existed)\n      Path newPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new\"); \n      fs.delete(newPath, false);\n      fs.rename(newTmpPath, newPath);\n      \n      // Remove existing mirror and rename mirror.new to mirror\n      Path mirrorPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME);\n      fs.delete(mirrorPath, false);\n      fs.rename(newPath, mirrorPath);\n    } finally {\n      readLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/nodelabels/NonAppendableFSNodeLabelStore.java",
+      "extendedDetails": {}
+    },
+    "e84d6ca2df775bb4c93f6c08b345ac30b3a4525b": {
+      "type": "Yintroduced",
+      "commitMessage": "Add missing file for YARN-4419\n",
+      "commitDate": "03/12/15 7:07 PM",
+      "commitName": "e84d6ca2df775bb4c93f6c08b345ac30b3a4525b",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,41 @@\n+  private void writeNewMirror() throws IOException {\n+    ReentrantReadWriteLock.ReadLock readLock \u003d mgr.readLock;\n+    try {\n+      // Acquire readlock to make sure we get cluster node labels and\n+      // node-to-labels mapping atomically.\n+      readLock.lock();\n+      List\u003cNodeLabel\u003e nodeLabels \u003d mgr.getClusterNodeLabels();\n+      Map\u003cNodeId, Set\u003cString\u003e\u003e nodeToLabels \u003d mgr.getNodeLabels();\n+      \n+      // Write mirror to mirror.new.tmp file\n+      Path newTmpPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new.tmp\"); \n+      FSDataOutputStream os \u003d fs\n+          .create(newTmpPath, true);\n+      ((AddToClusterNodeLabelsRequestPBImpl) AddToClusterNodeLabelsRequest\n+          .newInstance(nodeLabels)).getProto().writeDelimitedTo(os);\n+\n+      if (mgr.isCentralizedConfiguration()) {\n+        // Only save node-to-labels mapping while using centralized configuration\n+        ((ReplaceLabelsOnNodeRequestPBImpl) ReplaceLabelsOnNodeRequest\n+            .newInstance(nodeToLabels)).getProto().writeDelimitedTo(os);\n+      }\n+      \n+      os.close();\n+      \n+      // Rename mirror.new.tmp to mirror.new (will remove .new if it\u0027s existed)\n+      Path newPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new\"); \n+      if (fs.exists(newPath)) {\n+        fs.delete(newPath, false);\n+      }\n+      fs.rename(newTmpPath, newPath);\n+      \n+      // Remove existing mirror and rename mirror.new to mirror\n+      Path mirrorPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME);\n+      if (fs.exists(mirrorPath)) {\n+        fs.delete(mirrorPath, false);\n+      }\n+      fs.rename(newPath, mirrorPath);\n+    } finally {\n+      readLock.unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void writeNewMirror() throws IOException {\n    ReentrantReadWriteLock.ReadLock readLock \u003d mgr.readLock;\n    try {\n      // Acquire readlock to make sure we get cluster node labels and\n      // node-to-labels mapping atomically.\n      readLock.lock();\n      List\u003cNodeLabel\u003e nodeLabels \u003d mgr.getClusterNodeLabels();\n      Map\u003cNodeId, Set\u003cString\u003e\u003e nodeToLabels \u003d mgr.getNodeLabels();\n      \n      // Write mirror to mirror.new.tmp file\n      Path newTmpPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new.tmp\"); \n      FSDataOutputStream os \u003d fs\n          .create(newTmpPath, true);\n      ((AddToClusterNodeLabelsRequestPBImpl) AddToClusterNodeLabelsRequest\n          .newInstance(nodeLabels)).getProto().writeDelimitedTo(os);\n\n      if (mgr.isCentralizedConfiguration()) {\n        // Only save node-to-labels mapping while using centralized configuration\n        ((ReplaceLabelsOnNodeRequestPBImpl) ReplaceLabelsOnNodeRequest\n            .newInstance(nodeToLabels)).getProto().writeDelimitedTo(os);\n      }\n      \n      os.close();\n      \n      // Rename mirror.new.tmp to mirror.new (will remove .new if it\u0027s existed)\n      Path newPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME + \".new\"); \n      if (fs.exists(newPath)) {\n        fs.delete(newPath, false);\n      }\n      fs.rename(newTmpPath, newPath);\n      \n      // Remove existing mirror and rename mirror.new to mirror\n      Path mirrorPath \u003d new Path(fsWorkingPath, MIRROR_FILENAME);\n      if (fs.exists(mirrorPath)) {\n        fs.delete(mirrorPath, false);\n      }\n      fs.rename(newPath, mirrorPath);\n    } finally {\n      readLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/nodelabels/NonAppendableFSNodeLabelStore.java"
+    }
+  }
+}

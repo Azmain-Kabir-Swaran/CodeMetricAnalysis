@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ContainerManagerImpl.java",
+  "functionName": "cleanupContainersOnNMResync",
+  "functionId": "cleanupContainersOnNMResync",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/ContainerManagerImpl.java",
+  "functionStartLine": 763,
+  "functionEndLine": 809,
+  "numCommitsSeen": 139,
+  "timeTaken": 2833,
+  "changeHistory": [
+    "cfa783141fa69c2cf154d1d9e5393353d14ce5e1",
+    "44f7ee7192d150b43a3012f06cec67be5b64edd0"
+  ],
+  "changeHistoryShort": {
+    "cfa783141fa69c2cf154d1d9e5393353d14ce5e1": "Ybodychange",
+    "44f7ee7192d150b43a3012f06cec67be5b64edd0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "cfa783141fa69c2cf154d1d9e5393353d14ce5e1": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-1210. Changed RM to start new app-attempts on RM restart only after ensuring that previous AM exited or after expiry time. Contributed by Omkar Vinit Joshi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1543310 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/11/13 9:17 PM",
+      "commitName": "cfa783141fa69c2cf154d1d9e5393353d14ce5e1",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "06/10/13 11:32 AM",
+      "commitNameOld": "44f7ee7192d150b43a3012f06cec67be5b64edd0",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 43.45,
+      "commitsBetweenForRepo": 259,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,33 +1,47 @@\n   public void cleanupContainersOnNMResync() {\n     Map\u003cContainerId, Container\u003e containers \u003d context.getContainers();\n     if (containers.isEmpty()) {\n       return;\n     }\n     LOG.info(\"Containers still running on \"\n         + CMgrCompletedContainersEvent.Reason.ON_NODEMANAGER_RESYNC + \" : \"\n         + containers.keySet());\n \n     List\u003cContainerId\u003e containerIds \u003d\n       new ArrayList\u003cContainerId\u003e(containers.keySet());\n \n     LOG.info(\"Waiting for containers to be killed\");\n \n     this.handle(new CMgrCompletedContainersEvent(containerIds,\n       CMgrCompletedContainersEvent.Reason.ON_NODEMANAGER_RESYNC));\n-    while (!containers.isEmpty()) {\n-      try {\n-        Thread.sleep(1000);\n-        nodeStatusUpdater.getNodeStatusAndUpdateContainersInContext();\n-      } catch (InterruptedException ex) {\n-        LOG.warn(\"Interrupted while sleeping on container kill on resync\", ex);\n+\n+    /*\n+     * We will wait till all the containers change their state to COMPLETE. We\n+     * will not remove the container statuses from nm context because these\n+     * are used while re-registering node manager with resource manager.\n+     */\n+    boolean allContainersCompleted \u003d false;\n+    while (!containers.isEmpty() \u0026\u0026 !allContainersCompleted) {\n+      allContainersCompleted \u003d true;\n+      for (Entry\u003cContainerId, Container\u003e container : containers.entrySet()) {\n+        if (((ContainerImpl) container.getValue()).getCurrentState()\n+            !\u003d ContainerState.COMPLETE) {\n+          allContainersCompleted \u003d false;\n+          try {\n+            Thread.sleep(1000);\n+          } catch (InterruptedException ex) {\n+            LOG.warn(\"Interrupted while sleeping on container kill on resync\",\n+              ex);\n+          }\n+          break;\n+        }\n       }\n     }\n-\n     // All containers killed\n-    if (containers.isEmpty()) {\n+    if (allContainersCompleted) {\n       LOG.info(\"All containers in DONE state\");\n     } else {\n       LOG.info(\"Done waiting for containers to be killed. Still alive: \" +\n         containers.keySet());\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cleanupContainersOnNMResync() {\n    Map\u003cContainerId, Container\u003e containers \u003d context.getContainers();\n    if (containers.isEmpty()) {\n      return;\n    }\n    LOG.info(\"Containers still running on \"\n        + CMgrCompletedContainersEvent.Reason.ON_NODEMANAGER_RESYNC + \" : \"\n        + containers.keySet());\n\n    List\u003cContainerId\u003e containerIds \u003d\n      new ArrayList\u003cContainerId\u003e(containers.keySet());\n\n    LOG.info(\"Waiting for containers to be killed\");\n\n    this.handle(new CMgrCompletedContainersEvent(containerIds,\n      CMgrCompletedContainersEvent.Reason.ON_NODEMANAGER_RESYNC));\n\n    /*\n     * We will wait till all the containers change their state to COMPLETE. We\n     * will not remove the container statuses from nm context because these\n     * are used while re-registering node manager with resource manager.\n     */\n    boolean allContainersCompleted \u003d false;\n    while (!containers.isEmpty() \u0026\u0026 !allContainersCompleted) {\n      allContainersCompleted \u003d true;\n      for (Entry\u003cContainerId, Container\u003e container : containers.entrySet()) {\n        if (((ContainerImpl) container.getValue()).getCurrentState()\n            !\u003d ContainerState.COMPLETE) {\n          allContainersCompleted \u003d false;\n          try {\n            Thread.sleep(1000);\n          } catch (InterruptedException ex) {\n            LOG.warn(\"Interrupted while sleeping on container kill on resync\",\n              ex);\n          }\n          break;\n        }\n      }\n    }\n    // All containers killed\n    if (allContainersCompleted) {\n      LOG.info(\"All containers in DONE state\");\n    } else {\n      LOG.info(\"Done waiting for containers to be killed. Still alive: \" +\n        containers.keySet());\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/ContainerManagerImpl.java",
+      "extendedDetails": {}
+    },
+    "44f7ee7192d150b43a3012f06cec67be5b64edd0": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-1278. Fixed NodeManager to not delete local resources for apps on resync command from RM - a bug caused by YARN-1149. Contributed by Hitesh Shah.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1529657 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/10/13 11:32 AM",
+      "commitName": "44f7ee7192d150b43a3012f06cec67be5b64edd0",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,33 @@\n+  public void cleanupContainersOnNMResync() {\n+    Map\u003cContainerId, Container\u003e containers \u003d context.getContainers();\n+    if (containers.isEmpty()) {\n+      return;\n+    }\n+    LOG.info(\"Containers still running on \"\n+        + CMgrCompletedContainersEvent.Reason.ON_NODEMANAGER_RESYNC + \" : \"\n+        + containers.keySet());\n+\n+    List\u003cContainerId\u003e containerIds \u003d\n+      new ArrayList\u003cContainerId\u003e(containers.keySet());\n+\n+    LOG.info(\"Waiting for containers to be killed\");\n+\n+    this.handle(new CMgrCompletedContainersEvent(containerIds,\n+      CMgrCompletedContainersEvent.Reason.ON_NODEMANAGER_RESYNC));\n+    while (!containers.isEmpty()) {\n+      try {\n+        Thread.sleep(1000);\n+        nodeStatusUpdater.getNodeStatusAndUpdateContainersInContext();\n+      } catch (InterruptedException ex) {\n+        LOG.warn(\"Interrupted while sleeping on container kill on resync\", ex);\n+      }\n+    }\n+\n+    // All containers killed\n+    if (containers.isEmpty()) {\n+      LOG.info(\"All containers in DONE state\");\n+    } else {\n+      LOG.info(\"Done waiting for containers to be killed. Still alive: \" +\n+        containers.keySet());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cleanupContainersOnNMResync() {\n    Map\u003cContainerId, Container\u003e containers \u003d context.getContainers();\n    if (containers.isEmpty()) {\n      return;\n    }\n    LOG.info(\"Containers still running on \"\n        + CMgrCompletedContainersEvent.Reason.ON_NODEMANAGER_RESYNC + \" : \"\n        + containers.keySet());\n\n    List\u003cContainerId\u003e containerIds \u003d\n      new ArrayList\u003cContainerId\u003e(containers.keySet());\n\n    LOG.info(\"Waiting for containers to be killed\");\n\n    this.handle(new CMgrCompletedContainersEvent(containerIds,\n      CMgrCompletedContainersEvent.Reason.ON_NODEMANAGER_RESYNC));\n    while (!containers.isEmpty()) {\n      try {\n        Thread.sleep(1000);\n        nodeStatusUpdater.getNodeStatusAndUpdateContainersInContext();\n      } catch (InterruptedException ex) {\n        LOG.warn(\"Interrupted while sleeping on container kill on resync\", ex);\n      }\n    }\n\n    // All containers killed\n    if (containers.isEmpty()) {\n      LOG.info(\"All containers in DONE state\");\n    } else {\n      LOG.info(\"Done waiting for containers to be killed. Still alive: \" +\n        containers.keySet());\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/ContainerManagerImpl.java"
+    }
+  }
+}

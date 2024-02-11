@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CompileMojo.java",
+  "functionName": "runCMake",
+  "functionId": "runCMake",
+  "sourceFilePath": "hadoop-maven-plugins/src/main/java/org/apache/hadoop/maven/plugin/cmakebuilder/CompileMojo.java",
+  "functionStartLine": 133,
+  "functionEndLine": 198,
+  "numCommitsSeen": 4,
+  "timeTaken": 420,
+  "changeHistory": [
+    "b1ed28fa77cb2fab80c54f9dfeb5d8b7139eca34"
+  ],
+  "changeHistoryShort": {
+    "b1ed28fa77cb2fab80c54f9dfeb5d8b7139eca34": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b1ed28fa77cb2fab80c54f9dfeb5d8b7139eca34": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-8887. Use a Maven plugin to build the native code using CMake (cmccabe)\n",
+      "commitDate": "14/01/16 11:02 AM",
+      "commitName": "b1ed28fa77cb2fab80c54f9dfeb5d8b7139eca34",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "diff": "@@ -0,0 +1,66 @@\n+  public void runCMake() throws MojoExecutionException {\n+    validatePlatform();\n+    validateSourceParams(source, output);\n+\n+    if (output.mkdirs()) {\n+      getLog().info(\"mkdirs \u0027\" + output + \"\u0027\");\n+    }\n+    List\u003cString\u003e cmd \u003d new LinkedList\u003cString\u003e();\n+    cmd.add(\"cmake\");\n+    cmd.add(source.getAbsolutePath());\n+    for (Map.Entry\u003cString, String\u003e entry : vars.entrySet()) {\n+      if ((entry.getValue() !\u003d null) \u0026\u0026 (!entry.getValue().equals(\"\"))) {\n+        cmd.add(\"-D\" + entry.getKey() + \"\u003d\" + entry.getValue());\n+      }\n+    }\n+    cmd.add(\"-G\");\n+    cmd.add(\"Unix Makefiles\");\n+    String prefix \u003d \"\";\n+    StringBuilder bld \u003d new StringBuilder();\n+    for (String c : cmd) {\n+      bld.append(prefix).append(c);\n+      prefix \u003d \" \";\n+    }\n+    getLog().info(\"Running \" + bld.toString());\n+    getLog().info(\"with extra environment variables \" + Exec.envToString(env));\n+    ProcessBuilder pb \u003d new ProcessBuilder(cmd);\n+    pb.directory(output);\n+    pb.redirectErrorStream(true);\n+    Exec.addEnvironment(pb, env);\n+    Process proc \u003d null;\n+    OutputBufferThread outThread \u003d null;\n+    int retCode \u003d -1;\n+    try {\n+      proc \u003d pb.start();\n+      outThread \u003d new OutputBufferThread(proc.getInputStream());\n+      outThread.start();\n+\n+      retCode \u003d proc.waitFor();\n+      if (retCode !\u003d 0) {\n+        throw new MojoExecutionException(\"CMake failed with error code \" +\n+            retCode);\n+      }\n+    } catch (IOException e) {\n+      throw new MojoExecutionException(\"Error executing CMake\", e);\n+    } catch (InterruptedException e) {\n+      throw new MojoExecutionException(\"Interrupted while waiting for \" +\n+          \"CMake process\", e);\n+    } finally {\n+      if (proc !\u003d null) {\n+        proc.destroy();\n+      }\n+      if (outThread !\u003d null) {\n+        try {\n+          outThread.interrupt();\n+          outThread.join();\n+        } catch (InterruptedException e) {\n+          getLog().error(\"Interrupted while joining output thread\", e);\n+        }\n+        if (retCode !\u003d 0) {\n+          for (String line : outThread.getOutput()) {\n+            getLog().warn(line);\n+          }\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void runCMake() throws MojoExecutionException {\n    validatePlatform();\n    validateSourceParams(source, output);\n\n    if (output.mkdirs()) {\n      getLog().info(\"mkdirs \u0027\" + output + \"\u0027\");\n    }\n    List\u003cString\u003e cmd \u003d new LinkedList\u003cString\u003e();\n    cmd.add(\"cmake\");\n    cmd.add(source.getAbsolutePath());\n    for (Map.Entry\u003cString, String\u003e entry : vars.entrySet()) {\n      if ((entry.getValue() !\u003d null) \u0026\u0026 (!entry.getValue().equals(\"\"))) {\n        cmd.add(\"-D\" + entry.getKey() + \"\u003d\" + entry.getValue());\n      }\n    }\n    cmd.add(\"-G\");\n    cmd.add(\"Unix Makefiles\");\n    String prefix \u003d \"\";\n    StringBuilder bld \u003d new StringBuilder();\n    for (String c : cmd) {\n      bld.append(prefix).append(c);\n      prefix \u003d \" \";\n    }\n    getLog().info(\"Running \" + bld.toString());\n    getLog().info(\"with extra environment variables \" + Exec.envToString(env));\n    ProcessBuilder pb \u003d new ProcessBuilder(cmd);\n    pb.directory(output);\n    pb.redirectErrorStream(true);\n    Exec.addEnvironment(pb, env);\n    Process proc \u003d null;\n    OutputBufferThread outThread \u003d null;\n    int retCode \u003d -1;\n    try {\n      proc \u003d pb.start();\n      outThread \u003d new OutputBufferThread(proc.getInputStream());\n      outThread.start();\n\n      retCode \u003d proc.waitFor();\n      if (retCode !\u003d 0) {\n        throw new MojoExecutionException(\"CMake failed with error code \" +\n            retCode);\n      }\n    } catch (IOException e) {\n      throw new MojoExecutionException(\"Error executing CMake\", e);\n    } catch (InterruptedException e) {\n      throw new MojoExecutionException(\"Interrupted while waiting for \" +\n          \"CMake process\", e);\n    } finally {\n      if (proc !\u003d null) {\n        proc.destroy();\n      }\n      if (outThread !\u003d null) {\n        try {\n          outThread.interrupt();\n          outThread.join();\n        } catch (InterruptedException e) {\n          getLog().error(\"Interrupted while joining output thread\", e);\n        }\n        if (retCode !\u003d 0) {\n          for (String line : outThread.getOutput()) {\n            getLog().warn(line);\n          }\n        }\n      }\n    }\n  }",
+      "path": "hadoop-maven-plugins/src/main/java/org/apache/hadoop/maven/plugin/cmakebuilder/CompileMojo.java"
+    }
+  }
+}

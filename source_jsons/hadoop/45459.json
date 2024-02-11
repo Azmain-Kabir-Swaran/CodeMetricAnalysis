@@ -1,0 +1,236 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TimelineClientImpl.java",
+  "functionName": "run",
+  "functionId": "run",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+  "functionStartLine": 231,
+  "functionEndLine": 249,
+  "numCommitsSeen": 49,
+  "timeTaken": 3893,
+  "changeHistory": [
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+    "0d02ab8729630ad3cfb4300702927333b1d349e3",
+    "d6e05c5ee26feefc17267b7c9db1e2a3dbdef117",
+    "39063cd36f96e351e4a6bf0bc2b6185711d4b059"
+  ],
+  "changeHistoryShort": {
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711": "Ymultichange(Yreturntypechange,Yexceptionschange,Ybodychange)",
+    "0d02ab8729630ad3cfb4300702927333b1d349e3": "Ymultichange(Yreturntypechange,Yexceptionschange,Ybodychange)",
+    "d6e05c5ee26feefc17267b7c9db1e2a3dbdef117": "Ymultichange(Yreturntypechange,Yexceptionschange,Ybodychange)",
+    "39063cd36f96e351e4a6bf0bc2b6185711d4b059": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711": {
+      "type": "Ymultichange(Yreturntypechange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "YARN-4675. Reorganize TimelineClient and TimelineClientImpl into separate classes for ATSv1.x and ATSv2. Contributed by Naganarasimha G R.\n",
+      "commitDate": "16/02/17 11:41 AM",
+      "commitName": "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+      "commitAuthor": "Sangjin Lee",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "YARN-4675. Reorganize TimelineClient and TimelineClientImpl into separate classes for ATSv1.x and ATSv2. Contributed by Naganarasimha G R.\n",
+          "commitDate": "16/02/17 11:41 AM",
+          "commitName": "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "27/12/16 2:14 PM",
+          "commitNameOld": "9262797e86453fc04b7ca3710b73b21fcdf9e6b4",
+          "commitAuthorOld": "Robert Kanter",
+          "daysBetweenCommits": 50.89,
+          "commitsBetweenForRepo": 246,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,47 +1,20 @@\n-        public void run() {\n-          try {\n-            EntitiesHolder entitiesHolder;\n-            while (!Thread.currentThread().isInterrupted()) {\n-              // Merge all the async calls and make one push, but if its sync\n-              // call push immediately\n-              try {\n-                entitiesHolder \u003d timelineEntityQueue.take();\n-              } catch (InterruptedException ie) {\n-                LOG.info(\"Timeline dispatcher thread was interrupted \");\n-                Thread.currentThread().interrupt();\n-                return;\n-              }\n-              if (entitiesHolder !\u003d null) {\n-                publishWithoutBlockingOnQueue(entitiesHolder);\n-              }\n+          public Void run() throws Exception {\n+            // If the timeline DT to cancel is different than cached, replace\n+            // it.\n+            // Token to set every time for retry, because when exception\n+            // happens, DelegationTokenAuthenticatedURL will reset it to null;\n+            if (!timelineDT.equals(token.getDelegationToken())) {\n+              token.setDelegationToken((Token) timelineDT);\n             }\n-          } finally {\n-            if (!timelineEntityQueue.isEmpty()) {\n-              LOG.info(\"Yet to publish \" + timelineEntityQueue.size()\n-                  + \" timelineEntities, draining them now. \");\n-            }\n-            // Try to drain the remaining entities to be published @ the max for\n-            // 2 seconds\n-            long timeTillweDrain \u003d\n-                System.currentTimeMillis() + DRAIN_TIME_PERIOD;\n-            while (!timelineEntityQueue.isEmpty()) {\n-              publishWithoutBlockingOnQueue(timelineEntityQueue.poll());\n-              if (System.currentTimeMillis() \u003e timeTillweDrain) {\n-                // time elapsed stop publishing further....\n-                if (!timelineEntityQueue.isEmpty()) {\n-                  LOG.warn(\"Time to drain elapsed! Remaining \"\n-                      + timelineEntityQueue.size() + \"timelineEntities will not\"\n-                      + \" be published\");\n-                  // if some entities were not drained then we need interrupt\n-                  // the threads which had put sync EntityHolders to the queue.\n-                  EntitiesHolder nextEntityInTheQueue \u003d null;\n-                  while ((nextEntityInTheQueue \u003d\n-                      timelineEntityQueue.poll()) !\u003d null) {\n-                    nextEntityInTheQueue.cancel(true);\n-                  }\n-                }\n-                break;\n-              }\n-            }\n-          }\n-        }\n\\ No newline at end of file\n+            DelegationTokenAuthenticatedURL authUrl \u003d\n+                connector.getDelegationTokenAuthenticatedURL();\n+            // If the token service address is not available, fall back to use\n+            // the configured service address.\n+            final URI serviceURI \u003d isTokenServiceAddrEmpty\n+                ? TimelineConnector.constructResURI(getConfig(),\n+                    getTimelineServiceAddress(), RESOURCE_URI_STR_V1)\n+                : new URI(scheme, null, address.getHostName(),\n+                    address.getPort(), RESOURCE_URI_STR_V1, null, null);\n+            authUrl.cancelDelegationToken(serviceURI.toURL(), token, doAsUser);\n+            return null;\n+          }\n\\ No newline at end of file\n",
+          "actualSource": "          public Void run() throws Exception {\n            // If the timeline DT to cancel is different than cached, replace\n            // it.\n            // Token to set every time for retry, because when exception\n            // happens, DelegationTokenAuthenticatedURL will reset it to null;\n            if (!timelineDT.equals(token.getDelegationToken())) {\n              token.setDelegationToken((Token) timelineDT);\n            }\n            DelegationTokenAuthenticatedURL authUrl \u003d\n                connector.getDelegationTokenAuthenticatedURL();\n            // If the token service address is not available, fall back to use\n            // the configured service address.\n            final URI serviceURI \u003d isTokenServiceAddrEmpty\n                ? TimelineConnector.constructResURI(getConfig(),\n                    getTimelineServiceAddress(), RESOURCE_URI_STR_V1)\n                : new URI(scheme, null, address.getHostName(),\n                    address.getPort(), RESOURCE_URI_STR_V1, null, null);\n            authUrl.cancelDelegationToken(serviceURI.toURL(), token, doAsUser);\n            return null;\n          }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "Void"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "YARN-4675. Reorganize TimelineClient and TimelineClientImpl into separate classes for ATSv1.x and ATSv2. Contributed by Naganarasimha G R.\n",
+          "commitDate": "16/02/17 11:41 AM",
+          "commitName": "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "27/12/16 2:14 PM",
+          "commitNameOld": "9262797e86453fc04b7ca3710b73b21fcdf9e6b4",
+          "commitAuthorOld": "Robert Kanter",
+          "daysBetweenCommits": 50.89,
+          "commitsBetweenForRepo": 246,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,47 +1,20 @@\n-        public void run() {\n-          try {\n-            EntitiesHolder entitiesHolder;\n-            while (!Thread.currentThread().isInterrupted()) {\n-              // Merge all the async calls and make one push, but if its sync\n-              // call push immediately\n-              try {\n-                entitiesHolder \u003d timelineEntityQueue.take();\n-              } catch (InterruptedException ie) {\n-                LOG.info(\"Timeline dispatcher thread was interrupted \");\n-                Thread.currentThread().interrupt();\n-                return;\n-              }\n-              if (entitiesHolder !\u003d null) {\n-                publishWithoutBlockingOnQueue(entitiesHolder);\n-              }\n+          public Void run() throws Exception {\n+            // If the timeline DT to cancel is different than cached, replace\n+            // it.\n+            // Token to set every time for retry, because when exception\n+            // happens, DelegationTokenAuthenticatedURL will reset it to null;\n+            if (!timelineDT.equals(token.getDelegationToken())) {\n+              token.setDelegationToken((Token) timelineDT);\n             }\n-          } finally {\n-            if (!timelineEntityQueue.isEmpty()) {\n-              LOG.info(\"Yet to publish \" + timelineEntityQueue.size()\n-                  + \" timelineEntities, draining them now. \");\n-            }\n-            // Try to drain the remaining entities to be published @ the max for\n-            // 2 seconds\n-            long timeTillweDrain \u003d\n-                System.currentTimeMillis() + DRAIN_TIME_PERIOD;\n-            while (!timelineEntityQueue.isEmpty()) {\n-              publishWithoutBlockingOnQueue(timelineEntityQueue.poll());\n-              if (System.currentTimeMillis() \u003e timeTillweDrain) {\n-                // time elapsed stop publishing further....\n-                if (!timelineEntityQueue.isEmpty()) {\n-                  LOG.warn(\"Time to drain elapsed! Remaining \"\n-                      + timelineEntityQueue.size() + \"timelineEntities will not\"\n-                      + \" be published\");\n-                  // if some entities were not drained then we need interrupt\n-                  // the threads which had put sync EntityHolders to the queue.\n-                  EntitiesHolder nextEntityInTheQueue \u003d null;\n-                  while ((nextEntityInTheQueue \u003d\n-                      timelineEntityQueue.poll()) !\u003d null) {\n-                    nextEntityInTheQueue.cancel(true);\n-                  }\n-                }\n-                break;\n-              }\n-            }\n-          }\n-        }\n\\ No newline at end of file\n+            DelegationTokenAuthenticatedURL authUrl \u003d\n+                connector.getDelegationTokenAuthenticatedURL();\n+            // If the token service address is not available, fall back to use\n+            // the configured service address.\n+            final URI serviceURI \u003d isTokenServiceAddrEmpty\n+                ? TimelineConnector.constructResURI(getConfig(),\n+                    getTimelineServiceAddress(), RESOURCE_URI_STR_V1)\n+                : new URI(scheme, null, address.getHostName(),\n+                    address.getPort(), RESOURCE_URI_STR_V1, null, null);\n+            authUrl.cancelDelegationToken(serviceURI.toURL(), token, doAsUser);\n+            return null;\n+          }\n\\ No newline at end of file\n",
+          "actualSource": "          public Void run() throws Exception {\n            // If the timeline DT to cancel is different than cached, replace\n            // it.\n            // Token to set every time for retry, because when exception\n            // happens, DelegationTokenAuthenticatedURL will reset it to null;\n            if (!timelineDT.equals(token.getDelegationToken())) {\n              token.setDelegationToken((Token) timelineDT);\n            }\n            DelegationTokenAuthenticatedURL authUrl \u003d\n                connector.getDelegationTokenAuthenticatedURL();\n            // If the token service address is not available, fall back to use\n            // the configured service address.\n            final URI serviceURI \u003d isTokenServiceAddrEmpty\n                ? TimelineConnector.constructResURI(getConfig(),\n                    getTimelineServiceAddress(), RESOURCE_URI_STR_V1)\n                : new URI(scheme, null, address.getHostName(),\n                    address.getPort(), RESOURCE_URI_STR_V1, null, null);\n            authUrl.cancelDelegationToken(serviceURI.toURL(), token, doAsUser);\n            return null;\n          }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[Exception]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-4675. Reorganize TimelineClient and TimelineClientImpl into separate classes for ATSv1.x and ATSv2. Contributed by Naganarasimha G R.\n",
+          "commitDate": "16/02/17 11:41 AM",
+          "commitName": "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "27/12/16 2:14 PM",
+          "commitNameOld": "9262797e86453fc04b7ca3710b73b21fcdf9e6b4",
+          "commitAuthorOld": "Robert Kanter",
+          "daysBetweenCommits": 50.89,
+          "commitsBetweenForRepo": 246,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,47 +1,20 @@\n-        public void run() {\n-          try {\n-            EntitiesHolder entitiesHolder;\n-            while (!Thread.currentThread().isInterrupted()) {\n-              // Merge all the async calls and make one push, but if its sync\n-              // call push immediately\n-              try {\n-                entitiesHolder \u003d timelineEntityQueue.take();\n-              } catch (InterruptedException ie) {\n-                LOG.info(\"Timeline dispatcher thread was interrupted \");\n-                Thread.currentThread().interrupt();\n-                return;\n-              }\n-              if (entitiesHolder !\u003d null) {\n-                publishWithoutBlockingOnQueue(entitiesHolder);\n-              }\n+          public Void run() throws Exception {\n+            // If the timeline DT to cancel is different than cached, replace\n+            // it.\n+            // Token to set every time for retry, because when exception\n+            // happens, DelegationTokenAuthenticatedURL will reset it to null;\n+            if (!timelineDT.equals(token.getDelegationToken())) {\n+              token.setDelegationToken((Token) timelineDT);\n             }\n-          } finally {\n-            if (!timelineEntityQueue.isEmpty()) {\n-              LOG.info(\"Yet to publish \" + timelineEntityQueue.size()\n-                  + \" timelineEntities, draining them now. \");\n-            }\n-            // Try to drain the remaining entities to be published @ the max for\n-            // 2 seconds\n-            long timeTillweDrain \u003d\n-                System.currentTimeMillis() + DRAIN_TIME_PERIOD;\n-            while (!timelineEntityQueue.isEmpty()) {\n-              publishWithoutBlockingOnQueue(timelineEntityQueue.poll());\n-              if (System.currentTimeMillis() \u003e timeTillweDrain) {\n-                // time elapsed stop publishing further....\n-                if (!timelineEntityQueue.isEmpty()) {\n-                  LOG.warn(\"Time to drain elapsed! Remaining \"\n-                      + timelineEntityQueue.size() + \"timelineEntities will not\"\n-                      + \" be published\");\n-                  // if some entities were not drained then we need interrupt\n-                  // the threads which had put sync EntityHolders to the queue.\n-                  EntitiesHolder nextEntityInTheQueue \u003d null;\n-                  while ((nextEntityInTheQueue \u003d\n-                      timelineEntityQueue.poll()) !\u003d null) {\n-                    nextEntityInTheQueue.cancel(true);\n-                  }\n-                }\n-                break;\n-              }\n-            }\n-          }\n-        }\n\\ No newline at end of file\n+            DelegationTokenAuthenticatedURL authUrl \u003d\n+                connector.getDelegationTokenAuthenticatedURL();\n+            // If the token service address is not available, fall back to use\n+            // the configured service address.\n+            final URI serviceURI \u003d isTokenServiceAddrEmpty\n+                ? TimelineConnector.constructResURI(getConfig(),\n+                    getTimelineServiceAddress(), RESOURCE_URI_STR_V1)\n+                : new URI(scheme, null, address.getHostName(),\n+                    address.getPort(), RESOURCE_URI_STR_V1, null, null);\n+            authUrl.cancelDelegationToken(serviceURI.toURL(), token, doAsUser);\n+            return null;\n+          }\n\\ No newline at end of file\n",
+          "actualSource": "          public Void run() throws Exception {\n            // If the timeline DT to cancel is different than cached, replace\n            // it.\n            // Token to set every time for retry, because when exception\n            // happens, DelegationTokenAuthenticatedURL will reset it to null;\n            if (!timelineDT.equals(token.getDelegationToken())) {\n              token.setDelegationToken((Token) timelineDT);\n            }\n            DelegationTokenAuthenticatedURL authUrl \u003d\n                connector.getDelegationTokenAuthenticatedURL();\n            // If the token service address is not available, fall back to use\n            // the configured service address.\n            final URI serviceURI \u003d isTokenServiceAddrEmpty\n                ? TimelineConnector.constructResURI(getConfig(),\n                    getTimelineServiceAddress(), RESOURCE_URI_STR_V1)\n                : new URI(scheme, null, address.getHostName(),\n                    address.getPort(), RESOURCE_URI_STR_V1, null, null);\n            authUrl.cancelDelegationToken(serviceURI.toURL(), token, doAsUser);\n            return null;\n          }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "0d02ab8729630ad3cfb4300702927333b1d349e3": {
+      "type": "Ymultichange(Yreturntypechange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "YARN-3367. Replace starting a separate thread for post entity with event loop in TimelineClient (Naganarasimha G R via sjlee)\n",
+      "commitDate": "10/07/16 8:45 AM",
+      "commitName": "0d02ab8729630ad3cfb4300702927333b1d349e3",
+      "commitAuthor": "Sangjin Lee",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "YARN-3367. Replace starting a separate thread for post entity with event loop in TimelineClient (Naganarasimha G R via sjlee)\n",
+          "commitDate": "10/07/16 8:45 AM",
+          "commitName": "0d02ab8729630ad3cfb4300702927333b1d349e3",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "10/07/16 8:45 AM",
+          "commitNameOld": "960af7d4717b8a8949d0b2e43949e7daab45aa88",
+          "commitAuthorOld": "Sangjin Lee",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,47 @@\n-    public Object run() throws IOException {\n-      // Try pass the request, if fail, keep retrying\n-      authUgi.checkTGTAndReloginFromKeytab();\n-      try {\n-        return authUgi.doAs(action);\n-      } catch (UndeclaredThrowableException e) {\n-        throw new IOException(e.getCause());\n-      } catch (InterruptedException e) {\n-        throw new IOException(e);\n-      }\n-    }\n\\ No newline at end of file\n+        public void run() {\n+          try {\n+            EntitiesHolder entitiesHolder;\n+            while (!Thread.currentThread().isInterrupted()) {\n+              // Merge all the async calls and make one push, but if its sync\n+              // call push immediately\n+              try {\n+                entitiesHolder \u003d timelineEntityQueue.take();\n+              } catch (InterruptedException ie) {\n+                LOG.info(\"Timeline dispatcher thread was interrupted \");\n+                Thread.currentThread().interrupt();\n+                return;\n+              }\n+              if (entitiesHolder !\u003d null) {\n+                publishWithoutBlockingOnQueue(entitiesHolder);\n+              }\n+            }\n+          } finally {\n+            if (!timelineEntityQueue.isEmpty()) {\n+              LOG.info(\"Yet to publish \" + timelineEntityQueue.size()\n+                  + \" timelineEntities, draining them now. \");\n+            }\n+            // Try to drain the remaining entities to be published @ the max for\n+            // 2 seconds\n+            long timeTillweDrain \u003d\n+                System.currentTimeMillis() + DRAIN_TIME_PERIOD;\n+            while (!timelineEntityQueue.isEmpty()) {\n+              publishWithoutBlockingOnQueue(timelineEntityQueue.poll());\n+              if (System.currentTimeMillis() \u003e timeTillweDrain) {\n+                // time elapsed stop publishing further....\n+                if (!timelineEntityQueue.isEmpty()) {\n+                  LOG.warn(\"Time to drain elapsed! Remaining \"\n+                      + timelineEntityQueue.size() + \"timelineEntities will not\"\n+                      + \" be published\");\n+                  // if some entities were not drained then we need interrupt\n+                  // the threads which had put sync EntityHolders to the queue.\n+                  EntitiesHolder nextEntityInTheQueue \u003d null;\n+                  while ((nextEntityInTheQueue \u003d\n+                      timelineEntityQueue.poll()) !\u003d null) {\n+                    nextEntityInTheQueue.cancel(true);\n+                  }\n+                }\n+                break;\n+              }\n+            }\n+          }\n+        }\n\\ No newline at end of file\n",
+          "actualSource": "        public void run() {\n          try {\n            EntitiesHolder entitiesHolder;\n            while (!Thread.currentThread().isInterrupted()) {\n              // Merge all the async calls and make one push, but if its sync\n              // call push immediately\n              try {\n                entitiesHolder \u003d timelineEntityQueue.take();\n              } catch (InterruptedException ie) {\n                LOG.info(\"Timeline dispatcher thread was interrupted \");\n                Thread.currentThread().interrupt();\n                return;\n              }\n              if (entitiesHolder !\u003d null) {\n                publishWithoutBlockingOnQueue(entitiesHolder);\n              }\n            }\n          } finally {\n            if (!timelineEntityQueue.isEmpty()) {\n              LOG.info(\"Yet to publish \" + timelineEntityQueue.size()\n                  + \" timelineEntities, draining them now. \");\n            }\n            // Try to drain the remaining entities to be published @ the max for\n            // 2 seconds\n            long timeTillweDrain \u003d\n                System.currentTimeMillis() + DRAIN_TIME_PERIOD;\n            while (!timelineEntityQueue.isEmpty()) {\n              publishWithoutBlockingOnQueue(timelineEntityQueue.poll());\n              if (System.currentTimeMillis() \u003e timeTillweDrain) {\n                // time elapsed stop publishing further....\n                if (!timelineEntityQueue.isEmpty()) {\n                  LOG.warn(\"Time to drain elapsed! Remaining \"\n                      + timelineEntityQueue.size() + \"timelineEntities will not\"\n                      + \" be published\");\n                  // if some entities were not drained then we need interrupt\n                  // the threads which had put sync EntityHolders to the queue.\n                  EntitiesHolder nextEntityInTheQueue \u003d null;\n                  while ((nextEntityInTheQueue \u003d\n                      timelineEntityQueue.poll()) !\u003d null) {\n                    nextEntityInTheQueue.cancel(true);\n                  }\n                }\n                break;\n              }\n            }\n          }\n        }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+          "extendedDetails": {
+            "oldValue": "Object",
+            "newValue": "void"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "YARN-3367. Replace starting a separate thread for post entity with event loop in TimelineClient (Naganarasimha G R via sjlee)\n",
+          "commitDate": "10/07/16 8:45 AM",
+          "commitName": "0d02ab8729630ad3cfb4300702927333b1d349e3",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "10/07/16 8:45 AM",
+          "commitNameOld": "960af7d4717b8a8949d0b2e43949e7daab45aa88",
+          "commitAuthorOld": "Sangjin Lee",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,47 @@\n-    public Object run() throws IOException {\n-      // Try pass the request, if fail, keep retrying\n-      authUgi.checkTGTAndReloginFromKeytab();\n-      try {\n-        return authUgi.doAs(action);\n-      } catch (UndeclaredThrowableException e) {\n-        throw new IOException(e.getCause());\n-      } catch (InterruptedException e) {\n-        throw new IOException(e);\n-      }\n-    }\n\\ No newline at end of file\n+        public void run() {\n+          try {\n+            EntitiesHolder entitiesHolder;\n+            while (!Thread.currentThread().isInterrupted()) {\n+              // Merge all the async calls and make one push, but if its sync\n+              // call push immediately\n+              try {\n+                entitiesHolder \u003d timelineEntityQueue.take();\n+              } catch (InterruptedException ie) {\n+                LOG.info(\"Timeline dispatcher thread was interrupted \");\n+                Thread.currentThread().interrupt();\n+                return;\n+              }\n+              if (entitiesHolder !\u003d null) {\n+                publishWithoutBlockingOnQueue(entitiesHolder);\n+              }\n+            }\n+          } finally {\n+            if (!timelineEntityQueue.isEmpty()) {\n+              LOG.info(\"Yet to publish \" + timelineEntityQueue.size()\n+                  + \" timelineEntities, draining them now. \");\n+            }\n+            // Try to drain the remaining entities to be published @ the max for\n+            // 2 seconds\n+            long timeTillweDrain \u003d\n+                System.currentTimeMillis() + DRAIN_TIME_PERIOD;\n+            while (!timelineEntityQueue.isEmpty()) {\n+              publishWithoutBlockingOnQueue(timelineEntityQueue.poll());\n+              if (System.currentTimeMillis() \u003e timeTillweDrain) {\n+                // time elapsed stop publishing further....\n+                if (!timelineEntityQueue.isEmpty()) {\n+                  LOG.warn(\"Time to drain elapsed! Remaining \"\n+                      + timelineEntityQueue.size() + \"timelineEntities will not\"\n+                      + \" be published\");\n+                  // if some entities were not drained then we need interrupt\n+                  // the threads which had put sync EntityHolders to the queue.\n+                  EntitiesHolder nextEntityInTheQueue \u003d null;\n+                  while ((nextEntityInTheQueue \u003d\n+                      timelineEntityQueue.poll()) !\u003d null) {\n+                    nextEntityInTheQueue.cancel(true);\n+                  }\n+                }\n+                break;\n+              }\n+            }\n+          }\n+        }\n\\ No newline at end of file\n",
+          "actualSource": "        public void run() {\n          try {\n            EntitiesHolder entitiesHolder;\n            while (!Thread.currentThread().isInterrupted()) {\n              // Merge all the async calls and make one push, but if its sync\n              // call push immediately\n              try {\n                entitiesHolder \u003d timelineEntityQueue.take();\n              } catch (InterruptedException ie) {\n                LOG.info(\"Timeline dispatcher thread was interrupted \");\n                Thread.currentThread().interrupt();\n                return;\n              }\n              if (entitiesHolder !\u003d null) {\n                publishWithoutBlockingOnQueue(entitiesHolder);\n              }\n            }\n          } finally {\n            if (!timelineEntityQueue.isEmpty()) {\n              LOG.info(\"Yet to publish \" + timelineEntityQueue.size()\n                  + \" timelineEntities, draining them now. \");\n            }\n            // Try to drain the remaining entities to be published @ the max for\n            // 2 seconds\n            long timeTillweDrain \u003d\n                System.currentTimeMillis() + DRAIN_TIME_PERIOD;\n            while (!timelineEntityQueue.isEmpty()) {\n              publishWithoutBlockingOnQueue(timelineEntityQueue.poll());\n              if (System.currentTimeMillis() \u003e timeTillweDrain) {\n                // time elapsed stop publishing further....\n                if (!timelineEntityQueue.isEmpty()) {\n                  LOG.warn(\"Time to drain elapsed! Remaining \"\n                      + timelineEntityQueue.size() + \"timelineEntities will not\"\n                      + \" be published\");\n                  // if some entities were not drained then we need interrupt\n                  // the threads which had put sync EntityHolders to the queue.\n                  EntitiesHolder nextEntityInTheQueue \u003d null;\n                  while ((nextEntityInTheQueue \u003d\n                      timelineEntityQueue.poll()) !\u003d null) {\n                    nextEntityInTheQueue.cancel(true);\n                  }\n                }\n                break;\n              }\n            }\n          }\n        }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+          "extendedDetails": {
+            "oldValue": "[IOException]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-3367. Replace starting a separate thread for post entity with event loop in TimelineClient (Naganarasimha G R via sjlee)\n",
+          "commitDate": "10/07/16 8:45 AM",
+          "commitName": "0d02ab8729630ad3cfb4300702927333b1d349e3",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "10/07/16 8:45 AM",
+          "commitNameOld": "960af7d4717b8a8949d0b2e43949e7daab45aa88",
+          "commitAuthorOld": "Sangjin Lee",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,47 @@\n-    public Object run() throws IOException {\n-      // Try pass the request, if fail, keep retrying\n-      authUgi.checkTGTAndReloginFromKeytab();\n-      try {\n-        return authUgi.doAs(action);\n-      } catch (UndeclaredThrowableException e) {\n-        throw new IOException(e.getCause());\n-      } catch (InterruptedException e) {\n-        throw new IOException(e);\n-      }\n-    }\n\\ No newline at end of file\n+        public void run() {\n+          try {\n+            EntitiesHolder entitiesHolder;\n+            while (!Thread.currentThread().isInterrupted()) {\n+              // Merge all the async calls and make one push, but if its sync\n+              // call push immediately\n+              try {\n+                entitiesHolder \u003d timelineEntityQueue.take();\n+              } catch (InterruptedException ie) {\n+                LOG.info(\"Timeline dispatcher thread was interrupted \");\n+                Thread.currentThread().interrupt();\n+                return;\n+              }\n+              if (entitiesHolder !\u003d null) {\n+                publishWithoutBlockingOnQueue(entitiesHolder);\n+              }\n+            }\n+          } finally {\n+            if (!timelineEntityQueue.isEmpty()) {\n+              LOG.info(\"Yet to publish \" + timelineEntityQueue.size()\n+                  + \" timelineEntities, draining them now. \");\n+            }\n+            // Try to drain the remaining entities to be published @ the max for\n+            // 2 seconds\n+            long timeTillweDrain \u003d\n+                System.currentTimeMillis() + DRAIN_TIME_PERIOD;\n+            while (!timelineEntityQueue.isEmpty()) {\n+              publishWithoutBlockingOnQueue(timelineEntityQueue.poll());\n+              if (System.currentTimeMillis() \u003e timeTillweDrain) {\n+                // time elapsed stop publishing further....\n+                if (!timelineEntityQueue.isEmpty()) {\n+                  LOG.warn(\"Time to drain elapsed! Remaining \"\n+                      + timelineEntityQueue.size() + \"timelineEntities will not\"\n+                      + \" be published\");\n+                  // if some entities were not drained then we need interrupt\n+                  // the threads which had put sync EntityHolders to the queue.\n+                  EntitiesHolder nextEntityInTheQueue \u003d null;\n+                  while ((nextEntityInTheQueue \u003d\n+                      timelineEntityQueue.poll()) !\u003d null) {\n+                    nextEntityInTheQueue.cancel(true);\n+                  }\n+                }\n+                break;\n+              }\n+            }\n+          }\n+        }\n\\ No newline at end of file\n",
+          "actualSource": "        public void run() {\n          try {\n            EntitiesHolder entitiesHolder;\n            while (!Thread.currentThread().isInterrupted()) {\n              // Merge all the async calls and make one push, but if its sync\n              // call push immediately\n              try {\n                entitiesHolder \u003d timelineEntityQueue.take();\n              } catch (InterruptedException ie) {\n                LOG.info(\"Timeline dispatcher thread was interrupted \");\n                Thread.currentThread().interrupt();\n                return;\n              }\n              if (entitiesHolder !\u003d null) {\n                publishWithoutBlockingOnQueue(entitiesHolder);\n              }\n            }\n          } finally {\n            if (!timelineEntityQueue.isEmpty()) {\n              LOG.info(\"Yet to publish \" + timelineEntityQueue.size()\n                  + \" timelineEntities, draining them now. \");\n            }\n            // Try to drain the remaining entities to be published @ the max for\n            // 2 seconds\n            long timeTillweDrain \u003d\n                System.currentTimeMillis() + DRAIN_TIME_PERIOD;\n            while (!timelineEntityQueue.isEmpty()) {\n              publishWithoutBlockingOnQueue(timelineEntityQueue.poll());\n              if (System.currentTimeMillis() \u003e timeTillweDrain) {\n                // time elapsed stop publishing further....\n                if (!timelineEntityQueue.isEmpty()) {\n                  LOG.warn(\"Time to drain elapsed! Remaining \"\n                      + timelineEntityQueue.size() + \"timelineEntities will not\"\n                      + \" be published\");\n                  // if some entities were not drained then we need interrupt\n                  // the threads which had put sync EntityHolders to the queue.\n                  EntitiesHolder nextEntityInTheQueue \u003d null;\n                  while ((nextEntityInTheQueue \u003d\n                      timelineEntityQueue.poll()) !\u003d null) {\n                    nextEntityInTheQueue.cancel(true);\n                  }\n                }\n                break;\n              }\n            }\n          }\n        }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "d6e05c5ee26feefc17267b7c9db1e2a3dbdef117": {
+      "type": "Ymultichange(Yreturntypechange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "YARN-3287. Made TimelineClient put methods do as the correct login context. Contributed by Daryn Sharp and Jonathan Eagles.\n",
+      "commitDate": "09/03/15 1:54 PM",
+      "commitName": "d6e05c5ee26feefc17267b7c9db1e2a3dbdef117",
+      "commitAuthor": "Zhijie Shen",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "YARN-3287. Made TimelineClient put methods do as the correct login context. Contributed by Daryn Sharp and Jonathan Eagles.\n",
+          "commitDate": "09/03/15 1:54 PM",
+          "commitName": "d6e05c5ee26feefc17267b7c9db1e2a3dbdef117",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "06/03/15 1:32 PM",
+          "commitNameOld": "d1abc5d4fc00bb1b226066684556ba16ace71744",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 2.97,
+          "commitsBetweenForRepo": 19,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,5 +1,11 @@\n-          public HttpURLConnection run() throws Exception {\n-            return new DelegationTokenAuthenticatedURL(\n-                authenticator, connConfigurator).openConnection(url, token,\n-                doAsUser);\n-          }\n\\ No newline at end of file\n+      public Object run() throws IOException {\n+        // Try pass the request, if fail, keep retrying\n+        authUgi.checkTGTAndReloginFromKeytab();\n+        try {\n+          return authUgi.doAs(action);\n+        } catch (UndeclaredThrowableException e) {\n+          throw new IOException(e.getCause());\n+        } catch (InterruptedException e) {\n+          throw new IOException(e);\n+        }\n+      }\n\\ No newline at end of file\n",
+          "actualSource": "      public Object run() throws IOException {\n        // Try pass the request, if fail, keep retrying\n        authUgi.checkTGTAndReloginFromKeytab();\n        try {\n          return authUgi.doAs(action);\n        } catch (UndeclaredThrowableException e) {\n          throw new IOException(e.getCause());\n        } catch (InterruptedException e) {\n          throw new IOException(e);\n        }\n      }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+          "extendedDetails": {
+            "oldValue": "HttpURLConnection",
+            "newValue": "Object"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "YARN-3287. Made TimelineClient put methods do as the correct login context. Contributed by Daryn Sharp and Jonathan Eagles.\n",
+          "commitDate": "09/03/15 1:54 PM",
+          "commitName": "d6e05c5ee26feefc17267b7c9db1e2a3dbdef117",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "06/03/15 1:32 PM",
+          "commitNameOld": "d1abc5d4fc00bb1b226066684556ba16ace71744",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 2.97,
+          "commitsBetweenForRepo": 19,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,5 +1,11 @@\n-          public HttpURLConnection run() throws Exception {\n-            return new DelegationTokenAuthenticatedURL(\n-                authenticator, connConfigurator).openConnection(url, token,\n-                doAsUser);\n-          }\n\\ No newline at end of file\n+      public Object run() throws IOException {\n+        // Try pass the request, if fail, keep retrying\n+        authUgi.checkTGTAndReloginFromKeytab();\n+        try {\n+          return authUgi.doAs(action);\n+        } catch (UndeclaredThrowableException e) {\n+          throw new IOException(e.getCause());\n+        } catch (InterruptedException e) {\n+          throw new IOException(e);\n+        }\n+      }\n\\ No newline at end of file\n",
+          "actualSource": "      public Object run() throws IOException {\n        // Try pass the request, if fail, keep retrying\n        authUgi.checkTGTAndReloginFromKeytab();\n        try {\n          return authUgi.doAs(action);\n        } catch (UndeclaredThrowableException e) {\n          throw new IOException(e.getCause());\n        } catch (InterruptedException e) {\n          throw new IOException(e);\n        }\n      }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+          "extendedDetails": {
+            "oldValue": "[Exception]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-3287. Made TimelineClient put methods do as the correct login context. Contributed by Daryn Sharp and Jonathan Eagles.\n",
+          "commitDate": "09/03/15 1:54 PM",
+          "commitName": "d6e05c5ee26feefc17267b7c9db1e2a3dbdef117",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "06/03/15 1:32 PM",
+          "commitNameOld": "d1abc5d4fc00bb1b226066684556ba16ace71744",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 2.97,
+          "commitsBetweenForRepo": 19,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,5 +1,11 @@\n-          public HttpURLConnection run() throws Exception {\n-            return new DelegationTokenAuthenticatedURL(\n-                authenticator, connConfigurator).openConnection(url, token,\n-                doAsUser);\n-          }\n\\ No newline at end of file\n+      public Object run() throws IOException {\n+        // Try pass the request, if fail, keep retrying\n+        authUgi.checkTGTAndReloginFromKeytab();\n+        try {\n+          return authUgi.doAs(action);\n+        } catch (UndeclaredThrowableException e) {\n+          throw new IOException(e.getCause());\n+        } catch (InterruptedException e) {\n+          throw new IOException(e);\n+        }\n+      }\n\\ No newline at end of file\n",
+          "actualSource": "      public Object run() throws IOException {\n        // Try pass the request, if fail, keep retrying\n        authUgi.checkTGTAndReloginFromKeytab();\n        try {\n          return authUgi.doAs(action);\n        } catch (UndeclaredThrowableException e) {\n          throw new IOException(e.getCause());\n        } catch (InterruptedException e) {\n          throw new IOException(e);\n        }\n      }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "39063cd36f96e351e4a6bf0bc2b6185711d4b059": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2676. Enhanced Timeline auth-filter to support proxy users. Contributed by Zhijie Shen.\n",
+      "commitDate": "17/10/14 10:02 PM",
+      "commitName": "39063cd36f96e351e4a6bf0bc2b6185711d4b059",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,5 @@\n+          public HttpURLConnection run() throws Exception {\n+            return new DelegationTokenAuthenticatedURL(\n+                authenticator, connConfigurator).openConnection(url, token,\n+                doAsUser);\n+          }\n\\ No newline at end of file\n",
+      "actualSource": "          public HttpURLConnection run() throws Exception {\n            return new DelegationTokenAuthenticatedURL(\n                authenticator, connConfigurator).openConnection(url, token,\n                doAsUser);\n          }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RetryCache.java",
+  "functionName": "waitForCompletion",
+  "functionId": "waitForCompletion___newEntry-CacheEntry",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RetryCache.java",
+  "functionStartLine": 259,
+  "functionEndLine": 300,
+  "numCommitsSeen": 11,
+  "timeTaken": 1065,
+  "changeHistory": [
+    "01ea6480564a9418230cd26b6f9dd54e28c51db0",
+    "e1162ebb1f0ee3a3d424e4c5ee3ec69717a520a6",
+    "a0a986dda77ea03dac9cfc7e0631bae611034ef4"
+  ],
+  "changeHistoryShort": {
+    "01ea6480564a9418230cd26b6f9dd54e28c51db0": "Ybodychange",
+    "e1162ebb1f0ee3a3d424e4c5ee3ec69717a520a6": "Ybodychange",
+    "a0a986dda77ea03dac9cfc7e0631bae611034ef4": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "01ea6480564a9418230cd26b6f9dd54e28c51db0": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6229. Race condition in failover can cause RetryCache fail to work. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1586714 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "11/04/14 9:42 AM",
+      "commitName": "01ea6480564a9418230cd26b6f9dd54e28c51db0",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "05/03/14 10:22 AM",
+      "commitNameOld": "e1162ebb1f0ee3a3d424e4c5ee3ec69717a520a6",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 36.93,
+      "commitsBetweenForRepo": 293,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,39 +1,42 @@\n   private CacheEntry waitForCompletion(CacheEntry newEntry) {\n     CacheEntry mapEntry \u003d null;\n-    synchronized (this) {\n+    lock.lock();\n+    try {\n       mapEntry \u003d set.get(newEntry);\n       // If an entry in the cache does not exist, add a new one\n       if (mapEntry \u003d\u003d null) {\n         if (LOG.isTraceEnabled()) {\n           LOG.trace(\"Adding Rpc request clientId \"\n               + newEntry.clientIdMsb + newEntry.clientIdLsb + \" callId \"\n               + newEntry.callId + \" to retryCache\");\n         }\n         set.put(newEntry);\n         retryCacheMetrics.incrCacheUpdated();\n         return newEntry;\n       } else {\n         retryCacheMetrics.incrCacheHit();\n       }\n+    } finally {\n+      lock.unlock();\n     }\n     // Entry already exists in cache. Wait for completion and return its state\n     Preconditions.checkNotNull(mapEntry,\n         \"Entry from the cache should not be null\");\n     // Wait for in progress request to complete\n     synchronized (mapEntry) {\n       while (mapEntry.state \u003d\u003d CacheEntry.INPROGRESS) {\n         try {\n           mapEntry.wait();\n         } catch (InterruptedException ie) {\n           // Restore the interrupted status\n           Thread.currentThread().interrupt();\n         }\n       }\n       // Previous request has failed, the expectation is is that it will be\n       // retried again.\n       if (mapEntry.state !\u003d CacheEntry.SUCCESS) {\n         mapEntry.state \u003d CacheEntry.INPROGRESS;\n       }\n     }\n     return mapEntry;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private CacheEntry waitForCompletion(CacheEntry newEntry) {\n    CacheEntry mapEntry \u003d null;\n    lock.lock();\n    try {\n      mapEntry \u003d set.get(newEntry);\n      // If an entry in the cache does not exist, add a new one\n      if (mapEntry \u003d\u003d null) {\n        if (LOG.isTraceEnabled()) {\n          LOG.trace(\"Adding Rpc request clientId \"\n              + newEntry.clientIdMsb + newEntry.clientIdLsb + \" callId \"\n              + newEntry.callId + \" to retryCache\");\n        }\n        set.put(newEntry);\n        retryCacheMetrics.incrCacheUpdated();\n        return newEntry;\n      } else {\n        retryCacheMetrics.incrCacheHit();\n      }\n    } finally {\n      lock.unlock();\n    }\n    // Entry already exists in cache. Wait for completion and return its state\n    Preconditions.checkNotNull(mapEntry,\n        \"Entry from the cache should not be null\");\n    // Wait for in progress request to complete\n    synchronized (mapEntry) {\n      while (mapEntry.state \u003d\u003d CacheEntry.INPROGRESS) {\n        try {\n          mapEntry.wait();\n        } catch (InterruptedException ie) {\n          // Restore the interrupted status\n          Thread.currentThread().interrupt();\n        }\n      }\n      // Previous request has failed, the expectation is is that it will be\n      // retried again.\n      if (mapEntry.state !\u003d CacheEntry.SUCCESS) {\n        mapEntry.state \u003d CacheEntry.INPROGRESS;\n      }\n    }\n    return mapEntry;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RetryCache.java",
+      "extendedDetails": {}
+    },
+    "e1162ebb1f0ee3a3d424e4c5ee3ec69717a520a6": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-5167. Add metrics about the NameNode retry cache. Contributed by Tsuyoshi OZAWA.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1574603 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "05/03/14 10:22 AM",
+      "commitName": "e1162ebb1f0ee3a3d424e4c5ee3ec69717a520a6",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "04/09/13 12:57 PM",
+      "commitNameOld": "cd663baf162665904b36ddb9cb14017eb2469d9f",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 181.93,
+      "commitsBetweenForRepo": 1252,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,39 @@\n   private CacheEntry waitForCompletion(CacheEntry newEntry) {\n     CacheEntry mapEntry \u003d null;\n     synchronized (this) {\n       mapEntry \u003d set.get(newEntry);\n       // If an entry in the cache does not exist, add a new one\n       if (mapEntry \u003d\u003d null) {\n         if (LOG.isTraceEnabled()) {\n           LOG.trace(\"Adding Rpc request clientId \"\n               + newEntry.clientIdMsb + newEntry.clientIdLsb + \" callId \"\n               + newEntry.callId + \" to retryCache\");\n         }\n         set.put(newEntry);\n+        retryCacheMetrics.incrCacheUpdated();\n         return newEntry;\n+      } else {\n+        retryCacheMetrics.incrCacheHit();\n       }\n     }\n     // Entry already exists in cache. Wait for completion and return its state\n     Preconditions.checkNotNull(mapEntry,\n         \"Entry from the cache should not be null\");\n     // Wait for in progress request to complete\n     synchronized (mapEntry) {\n       while (mapEntry.state \u003d\u003d CacheEntry.INPROGRESS) {\n         try {\n           mapEntry.wait();\n         } catch (InterruptedException ie) {\n           // Restore the interrupted status\n           Thread.currentThread().interrupt();\n         }\n       }\n       // Previous request has failed, the expectation is is that it will be\n       // retried again.\n       if (mapEntry.state !\u003d CacheEntry.SUCCESS) {\n         mapEntry.state \u003d CacheEntry.INPROGRESS;\n       }\n     }\n     return mapEntry;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private CacheEntry waitForCompletion(CacheEntry newEntry) {\n    CacheEntry mapEntry \u003d null;\n    synchronized (this) {\n      mapEntry \u003d set.get(newEntry);\n      // If an entry in the cache does not exist, add a new one\n      if (mapEntry \u003d\u003d null) {\n        if (LOG.isTraceEnabled()) {\n          LOG.trace(\"Adding Rpc request clientId \"\n              + newEntry.clientIdMsb + newEntry.clientIdLsb + \" callId \"\n              + newEntry.callId + \" to retryCache\");\n        }\n        set.put(newEntry);\n        retryCacheMetrics.incrCacheUpdated();\n        return newEntry;\n      } else {\n        retryCacheMetrics.incrCacheHit();\n      }\n    }\n    // Entry already exists in cache. Wait for completion and return its state\n    Preconditions.checkNotNull(mapEntry,\n        \"Entry from the cache should not be null\");\n    // Wait for in progress request to complete\n    synchronized (mapEntry) {\n      while (mapEntry.state \u003d\u003d CacheEntry.INPROGRESS) {\n        try {\n          mapEntry.wait();\n        } catch (InterruptedException ie) {\n          // Restore the interrupted status\n          Thread.currentThread().interrupt();\n        }\n      }\n      // Previous request has failed, the expectation is is that it will be\n      // retried again.\n      if (mapEntry.state !\u003d CacheEntry.SUCCESS) {\n        mapEntry.state \u003d CacheEntry.INPROGRESS;\n      }\n    }\n    return mapEntry;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RetryCache.java",
+      "extendedDetails": {}
+    },
+    "a0a986dda77ea03dac9cfc7e0631bae611034ef4": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-9762. RetryCache utility for implementing RPC retries. Contributed by Suresh Srinivas.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1506426 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/07/13 12:48 AM",
+      "commitName": "a0a986dda77ea03dac9cfc7e0631bae611034ef4",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,36 @@\n+  private CacheEntry waitForCompletion(CacheEntry newEntry) {\n+    CacheEntry mapEntry \u003d null;\n+    synchronized (this) {\n+      mapEntry \u003d set.get(newEntry);\n+      // If an entry in the cache does not exist, add a new one\n+      if (mapEntry \u003d\u003d null) {\n+        if (LOG.isTraceEnabled()) {\n+          LOG.trace(\"Adding Rpc request clientId \"\n+              + newEntry.clientIdMsb + newEntry.clientIdLsb + \" callId \"\n+              + newEntry.callId + \" to retryCache\");\n+        }\n+        set.put(newEntry);\n+        return newEntry;\n+      }\n+    }\n+    // Entry already exists in cache. Wait for completion and return its state\n+    Preconditions.checkNotNull(mapEntry,\n+        \"Entry from the cache should not be null\");\n+    // Wait for in progress request to complete\n+    synchronized (mapEntry) {\n+      while (mapEntry.state \u003d\u003d CacheEntry.INPROGRESS) {\n+        try {\n+          mapEntry.wait();\n+        } catch (InterruptedException ie) {\n+          // Restore the interrupted status\n+          Thread.currentThread().interrupt();\n+        }\n+      }\n+      // Previous request has failed, the expectation is is that it will be\n+      // retried again.\n+      if (mapEntry.state !\u003d CacheEntry.SUCCESS) {\n+        mapEntry.state \u003d CacheEntry.INPROGRESS;\n+      }\n+    }\n+    return mapEntry;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private CacheEntry waitForCompletion(CacheEntry newEntry) {\n    CacheEntry mapEntry \u003d null;\n    synchronized (this) {\n      mapEntry \u003d set.get(newEntry);\n      // If an entry in the cache does not exist, add a new one\n      if (mapEntry \u003d\u003d null) {\n        if (LOG.isTraceEnabled()) {\n          LOG.trace(\"Adding Rpc request clientId \"\n              + newEntry.clientIdMsb + newEntry.clientIdLsb + \" callId \"\n              + newEntry.callId + \" to retryCache\");\n        }\n        set.put(newEntry);\n        return newEntry;\n      }\n    }\n    // Entry already exists in cache. Wait for completion and return its state\n    Preconditions.checkNotNull(mapEntry,\n        \"Entry from the cache should not be null\");\n    // Wait for in progress request to complete\n    synchronized (mapEntry) {\n      while (mapEntry.state \u003d\u003d CacheEntry.INPROGRESS) {\n        try {\n          mapEntry.wait();\n        } catch (InterruptedException ie) {\n          // Restore the interrupted status\n          Thread.currentThread().interrupt();\n        }\n      }\n      // Previous request has failed, the expectation is is that it will be\n      // retried again.\n      if (mapEntry.state !\u003d CacheEntry.SUCCESS) {\n        mapEntry.state \u003d CacheEntry.INPROGRESS;\n      }\n    }\n    return mapEntry;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RetryCache.java"
+    }
+  }
+}

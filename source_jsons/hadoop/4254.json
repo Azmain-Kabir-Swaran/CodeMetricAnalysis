@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StatefulStripeReader.java",
+  "functionName": "prepareDecodeInputs",
+  "functionId": "prepareDecodeInputs",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StatefulStripeReader.java",
+  "functionStartLine": 49,
+  "functionEndLine": 69,
+  "numCommitsSeen": 16,
+  "timeTaken": 1649,
+  "changeHistory": [
+    "734d54c1a8950446e68098f62d8964e02ecc2890",
+    "c201cf951d5adefefe7c68e882a0c07962248577"
+  ],
+  "changeHistoryShort": {
+    "734d54c1a8950446e68098f62d8964e02ecc2890": "Ymultichange(Ymovefromfile,Ybodychange)",
+    "c201cf951d5adefefe7c68e882a0c07962248577": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "734d54c1a8950446e68098f62d8964e02ecc2890": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange)",
+      "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+      "commitDate": "21/09/16 6:34 AM",
+      "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+      "commitAuthor": "Kai Zheng",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+          "commitDate": "21/09/16 6:34 AM",
+          "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "20/09/16 12:03 AM",
+          "commitNameOld": "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 1.27,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,21 @@\n-    void prepareDecodeInputs() {\n-      if (decodeInputs \u003d\u003d null) {\n-        decodeInputs \u003d new ByteBuffer[dataBlkNum + parityBlkNum];\n-        final ByteBuffer cur;\n-        synchronized (DFSStripedInputStream.this) {\n-          cur \u003d curStripeBuf.duplicate();\n-        }\n-        StripedBlockUtil.VerticalRange range \u003d alignedStripe.range;\n-        for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n-          cur.limit(cur.capacity());\n-          int pos \u003d (int) (range.offsetInBlock % cellSize + cellSize * i);\n-          cur.position(pos);\n-          cur.limit((int) (pos + range.spanInBlock));\n-          decodeInputs[i] \u003d cur.slice();\n-          if (alignedStripe.chunks[i] \u003d\u003d null) {\n-            alignedStripe.chunks[i] \u003d new StripingChunk(decodeInputs[i]);\n-          }\n-        }\n+  void prepareDecodeInputs() {\n+    final ByteBuffer cur;\n+    synchronized (dfsStripedInputStream) {\n+      cur \u003d dfsStripedInputStream.getCurStripeBuf().duplicate();\n+    }\n+\n+    this.decodeInputs \u003d new ECChunk[dataBlkNum + parityBlkNum];\n+    int bufLen \u003d (int) alignedStripe.getSpanInBlock();\n+    int bufOff \u003d (int) alignedStripe.getOffsetInBlock();\n+    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n+      cur.limit(cur.capacity());\n+      int pos \u003d bufOff % cellSize + cellSize * i;\n+      cur.position(pos);\n+      cur.limit(pos + bufLen);\n+      decodeInputs[i] \u003d new ECChunk(cur.slice(), 0, bufLen);\n+      if (alignedStripe.chunks[i] \u003d\u003d null) {\n+        alignedStripe.chunks[i] \u003d\n+            new StripingChunk(decodeInputs[i].getBuffer());\n       }\n-    }\n\\ No newline at end of file\n+    }\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  void prepareDecodeInputs() {\n    final ByteBuffer cur;\n    synchronized (dfsStripedInputStream) {\n      cur \u003d dfsStripedInputStream.getCurStripeBuf().duplicate();\n    }\n\n    this.decodeInputs \u003d new ECChunk[dataBlkNum + parityBlkNum];\n    int bufLen \u003d (int) alignedStripe.getSpanInBlock();\n    int bufOff \u003d (int) alignedStripe.getOffsetInBlock();\n    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n      cur.limit(cur.capacity());\n      int pos \u003d bufOff % cellSize + cellSize * i;\n      cur.position(pos);\n      cur.limit(pos + bufLen);\n      decodeInputs[i] \u003d new ECChunk(cur.slice(), 0, bufLen);\n      if (alignedStripe.chunks[i] \u003d\u003d null) {\n        alignedStripe.chunks[i] \u003d\n            new StripingChunk(decodeInputs[i].getBuffer());\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StatefulStripeReader.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedInputStream.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StatefulStripeReader.java",
+            "oldMethodName": "prepareDecodeInputs",
+            "newMethodName": "prepareDecodeInputs"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+          "commitDate": "21/09/16 6:34 AM",
+          "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "20/09/16 12:03 AM",
+          "commitNameOld": "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 1.27,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,21 @@\n-    void prepareDecodeInputs() {\n-      if (decodeInputs \u003d\u003d null) {\n-        decodeInputs \u003d new ByteBuffer[dataBlkNum + parityBlkNum];\n-        final ByteBuffer cur;\n-        synchronized (DFSStripedInputStream.this) {\n-          cur \u003d curStripeBuf.duplicate();\n-        }\n-        StripedBlockUtil.VerticalRange range \u003d alignedStripe.range;\n-        for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n-          cur.limit(cur.capacity());\n-          int pos \u003d (int) (range.offsetInBlock % cellSize + cellSize * i);\n-          cur.position(pos);\n-          cur.limit((int) (pos + range.spanInBlock));\n-          decodeInputs[i] \u003d cur.slice();\n-          if (alignedStripe.chunks[i] \u003d\u003d null) {\n-            alignedStripe.chunks[i] \u003d new StripingChunk(decodeInputs[i]);\n-          }\n-        }\n+  void prepareDecodeInputs() {\n+    final ByteBuffer cur;\n+    synchronized (dfsStripedInputStream) {\n+      cur \u003d dfsStripedInputStream.getCurStripeBuf().duplicate();\n+    }\n+\n+    this.decodeInputs \u003d new ECChunk[dataBlkNum + parityBlkNum];\n+    int bufLen \u003d (int) alignedStripe.getSpanInBlock();\n+    int bufOff \u003d (int) alignedStripe.getOffsetInBlock();\n+    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n+      cur.limit(cur.capacity());\n+      int pos \u003d bufOff % cellSize + cellSize * i;\n+      cur.position(pos);\n+      cur.limit(pos + bufLen);\n+      decodeInputs[i] \u003d new ECChunk(cur.slice(), 0, bufLen);\n+      if (alignedStripe.chunks[i] \u003d\u003d null) {\n+        alignedStripe.chunks[i] \u003d\n+            new StripingChunk(decodeInputs[i].getBuffer());\n       }\n-    }\n\\ No newline at end of file\n+    }\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  void prepareDecodeInputs() {\n    final ByteBuffer cur;\n    synchronized (dfsStripedInputStream) {\n      cur \u003d dfsStripedInputStream.getCurStripeBuf().duplicate();\n    }\n\n    this.decodeInputs \u003d new ECChunk[dataBlkNum + parityBlkNum];\n    int bufLen \u003d (int) alignedStripe.getSpanInBlock();\n    int bufOff \u003d (int) alignedStripe.getOffsetInBlock();\n    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n      cur.limit(cur.capacity());\n      int pos \u003d bufOff % cellSize + cellSize * i;\n      cur.position(pos);\n      cur.limit(pos + bufLen);\n      decodeInputs[i] \u003d new ECChunk(cur.slice(), 0, bufLen);\n      if (alignedStripe.chunks[i] \u003d\u003d null) {\n        alignedStripe.chunks[i] \u003d\n            new StripingChunk(decodeInputs[i].getBuffer());\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StatefulStripeReader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "c201cf951d5adefefe7c68e882a0c07962248577": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-12040. Adjust inputs order for the decode API in raw erasure coder. (Kai Zheng via yliu)\n",
+      "commitDate": "28/10/15 1:18 AM",
+      "commitName": "c201cf951d5adefefe7c68e882a0c07962248577",
+      "commitAuthor": "yliu",
+      "commitDateOld": "07/10/15 6:12 PM",
+      "commitNameOld": "66e2cfa1a0285f2b4f62a4ffb4d5c1ee54f76156",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 20.3,
+      "commitsBetweenForRepo": 184,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,20 @@\n     void prepareDecodeInputs() {\n       if (decodeInputs \u003d\u003d null) {\n         decodeInputs \u003d new ByteBuffer[dataBlkNum + parityBlkNum];\n         final ByteBuffer cur;\n         synchronized (DFSStripedInputStream.this) {\n           cur \u003d curStripeBuf.duplicate();\n         }\n         StripedBlockUtil.VerticalRange range \u003d alignedStripe.range;\n         for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n           cur.limit(cur.capacity());\n           int pos \u003d (int) (range.offsetInBlock % cellSize + cellSize * i);\n           cur.position(pos);\n           cur.limit((int) (pos + range.spanInBlock));\n-          final int decodeIndex \u003d StripedBlockUtil.convertIndex4Decode(i,\n-              dataBlkNum, parityBlkNum);\n-          decodeInputs[decodeIndex] \u003d cur.slice();\n+          decodeInputs[i] \u003d cur.slice();\n           if (alignedStripe.chunks[i] \u003d\u003d null) {\n-            alignedStripe.chunks[i] \u003d new StripingChunk(\n-                decodeInputs[decodeIndex]);\n+            alignedStripe.chunks[i] \u003d new StripingChunk(decodeInputs[i]);\n           }\n         }\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    void prepareDecodeInputs() {\n      if (decodeInputs \u003d\u003d null) {\n        decodeInputs \u003d new ByteBuffer[dataBlkNum + parityBlkNum];\n        final ByteBuffer cur;\n        synchronized (DFSStripedInputStream.this) {\n          cur \u003d curStripeBuf.duplicate();\n        }\n        StripedBlockUtil.VerticalRange range \u003d alignedStripe.range;\n        for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n          cur.limit(cur.capacity());\n          int pos \u003d (int) (range.offsetInBlock % cellSize + cellSize * i);\n          cur.position(pos);\n          cur.limit((int) (pos + range.spanInBlock));\n          decodeInputs[i] \u003d cur.slice();\n          if (alignedStripe.chunks[i] \u003d\u003d null) {\n            alignedStripe.chunks[i] \u003d new StripingChunk(decodeInputs[i]);\n          }\n        }\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedInputStream.java",
+      "extendedDetails": {}
+    }
+  }
+}

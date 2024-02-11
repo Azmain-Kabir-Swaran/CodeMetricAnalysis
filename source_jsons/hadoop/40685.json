@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "MemoryPlacementConstraintManager.java",
+  "functionName": "registerApplication",
+  "functionId": "registerApplication___appId-ApplicationId__constraintMap-Map__Set__String__,PlacementConstraint__",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/constraint/MemoryPlacementConstraintManager.java",
+  "functionStartLine": 82,
+  "functionEndLine": 118,
+  "numCommitsSeen": 5,
+  "timeTaken": 1310,
+  "changeHistory": [
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+    "1efb2b6f250022f41fe5911c1bb3028ec15c5447"
+  ],
+  "changeHistoryShort": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": "Ybodychange",
+    "1efb2b6f250022f41fe5911c1bb3028ec15c5447": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9341.  Fixed enentrant lock usage in YARN project.\n            Contributed by Prabhu Joseph\n",
+      "commitDate": "07/03/19 1:47 PM",
+      "commitName": "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "26/03/18 11:20 AM",
+      "commitNameOld": "24bc5e0e4d919fddae983fc13d4ba4e4e5cb9533",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 346.14,
+      "commitsBetweenForRepo": 3168,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,37 +1,37 @@\n   public void registerApplication(ApplicationId appId,\n       Map\u003cSet\u003cString\u003e, PlacementConstraint\u003e constraintMap) {\n     // Check if app already exists. If not, prepare its constraint map.\n     Map\u003cString, PlacementConstraint\u003e constraintsForApp \u003d new HashMap\u003c\u003e();\n+    readLock.lock();\n     try {\n-      readLock.lock();\n       if (appConstraints.get(appId) !\u003d null) {\n         LOG.warn(\"Application {} has already been registered.\", appId);\n         return;\n       }\n       // Go over each sourceTag-constraint pair, validate it, and add it to the\n       // constraint map for this app.\n       for (Map.Entry\u003cSet\u003cString\u003e, PlacementConstraint\u003e entry : constraintMap\n           .entrySet()) {\n         Set\u003cString\u003e sourceTags \u003d entry.getKey();\n         PlacementConstraint constraint \u003d entry.getValue();\n         if (validateConstraint(sourceTags, constraint)) {\n           String sourceTag \u003d getValidSourceTag(sourceTags);\n           constraintsForApp.put(sourceTag, constraint);\n         }\n       }\n     } finally {\n       readLock.unlock();\n     }\n \n     if (constraintsForApp.isEmpty()) {\n       LOG.info(\"Application {} was registered, but no constraints were added.\",\n           appId);\n     }\n     // Update appConstraints.\n+    writeLock.lock();\n     try {\n-      writeLock.lock();\n       appConstraints.put(appId, constraintsForApp);\n     } finally {\n       writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void registerApplication(ApplicationId appId,\n      Map\u003cSet\u003cString\u003e, PlacementConstraint\u003e constraintMap) {\n    // Check if app already exists. If not, prepare its constraint map.\n    Map\u003cString, PlacementConstraint\u003e constraintsForApp \u003d new HashMap\u003c\u003e();\n    readLock.lock();\n    try {\n      if (appConstraints.get(appId) !\u003d null) {\n        LOG.warn(\"Application {} has already been registered.\", appId);\n        return;\n      }\n      // Go over each sourceTag-constraint pair, validate it, and add it to the\n      // constraint map for this app.\n      for (Map.Entry\u003cSet\u003cString\u003e, PlacementConstraint\u003e entry : constraintMap\n          .entrySet()) {\n        Set\u003cString\u003e sourceTags \u003d entry.getKey();\n        PlacementConstraint constraint \u003d entry.getValue();\n        if (validateConstraint(sourceTags, constraint)) {\n          String sourceTag \u003d getValidSourceTag(sourceTags);\n          constraintsForApp.put(sourceTag, constraint);\n        }\n      }\n    } finally {\n      readLock.unlock();\n    }\n\n    if (constraintsForApp.isEmpty()) {\n      LOG.info(\"Application {} was registered, but no constraints were added.\",\n          appId);\n    }\n    // Update appConstraints.\n    writeLock.lock();\n    try {\n      appConstraints.put(appId, constraintsForApp);\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/constraint/MemoryPlacementConstraintManager.java",
+      "extendedDetails": {}
+    },
+    "1efb2b6f250022f41fe5911c1bb3028ec15c5447": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6596. Introduce Placement Constraint Manager module. (Konstantinos Karanasos via asuresh)\n",
+      "commitDate": "31/01/18 1:30 AM",
+      "commitName": "1efb2b6f250022f41fe5911c1bb3028ec15c5447",
+      "commitAuthor": "Arun Suresh",
+      "diff": "@@ -0,0 +1,37 @@\n+  public void registerApplication(ApplicationId appId,\n+      Map\u003cSet\u003cString\u003e, PlacementConstraint\u003e constraintMap) {\n+    // Check if app already exists. If not, prepare its constraint map.\n+    Map\u003cString, PlacementConstraint\u003e constraintsForApp \u003d new HashMap\u003c\u003e();\n+    try {\n+      readLock.lock();\n+      if (appConstraints.get(appId) !\u003d null) {\n+        LOG.warn(\"Application {} has already been registered.\", appId);\n+        return;\n+      }\n+      // Go over each sourceTag-constraint pair, validate it, and add it to the\n+      // constraint map for this app.\n+      for (Map.Entry\u003cSet\u003cString\u003e, PlacementConstraint\u003e entry : constraintMap\n+          .entrySet()) {\n+        Set\u003cString\u003e sourceTags \u003d entry.getKey();\n+        PlacementConstraint constraint \u003d entry.getValue();\n+        if (validateConstraint(sourceTags, constraint)) {\n+          String sourceTag \u003d getValidSourceTag(sourceTags);\n+          constraintsForApp.put(sourceTag, constraint);\n+        }\n+      }\n+    } finally {\n+      readLock.unlock();\n+    }\n+\n+    if (constraintsForApp.isEmpty()) {\n+      LOG.info(\"Application {} was registered, but no constraints were added.\",\n+          appId);\n+    }\n+    // Update appConstraints.\n+    try {\n+      writeLock.lock();\n+      appConstraints.put(appId, constraintsForApp);\n+    } finally {\n+      writeLock.unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void registerApplication(ApplicationId appId,\n      Map\u003cSet\u003cString\u003e, PlacementConstraint\u003e constraintMap) {\n    // Check if app already exists. If not, prepare its constraint map.\n    Map\u003cString, PlacementConstraint\u003e constraintsForApp \u003d new HashMap\u003c\u003e();\n    try {\n      readLock.lock();\n      if (appConstraints.get(appId) !\u003d null) {\n        LOG.warn(\"Application {} has already been registered.\", appId);\n        return;\n      }\n      // Go over each sourceTag-constraint pair, validate it, and add it to the\n      // constraint map for this app.\n      for (Map.Entry\u003cSet\u003cString\u003e, PlacementConstraint\u003e entry : constraintMap\n          .entrySet()) {\n        Set\u003cString\u003e sourceTags \u003d entry.getKey();\n        PlacementConstraint constraint \u003d entry.getValue();\n        if (validateConstraint(sourceTags, constraint)) {\n          String sourceTag \u003d getValidSourceTag(sourceTags);\n          constraintsForApp.put(sourceTag, constraint);\n        }\n      }\n    } finally {\n      readLock.unlock();\n    }\n\n    if (constraintsForApp.isEmpty()) {\n      LOG.info(\"Application {} was registered, but no constraints were added.\",\n          appId);\n    }\n    // Update appConstraints.\n    try {\n      writeLock.lock();\n      appConstraints.put(appId, constraintsForApp);\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/constraint/MemoryPlacementConstraintManager.java"
+    }
+  }
+}

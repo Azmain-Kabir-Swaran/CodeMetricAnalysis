@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StateStoreZooKeeperImpl.java",
+  "functionName": "get",
+  "functionId": "get___clazz-Class__T__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/store/driver/impl/StateStoreZooKeeperImpl.java",
+  "functionStartLine": 131,
+  "functionEndLine": 178,
+  "numCommitsSeen": 7,
+  "timeTaken": 1807,
+  "changeHistory": [
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+    "76be6cbf6c33f866794f27ca2560ca7c7b2fa0e7",
+    "7cb6bdf09ed361e067ebf234230babd1391a7d4b"
+  ],
+  "changeHistoryShort": {
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": "Yfilerename",
+    "76be6cbf6c33f866794f27ca2560ca7c7b2fa0e7": "Ybodychange",
+    "7cb6bdf09ed361e067ebf234230babd1391a7d4b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-13215. RBF: Move Router to its own module. Contributed by Wei Yan\n",
+      "commitDate": "19/03/18 10:13 PM",
+      "commitName": "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+      "commitAuthor": "weiy",
+      "commitDateOld": "19/03/18 5:19 PM",
+      "commitNameOld": "e65ff1c8be48ef4f04ed96f96ac4caef4974944d",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.2,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public \u003cT extends BaseRecord\u003e QueryResult\u003cT\u003e get(Class\u003cT\u003e clazz)\n      throws IOException {\n    verifyDriverReady();\n    long start \u003d monotonicNow();\n    List\u003cT\u003e ret \u003d new ArrayList\u003c\u003e();\n    String znode \u003d getZNodeForClass(clazz);\n    try {\n      List\u003cString\u003e children \u003d zkManager.getChildren(znode);\n      for (String child : children) {\n        try {\n          String path \u003d getNodePath(znode, child);\n          Stat stat \u003d new Stat();\n          String data \u003d zkManager.getStringData(path, stat);\n          boolean corrupted \u003d false;\n          if (data \u003d\u003d null || data.equals(\"\")) {\n            // All records should have data, otherwise this is corrupted\n            corrupted \u003d true;\n          } else {\n            try {\n              T record \u003d createRecord(data, stat, clazz);\n              ret.add(record);\n            } catch (IOException e) {\n              LOG.error(\"Cannot create record type \\\"{}\\\" from \\\"{}\\\": {}\",\n                  clazz.getSimpleName(), data, e.getMessage());\n              corrupted \u003d true;\n            }\n          }\n\n          if (corrupted) {\n            LOG.error(\"Cannot get data for {} at {}, cleaning corrupted data\",\n                child, path);\n            zkManager.delete(path);\n          }\n        } catch (Exception e) {\n          LOG.error(\"Cannot get data for {}: {}\", child, e.getMessage());\n        }\n      }\n    } catch (Exception e) {\n      getMetrics().addFailure(monotonicNow() - start);\n      String msg \u003d \"Cannot get children for \\\"\" + znode + \"\\\": \" +\n          e.getMessage();\n      LOG.error(msg);\n      throw new IOException(msg);\n    }\n    long end \u003d monotonicNow();\n    getMetrics().addRead(end - start);\n    return new QueryResult\u003cT\u003e(ret, getTime());\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/store/driver/impl/StateStoreZooKeeperImpl.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/store/driver/impl/StateStoreZooKeeperImpl.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/store/driver/impl/StateStoreZooKeeperImpl.java"
+      }
+    },
+    "76be6cbf6c33f866794f27ca2560ca7c7b2fa0e7": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12773. RBF: Improve State Store FS implementation. Contributed by Inigo Goiri.\n",
+      "commitDate": "13/03/18 8:20 PM",
+      "commitName": "76be6cbf6c33f866794f27ca2560ca7c7b2fa0e7",
+      "commitAuthor": "Yiqun Lin",
+      "commitDateOld": "29/11/17 9:43 AM",
+      "commitNameOld": "301641811d93ac22dc6fe1a05f18c1f266cc5e54",
+      "commitAuthorOld": "Wei Yan",
+      "daysBetweenCommits": 104.4,
+      "commitsBetweenForRepo": 654,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,4 +1,48 @@\n   public \u003cT extends BaseRecord\u003e QueryResult\u003cT\u003e get(Class\u003cT\u003e clazz)\n       throws IOException {\n-    return get(clazz, (String)null);\n+    verifyDriverReady();\n+    long start \u003d monotonicNow();\n+    List\u003cT\u003e ret \u003d new ArrayList\u003c\u003e();\n+    String znode \u003d getZNodeForClass(clazz);\n+    try {\n+      List\u003cString\u003e children \u003d zkManager.getChildren(znode);\n+      for (String child : children) {\n+        try {\n+          String path \u003d getNodePath(znode, child);\n+          Stat stat \u003d new Stat();\n+          String data \u003d zkManager.getStringData(path, stat);\n+          boolean corrupted \u003d false;\n+          if (data \u003d\u003d null || data.equals(\"\")) {\n+            // All records should have data, otherwise this is corrupted\n+            corrupted \u003d true;\n+          } else {\n+            try {\n+              T record \u003d createRecord(data, stat, clazz);\n+              ret.add(record);\n+            } catch (IOException e) {\n+              LOG.error(\"Cannot create record type \\\"{}\\\" from \\\"{}\\\": {}\",\n+                  clazz.getSimpleName(), data, e.getMessage());\n+              corrupted \u003d true;\n+            }\n+          }\n+\n+          if (corrupted) {\n+            LOG.error(\"Cannot get data for {} at {}, cleaning corrupted data\",\n+                child, path);\n+            zkManager.delete(path);\n+          }\n+        } catch (Exception e) {\n+          LOG.error(\"Cannot get data for {}: {}\", child, e.getMessage());\n+        }\n+      }\n+    } catch (Exception e) {\n+      getMetrics().addFailure(monotonicNow() - start);\n+      String msg \u003d \"Cannot get children for \\\"\" + znode + \"\\\": \" +\n+          e.getMessage();\n+      LOG.error(msg);\n+      throw new IOException(msg);\n+    }\n+    long end \u003d monotonicNow();\n+    getMetrics().addRead(end - start);\n+    return new QueryResult\u003cT\u003e(ret, getTime());\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public \u003cT extends BaseRecord\u003e QueryResult\u003cT\u003e get(Class\u003cT\u003e clazz)\n      throws IOException {\n    verifyDriverReady();\n    long start \u003d monotonicNow();\n    List\u003cT\u003e ret \u003d new ArrayList\u003c\u003e();\n    String znode \u003d getZNodeForClass(clazz);\n    try {\n      List\u003cString\u003e children \u003d zkManager.getChildren(znode);\n      for (String child : children) {\n        try {\n          String path \u003d getNodePath(znode, child);\n          Stat stat \u003d new Stat();\n          String data \u003d zkManager.getStringData(path, stat);\n          boolean corrupted \u003d false;\n          if (data \u003d\u003d null || data.equals(\"\")) {\n            // All records should have data, otherwise this is corrupted\n            corrupted \u003d true;\n          } else {\n            try {\n              T record \u003d createRecord(data, stat, clazz);\n              ret.add(record);\n            } catch (IOException e) {\n              LOG.error(\"Cannot create record type \\\"{}\\\" from \\\"{}\\\": {}\",\n                  clazz.getSimpleName(), data, e.getMessage());\n              corrupted \u003d true;\n            }\n          }\n\n          if (corrupted) {\n            LOG.error(\"Cannot get data for {} at {}, cleaning corrupted data\",\n                child, path);\n            zkManager.delete(path);\n          }\n        } catch (Exception e) {\n          LOG.error(\"Cannot get data for {}: {}\", child, e.getMessage());\n        }\n      }\n    } catch (Exception e) {\n      getMetrics().addFailure(monotonicNow() - start);\n      String msg \u003d \"Cannot get children for \\\"\" + znode + \"\\\": \" +\n          e.getMessage();\n      LOG.error(msg);\n      throw new IOException(msg);\n    }\n    long end \u003d monotonicNow();\n    getMetrics().addRead(end - start);\n    return new QueryResult\u003cT\u003e(ret, getTime());\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/store/driver/impl/StateStoreZooKeeperImpl.java",
+      "extendedDetails": {}
+    },
+    "7cb6bdf09ed361e067ebf234230babd1391a7d4b": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10631. Federation State Store ZooKeeper implementation. Contributed by Jason Kace and Inigo Goiri.\n\n(cherry picked from commit 23c4ddee11ab1300325a6361124ee8ad6f68d7a4)\n",
+      "commitDate": "06/10/17 6:50 PM",
+      "commitName": "7cb6bdf09ed361e067ebf234230babd1391a7d4b",
+      "commitAuthor": "Inigo Goiri",
+      "diff": "@@ -0,0 +1,4 @@\n+  public \u003cT extends BaseRecord\u003e QueryResult\u003cT\u003e get(Class\u003cT\u003e clazz)\n+      throws IOException {\n+    return get(clazz, (String)null);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public \u003cT extends BaseRecord\u003e QueryResult\u003cT\u003e get(Class\u003cT\u003e clazz)\n      throws IOException {\n    return get(clazz, (String)null);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/store/driver/impl/StateStoreZooKeeperImpl.java"
+    }
+  }
+}

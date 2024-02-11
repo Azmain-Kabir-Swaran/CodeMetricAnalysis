@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DiffListBySkipList.java",
+  "functionName": "addFirst",
+  "functionId": "addFirst___diff-DirectoryDiff",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DiffListBySkipList.java",
+  "functionStartLine": 293,
+  "functionEndLine": 326,
+  "numCommitsSeen": 6,
+  "timeTaken": 2350,
+  "changeHistory": [
+    "871d0d39faa2c4c992d61ed20497dcf6c3faa376",
+    "ba82e5c488ca0081534c1e40810b3f9e7da9eaad",
+    "81d9446a92e3968234702b2981468a991c7cf8a0"
+  ],
+  "changeHistoryShort": {
+    "871d0d39faa2c4c992d61ed20497dcf6c3faa376": "Ybodychange",
+    "ba82e5c488ca0081534c1e40810b3f9e7da9eaad": "Yfilerename",
+    "81d9446a92e3968234702b2981468a991c7cf8a0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "871d0d39faa2c4c992d61ed20497dcf6c3faa376": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13223. Reduce DiffListBySkipList memory usage.  Contributed by Shashikant Banerjee\n",
+      "commitDate": "06/03/18 12:23 PM",
+      "commitName": "871d0d39faa2c4c992d61ed20497dcf6c3faa376",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "02/03/18 5:47 PM",
+      "commitNameOld": "ba82e5c488ca0081534c1e40810b3f9e7da9eaad",
+      "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+      "daysBetweenCommits": 3.77,
+      "commitsBetweenForRepo": 17,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,38 +1,34 @@\n   public void addFirst(DirectoryDiff diff) {\n-    final int nodeLevel \u003d randomLevel(skipInterval, maxSkipLevels);\n+    final int nodeLevel \u003d DirectoryDiffListFactory.randomLevel();\n     final SkipListNode[] nodePath \u003d new SkipListNode[nodeLevel + 1];\n-\n     Arrays.fill(nodePath, head);\n-    for (int level \u003d head.level() + 1; level \u003c\u003d nodeLevel; level++) {\n-      head.skipDiffList.add(new SkipDiff(null));\n-    }\n \n     final SkipListNode newNode \u003d new SkipListNode(diff, nodeLevel);\n     for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n       if (level \u003e 0) {\n         // Case : S0 is added at the beginning and it has 3 levels\n         //  suppose the list is like:\n         //  level 1: head -------------------\u003es5-------------\u003eNULL\n         //  level 0:head-\u003e    s1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n         //  in this case:\n         //  level 2: head -\u003e s0 --------------------------------\u003eNULL\n         //  level 1: head -\u003e s0\u0027----------------\u003es5-------------\u003eNULL\n         //  level 0:head-\u003e   s0-\u003es1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n         //  At level 1, we need to combine s0, s1, s2, s3, s4 and s5 and store\n         //  as s0\u0027. At level 2, s0 of next is pointing to null;\n         //  Note: in this case, the diff of element being added is included\n         //  while combining the diffs.\n         final SkipListNode nextNode \u003d head.getSkipNode(level);\n         if (nextNode !\u003d null) {\n           ChildrenDiff combined \u003d combineDiff(newNode, nextNode, level);\n           if (combined !\u003d null) {\n             newNode.setSkipDiff(combined, level);\n           }\n         }\n       }\n       //insert to the linked list\n       newNode.setSkipTo(nodePath[level].getSkipNode(level), level);\n       nodePath[level].setSkipTo(newNode, level);\n     }\n     skipNodeList.add(0, newNode);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void addFirst(DirectoryDiff diff) {\n    final int nodeLevel \u003d DirectoryDiffListFactory.randomLevel();\n    final SkipListNode[] nodePath \u003d new SkipListNode[nodeLevel + 1];\n    Arrays.fill(nodePath, head);\n\n    final SkipListNode newNode \u003d new SkipListNode(diff, nodeLevel);\n    for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n      if (level \u003e 0) {\n        // Case : S0 is added at the beginning and it has 3 levels\n        //  suppose the list is like:\n        //  level 1: head -------------------\u003es5-------------\u003eNULL\n        //  level 0:head-\u003e    s1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n        //  in this case:\n        //  level 2: head -\u003e s0 --------------------------------\u003eNULL\n        //  level 1: head -\u003e s0\u0027----------------\u003es5-------------\u003eNULL\n        //  level 0:head-\u003e   s0-\u003es1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n        //  At level 1, we need to combine s0, s1, s2, s3, s4 and s5 and store\n        //  as s0\u0027. At level 2, s0 of next is pointing to null;\n        //  Note: in this case, the diff of element being added is included\n        //  while combining the diffs.\n        final SkipListNode nextNode \u003d head.getSkipNode(level);\n        if (nextNode !\u003d null) {\n          ChildrenDiff combined \u003d combineDiff(newNode, nextNode, level);\n          if (combined !\u003d null) {\n            newNode.setSkipDiff(combined, level);\n          }\n        }\n      }\n      //insert to the linked list\n      newNode.setSkipTo(nodePath[level].getSkipNode(level), level);\n      nodePath[level].setSkipTo(newNode, level);\n    }\n    skipNodeList.add(0, newNode);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DiffListBySkipList.java",
+      "extendedDetails": {}
+    },
+    "ba82e5c488ca0081534c1e40810b3f9e7da9eaad": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-13173.  Replace ArrayList with DirectoryDiffList(SnapshotSkipList) to store DirectoryDiffs.  Contributed by Shashikant Banerjee\n",
+      "commitDate": "02/03/18 5:47 PM",
+      "commitName": "ba82e5c488ca0081534c1e40810b3f9e7da9eaad",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "02/03/18 5:08 PM",
+      "commitNameOld": "90d2bdcb752f5f32ef65765af6fd5596dd5d373b",
+      "commitAuthorOld": "Andras Bokor",
+      "daysBetweenCommits": 0.03,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void addFirst(DirectoryDiff diff) {\n    final int nodeLevel \u003d randomLevel(skipInterval, maxSkipLevels);\n    final SkipListNode[] nodePath \u003d new SkipListNode[nodeLevel + 1];\n\n    Arrays.fill(nodePath, head);\n    for (int level \u003d head.level() + 1; level \u003c\u003d nodeLevel; level++) {\n      head.skipDiffList.add(new SkipDiff(null));\n    }\n\n    final SkipListNode newNode \u003d new SkipListNode(diff, nodeLevel);\n    for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n      if (level \u003e 0) {\n        // Case : S0 is added at the beginning and it has 3 levels\n        //  suppose the list is like:\n        //  level 1: head -------------------\u003es5-------------\u003eNULL\n        //  level 0:head-\u003e    s1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n        //  in this case:\n        //  level 2: head -\u003e s0 --------------------------------\u003eNULL\n        //  level 1: head -\u003e s0\u0027----------------\u003es5-------------\u003eNULL\n        //  level 0:head-\u003e   s0-\u003es1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n        //  At level 1, we need to combine s0, s1, s2, s3, s4 and s5 and store\n        //  as s0\u0027. At level 2, s0 of next is pointing to null;\n        //  Note: in this case, the diff of element being added is included\n        //  while combining the diffs.\n        final SkipListNode nextNode \u003d head.getSkipNode(level);\n        if (nextNode !\u003d null) {\n          ChildrenDiff combined \u003d combineDiff(newNode, nextNode, level);\n          if (combined !\u003d null) {\n            newNode.setSkipDiff(combined, level);\n          }\n        }\n      }\n      //insert to the linked list\n      newNode.setSkipTo(nodePath[level].getSkipNode(level), level);\n      nodePath[level].setSkipTo(newNode, level);\n    }\n    skipNodeList.add(0, newNode);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DiffListBySkipList.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectoryDiffList.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DiffListBySkipList.java"
+      }
+    },
+    "81d9446a92e3968234702b2981468a991c7cf8a0": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13102. Implement SnapshotSkipList class to store Multi level DirectoryDiffs.  Contributed by Shashikant Banerjee\n",
+      "commitDate": "28/02/18 1:42 PM",
+      "commitName": "81d9446a92e3968234702b2981468a991c7cf8a0",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "diff": "@@ -0,0 +1,38 @@\n+  public void addFirst(DirectoryDiff diff) {\n+    final int nodeLevel \u003d randomLevel(skipInterval, maxSkipLevels);\n+    final SkipListNode[] nodePath \u003d new SkipListNode[nodeLevel + 1];\n+\n+    Arrays.fill(nodePath, head);\n+    for (int level \u003d head.level() + 1; level \u003c\u003d nodeLevel; level++) {\n+      head.skipDiffList.add(new SkipDiff(null));\n+    }\n+\n+    final SkipListNode newNode \u003d new SkipListNode(diff, nodeLevel);\n+    for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n+      if (level \u003e 0) {\n+        // Case : S0 is added at the beginning and it has 3 levels\n+        //  suppose the list is like:\n+        //  level 1: head -------------------\u003es5-------------\u003eNULL\n+        //  level 0:head-\u003e    s1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n+        //  in this case:\n+        //  level 2: head -\u003e s0 --------------------------------\u003eNULL\n+        //  level 1: head -\u003e s0\u0027----------------\u003es5-------------\u003eNULL\n+        //  level 0:head-\u003e   s0-\u003es1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n+        //  At level 1, we need to combine s0, s1, s2, s3, s4 and s5 and store\n+        //  as s0\u0027. At level 2, s0 of next is pointing to null;\n+        //  Note: in this case, the diff of element being added is included\n+        //  while combining the diffs.\n+        final SkipListNode nextNode \u003d head.getSkipNode(level);\n+        if (nextNode !\u003d null) {\n+          ChildrenDiff combined \u003d combineDiff(newNode, nextNode, level);\n+          if (combined !\u003d null) {\n+            newNode.setSkipDiff(combined, level);\n+          }\n+        }\n+      }\n+      //insert to the linked list\n+      newNode.setSkipTo(nodePath[level].getSkipNode(level), level);\n+      nodePath[level].setSkipTo(newNode, level);\n+    }\n+    skipNodeList.add(0, newNode);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void addFirst(DirectoryDiff diff) {\n    final int nodeLevel \u003d randomLevel(skipInterval, maxSkipLevels);\n    final SkipListNode[] nodePath \u003d new SkipListNode[nodeLevel + 1];\n\n    Arrays.fill(nodePath, head);\n    for (int level \u003d head.level() + 1; level \u003c\u003d nodeLevel; level++) {\n      head.skipDiffList.add(new SkipDiff(null));\n    }\n\n    final SkipListNode newNode \u003d new SkipListNode(diff, nodeLevel);\n    for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n      if (level \u003e 0) {\n        // Case : S0 is added at the beginning and it has 3 levels\n        //  suppose the list is like:\n        //  level 1: head -------------------\u003es5-------------\u003eNULL\n        //  level 0:head-\u003e    s1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n        //  in this case:\n        //  level 2: head -\u003e s0 --------------------------------\u003eNULL\n        //  level 1: head -\u003e s0\u0027----------------\u003es5-------------\u003eNULL\n        //  level 0:head-\u003e   s0-\u003es1-\u003es2-\u003es3-\u003es4-\u003es5-\u003es6-\u003es7-\u003es8-\u003es9\n        //  At level 1, we need to combine s0, s1, s2, s3, s4 and s5 and store\n        //  as s0\u0027. At level 2, s0 of next is pointing to null;\n        //  Note: in this case, the diff of element being added is included\n        //  while combining the diffs.\n        final SkipListNode nextNode \u003d head.getSkipNode(level);\n        if (nextNode !\u003d null) {\n          ChildrenDiff combined \u003d combineDiff(newNode, nextNode, level);\n          if (combined !\u003d null) {\n            newNode.setSkipDiff(combined, level);\n          }\n        }\n      }\n      //insert to the linked list\n      newNode.setSkipTo(nodePath[level].getSkipNode(level), level);\n      nodePath[level].setSkipTo(newNode, level);\n    }\n    skipNodeList.add(0, newNode);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectoryDiffList.java"
+    }
+  }
+}

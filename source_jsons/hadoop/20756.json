@@ -1,0 +1,176 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "JobResourceUploader.java",
+  "functionName": "uploadArchives",
+  "functionId": "uploadArchives___job-Job__archives-Collection__String____submitJobDir-Path__mapredSysPerms-FsPermission__submitReplication-short__archiveSCUploadPolicies-Map__String,Boolean____statCache-Map__URI,FileStatus__",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/JobResourceUploader.java",
+  "functionStartLine": 365,
+  "functionEndLine": 413,
+  "numCommitsSeen": 34,
+  "timeTaken": 3469,
+  "changeHistory": [
+    "e46d5bb962b0c942f993afc505b165b1cd96e51b",
+    "fc0885da294490c3984c2231a4d35f89b3b520d4",
+    "f80a7298325a4626638ee24467e2012442e480d4",
+    "8f0d3d69d65a252439610e6f13d679808d768569"
+  ],
+  "changeHistoryShort": {
+    "e46d5bb962b0c942f993afc505b165b1cd96e51b": "Ymultichange(Yparameterchange,Ybodychange)",
+    "fc0885da294490c3984c2231a4d35f89b3b520d4": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "f80a7298325a4626638ee24467e2012442e480d4": "Ymultichange(Yparameterchange,Ybodychange)",
+    "8f0d3d69d65a252439610e6f13d679808d768569": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e46d5bb962b0c942f993afc505b165b1cd96e51b": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "MAPREDUCE-5951. Add support for the YARN Shared Cache.\n",
+      "commitDate": "12/10/17 10:59 AM",
+      "commitName": "e46d5bb962b0c942f993afc505b165b1cd96e51b",
+      "commitAuthor": "Chris Trezzo",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "MAPREDUCE-5951. Add support for the YARN Shared Cache.\n",
+          "commitDate": "12/10/17 10:59 AM",
+          "commitName": "e46d5bb962b0c942f993afc505b165b1cd96e51b",
+          "commitAuthor": "Chris Trezzo",
+          "commitDateOld": "18/09/17 10:40 AM",
+          "commitNameOld": "0adc0471d0c06f66a31060f270dcb50a7b4ffafa",
+          "commitAuthorOld": "Robert Kanter",
+          "daysBetweenCommits": 24.01,
+          "commitsBetweenForRepo": 206,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,49 @@\n-  void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n-      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n-      throws IOException {\n+  void uploadArchives(Job job, Collection\u003cString\u003e archives,\n+      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication,\n+      Map\u003cString, Boolean\u003e archiveSCUploadPolicies,\n+      Map\u003cURI, FileStatus\u003e statCache) throws IOException {\n+    Configuration conf \u003d job.getConfiguration();\n     Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n     if (!archives.isEmpty()) {\n       mkdirs(jtFs, archivesDir, mapredSysPerms);\n       for (String tmpArchives : archives) {\n         URI tmpURI;\n         try {\n           tmpURI \u003d new URI(tmpArchives);\n         } catch (URISyntaxException e) {\n           throw new IllegalArgumentException(\"Error parsing archives argument.\"\n               + \" Argument must be a valid URI: \" + tmpArchives, e);\n         }\n         Path tmp \u003d new Path(tmpURI);\n-        Path newPath \u003d\n-            copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n-        try {\n-          URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n-          DistributedCache.addCacheArchive(pathURI, conf);\n-        } catch (URISyntaxException ue) {\n-          // should not throw an uri excpetion\n-          throw new IOException(\n-              \"Failed to create a URI (URISyntaxException) for the remote path\"\n-                  + newPath + \". This was based on the archive parameter: \"\n-                  + tmpArchives,\n-              ue);\n+        URI newURI \u003d null;\n+        boolean uploadToSharedCache \u003d false;\n+        if (scConfig.isSharedCacheArchivesEnabled()) {\n+          newURI \u003d useSharedCache(tmpURI, tmp.getName(), statCache, conf, true);\n+          if (newURI \u003d\u003d null) {\n+            uploadToSharedCache \u003d true;\n+          }\n+        }\n+\n+        if (newURI \u003d\u003d null) {\n+          Path newPath \u003d\n+              copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n+          try {\n+            newURI \u003d getPathURI(newPath, tmpURI.getFragment());\n+          } catch (URISyntaxException ue) {\n+            // should not throw a uri exception\n+            throw new IOException(\n+                \"Failed to create a URI (URISyntaxException) for the\"\n+                    + \" remote path \" + newPath\n+                    + \". This was based on the archive parameter: \"\n+                    + tmpArchives,\n+                ue);\n+          }\n+        }\n+\n+        job.addCacheArchive(newURI);\n+        if (scConfig.isSharedCacheArchivesEnabled()) {\n+          archiveSCUploadPolicies.put(newURI.toString(), uploadToSharedCache);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void uploadArchives(Job job, Collection\u003cString\u003e archives,\n      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication,\n      Map\u003cString, Boolean\u003e archiveSCUploadPolicies,\n      Map\u003cURI, FileStatus\u003e statCache) throws IOException {\n    Configuration conf \u003d job.getConfiguration();\n    Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n    if (!archives.isEmpty()) {\n      mkdirs(jtFs, archivesDir, mapredSysPerms);\n      for (String tmpArchives : archives) {\n        URI tmpURI;\n        try {\n          tmpURI \u003d new URI(tmpArchives);\n        } catch (URISyntaxException e) {\n          throw new IllegalArgumentException(\"Error parsing archives argument.\"\n              + \" Argument must be a valid URI: \" + tmpArchives, e);\n        }\n        Path tmp \u003d new Path(tmpURI);\n        URI newURI \u003d null;\n        boolean uploadToSharedCache \u003d false;\n        if (scConfig.isSharedCacheArchivesEnabled()) {\n          newURI \u003d useSharedCache(tmpURI, tmp.getName(), statCache, conf, true);\n          if (newURI \u003d\u003d null) {\n            uploadToSharedCache \u003d true;\n          }\n        }\n\n        if (newURI \u003d\u003d null) {\n          Path newPath \u003d\n              copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n          try {\n            newURI \u003d getPathURI(newPath, tmpURI.getFragment());\n          } catch (URISyntaxException ue) {\n            // should not throw a uri exception\n            throw new IOException(\n                \"Failed to create a URI (URISyntaxException) for the\"\n                    + \" remote path \" + newPath\n                    + \". This was based on the archive parameter: \"\n                    + tmpArchives,\n                ue);\n          }\n        }\n\n        job.addCacheArchive(newURI);\n        if (scConfig.isSharedCacheArchivesEnabled()) {\n          archiveSCUploadPolicies.put(newURI.toString(), uploadToSharedCache);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/JobResourceUploader.java",
+          "extendedDetails": {
+            "oldValue": "[conf-Configuration, archives-Collection\u003cString\u003e, submitJobDir-Path, mapredSysPerms-FsPermission, submitReplication-short]",
+            "newValue": "[job-Job, archives-Collection\u003cString\u003e, submitJobDir-Path, mapredSysPerms-FsPermission, submitReplication-short, archiveSCUploadPolicies-Map\u003cString,Boolean\u003e, statCache-Map\u003cURI,FileStatus\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "MAPREDUCE-5951. Add support for the YARN Shared Cache.\n",
+          "commitDate": "12/10/17 10:59 AM",
+          "commitName": "e46d5bb962b0c942f993afc505b165b1cd96e51b",
+          "commitAuthor": "Chris Trezzo",
+          "commitDateOld": "18/09/17 10:40 AM",
+          "commitNameOld": "0adc0471d0c06f66a31060f270dcb50a7b4ffafa",
+          "commitAuthorOld": "Robert Kanter",
+          "daysBetweenCommits": 24.01,
+          "commitsBetweenForRepo": 206,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,49 @@\n-  void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n-      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n-      throws IOException {\n+  void uploadArchives(Job job, Collection\u003cString\u003e archives,\n+      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication,\n+      Map\u003cString, Boolean\u003e archiveSCUploadPolicies,\n+      Map\u003cURI, FileStatus\u003e statCache) throws IOException {\n+    Configuration conf \u003d job.getConfiguration();\n     Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n     if (!archives.isEmpty()) {\n       mkdirs(jtFs, archivesDir, mapredSysPerms);\n       for (String tmpArchives : archives) {\n         URI tmpURI;\n         try {\n           tmpURI \u003d new URI(tmpArchives);\n         } catch (URISyntaxException e) {\n           throw new IllegalArgumentException(\"Error parsing archives argument.\"\n               + \" Argument must be a valid URI: \" + tmpArchives, e);\n         }\n         Path tmp \u003d new Path(tmpURI);\n-        Path newPath \u003d\n-            copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n-        try {\n-          URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n-          DistributedCache.addCacheArchive(pathURI, conf);\n-        } catch (URISyntaxException ue) {\n-          // should not throw an uri excpetion\n-          throw new IOException(\n-              \"Failed to create a URI (URISyntaxException) for the remote path\"\n-                  + newPath + \". This was based on the archive parameter: \"\n-                  + tmpArchives,\n-              ue);\n+        URI newURI \u003d null;\n+        boolean uploadToSharedCache \u003d false;\n+        if (scConfig.isSharedCacheArchivesEnabled()) {\n+          newURI \u003d useSharedCache(tmpURI, tmp.getName(), statCache, conf, true);\n+          if (newURI \u003d\u003d null) {\n+            uploadToSharedCache \u003d true;\n+          }\n+        }\n+\n+        if (newURI \u003d\u003d null) {\n+          Path newPath \u003d\n+              copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n+          try {\n+            newURI \u003d getPathURI(newPath, tmpURI.getFragment());\n+          } catch (URISyntaxException ue) {\n+            // should not throw a uri exception\n+            throw new IOException(\n+                \"Failed to create a URI (URISyntaxException) for the\"\n+                    + \" remote path \" + newPath\n+                    + \". This was based on the archive parameter: \"\n+                    + tmpArchives,\n+                ue);\n+          }\n+        }\n+\n+        job.addCacheArchive(newURI);\n+        if (scConfig.isSharedCacheArchivesEnabled()) {\n+          archiveSCUploadPolicies.put(newURI.toString(), uploadToSharedCache);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void uploadArchives(Job job, Collection\u003cString\u003e archives,\n      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication,\n      Map\u003cString, Boolean\u003e archiveSCUploadPolicies,\n      Map\u003cURI, FileStatus\u003e statCache) throws IOException {\n    Configuration conf \u003d job.getConfiguration();\n    Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n    if (!archives.isEmpty()) {\n      mkdirs(jtFs, archivesDir, mapredSysPerms);\n      for (String tmpArchives : archives) {\n        URI tmpURI;\n        try {\n          tmpURI \u003d new URI(tmpArchives);\n        } catch (URISyntaxException e) {\n          throw new IllegalArgumentException(\"Error parsing archives argument.\"\n              + \" Argument must be a valid URI: \" + tmpArchives, e);\n        }\n        Path tmp \u003d new Path(tmpURI);\n        URI newURI \u003d null;\n        boolean uploadToSharedCache \u003d false;\n        if (scConfig.isSharedCacheArchivesEnabled()) {\n          newURI \u003d useSharedCache(tmpURI, tmp.getName(), statCache, conf, true);\n          if (newURI \u003d\u003d null) {\n            uploadToSharedCache \u003d true;\n          }\n        }\n\n        if (newURI \u003d\u003d null) {\n          Path newPath \u003d\n              copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n          try {\n            newURI \u003d getPathURI(newPath, tmpURI.getFragment());\n          } catch (URISyntaxException ue) {\n            // should not throw a uri exception\n            throw new IOException(\n                \"Failed to create a URI (URISyntaxException) for the\"\n                    + \" remote path \" + newPath\n                    + \". This was based on the archive parameter: \"\n                    + tmpArchives,\n                ue);\n          }\n        }\n\n        job.addCacheArchive(newURI);\n        if (scConfig.isSharedCacheArchivesEnabled()) {\n          archiveSCUploadPolicies.put(newURI.toString(), uploadToSharedCache);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/JobResourceUploader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "fc0885da294490c3984c2231a4d35f89b3b520d4": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "MAPREDUCE-6846. Fragments specified for libjar paths are not handled correctly\n(Contributed by Chris Trezzo via Daniel Templeton)\n",
+      "commitDate": "05/04/17 5:25 PM",
+      "commitName": "fc0885da294490c3984c2231a4d35f89b3b520d4",
+      "commitAuthor": "Daniel Templeton",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "MAPREDUCE-6846. Fragments specified for libjar paths are not handled correctly\n(Contributed by Chris Trezzo via Daniel Templeton)\n",
+          "commitDate": "05/04/17 5:25 PM",
+          "commitName": "fc0885da294490c3984c2231a4d35f89b3b520d4",
+          "commitAuthor": "Daniel Templeton",
+          "commitDateOld": "29/03/17 5:41 PM",
+          "commitNameOld": "ceab00ac62f8057a07b4b936799e6f04271e6e41",
+          "commitAuthorOld": "Ming Ma",
+          "daysBetweenCommits": 6.99,
+          "commitsBetweenForRepo": 46,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,31 @@\n-  private void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n+  void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n       Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n       throws IOException {\n     Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n     if (!archives.isEmpty()) {\n-      FileSystem.mkdirs(jtFs, archivesDir, mapredSysPerms);\n+      mkdirs(jtFs, archivesDir, mapredSysPerms);\n       for (String tmpArchives : archives) {\n         URI tmpURI;\n         try {\n           tmpURI \u003d new URI(tmpArchives);\n         } catch (URISyntaxException e) {\n-          throw new IllegalArgumentException(e);\n+          throw new IllegalArgumentException(\"Error parsing archives argument.\"\n+              + \" Argument must be a valid URI: \" + tmpArchives, e);\n         }\n         Path tmp \u003d new Path(tmpURI);\n         Path newPath \u003d\n             copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n         try {\n           URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n           DistributedCache.addCacheArchive(pathURI, conf);\n         } catch (URISyntaxException ue) {\n           // should not throw an uri excpetion\n-          throw new IOException(\"Failed to create uri for \" + tmpArchives, ue);\n+          throw new IOException(\n+              \"Failed to create a URI (URISyntaxException) for the remote path\"\n+                  + newPath + \". This was based on the archive parameter: \"\n+                  + tmpArchives,\n+              ue);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n      throws IOException {\n    Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n    if (!archives.isEmpty()) {\n      mkdirs(jtFs, archivesDir, mapredSysPerms);\n      for (String tmpArchives : archives) {\n        URI tmpURI;\n        try {\n          tmpURI \u003d new URI(tmpArchives);\n        } catch (URISyntaxException e) {\n          throw new IllegalArgumentException(\"Error parsing archives argument.\"\n              + \" Argument must be a valid URI: \" + tmpArchives, e);\n        }\n        Path tmp \u003d new Path(tmpURI);\n        Path newPath \u003d\n            copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n        try {\n          URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n          DistributedCache.addCacheArchive(pathURI, conf);\n        } catch (URISyntaxException ue) {\n          // should not throw an uri excpetion\n          throw new IOException(\n              \"Failed to create a URI (URISyntaxException) for the remote path\"\n                  + newPath + \". This was based on the archive parameter: \"\n                  + tmpArchives,\n              ue);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/JobResourceUploader.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "MAPREDUCE-6846. Fragments specified for libjar paths are not handled correctly\n(Contributed by Chris Trezzo via Daniel Templeton)\n",
+          "commitDate": "05/04/17 5:25 PM",
+          "commitName": "fc0885da294490c3984c2231a4d35f89b3b520d4",
+          "commitAuthor": "Daniel Templeton",
+          "commitDateOld": "29/03/17 5:41 PM",
+          "commitNameOld": "ceab00ac62f8057a07b4b936799e6f04271e6e41",
+          "commitAuthorOld": "Ming Ma",
+          "daysBetweenCommits": 6.99,
+          "commitsBetweenForRepo": 46,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,31 @@\n-  private void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n+  void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n       Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n       throws IOException {\n     Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n     if (!archives.isEmpty()) {\n-      FileSystem.mkdirs(jtFs, archivesDir, mapredSysPerms);\n+      mkdirs(jtFs, archivesDir, mapredSysPerms);\n       for (String tmpArchives : archives) {\n         URI tmpURI;\n         try {\n           tmpURI \u003d new URI(tmpArchives);\n         } catch (URISyntaxException e) {\n-          throw new IllegalArgumentException(e);\n+          throw new IllegalArgumentException(\"Error parsing archives argument.\"\n+              + \" Argument must be a valid URI: \" + tmpArchives, e);\n         }\n         Path tmp \u003d new Path(tmpURI);\n         Path newPath \u003d\n             copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n         try {\n           URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n           DistributedCache.addCacheArchive(pathURI, conf);\n         } catch (URISyntaxException ue) {\n           // should not throw an uri excpetion\n-          throw new IOException(\"Failed to create uri for \" + tmpArchives, ue);\n+          throw new IOException(\n+              \"Failed to create a URI (URISyntaxException) for the remote path\"\n+                  + newPath + \". This was based on the archive parameter: \"\n+                  + tmpArchives,\n+              ue);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n      throws IOException {\n    Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n    if (!archives.isEmpty()) {\n      mkdirs(jtFs, archivesDir, mapredSysPerms);\n      for (String tmpArchives : archives) {\n        URI tmpURI;\n        try {\n          tmpURI \u003d new URI(tmpArchives);\n        } catch (URISyntaxException e) {\n          throw new IllegalArgumentException(\"Error parsing archives argument.\"\n              + \" Argument must be a valid URI: \" + tmpArchives, e);\n        }\n        Path tmp \u003d new Path(tmpURI);\n        Path newPath \u003d\n            copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n        try {\n          URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n          DistributedCache.addCacheArchive(pathURI, conf);\n        } catch (URISyntaxException ue) {\n          // should not throw an uri excpetion\n          throw new IOException(\n              \"Failed to create a URI (URISyntaxException) for the remote path\"\n                  + newPath + \". This was based on the archive parameter: \"\n                  + tmpArchives,\n              ue);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/JobResourceUploader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "f80a7298325a4626638ee24467e2012442e480d4": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "MAPREDUCE-6690. Limit the number of resources a single map reduce job can submit for localization. Contributed by Chris Trezzo\n",
+      "commitDate": "17/08/16 9:22 AM",
+      "commitName": "f80a7298325a4626638ee24467e2012442e480d4",
+      "commitAuthor": "Jason Lowe",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "MAPREDUCE-6690. Limit the number of resources a single map reduce job can submit for localization. Contributed by Chris Trezzo\n",
+          "commitDate": "17/08/16 9:22 AM",
+          "commitName": "f80a7298325a4626638ee24467e2012442e480d4",
+          "commitAuthor": "Jason Lowe",
+          "commitDateOld": "19/07/16 8:15 PM",
+          "commitNameOld": "8f0d3d69d65a252439610e6f13d679808d768569",
+          "commitAuthorOld": "Sangjin Lee",
+          "daysBetweenCommits": 28.55,
+          "commitsBetweenForRepo": 200,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,27 +1,26 @@\n-  private void uploadArchives(Configuration conf, Path submitJobDir,\n-      FsPermission mapredSysPerms, short submitReplication) throws IOException {\n-    String archives \u003d conf.get(\"tmparchives\");\n+  private void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n+      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n+      throws IOException {\n     Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n-    if (archives !\u003d null) {\n+    if (!archives.isEmpty()) {\n       FileSystem.mkdirs(jtFs, archivesDir, mapredSysPerms);\n-      String[] archivesArr \u003d archives.split(\",\");\n-      for (String tmpArchives : archivesArr) {\n+      for (String tmpArchives : archives) {\n         URI tmpURI;\n         try {\n           tmpURI \u003d new URI(tmpArchives);\n         } catch (URISyntaxException e) {\n           throw new IllegalArgumentException(e);\n         }\n         Path tmp \u003d new Path(tmpURI);\n         Path newPath \u003d\n             copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n         try {\n           URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n           DistributedCache.addCacheArchive(pathURI, conf);\n         } catch (URISyntaxException ue) {\n           // should not throw an uri excpetion\n           throw new IOException(\"Failed to create uri for \" + tmpArchives, ue);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n      throws IOException {\n    Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n    if (!archives.isEmpty()) {\n      FileSystem.mkdirs(jtFs, archivesDir, mapredSysPerms);\n      for (String tmpArchives : archives) {\n        URI tmpURI;\n        try {\n          tmpURI \u003d new URI(tmpArchives);\n        } catch (URISyntaxException e) {\n          throw new IllegalArgumentException(e);\n        }\n        Path tmp \u003d new Path(tmpURI);\n        Path newPath \u003d\n            copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n        try {\n          URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n          DistributedCache.addCacheArchive(pathURI, conf);\n        } catch (URISyntaxException ue) {\n          // should not throw an uri excpetion\n          throw new IOException(\"Failed to create uri for \" + tmpArchives, ue);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/JobResourceUploader.java",
+          "extendedDetails": {
+            "oldValue": "[conf-Configuration, submitJobDir-Path, mapredSysPerms-FsPermission, submitReplication-short]",
+            "newValue": "[conf-Configuration, archives-Collection\u003cString\u003e, submitJobDir-Path, mapredSysPerms-FsPermission, submitReplication-short]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "MAPREDUCE-6690. Limit the number of resources a single map reduce job can submit for localization. Contributed by Chris Trezzo\n",
+          "commitDate": "17/08/16 9:22 AM",
+          "commitName": "f80a7298325a4626638ee24467e2012442e480d4",
+          "commitAuthor": "Jason Lowe",
+          "commitDateOld": "19/07/16 8:15 PM",
+          "commitNameOld": "8f0d3d69d65a252439610e6f13d679808d768569",
+          "commitAuthorOld": "Sangjin Lee",
+          "daysBetweenCommits": 28.55,
+          "commitsBetweenForRepo": 200,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,27 +1,26 @@\n-  private void uploadArchives(Configuration conf, Path submitJobDir,\n-      FsPermission mapredSysPerms, short submitReplication) throws IOException {\n-    String archives \u003d conf.get(\"tmparchives\");\n+  private void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n+      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n+      throws IOException {\n     Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n-    if (archives !\u003d null) {\n+    if (!archives.isEmpty()) {\n       FileSystem.mkdirs(jtFs, archivesDir, mapredSysPerms);\n-      String[] archivesArr \u003d archives.split(\",\");\n-      for (String tmpArchives : archivesArr) {\n+      for (String tmpArchives : archives) {\n         URI tmpURI;\n         try {\n           tmpURI \u003d new URI(tmpArchives);\n         } catch (URISyntaxException e) {\n           throw new IllegalArgumentException(e);\n         }\n         Path tmp \u003d new Path(tmpURI);\n         Path newPath \u003d\n             copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n         try {\n           URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n           DistributedCache.addCacheArchive(pathURI, conf);\n         } catch (URISyntaxException ue) {\n           // should not throw an uri excpetion\n           throw new IOException(\"Failed to create uri for \" + tmpArchives, ue);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void uploadArchives(Configuration conf, Collection\u003cString\u003e archives,\n      Path submitJobDir, FsPermission mapredSysPerms, short submitReplication)\n      throws IOException {\n    Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n    if (!archives.isEmpty()) {\n      FileSystem.mkdirs(jtFs, archivesDir, mapredSysPerms);\n      for (String tmpArchives : archives) {\n        URI tmpURI;\n        try {\n          tmpURI \u003d new URI(tmpArchives);\n        } catch (URISyntaxException e) {\n          throw new IllegalArgumentException(e);\n        }\n        Path tmp \u003d new Path(tmpURI);\n        Path newPath \u003d\n            copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n        try {\n          URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n          DistributedCache.addCacheArchive(pathURI, conf);\n        } catch (URISyntaxException ue) {\n          // should not throw an uri excpetion\n          throw new IOException(\"Failed to create uri for \" + tmpArchives, ue);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/JobResourceUploader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "8f0d3d69d65a252439610e6f13d679808d768569": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-6365. Refactor JobResourceUploader#uploadFilesInternal (Chris Trezzo via sjlee)\n",
+      "commitDate": "19/07/16 8:15 PM",
+      "commitName": "8f0d3d69d65a252439610e6f13d679808d768569",
+      "commitAuthor": "Sangjin Lee",
+      "diff": "@@ -0,0 +1,27 @@\n+  private void uploadArchives(Configuration conf, Path submitJobDir,\n+      FsPermission mapredSysPerms, short submitReplication) throws IOException {\n+    String archives \u003d conf.get(\"tmparchives\");\n+    Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n+    if (archives !\u003d null) {\n+      FileSystem.mkdirs(jtFs, archivesDir, mapredSysPerms);\n+      String[] archivesArr \u003d archives.split(\",\");\n+      for (String tmpArchives : archivesArr) {\n+        URI tmpURI;\n+        try {\n+          tmpURI \u003d new URI(tmpArchives);\n+        } catch (URISyntaxException e) {\n+          throw new IllegalArgumentException(e);\n+        }\n+        Path tmp \u003d new Path(tmpURI);\n+        Path newPath \u003d\n+            copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n+        try {\n+          URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n+          DistributedCache.addCacheArchive(pathURI, conf);\n+        } catch (URISyntaxException ue) {\n+          // should not throw an uri excpetion\n+          throw new IOException(\"Failed to create uri for \" + tmpArchives, ue);\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void uploadArchives(Configuration conf, Path submitJobDir,\n      FsPermission mapredSysPerms, short submitReplication) throws IOException {\n    String archives \u003d conf.get(\"tmparchives\");\n    Path archivesDir \u003d JobSubmissionFiles.getJobDistCacheArchives(submitJobDir);\n    if (archives !\u003d null) {\n      FileSystem.mkdirs(jtFs, archivesDir, mapredSysPerms);\n      String[] archivesArr \u003d archives.split(\",\");\n      for (String tmpArchives : archivesArr) {\n        URI tmpURI;\n        try {\n          tmpURI \u003d new URI(tmpArchives);\n        } catch (URISyntaxException e) {\n          throw new IllegalArgumentException(e);\n        }\n        Path tmp \u003d new Path(tmpURI);\n        Path newPath \u003d\n            copyRemoteFiles(archivesDir, tmp, conf, submitReplication);\n        try {\n          URI pathURI \u003d getPathURI(newPath, tmpURI.getFragment());\n          DistributedCache.addCacheArchive(pathURI, conf);\n        } catch (URISyntaxException ue) {\n          // should not throw an uri excpetion\n          throw new IOException(\"Failed to create uri for \" + tmpArchives, ue);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/JobResourceUploader.java"
+    }
+  }
+}

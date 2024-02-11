@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "KMSClientProvider.java",
+  "functionName": "reencryptEncryptedKeys",
+  "functionId": "reencryptEncryptedKeys___ekvs-List__EncryptedKeyVersion__",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/key/kms/KMSClientProvider.java",
+  "functionStartLine": 863,
+  "functionEndLine": 902,
+  "numCommitsSeen": 71,
+  "timeTaken": 1302,
+  "changeHistory": [
+    "4ec5acc70418a3f2327cf83ecae1789a057fdd99"
+  ],
+  "changeHistoryShort": {
+    "4ec5acc70418a3f2327cf83ecae1789a057fdd99": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4ec5acc70418a3f2327cf83ecae1789a057fdd99": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14705. Add batched interface reencryptEncryptedKeys to KMS.\n",
+      "commitDate": "22/08/17 7:47 AM",
+      "commitName": "4ec5acc70418a3f2327cf83ecae1789a057fdd99",
+      "commitAuthor": "Xiao Chen",
+      "diff": "@@ -0,0 +1,40 @@\n+  public void reencryptEncryptedKeys(List\u003cEncryptedKeyVersion\u003e ekvs)\n+      throws IOException, GeneralSecurityException {\n+    checkNotNull(ekvs, \"ekvs\");\n+    if (ekvs.isEmpty()) {\n+      return;\n+    }\n+    final List\u003cMap\u003e jsonPayload \u003d new ArrayList\u003c\u003e();\n+    String keyName \u003d null;\n+    for (EncryptedKeyVersion ekv : ekvs) {\n+      checkNotNull(ekv.getEncryptionKeyName(), \"keyName\");\n+      checkNotNull(ekv.getEncryptionKeyVersionName(), \"versionName\");\n+      checkNotNull(ekv.getEncryptedKeyIv(), \"iv\");\n+      checkNotNull(ekv.getEncryptedKeyVersion(), \"encryptedKey\");\n+      Preconditions.checkArgument(ekv.getEncryptedKeyVersion().getVersionName()\n+              .equals(KeyProviderCryptoExtension.EEK),\n+          \"encryptedKey version name must be \u0027%s\u0027, is \u0027%s\u0027\",\n+          KeyProviderCryptoExtension.EEK,\n+          ekv.getEncryptedKeyVersion().getVersionName());\n+      if (keyName \u003d\u003d null) {\n+        keyName \u003d ekv.getEncryptionKeyName();\n+      } else {\n+        Preconditions.checkArgument(keyName.equals(ekv.getEncryptionKeyName()),\n+            \"All EncryptedKey must have the same key name.\");\n+      }\n+      jsonPayload.add(KMSUtil.toJSON(ekv));\n+    }\n+    final URL url \u003d createURL(KMSRESTConstants.KEY_RESOURCE, keyName,\n+        KMSRESTConstants.REENCRYPT_BATCH_SUB_RESOURCE, null);\n+    final HttpURLConnection conn \u003d createConnection(url, HTTP_POST);\n+    conn.setRequestProperty(CONTENT_TYPE, APPLICATION_JSON_MIME);\n+    final List\u003cMap\u003e response \u003d\n+        call(conn, jsonPayload, HttpURLConnection.HTTP_OK, List.class);\n+    Preconditions.checkArgument(response.size() \u003d\u003d ekvs.size(),\n+        \"Response size is different than input size.\");\n+    for (int i \u003d 0; i \u003c response.size(); ++i) {\n+      final Map item \u003d response.get(i);\n+      final EncryptedKeyVersion ekv \u003d parseJSONEncKeyVersion(keyName, item);\n+      ekvs.set(i, ekv);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void reencryptEncryptedKeys(List\u003cEncryptedKeyVersion\u003e ekvs)\n      throws IOException, GeneralSecurityException {\n    checkNotNull(ekvs, \"ekvs\");\n    if (ekvs.isEmpty()) {\n      return;\n    }\n    final List\u003cMap\u003e jsonPayload \u003d new ArrayList\u003c\u003e();\n    String keyName \u003d null;\n    for (EncryptedKeyVersion ekv : ekvs) {\n      checkNotNull(ekv.getEncryptionKeyName(), \"keyName\");\n      checkNotNull(ekv.getEncryptionKeyVersionName(), \"versionName\");\n      checkNotNull(ekv.getEncryptedKeyIv(), \"iv\");\n      checkNotNull(ekv.getEncryptedKeyVersion(), \"encryptedKey\");\n      Preconditions.checkArgument(ekv.getEncryptedKeyVersion().getVersionName()\n              .equals(KeyProviderCryptoExtension.EEK),\n          \"encryptedKey version name must be \u0027%s\u0027, is \u0027%s\u0027\",\n          KeyProviderCryptoExtension.EEK,\n          ekv.getEncryptedKeyVersion().getVersionName());\n      if (keyName \u003d\u003d null) {\n        keyName \u003d ekv.getEncryptionKeyName();\n      } else {\n        Preconditions.checkArgument(keyName.equals(ekv.getEncryptionKeyName()),\n            \"All EncryptedKey must have the same key name.\");\n      }\n      jsonPayload.add(KMSUtil.toJSON(ekv));\n    }\n    final URL url \u003d createURL(KMSRESTConstants.KEY_RESOURCE, keyName,\n        KMSRESTConstants.REENCRYPT_BATCH_SUB_RESOURCE, null);\n    final HttpURLConnection conn \u003d createConnection(url, HTTP_POST);\n    conn.setRequestProperty(CONTENT_TYPE, APPLICATION_JSON_MIME);\n    final List\u003cMap\u003e response \u003d\n        call(conn, jsonPayload, HttpURLConnection.HTTP_OK, List.class);\n    Preconditions.checkArgument(response.size() \u003d\u003d ekvs.size(),\n        \"Response size is different than input size.\");\n    for (int i \u003d 0; i \u003c response.size(); ++i) {\n      final Map item \u003d response.get(i);\n      final EncryptedKeyVersion ekv \u003d parseJSONEncKeyVersion(keyName, item);\n      ekvs.set(i, ekv);\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/key/kms/KMSClientProvider.java"
+    }
+  }
+}

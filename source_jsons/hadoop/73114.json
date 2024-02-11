@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CryptoInputStream.java",
+  "functionName": "decrypt",
+  "functionId": "decrypt___filePosition-long__buf-ByteBuffer__length-int__start-int",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java",
+  "functionStartLine": 452,
+  "functionEndLine": 495,
+  "numCommitsSeen": 36,
+  "timeTaken": 2309,
+  "changeHistory": [
+    "4877f0aa518832c37a06e6d3bd2c9552fc3141dc",
+    "9c2848e076a5c72bda3ec928de1790137c70fbbc",
+    "2e5ae1aad74575cd35f47bd5f0f789d7056ef77d",
+    "b20180ffa6c89396d9fcfec8b029b9c600503c3d"
+  ],
+  "changeHistoryShort": {
+    "4877f0aa518832c37a06e6d3bd2c9552fc3141dc": "Ymultichange(Yparameterchange,Ybodychange)",
+    "9c2848e076a5c72bda3ec928de1790137c70fbbc": "Ybodychange",
+    "2e5ae1aad74575cd35f47bd5f0f789d7056ef77d": "Ybodychange",
+    "b20180ffa6c89396d9fcfec8b029b9c600503c3d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4877f0aa518832c37a06e6d3bd2c9552fc3141dc": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-3246: pRead equivalent for direct read path (#597)\n\nHDFS-3246: pRead equivalent for direct read path\r\n\r\nContributed by Sahil Takiar",
+      "commitDate": "30/04/19 2:52 PM",
+      "commitName": "4877f0aa518832c37a06e6d3bd2c9552fc3141dc",
+      "commitAuthor": "Sahil Takiar",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-3246: pRead equivalent for direct read path (#597)\n\nHDFS-3246: pRead equivalent for direct read path\r\n\r\nContributed by Sahil Takiar",
+          "commitDate": "30/04/19 2:52 PM",
+          "commitName": "4877f0aa518832c37a06e6d3bd2c9552fc3141dc",
+          "commitAuthor": "Sahil Takiar",
+          "commitDateOld": "06/03/19 3:04 PM",
+          "commitNameOld": "618e009ac0ab14b24c0c19153778173ee3142292",
+          "commitAuthorOld": "Sahil Takiar",
+          "daysBetweenCommits": 54.95,
+          "commitsBetweenForRepo": 370,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,44 @@\n-  private void decrypt(ByteBuffer buf, int n, int start) \n-      throws IOException {\n-    final int pos \u003d buf.position();\n-    final int limit \u003d buf.limit();\n-    int len \u003d 0;\n-    while (len \u003c n) {\n-      buf.position(start + len);\n-      buf.limit(start + len + Math.min(n - len, inBuffer.remaining()));\n-      inBuffer.put(buf);\n-      // Do decryption\n-      try {\n-        decrypt(decryptor, inBuffer, outBuffer, padding);\n-        buf.position(start + len);\n-        buf.limit(limit);\n-        len +\u003d outBuffer.remaining();\n-        buf.put(outBuffer);\n-      } finally {\n-        padding \u003d afterDecryption(decryptor, inBuffer, streamOffset - (n - len), iv);\n+  private void decrypt(long filePosition, ByteBuffer buf, int length, int start)\n+          throws IOException {\n+    ByteBuffer localInBuffer \u003d null;\n+    ByteBuffer localOutBuffer \u003d null;\n+\n+    // Duplicate the buffer so we don\u0027t have to worry about resetting the\n+    // original position and limit at the end of the method\n+    buf \u003d buf.duplicate();\n+\n+    int decryptedBytes \u003d 0;\n+    Decryptor localDecryptor \u003d null;\n+    try {\n+      localInBuffer \u003d getBuffer();\n+      localOutBuffer \u003d getBuffer();\n+      localDecryptor \u003d getDecryptor();\n+      byte[] localIV \u003d initIV.clone();\n+      updateDecryptor(localDecryptor, filePosition, localIV);\n+      byte localPadding \u003d getPadding(filePosition);\n+      // Set proper filePosition for inputdata.\n+      localInBuffer.position(localPadding);\n+\n+      while (decryptedBytes \u003c length) {\n+        buf.position(start + decryptedBytes);\n+        buf.limit(start + decryptedBytes +\n+                Math.min(length - decryptedBytes, localInBuffer.remaining()));\n+        localInBuffer.put(buf);\n+        // Do decryption\n+        try {\n+          decrypt(localDecryptor, localInBuffer, localOutBuffer, localPadding);\n+          buf.position(start + decryptedBytes);\n+          buf.limit(start + length);\n+          decryptedBytes +\u003d localOutBuffer.remaining();\n+          buf.put(localOutBuffer);\n+        } finally {\n+          localPadding \u003d afterDecryption(localDecryptor, localInBuffer,\n+                                         filePosition + length, localIV);\n+        }\n       }\n+    } finally {\n+      returnBuffer(localInBuffer);\n+      returnBuffer(localOutBuffer);\n+      returnDecryptor(localDecryptor);\n     }\n-    buf.position(pos);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void decrypt(long filePosition, ByteBuffer buf, int length, int start)\n          throws IOException {\n    ByteBuffer localInBuffer \u003d null;\n    ByteBuffer localOutBuffer \u003d null;\n\n    // Duplicate the buffer so we don\u0027t have to worry about resetting the\n    // original position and limit at the end of the method\n    buf \u003d buf.duplicate();\n\n    int decryptedBytes \u003d 0;\n    Decryptor localDecryptor \u003d null;\n    try {\n      localInBuffer \u003d getBuffer();\n      localOutBuffer \u003d getBuffer();\n      localDecryptor \u003d getDecryptor();\n      byte[] localIV \u003d initIV.clone();\n      updateDecryptor(localDecryptor, filePosition, localIV);\n      byte localPadding \u003d getPadding(filePosition);\n      // Set proper filePosition for inputdata.\n      localInBuffer.position(localPadding);\n\n      while (decryptedBytes \u003c length) {\n        buf.position(start + decryptedBytes);\n        buf.limit(start + decryptedBytes +\n                Math.min(length - decryptedBytes, localInBuffer.remaining()));\n        localInBuffer.put(buf);\n        // Do decryption\n        try {\n          decrypt(localDecryptor, localInBuffer, localOutBuffer, localPadding);\n          buf.position(start + decryptedBytes);\n          buf.limit(start + length);\n          decryptedBytes +\u003d localOutBuffer.remaining();\n          buf.put(localOutBuffer);\n        } finally {\n          localPadding \u003d afterDecryption(localDecryptor, localInBuffer,\n                                         filePosition + length, localIV);\n        }\n      }\n    } finally {\n      returnBuffer(localInBuffer);\n      returnBuffer(localOutBuffer);\n      returnDecryptor(localDecryptor);\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java",
+          "extendedDetails": {
+            "oldValue": "[buf-ByteBuffer, n-int, start-int]",
+            "newValue": "[filePosition-long, buf-ByteBuffer, length-int, start-int]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3246: pRead equivalent for direct read path (#597)\n\nHDFS-3246: pRead equivalent for direct read path\r\n\r\nContributed by Sahil Takiar",
+          "commitDate": "30/04/19 2:52 PM",
+          "commitName": "4877f0aa518832c37a06e6d3bd2c9552fc3141dc",
+          "commitAuthor": "Sahil Takiar",
+          "commitDateOld": "06/03/19 3:04 PM",
+          "commitNameOld": "618e009ac0ab14b24c0c19153778173ee3142292",
+          "commitAuthorOld": "Sahil Takiar",
+          "daysBetweenCommits": 54.95,
+          "commitsBetweenForRepo": 370,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,44 @@\n-  private void decrypt(ByteBuffer buf, int n, int start) \n-      throws IOException {\n-    final int pos \u003d buf.position();\n-    final int limit \u003d buf.limit();\n-    int len \u003d 0;\n-    while (len \u003c n) {\n-      buf.position(start + len);\n-      buf.limit(start + len + Math.min(n - len, inBuffer.remaining()));\n-      inBuffer.put(buf);\n-      // Do decryption\n-      try {\n-        decrypt(decryptor, inBuffer, outBuffer, padding);\n-        buf.position(start + len);\n-        buf.limit(limit);\n-        len +\u003d outBuffer.remaining();\n-        buf.put(outBuffer);\n-      } finally {\n-        padding \u003d afterDecryption(decryptor, inBuffer, streamOffset - (n - len), iv);\n+  private void decrypt(long filePosition, ByteBuffer buf, int length, int start)\n+          throws IOException {\n+    ByteBuffer localInBuffer \u003d null;\n+    ByteBuffer localOutBuffer \u003d null;\n+\n+    // Duplicate the buffer so we don\u0027t have to worry about resetting the\n+    // original position and limit at the end of the method\n+    buf \u003d buf.duplicate();\n+\n+    int decryptedBytes \u003d 0;\n+    Decryptor localDecryptor \u003d null;\n+    try {\n+      localInBuffer \u003d getBuffer();\n+      localOutBuffer \u003d getBuffer();\n+      localDecryptor \u003d getDecryptor();\n+      byte[] localIV \u003d initIV.clone();\n+      updateDecryptor(localDecryptor, filePosition, localIV);\n+      byte localPadding \u003d getPadding(filePosition);\n+      // Set proper filePosition for inputdata.\n+      localInBuffer.position(localPadding);\n+\n+      while (decryptedBytes \u003c length) {\n+        buf.position(start + decryptedBytes);\n+        buf.limit(start + decryptedBytes +\n+                Math.min(length - decryptedBytes, localInBuffer.remaining()));\n+        localInBuffer.put(buf);\n+        // Do decryption\n+        try {\n+          decrypt(localDecryptor, localInBuffer, localOutBuffer, localPadding);\n+          buf.position(start + decryptedBytes);\n+          buf.limit(start + length);\n+          decryptedBytes +\u003d localOutBuffer.remaining();\n+          buf.put(localOutBuffer);\n+        } finally {\n+          localPadding \u003d afterDecryption(localDecryptor, localInBuffer,\n+                                         filePosition + length, localIV);\n+        }\n       }\n+    } finally {\n+      returnBuffer(localInBuffer);\n+      returnBuffer(localOutBuffer);\n+      returnDecryptor(localDecryptor);\n     }\n-    buf.position(pos);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void decrypt(long filePosition, ByteBuffer buf, int length, int start)\n          throws IOException {\n    ByteBuffer localInBuffer \u003d null;\n    ByteBuffer localOutBuffer \u003d null;\n\n    // Duplicate the buffer so we don\u0027t have to worry about resetting the\n    // original position and limit at the end of the method\n    buf \u003d buf.duplicate();\n\n    int decryptedBytes \u003d 0;\n    Decryptor localDecryptor \u003d null;\n    try {\n      localInBuffer \u003d getBuffer();\n      localOutBuffer \u003d getBuffer();\n      localDecryptor \u003d getDecryptor();\n      byte[] localIV \u003d initIV.clone();\n      updateDecryptor(localDecryptor, filePosition, localIV);\n      byte localPadding \u003d getPadding(filePosition);\n      // Set proper filePosition for inputdata.\n      localInBuffer.position(localPadding);\n\n      while (decryptedBytes \u003c length) {\n        buf.position(start + decryptedBytes);\n        buf.limit(start + decryptedBytes +\n                Math.min(length - decryptedBytes, localInBuffer.remaining()));\n        localInBuffer.put(buf);\n        // Do decryption\n        try {\n          decrypt(localDecryptor, localInBuffer, localOutBuffer, localPadding);\n          buf.position(start + decryptedBytes);\n          buf.limit(start + length);\n          decryptedBytes +\u003d localOutBuffer.remaining();\n          buf.put(localOutBuffer);\n        } finally {\n          localPadding \u003d afterDecryption(localDecryptor, localInBuffer,\n                                         filePosition + length, localIV);\n        }\n      }\n    } finally {\n      returnBuffer(localInBuffer);\n      returnBuffer(localOutBuffer);\n      returnDecryptor(localDecryptor);\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "9c2848e076a5c72bda3ec928de1790137c70fbbc": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10632. Minor improvements to Crypto input and output streams. Contributed by Yi Liu\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/fs-encryption@1598485 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "30/05/14 1:08 AM",
+      "commitName": "9c2848e076a5c72bda3ec928de1790137c70fbbc",
+      "commitAuthor": "Yi Liu",
+      "commitDateOld": "29/05/14 3:09 PM",
+      "commitNameOld": "2e5ae1aad74575cd35f47bd5f0f789d7056ef77d",
+      "commitAuthorOld": "Charles Lamb",
+      "daysBetweenCommits": 0.42,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,22 @@\n   private void decrypt(ByteBuffer buf, int n, int start) \n       throws IOException {\n     final int pos \u003d buf.position();\n     final int limit \u003d buf.limit();\n     int len \u003d 0;\n     while (len \u003c n) {\n       buf.position(start + len);\n       buf.limit(start + len + Math.min(n - len, inBuffer.remaining()));\n       inBuffer.put(buf);\n       // Do decryption\n-      decrypt();\n-      \n-      buf.position(start + len);\n-      buf.limit(limit);\n-      len +\u003d outBuffer.remaining();\n-      buf.put(outBuffer);\n+      try {\n+        decrypt(decryptor, inBuffer, outBuffer, padding);\n+        buf.position(start + len);\n+        buf.limit(limit);\n+        len +\u003d outBuffer.remaining();\n+        buf.put(outBuffer);\n+      } finally {\n+        padding \u003d afterDecryption(decryptor, inBuffer, streamOffset - (n - len), iv);\n+      }\n     }\n     buf.position(pos);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void decrypt(ByteBuffer buf, int n, int start) \n      throws IOException {\n    final int pos \u003d buf.position();\n    final int limit \u003d buf.limit();\n    int len \u003d 0;\n    while (len \u003c n) {\n      buf.position(start + len);\n      buf.limit(start + len + Math.min(n - len, inBuffer.remaining()));\n      inBuffer.put(buf);\n      // Do decryption\n      try {\n        decrypt(decryptor, inBuffer, outBuffer, padding);\n        buf.position(start + len);\n        buf.limit(limit);\n        len +\u003d outBuffer.remaining();\n        buf.put(outBuffer);\n      } finally {\n        padding \u003d afterDecryption(decryptor, inBuffer, streamOffset - (n - len), iv);\n      }\n    }\n    buf.position(pos);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java",
+      "extendedDetails": {}
+    },
+    "2e5ae1aad74575cd35f47bd5f0f789d7056ef77d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10628. Javadoc and few code style improvement for Crypto input and output streams. (yliu via clamb)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/fs-encryption@1598429 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "29/05/14 3:09 PM",
+      "commitName": "2e5ae1aad74575cd35f47bd5f0f789d7056ef77d",
+      "commitAuthor": "Charles Lamb",
+      "commitDateOld": "23/05/14 6:19 PM",
+      "commitNameOld": "b20180ffa6c89396d9fcfec8b029b9c600503c3d",
+      "commitAuthorOld": "Yi Liu",
+      "daysBetweenCommits": 5.87,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,19 @@\n   private void decrypt(ByteBuffer buf, int n, int start) \n       throws IOException {\n-    int pos \u003d buf.position();\n-    int limit \u003d buf.limit();\n+    final int pos \u003d buf.position();\n+    final int limit \u003d buf.limit();\n     int len \u003d 0;\n     while (len \u003c n) {\n       buf.position(start + len);\n       buf.limit(start + len + Math.min(n - len, inBuffer.remaining()));\n       inBuffer.put(buf);\n       // Do decryption\n       decrypt();\n       \n       buf.position(start + len);\n       buf.limit(limit);\n       len +\u003d outBuffer.remaining();\n       buf.put(outBuffer);\n     }\n     buf.position(pos);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void decrypt(ByteBuffer buf, int n, int start) \n      throws IOException {\n    final int pos \u003d buf.position();\n    final int limit \u003d buf.limit();\n    int len \u003d 0;\n    while (len \u003c n) {\n      buf.position(start + len);\n      buf.limit(start + len + Math.min(n - len, inBuffer.remaining()));\n      inBuffer.put(buf);\n      // Do decryption\n      decrypt();\n      \n      buf.position(start + len);\n      buf.limit(limit);\n      len +\u003d outBuffer.remaining();\n      buf.put(outBuffer);\n    }\n    buf.position(pos);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java",
+      "extendedDetails": {}
+    },
+    "b20180ffa6c89396d9fcfec8b029b9c600503c3d": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10603. Crypto input and output streams implementing Hadoop stream interfaces. Contributed by Yi Liu and Charles Lamb.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/fs-encryption@1597230 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "23/05/14 6:19 PM",
+      "commitName": "b20180ffa6c89396d9fcfec8b029b9c600503c3d",
+      "commitAuthor": "Yi Liu",
+      "diff": "@@ -0,0 +1,19 @@\n+  private void decrypt(ByteBuffer buf, int n, int start) \n+      throws IOException {\n+    int pos \u003d buf.position();\n+    int limit \u003d buf.limit();\n+    int len \u003d 0;\n+    while (len \u003c n) {\n+      buf.position(start + len);\n+      buf.limit(start + len + Math.min(n - len, inBuffer.remaining()));\n+      inBuffer.put(buf);\n+      // Do decryption\n+      decrypt();\n+      \n+      buf.position(start + len);\n+      buf.limit(limit);\n+      len +\u003d outBuffer.remaining();\n+      buf.put(outBuffer);\n+    }\n+    buf.position(pos);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void decrypt(ByteBuffer buf, int n, int start) \n      throws IOException {\n    int pos \u003d buf.position();\n    int limit \u003d buf.limit();\n    int len \u003d 0;\n    while (len \u003c n) {\n      buf.position(start + len);\n      buf.limit(start + len + Math.min(n - len, inBuffer.remaining()));\n      inBuffer.put(buf);\n      // Do decryption\n      decrypt();\n      \n      buf.position(start + len);\n      buf.limit(limit);\n      len +\u003d outBuffer.remaining();\n      buf.put(outBuffer);\n    }\n    buf.position(pos);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java"
+    }
+  }
+}

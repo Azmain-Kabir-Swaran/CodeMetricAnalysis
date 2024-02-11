@@ -1,0 +1,253 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbfsClient.java",
+  "functionName": "getPathStatus",
+  "functionId": "getPathStatus___path-String(modifiers-final)__includeProperties-boolean(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+  "functionStartLine": 455,
+  "functionEndLine": 479,
+  "numCommitsSeen": 64,
+  "timeTaken": 6123,
+  "changeHistory": [
+    "b214bbd2d92a0c02b71d352dba85f3b87317933c",
+    "791270a2e5e31546ff5c1ef4fa8bad6852b906dc",
+    "e0260417ade5568ae37dcc3753aea0d1e0fd701b",
+    "a8302e398c2ca4b0deff062c0e921053351b688e",
+    "97f06b3fc70ad509e601076c015bc244daa1243f",
+    "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+    "f044deedbbfee0812316d587139cb828f27172e9"
+  ],
+  "changeHistoryShort": {
+    "b214bbd2d92a0c02b71d352dba85f3b87317933c": "Ymultichange(Yparameterchange,Ybodychange)",
+    "791270a2e5e31546ff5c1ef4fa8bad6852b906dc": "Ybodychange",
+    "e0260417ade5568ae37dcc3753aea0d1e0fd701b": "Ymultichange(Yrename,Yparameterchange,Ybodychange)",
+    "a8302e398c2ca4b0deff062c0e921053351b688e": "Ymultichange(Yparameterchange,Ybodychange)",
+    "97f06b3fc70ad509e601076c015bc244daa1243f": "Ybodychange",
+    "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be": "Ybodychange",
+    "f044deedbbfee0812316d587139cb828f27172e9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b214bbd2d92a0c02b71d352dba85f3b87317933c": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16916: ABFS: Delegation SAS generator for integration with Ranger\n\nContributed by Thomas Marquardt.\n\nDETAILS:\n\nPreviously we had a SASGenerator class which generated Service SAS, but we need to add DelegationSASGenerator.\nI separated SASGenerator into a base class and two subclasses ServiceSASGenerator and DelegationSASGenreator.  The\ncode in ServiceSASGenerator is copied from SASGenerator but the DelegationSASGenrator code is new.  The\nDelegationSASGenerator code demonstrates how to use Delegation SAS with minimal permissions, as would be used\nby an authorization service such as Apache Ranger.  Adding this to the tests helps us lock in this behavior.\n\nAdded a MockDelegationSASTokenProvider for testing User Delegation SAS.\n\nFixed the ITestAzureBlobFileSystemCheckAccess tests to assume oauth client ID so that they are ignored when that\nis not configured.\n\nTo improve performance, AbfsInputStream/AbfsOutputStream re-use SAS tokens until the expiry is within 120 seconds.\nAfter this a new SAS will be requested.  The default period of 120 seconds can be changed using the configuration\nsetting \"fs.azure.sas.token.renew.period.for.streams\".\n\nThe SASTokenProvider operation names were updated to correspond better with the ADLS Gen2 REST API, since these\noperations must be provided tokens with appropriate SAS parameters to succeed.\n\nSupport for the version 2.0 AAD authentication endpoint was added to AzureADAuthenticator.\n\nThe getFileStatus method was mistakenly calling the ADLS Gen2 Get Properties API which requires read permission\nwhile the getFileStatus call only requires execute permission.  ADLS Gen2 Get Status API is supposed to be used\nfor this purpose, so the underlying AbfsClient.getPathStatus API was updated with a includeProperties\nparameter which is set to false for getFileStatus and true for getXAttr.\n\nAdded SASTokenProvider support for delete recursive.\n\nFixed bugs in AzureBlobFileSystem where public methods were not validating the Path by calling makeQualified.  This is\nnecessary to avoid passing null paths and to convert relative paths into absolute paths.\n\nCanonicalized the path used for root path internally so that root path can be used with SAS tokens, which requires\nthat the path in the URL and the path in the SAS token match.  Internally the code was using\n\"//\" instead of \"/\" for the root path, sometimes.  Also related to this, the AzureBlobFileSystemStore.getRelativePath\nAPI was updated so that we no longer remove and then add back a preceding forward / to paths.\n\nTo run ITestAzureBlobFileSystemDelegationSAS tests follow the instructions in testing_azure.md under the heading\n\"To run Delegation SAS test cases\".  You also need to set \"fs.azure.enable.check.access\" to true.\n\nTEST RESULTS:\n\nnamespace.enabled\u003dtrue\nauth.type\u003dSharedKey\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 41\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dfalse\nauth.type\u003dSharedKey\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 244\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dtrue\nauth.type\u003dSharedKey\nsas.token.provider.type\u003dMockDelegationSASTokenProvider\nenable.check.access\u003dtrue\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 33\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dtrue\nauth.type\u003dOAuth\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 1, Skipped: 74\nTests run: 206, Failures: 0, Errors: 0, Skipped: 140\n",
+      "commitDate": "12/05/20 11:35 AM",
+      "commitName": "b214bbd2d92a0c02b71d352dba85f3b87317933c",
+      "commitAuthor": "Thomas Marquardt",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16916: ABFS: Delegation SAS generator for integration with Ranger\n\nContributed by Thomas Marquardt.\n\nDETAILS:\n\nPreviously we had a SASGenerator class which generated Service SAS, but we need to add DelegationSASGenerator.\nI separated SASGenerator into a base class and two subclasses ServiceSASGenerator and DelegationSASGenreator.  The\ncode in ServiceSASGenerator is copied from SASGenerator but the DelegationSASGenrator code is new.  The\nDelegationSASGenerator code demonstrates how to use Delegation SAS with minimal permissions, as would be used\nby an authorization service such as Apache Ranger.  Adding this to the tests helps us lock in this behavior.\n\nAdded a MockDelegationSASTokenProvider for testing User Delegation SAS.\n\nFixed the ITestAzureBlobFileSystemCheckAccess tests to assume oauth client ID so that they are ignored when that\nis not configured.\n\nTo improve performance, AbfsInputStream/AbfsOutputStream re-use SAS tokens until the expiry is within 120 seconds.\nAfter this a new SAS will be requested.  The default period of 120 seconds can be changed using the configuration\nsetting \"fs.azure.sas.token.renew.period.for.streams\".\n\nThe SASTokenProvider operation names were updated to correspond better with the ADLS Gen2 REST API, since these\noperations must be provided tokens with appropriate SAS parameters to succeed.\n\nSupport for the version 2.0 AAD authentication endpoint was added to AzureADAuthenticator.\n\nThe getFileStatus method was mistakenly calling the ADLS Gen2 Get Properties API which requires read permission\nwhile the getFileStatus call only requires execute permission.  ADLS Gen2 Get Status API is supposed to be used\nfor this purpose, so the underlying AbfsClient.getPathStatus API was updated with a includeProperties\nparameter which is set to false for getFileStatus and true for getXAttr.\n\nAdded SASTokenProvider support for delete recursive.\n\nFixed bugs in AzureBlobFileSystem where public methods were not validating the Path by calling makeQualified.  This is\nnecessary to avoid passing null paths and to convert relative paths into absolute paths.\n\nCanonicalized the path used for root path internally so that root path can be used with SAS tokens, which requires\nthat the path in the URL and the path in the SAS token match.  Internally the code was using\n\"//\" instead of \"/\" for the root path, sometimes.  Also related to this, the AzureBlobFileSystemStore.getRelativePath\nAPI was updated so that we no longer remove and then add back a preceding forward / to paths.\n\nTo run ITestAzureBlobFileSystemDelegationSAS tests follow the instructions in testing_azure.md under the heading\n\"To run Delegation SAS test cases\".  You also need to set \"fs.azure.enable.check.access\" to true.\n\nTEST RESULTS:\n\nnamespace.enabled\u003dtrue\nauth.type\u003dSharedKey\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 41\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dfalse\nauth.type\u003dSharedKey\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 244\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dtrue\nauth.type\u003dSharedKey\nsas.token.provider.type\u003dMockDelegationSASTokenProvider\nenable.check.access\u003dtrue\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 33\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dtrue\nauth.type\u003dOAuth\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 1, Skipped: 74\nTests run: 206, Failures: 0, Errors: 0, Skipped: 140\n",
+          "commitDate": "12/05/20 11:35 AM",
+          "commitName": "b214bbd2d92a0c02b71d352dba85f3b87317933c",
+          "commitAuthor": "Thomas Marquardt",
+          "commitDateOld": "21/04/20 9:37 AM",
+          "commitNameOld": "264e49c8f2cfd15826655bbc1847f378f60ad8c7",
+          "commitAuthorOld": "bilaharith",
+          "daysBetweenCommits": 21.08,
+          "commitsBetweenForRepo": 71,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,25 @@\n-  public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n+  public AbfsRestOperation getPathStatus(final String path, final boolean includeProperties) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n+    String operation \u003d SASTokenProvider.GET_PROPERTIES_OPERATION;\n+    if (!includeProperties) {\n+      // The default action (operation) is implicitly to get properties and this action requires read permission\n+      // because it reads user defined properties.  If the action is getStatus or getAclStatus, then\n+      // only traversal (execute) permission is required.\n+      abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_ACTION, AbfsHttpConstants.GET_STATUS);\n+      operation \u003d SASTokenProvider.GET_STATUS_OPERATION;\n+    }\n     abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n-    appendSASTokenToQuery(path, SASTokenProvider.GETFILESTATUS_OPERATION, abfsUriQueryBuilder);\n+    appendSASTokenToQuery(path, operation, abfsUriQueryBuilder);\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n             AbfsRestOperationType.GetPathStatus,\n             this,\n             HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AbfsRestOperation getPathStatus(final String path, final boolean includeProperties) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    String operation \u003d SASTokenProvider.GET_PROPERTIES_OPERATION;\n    if (!includeProperties) {\n      // The default action (operation) is implicitly to get properties and this action requires read permission\n      // because it reads user defined properties.  If the action is getStatus or getAclStatus, then\n      // only traversal (execute) permission is required.\n      abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_ACTION, AbfsHttpConstants.GET_STATUS);\n      operation \u003d SASTokenProvider.GET_STATUS_OPERATION;\n    }\n    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n    appendSASTokenToQuery(path, operation, abfsUriQueryBuilder);\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.GetPathStatus,\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+          "extendedDetails": {
+            "oldValue": "[path-String(modifiers-final)]",
+            "newValue": "[path-String(modifiers-final), includeProperties-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16916: ABFS: Delegation SAS generator for integration with Ranger\n\nContributed by Thomas Marquardt.\n\nDETAILS:\n\nPreviously we had a SASGenerator class which generated Service SAS, but we need to add DelegationSASGenerator.\nI separated SASGenerator into a base class and two subclasses ServiceSASGenerator and DelegationSASGenreator.  The\ncode in ServiceSASGenerator is copied from SASGenerator but the DelegationSASGenrator code is new.  The\nDelegationSASGenerator code demonstrates how to use Delegation SAS with minimal permissions, as would be used\nby an authorization service such as Apache Ranger.  Adding this to the tests helps us lock in this behavior.\n\nAdded a MockDelegationSASTokenProvider for testing User Delegation SAS.\n\nFixed the ITestAzureBlobFileSystemCheckAccess tests to assume oauth client ID so that they are ignored when that\nis not configured.\n\nTo improve performance, AbfsInputStream/AbfsOutputStream re-use SAS tokens until the expiry is within 120 seconds.\nAfter this a new SAS will be requested.  The default period of 120 seconds can be changed using the configuration\nsetting \"fs.azure.sas.token.renew.period.for.streams\".\n\nThe SASTokenProvider operation names were updated to correspond better with the ADLS Gen2 REST API, since these\noperations must be provided tokens with appropriate SAS parameters to succeed.\n\nSupport for the version 2.0 AAD authentication endpoint was added to AzureADAuthenticator.\n\nThe getFileStatus method was mistakenly calling the ADLS Gen2 Get Properties API which requires read permission\nwhile the getFileStatus call only requires execute permission.  ADLS Gen2 Get Status API is supposed to be used\nfor this purpose, so the underlying AbfsClient.getPathStatus API was updated with a includeProperties\nparameter which is set to false for getFileStatus and true for getXAttr.\n\nAdded SASTokenProvider support for delete recursive.\n\nFixed bugs in AzureBlobFileSystem where public methods were not validating the Path by calling makeQualified.  This is\nnecessary to avoid passing null paths and to convert relative paths into absolute paths.\n\nCanonicalized the path used for root path internally so that root path can be used with SAS tokens, which requires\nthat the path in the URL and the path in the SAS token match.  Internally the code was using\n\"//\" instead of \"/\" for the root path, sometimes.  Also related to this, the AzureBlobFileSystemStore.getRelativePath\nAPI was updated so that we no longer remove and then add back a preceding forward / to paths.\n\nTo run ITestAzureBlobFileSystemDelegationSAS tests follow the instructions in testing_azure.md under the heading\n\"To run Delegation SAS test cases\".  You also need to set \"fs.azure.enable.check.access\" to true.\n\nTEST RESULTS:\n\nnamespace.enabled\u003dtrue\nauth.type\u003dSharedKey\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 41\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dfalse\nauth.type\u003dSharedKey\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 244\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dtrue\nauth.type\u003dSharedKey\nsas.token.provider.type\u003dMockDelegationSASTokenProvider\nenable.check.access\u003dtrue\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 33\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dtrue\nauth.type\u003dOAuth\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 1, Skipped: 74\nTests run: 206, Failures: 0, Errors: 0, Skipped: 140\n",
+          "commitDate": "12/05/20 11:35 AM",
+          "commitName": "b214bbd2d92a0c02b71d352dba85f3b87317933c",
+          "commitAuthor": "Thomas Marquardt",
+          "commitDateOld": "21/04/20 9:37 AM",
+          "commitNameOld": "264e49c8f2cfd15826655bbc1847f378f60ad8c7",
+          "commitAuthorOld": "bilaharith",
+          "daysBetweenCommits": 21.08,
+          "commitsBetweenForRepo": 71,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,25 @@\n-  public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n+  public AbfsRestOperation getPathStatus(final String path, final boolean includeProperties) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n+    String operation \u003d SASTokenProvider.GET_PROPERTIES_OPERATION;\n+    if (!includeProperties) {\n+      // The default action (operation) is implicitly to get properties and this action requires read permission\n+      // because it reads user defined properties.  If the action is getStatus or getAclStatus, then\n+      // only traversal (execute) permission is required.\n+      abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_ACTION, AbfsHttpConstants.GET_STATUS);\n+      operation \u003d SASTokenProvider.GET_STATUS_OPERATION;\n+    }\n     abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n-    appendSASTokenToQuery(path, SASTokenProvider.GETFILESTATUS_OPERATION, abfsUriQueryBuilder);\n+    appendSASTokenToQuery(path, operation, abfsUriQueryBuilder);\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n             AbfsRestOperationType.GetPathStatus,\n             this,\n             HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AbfsRestOperation getPathStatus(final String path, final boolean includeProperties) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    String operation \u003d SASTokenProvider.GET_PROPERTIES_OPERATION;\n    if (!includeProperties) {\n      // The default action (operation) is implicitly to get properties and this action requires read permission\n      // because it reads user defined properties.  If the action is getStatus or getAclStatus, then\n      // only traversal (execute) permission is required.\n      abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_ACTION, AbfsHttpConstants.GET_STATUS);\n      operation \u003d SASTokenProvider.GET_STATUS_OPERATION;\n    }\n    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n    appendSASTokenToQuery(path, operation, abfsUriQueryBuilder);\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.GetPathStatus,\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "791270a2e5e31546ff5c1ef4fa8bad6852b906dc": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16730: ABFS: Support for Shared Access Signatures (SAS). Contributed by Sneha Vijayarajan.\n",
+      "commitDate": "27/02/20 10:27 AM",
+      "commitName": "791270a2e5e31546ff5c1ef4fa8bad6852b906dc",
+      "commitAuthor": "Sneha Vijayarajan",
+      "commitDateOld": "07/01/20 10:05 AM",
+      "commitNameOld": "d1f5976c004292f35b0fc5efbc86273becc4a304",
+      "commitAuthorOld": "Sneha Vijayarajan",
+      "daysBetweenCommits": 51.01,
+      "commitsBetweenForRepo": 184,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,17 @@\n   public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n     abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n+    appendSASTokenToQuery(path, SASTokenProvider.GETFILESTATUS_OPERATION, abfsUriQueryBuilder);\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n             AbfsRestOperationType.GetPathStatus,\n             this,\n             HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n    appendSASTokenToQuery(path, SASTokenProvider.GETFILESTATUS_OPERATION, abfsUriQueryBuilder);\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.GetPathStatus,\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+      "extendedDetails": {}
+    },
+    "e0260417ade5568ae37dcc3753aea0d1e0fd701b": {
+      "type": "Ymultichange(Yrename,Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16169. ABFS: Bug fix for getPathProperties.\n\nAuthor:    Da Zhou \u003cda.zhou@microsoft.com\u003e\n",
+      "commitDate": "08/03/19 5:53 AM",
+      "commitName": "e0260417ade5568ae37dcc3753aea0d1e0fd701b",
+      "commitAuthor": "Da Zhou",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HADOOP-16169. ABFS: Bug fix for getPathProperties.\n\nAuthor:    Da Zhou \u003cda.zhou@microsoft.com\u003e\n",
+          "commitDate": "08/03/19 5:53 AM",
+          "commitName": "e0260417ade5568ae37dcc3753aea0d1e0fd701b",
+          "commitAuthor": "Da Zhou",
+          "commitDateOld": "28/02/19 6:22 AM",
+          "commitNameOld": "65f60e56b082faf92e1cd3daee2569d8fc669c67",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 7.98,
+          "commitsBetweenForRepo": 77,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,16 @@\n-  public AbfsRestOperation getPathProperties(final String path, boolean isNameSpaceEnabled) throws AzureBlobFileSystemException {\n+  public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n     abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n-            isNameSpaceEnabled ? AbfsRestOperationType.GetPathProperties : AbfsRestOperationType.GetPathStatus,\n+            AbfsRestOperationType.GetPathStatus,\n             this,\n             HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.GetPathStatus,\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+          "extendedDetails": {
+            "oldValue": "getPathProperties",
+            "newValue": "getPathStatus"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16169. ABFS: Bug fix for getPathProperties.\n\nAuthor:    Da Zhou \u003cda.zhou@microsoft.com\u003e\n",
+          "commitDate": "08/03/19 5:53 AM",
+          "commitName": "e0260417ade5568ae37dcc3753aea0d1e0fd701b",
+          "commitAuthor": "Da Zhou",
+          "commitDateOld": "28/02/19 6:22 AM",
+          "commitNameOld": "65f60e56b082faf92e1cd3daee2569d8fc669c67",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 7.98,
+          "commitsBetweenForRepo": 77,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,16 @@\n-  public AbfsRestOperation getPathProperties(final String path, boolean isNameSpaceEnabled) throws AzureBlobFileSystemException {\n+  public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n     abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n-            isNameSpaceEnabled ? AbfsRestOperationType.GetPathProperties : AbfsRestOperationType.GetPathStatus,\n+            AbfsRestOperationType.GetPathStatus,\n             this,\n             HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.GetPathStatus,\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+          "extendedDetails": {
+            "oldValue": "[path-String(modifiers-final), isNameSpaceEnabled-boolean]",
+            "newValue": "[path-String(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16169. ABFS: Bug fix for getPathProperties.\n\nAuthor:    Da Zhou \u003cda.zhou@microsoft.com\u003e\n",
+          "commitDate": "08/03/19 5:53 AM",
+          "commitName": "e0260417ade5568ae37dcc3753aea0d1e0fd701b",
+          "commitAuthor": "Da Zhou",
+          "commitDateOld": "28/02/19 6:22 AM",
+          "commitNameOld": "65f60e56b082faf92e1cd3daee2569d8fc669c67",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 7.98,
+          "commitsBetweenForRepo": 77,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,16 @@\n-  public AbfsRestOperation getPathProperties(final String path, boolean isNameSpaceEnabled) throws AzureBlobFileSystemException {\n+  public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n     abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n-            isNameSpaceEnabled ? AbfsRestOperationType.GetPathProperties : AbfsRestOperationType.GetPathStatus,\n+            AbfsRestOperationType.GetPathStatus,\n             this,\n             HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AbfsRestOperation getPathStatus(final String path) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.GetPathStatus,\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "a8302e398c2ca4b0deff062c0e921053351b688e": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-15872. ABFS: Update to target 2018-11-09 REST version for ADLS Gen 2.\n\nContributed by Junhua Gu and Da Zhou.\n",
+      "commitDate": "23/11/18 6:17 AM",
+      "commitName": "a8302e398c2ca4b0deff062c0e921053351b688e",
+      "commitAuthor": "Da Zhou",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-15872. ABFS: Update to target 2018-11-09 REST version for ADLS Gen 2.\n\nContributed by Junhua Gu and Da Zhou.\n",
+          "commitDate": "23/11/18 6:17 AM",
+          "commitName": "a8302e398c2ca4b0deff062c0e921053351b688e",
+          "commitAuthor": "Da Zhou",
+          "commitDateOld": "17/09/18 12:54 PM",
+          "commitNameOld": "97f06b3fc70ad509e601076c015bc244daa1243f",
+          "commitAuthorOld": "Thomas Marquardt",
+          "daysBetweenCommits": 66.77,
+          "commitsBetweenForRepo": 613,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,16 @@\n-  public AbfsRestOperation getPathProperties(final String path) throws AzureBlobFileSystemException {\n+  public AbfsRestOperation getPathProperties(final String path, boolean isNameSpaceEnabled) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n+    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n-            AbfsRestOperationType.GetPathProperties,\n+            isNameSpaceEnabled ? AbfsRestOperationType.GetPathProperties : AbfsRestOperationType.GetPathStatus,\n             this,\n             HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AbfsRestOperation getPathProperties(final String path, boolean isNameSpaceEnabled) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            isNameSpaceEnabled ? AbfsRestOperationType.GetPathProperties : AbfsRestOperationType.GetPathStatus,\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+          "extendedDetails": {
+            "oldValue": "[path-String(modifiers-final)]",
+            "newValue": "[path-String(modifiers-final), isNameSpaceEnabled-boolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15872. ABFS: Update to target 2018-11-09 REST version for ADLS Gen 2.\n\nContributed by Junhua Gu and Da Zhou.\n",
+          "commitDate": "23/11/18 6:17 AM",
+          "commitName": "a8302e398c2ca4b0deff062c0e921053351b688e",
+          "commitAuthor": "Da Zhou",
+          "commitDateOld": "17/09/18 12:54 PM",
+          "commitNameOld": "97f06b3fc70ad509e601076c015bc244daa1243f",
+          "commitAuthorOld": "Thomas Marquardt",
+          "daysBetweenCommits": 66.77,
+          "commitsBetweenForRepo": 613,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,16 @@\n-  public AbfsRestOperation getPathProperties(final String path) throws AzureBlobFileSystemException {\n+  public AbfsRestOperation getPathProperties(final String path, boolean isNameSpaceEnabled) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n+    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n-            AbfsRestOperationType.GetPathProperties,\n+            isNameSpaceEnabled ? AbfsRestOperationType.GetPathProperties : AbfsRestOperationType.GetPathStatus,\n             this,\n             HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AbfsRestOperation getPathProperties(final String path, boolean isNameSpaceEnabled) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_UPN, String.valueOf(abfsConfiguration.isUpnUsed()));\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            isNameSpaceEnabled ? AbfsRestOperationType.GetPathProperties : AbfsRestOperationType.GetPathStatus,\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "97f06b3fc70ad509e601076c015bc244daa1243f": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15703. ABFS - Implement client-side throttling.\nContributed by Sneha Varma and Thomas Marquardt.\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "97f06b3fc70ad509e601076c015bc244daa1243f",
+      "commitAuthor": "Thomas Marquardt",
+      "commitDateOld": "17/09/18 12:54 PM",
+      "commitNameOld": "9c1e4e81399913f180131f4faa95604087c6d962",
+      "commitAuthorOld": "Thomas Marquardt",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 6,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,15 @@\n   public AbfsRestOperation getPathProperties(final String path) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n+            AbfsRestOperationType.GetPathProperties,\n             this,\n             HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public AbfsRestOperation getPathProperties(final String path) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.GetPathProperties,\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+      "extendedDetails": {}
+    },
+    "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15446. ABFS: tune imports \u0026 javadocs; stabilise tests.\nContributed by Steve Loughran and Da Zhou.\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+      "commitAuthor": "Thomas Marquardt",
+      "commitDateOld": "17/09/18 12:54 PM",
+      "commitNameOld": "a271fd0eca75cef8b8ba940cdac8ad4fd21b4462",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,14 @@\n   public AbfsRestOperation getPathProperties(final String path) throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n \n     final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n             this,\n-            AbfsHttpConstants.HTTP_METHOD_HEAD,\n+            HTTP_METHOD_HEAD,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public AbfsRestOperation getPathProperties(final String path) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            this,\n            HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+      "extendedDetails": {}
+    },
+    "f044deedbbfee0812316d587139cb828f27172e9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15407. HADOOP-15540. Support Windows Azure Storage - Blob file system \"ABFS\" in Hadoop: Core Commit.\n\nContributed by Shane Mainali, Thomas Marquardt, Zichen Sun, Georgi Chalakov, Esfandiar Manii, Amit Singh, Dana Kaban, Da Zhou, Junhua Gu, Saher Ahwal, Saurabh Pant, James Baker, Shaoyu Zhang, Lawrence Chen, Kevin Chen and Steve Loughran\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "f044deedbbfee0812316d587139cb828f27172e9",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,14 @@\n+  public AbfsRestOperation getPathProperties(final String path) throws AzureBlobFileSystemException {\n+    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n+\n+    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n+\n+    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n+    final AbfsRestOperation op \u003d new AbfsRestOperation(\n+            this,\n+            AbfsHttpConstants.HTTP_METHOD_HEAD,\n+            url,\n+            requestHeaders);\n+    op.execute();\n+    return op;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public AbfsRestOperation getPathProperties(final String path) throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n\n    final URL url \u003d createRequestUrl(path, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            this,\n            AbfsHttpConstants.HTTP_METHOD_HEAD,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AFileSystem.java",
+  "functionName": "getLocatedFileStatusIteratorForDir",
+  "functionId": "getLocatedFileStatusIteratorForDir___dir-Path__filter-PathFilter",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+  "functionStartLine": 4324,
+  "functionEndLine": 4351,
+  "numCommitsSeen": 141,
+  "timeTaken": 773,
+  "changeHistory": [
+    "7b2d84d19ce26a030da3a5dd674f763c95b310d9"
+  ],
+  "changeHistoryShort": {
+    "7b2d84d19ce26a030da3a5dd674f763c95b310d9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7b2d84d19ce26a030da3a5dd674f763c95b310d9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-16465 listLocatedStatus() optimisation (#1943)\n\n\r\nContributed by Mukund Thakur\r\n\r\nOptimize S3AFileSystem.listLocatedStatus() to perform list\r\noperations directly and then fallback to head checks for files",
+      "commitDate": "14/04/20 9:19 AM",
+      "commitName": "7b2d84d19ce26a030da3a5dd674f763c95b310d9",
+      "commitAuthor": "Mukund Thakur",
+      "diff": "@@ -0,0 +1,28 @@\n+  private RemoteIterator\u003cS3ALocatedFileStatus\u003e getLocatedFileStatusIteratorForDir(\n+          Path dir, PathFilter filter) throws IOException {\n+    final String key \u003d maybeAddTrailingSlash(pathToKey(dir));\n+    final Listing.FileStatusAcceptor acceptor \u003d\n+        new Listing.AcceptAllButSelfAndS3nDirs(dir);\n+    boolean allowAuthoritative \u003d allowAuthoritative(dir);\n+    DirListingMetadata meta \u003d\n+        S3Guard.listChildrenWithTtl(metadataStore, dir,\n+            ttlTimeProvider, allowAuthoritative);\n+    Set\u003cPath\u003e tombstones \u003d meta !\u003d null\n+            ? meta.listTombstones()\n+            : null;\n+    final RemoteIterator\u003cS3AFileStatus\u003e cachedFileStatusIterator \u003d\n+        listing.createProvidedFileStatusIterator(\n+            S3Guard.dirMetaToStatuses(meta), filter, acceptor);\n+    return (allowAuthoritative \u0026\u0026 meta !\u003d null\n+        \u0026\u0026 meta.isAuthoritative())\n+        ? listing.createLocatedFileStatusIterator(\n+        cachedFileStatusIterator)\n+        : listing.createTombstoneReconcilingIterator(\n+            listing.createLocatedFileStatusIterator(\n+            listing.createFileStatusListingIterator(dir,\n+                createListObjectsRequest(key, \"/\"),\n+                filter,\n+                acceptor,\n+                cachedFileStatusIterator)),\n+            tombstones);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private RemoteIterator\u003cS3ALocatedFileStatus\u003e getLocatedFileStatusIteratorForDir(\n          Path dir, PathFilter filter) throws IOException {\n    final String key \u003d maybeAddTrailingSlash(pathToKey(dir));\n    final Listing.FileStatusAcceptor acceptor \u003d\n        new Listing.AcceptAllButSelfAndS3nDirs(dir);\n    boolean allowAuthoritative \u003d allowAuthoritative(dir);\n    DirListingMetadata meta \u003d\n        S3Guard.listChildrenWithTtl(metadataStore, dir,\n            ttlTimeProvider, allowAuthoritative);\n    Set\u003cPath\u003e tombstones \u003d meta !\u003d null\n            ? meta.listTombstones()\n            : null;\n    final RemoteIterator\u003cS3AFileStatus\u003e cachedFileStatusIterator \u003d\n        listing.createProvidedFileStatusIterator(\n            S3Guard.dirMetaToStatuses(meta), filter, acceptor);\n    return (allowAuthoritative \u0026\u0026 meta !\u003d null\n        \u0026\u0026 meta.isAuthoritative())\n        ? listing.createLocatedFileStatusIterator(\n        cachedFileStatusIterator)\n        : listing.createTombstoneReconcilingIterator(\n            listing.createLocatedFileStatusIterator(\n            listing.createFileStatusListingIterator(dir,\n                createListObjectsRequest(key, \"/\"),\n                filter,\n                acceptor,\n                cachedFileStatusIterator)),\n            tombstones);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java"
+    }
+  }
+}

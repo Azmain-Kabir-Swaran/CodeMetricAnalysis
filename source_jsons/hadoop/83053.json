@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RollingFileSystemSink.java",
+  "functionName": "setInitialFlushTime",
+  "functionId": "setInitialFlushTime___now-Date",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java",
+  "functionStartLine": 612,
+  "functionEndLine": 652,
+  "numCommitsSeen": 9,
+  "timeTaken": 759,
+  "changeHistory": [
+    "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc"
+  ],
+  "changeHistoryShort": {
+    "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9782. RollingFileSystemSink should have configurable roll interval. (Daniel Templeton via kasha)\n",
+      "commitDate": "24/05/16 10:37 AM",
+      "commitName": "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc",
+      "commitAuthor": "Karthik Kambatla",
+      "diff": "@@ -0,0 +1,41 @@\n+  protected void setInitialFlushTime(Date now) {\n+    // Start with the beginning of the current hour\n+    nextFlush \u003d Calendar.getInstance();\n+    nextFlush.setTime(now);\n+    nextFlush.set(Calendar.MILLISECOND, 0);\n+    nextFlush.set(Calendar.SECOND, 0);\n+    nextFlush.set(Calendar.MINUTE, 0);\n+\n+    // In the first round, calculate the first flush as the largest number of\n+    // intervals from the beginning of the current hour that\u0027s not in the\n+    // future by:\n+    // 1. Subtract the beginning of the hour from the current time\n+    // 2. Divide by the roll interval and round down to get the number of whole\n+    //    intervals that have passed since the beginning of the hour\n+    // 3. Multiply by the roll interval to get the number of millis between\n+    //    the beginning of the current hour and the beginning of the current\n+    //    interval.\n+    int millis \u003d (int) (((now.getTime() - nextFlush.getTimeInMillis())\n+        / rollIntervalMillis) * rollIntervalMillis);\n+\n+    // Then add some noise to help prevent all the nodes from\n+    // closing their files at the same time.\n+    if (rollOffsetIntervalMillis \u003e 0) {\n+      millis +\u003d ThreadLocalRandom.current().nextLong(rollOffsetIntervalMillis);\n+\n+      // If the added time puts us into the future, step back one roll interval\n+      // because the code to increment nextFlush to the next flush expects that\n+      // nextFlush is the next flush from the previous interval.  There wasn\u0027t\n+      // a previous interval, so we just fake it with the time in the past that\n+      // would have been the previous interval if there had been one.\n+      //\n+      // It\u0027s OK if millis comes out negative.\n+      while (nextFlush.getTimeInMillis() + millis \u003e now.getTime()) {\n+        millis -\u003d rollIntervalMillis;\n+      }\n+    }\n+\n+    // Adjust the next flush time by millis to get the time of our ficticious\n+    // previous next flush\n+    nextFlush.add(Calendar.MILLISECOND, millis);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void setInitialFlushTime(Date now) {\n    // Start with the beginning of the current hour\n    nextFlush \u003d Calendar.getInstance();\n    nextFlush.setTime(now);\n    nextFlush.set(Calendar.MILLISECOND, 0);\n    nextFlush.set(Calendar.SECOND, 0);\n    nextFlush.set(Calendar.MINUTE, 0);\n\n    // In the first round, calculate the first flush as the largest number of\n    // intervals from the beginning of the current hour that\u0027s not in the\n    // future by:\n    // 1. Subtract the beginning of the hour from the current time\n    // 2. Divide by the roll interval and round down to get the number of whole\n    //    intervals that have passed since the beginning of the hour\n    // 3. Multiply by the roll interval to get the number of millis between\n    //    the beginning of the current hour and the beginning of the current\n    //    interval.\n    int millis \u003d (int) (((now.getTime() - nextFlush.getTimeInMillis())\n        / rollIntervalMillis) * rollIntervalMillis);\n\n    // Then add some noise to help prevent all the nodes from\n    // closing their files at the same time.\n    if (rollOffsetIntervalMillis \u003e 0) {\n      millis +\u003d ThreadLocalRandom.current().nextLong(rollOffsetIntervalMillis);\n\n      // If the added time puts us into the future, step back one roll interval\n      // because the code to increment nextFlush to the next flush expects that\n      // nextFlush is the next flush from the previous interval.  There wasn\u0027t\n      // a previous interval, so we just fake it with the time in the past that\n      // would have been the previous interval if there had been one.\n      //\n      // It\u0027s OK if millis comes out negative.\n      while (nextFlush.getTimeInMillis() + millis \u003e now.getTime()) {\n        millis -\u003d rollIntervalMillis;\n      }\n    }\n\n    // Adjust the next flush time by millis to get the time of our ficticious\n    // previous next flush\n    nextFlush.add(Calendar.MILLISECOND, millis);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java"
+    }
+  }
+}

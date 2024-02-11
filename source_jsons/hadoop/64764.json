@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SelectBinding.java",
+  "functionName": "buildRequest",
+  "functionId": "buildRequest___request-SelectObjectContentRequest(modifiers-final)__expression-String(modifiers-final)__builderOptions-Configuration(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/select/SelectBinding.java",
+  "functionStartLine": 204,
+  "functionEndLine": 242,
+  "numCommitsSeen": 1,
+  "timeTaken": 1504,
+  "changeHistory": [
+    "f365957c6326f88734bc0a5d01cfb7eac713db20"
+  ],
+  "changeHistoryShort": {
+    "f365957c6326f88734bc0a5d01cfb7eac713db20": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f365957c6326f88734bc0a5d01cfb7eac713db20": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15229. Add FileSystem builder-based openFile() API to match createFile();\nS3A to implement S3 Select through this API.\n\nThe new openFile() API is asynchronous, and implemented across FileSystem and FileContext.\n\nThe MapReduce V2 inputs are moved to this API, and you can actually set must/may\noptions to pass in.\n\nThis is more useful for setting things like s3a seek policy than for S3 select,\nas the existing input format/record readers can\u0027t handle S3 select output where\nthe stream is shorter than the file length, and splitting plain text is suboptimal.\nFuture work is needed there.\n\nIn the meantime, any/all filesystem connectors are now free to add their own filesystem-specific\nconfiguration parameters which can be set in jobs and used to set filesystem input stream\noptions (seek policy, retry, encryption secrets, etc).\n\nContributed by Steve Loughran\n",
+      "commitDate": "05/02/19 3:51 AM",
+      "commitName": "f365957c6326f88734bc0a5d01cfb7eac713db20",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,39 @@\n+  void buildRequest(\n+      final SelectObjectContentRequest request,\n+      final String expression,\n+      final Configuration builderOptions)\n+      throws IllegalArgumentException, IOException {\n+    Preconditions.checkArgument(StringUtils.isNotEmpty(expression),\n+        \"No expression provided in parameter \" + SELECT_SQL);\n+\n+    final Configuration ownerConf \u003d operations.getConf();\n+\n+\n+    String inputFormat \u003d builderOptions.get(SELECT_INPUT_FORMAT,\n+        SELECT_FORMAT_CSV).toLowerCase(Locale.ENGLISH);\n+    Preconditions.checkArgument(SELECT_FORMAT_CSV.equals(inputFormat),\n+        \"Unsupported input format %s\", inputFormat);\n+    String outputFormat \u003d builderOptions.get(SELECT_OUTPUT_FORMAT,\n+        SELECT_FORMAT_CSV)\n+        .toLowerCase(Locale.ENGLISH);\n+    Preconditions.checkArgument(SELECT_FORMAT_CSV.equals(outputFormat),\n+        \"Unsupported output format %s\", outputFormat);\n+\n+    request.setExpressionType(ExpressionType.SQL);\n+    request.setExpression(expandBackslashChars(expression));\n+\n+    InputSerialization inputSerialization \u003d buildCsvInputRequest(ownerConf,\n+        builderOptions);\n+    String compression \u003d opt(builderOptions,\n+        ownerConf,\n+        SELECT_INPUT_COMPRESSION,\n+        COMPRESSION_OPT_NONE,\n+        true).toUpperCase(Locale.ENGLISH);\n+    if (isNotEmpty(compression)) {\n+      inputSerialization.setCompressionType(compression);\n+    }\n+    request.setInputSerialization(inputSerialization);\n+\n+    request.setOutputSerialization(buildCSVOutput(ownerConf, builderOptions));\n+\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void buildRequest(\n      final SelectObjectContentRequest request,\n      final String expression,\n      final Configuration builderOptions)\n      throws IllegalArgumentException, IOException {\n    Preconditions.checkArgument(StringUtils.isNotEmpty(expression),\n        \"No expression provided in parameter \" + SELECT_SQL);\n\n    final Configuration ownerConf \u003d operations.getConf();\n\n\n    String inputFormat \u003d builderOptions.get(SELECT_INPUT_FORMAT,\n        SELECT_FORMAT_CSV).toLowerCase(Locale.ENGLISH);\n    Preconditions.checkArgument(SELECT_FORMAT_CSV.equals(inputFormat),\n        \"Unsupported input format %s\", inputFormat);\n    String outputFormat \u003d builderOptions.get(SELECT_OUTPUT_FORMAT,\n        SELECT_FORMAT_CSV)\n        .toLowerCase(Locale.ENGLISH);\n    Preconditions.checkArgument(SELECT_FORMAT_CSV.equals(outputFormat),\n        \"Unsupported output format %s\", outputFormat);\n\n    request.setExpressionType(ExpressionType.SQL);\n    request.setExpression(expandBackslashChars(expression));\n\n    InputSerialization inputSerialization \u003d buildCsvInputRequest(ownerConf,\n        builderOptions);\n    String compression \u003d opt(builderOptions,\n        ownerConf,\n        SELECT_INPUT_COMPRESSION,\n        COMPRESSION_OPT_NONE,\n        true).toUpperCase(Locale.ENGLISH);\n    if (isNotEmpty(compression)) {\n      inputSerialization.setCompressionType(compression);\n    }\n    request.setInputSerialization(inputSerialization);\n\n    request.setOutputSerialization(buildCSVOutput(ownerConf, builderOptions));\n\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/select/SelectBinding.java"
+    }
+  }
+}

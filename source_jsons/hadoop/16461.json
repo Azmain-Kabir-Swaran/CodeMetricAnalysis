@@ -1,0 +1,122 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ErasureCoding.java",
+  "functionName": "getECTopologyResultForPolicies",
+  "functionId": "getECTopologyResultForPolicies___policyNames-String[]",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/ErasureCoding.java",
+  "functionStartLine": 182,
+  "functionEndLine": 201,
+  "numCommitsSeen": 31,
+  "timeTaken": 4503,
+  "changeHistory": [
+    "92c58901d767f4fea571274544a590608c911cb8",
+    "14282e311be6ffcaddd2f74fa8e67c4e98a32291"
+  ],
+  "changeHistoryShort": {
+    "92c58901d767f4fea571274544a590608c911cb8": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparameterchange)",
+    "14282e311be6ffcaddd2f74fa8e67c4e98a32291": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "92c58901d767f4fea571274544a590608c911cb8": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparameterchange)",
+      "commitMessage": "HDFS-15117. EC: Add getECTopologyResultForPolicies to DistributedFileSystem. Contributed by Ayush Saxena\n",
+      "commitDate": "23/01/20 4:48 AM",
+      "commitName": "92c58901d767f4fea571274544a590608c911cb8",
+      "commitAuthor": "Ayush Saxena",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-15117. EC: Add getECTopologyResultForPolicies to DistributedFileSystem. Contributed by Ayush Saxena\n",
+          "commitDate": "23/01/20 4:48 AM",
+          "commitName": "92c58901d767f4fea571274544a590608c911cb8",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "22/01/20 7:25 AM",
+          "commitNameOld": "9520b2ad790bd8527033a03e7ee50da71a85df1d",
+          "commitAuthorOld": "Szilard Nemeth",
+          "daysBetweenCommits": 0.89,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,20 @@\n-  private static ECTopologyVerifierResult getECTopologyResultForPolicies(\n-      final DistributedFileSystem dfs, final String... policyNames)\n-      throws IOException {\n-    ErasureCodingPolicy[] policies \u003d\n-        new ErasureCodingPolicy[policyNames.length];\n-    for (int i \u003d 0; i \u003c policyNames.length; i++) {\n-      policies[i] \u003d\n-        getPolicy(dfs.getClient().getNamenode().getErasureCodingPolicies(),\n-            policyNames[i]);\n+  public ECTopologyVerifierResult getECTopologyResultForPolicies(\n+      String[] policyNames) throws IOException {\n+    RemoteMethod method \u003d new RemoteMethod(\"getECTopologyResultForPolicies\",\n+        new Class\u003c?\u003e[] {String[].class}, new Object[] {policyNames});\n+    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n+    if (nss.isEmpty()) {\n+      throw new IOException(\"No namespace availaible.\");\n     }\n-    final DatanodeInfo[] report \u003d dfs.getClient().getNamenode()\n-        .getDatanodeReport(HdfsConstants.DatanodeReportType.ALL);\n-    return ECTopologyVerifier.getECTopologyVerifierResult(report, policies);\n+    Map\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e ret \u003d rpcClient\n+        .invokeConcurrent(nss, method, true, false,\n+            ECTopologyVerifierResult.class);\n+    for (Map.Entry\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e entry : ret\n+        .entrySet()) {\n+      if (!entry.getValue().isSupported()) {\n+        return entry.getValue();\n+      }\n+    }\n+    // If no negative result, return the result from the first namespace.\n+    return ret.get(nss.iterator().next());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public ECTopologyVerifierResult getECTopologyResultForPolicies(\n      String[] policyNames) throws IOException {\n    RemoteMethod method \u003d new RemoteMethod(\"getECTopologyResultForPolicies\",\n        new Class\u003c?\u003e[] {String[].class}, new Object[] {policyNames});\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    if (nss.isEmpty()) {\n      throw new IOException(\"No namespace availaible.\");\n    }\n    Map\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e ret \u003d rpcClient\n        .invokeConcurrent(nss, method, true, false,\n            ECTopologyVerifierResult.class);\n    for (Map.Entry\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e entry : ret\n        .entrySet()) {\n      if (!entry.getValue().isSupported()) {\n        return entry.getValue();\n      }\n    }\n    // If no negative result, return the result from the first namespace.\n    return ret.get(nss.iterator().next());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/ErasureCoding.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/ECAdmin.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/ErasureCoding.java",
+            "oldMethodName": "getECTopologyResultForPolicies",
+            "newMethodName": "getECTopologyResultForPolicies"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-15117. EC: Add getECTopologyResultForPolicies to DistributedFileSystem. Contributed by Ayush Saxena\n",
+          "commitDate": "23/01/20 4:48 AM",
+          "commitName": "92c58901d767f4fea571274544a590608c911cb8",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "22/01/20 7:25 AM",
+          "commitNameOld": "9520b2ad790bd8527033a03e7ee50da71a85df1d",
+          "commitAuthorOld": "Szilard Nemeth",
+          "daysBetweenCommits": 0.89,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,20 @@\n-  private static ECTopologyVerifierResult getECTopologyResultForPolicies(\n-      final DistributedFileSystem dfs, final String... policyNames)\n-      throws IOException {\n-    ErasureCodingPolicy[] policies \u003d\n-        new ErasureCodingPolicy[policyNames.length];\n-    for (int i \u003d 0; i \u003c policyNames.length; i++) {\n-      policies[i] \u003d\n-        getPolicy(dfs.getClient().getNamenode().getErasureCodingPolicies(),\n-            policyNames[i]);\n+  public ECTopologyVerifierResult getECTopologyResultForPolicies(\n+      String[] policyNames) throws IOException {\n+    RemoteMethod method \u003d new RemoteMethod(\"getECTopologyResultForPolicies\",\n+        new Class\u003c?\u003e[] {String[].class}, new Object[] {policyNames});\n+    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n+    if (nss.isEmpty()) {\n+      throw new IOException(\"No namespace availaible.\");\n     }\n-    final DatanodeInfo[] report \u003d dfs.getClient().getNamenode()\n-        .getDatanodeReport(HdfsConstants.DatanodeReportType.ALL);\n-    return ECTopologyVerifier.getECTopologyVerifierResult(report, policies);\n+    Map\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e ret \u003d rpcClient\n+        .invokeConcurrent(nss, method, true, false,\n+            ECTopologyVerifierResult.class);\n+    for (Map.Entry\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e entry : ret\n+        .entrySet()) {\n+      if (!entry.getValue().isSupported()) {\n+        return entry.getValue();\n+      }\n+    }\n+    // If no negative result, return the result from the first namespace.\n+    return ret.get(nss.iterator().next());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public ECTopologyVerifierResult getECTopologyResultForPolicies(\n      String[] policyNames) throws IOException {\n    RemoteMethod method \u003d new RemoteMethod(\"getECTopologyResultForPolicies\",\n        new Class\u003c?\u003e[] {String[].class}, new Object[] {policyNames});\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    if (nss.isEmpty()) {\n      throw new IOException(\"No namespace availaible.\");\n    }\n    Map\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e ret \u003d rpcClient\n        .invokeConcurrent(nss, method, true, false,\n            ECTopologyVerifierResult.class);\n    for (Map.Entry\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e entry : ret\n        .entrySet()) {\n      if (!entry.getValue().isSupported()) {\n        return entry.getValue();\n      }\n    }\n    // If no negative result, return the result from the first namespace.\n    return ret.get(nss.iterator().next());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/ErasureCoding.java",
+          "extendedDetails": {
+            "oldValue": "[private, static]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-15117. EC: Add getECTopologyResultForPolicies to DistributedFileSystem. Contributed by Ayush Saxena\n",
+          "commitDate": "23/01/20 4:48 AM",
+          "commitName": "92c58901d767f4fea571274544a590608c911cb8",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "22/01/20 7:25 AM",
+          "commitNameOld": "9520b2ad790bd8527033a03e7ee50da71a85df1d",
+          "commitAuthorOld": "Szilard Nemeth",
+          "daysBetweenCommits": 0.89,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,20 @@\n-  private static ECTopologyVerifierResult getECTopologyResultForPolicies(\n-      final DistributedFileSystem dfs, final String... policyNames)\n-      throws IOException {\n-    ErasureCodingPolicy[] policies \u003d\n-        new ErasureCodingPolicy[policyNames.length];\n-    for (int i \u003d 0; i \u003c policyNames.length; i++) {\n-      policies[i] \u003d\n-        getPolicy(dfs.getClient().getNamenode().getErasureCodingPolicies(),\n-            policyNames[i]);\n+  public ECTopologyVerifierResult getECTopologyResultForPolicies(\n+      String[] policyNames) throws IOException {\n+    RemoteMethod method \u003d new RemoteMethod(\"getECTopologyResultForPolicies\",\n+        new Class\u003c?\u003e[] {String[].class}, new Object[] {policyNames});\n+    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n+    if (nss.isEmpty()) {\n+      throw new IOException(\"No namespace availaible.\");\n     }\n-    final DatanodeInfo[] report \u003d dfs.getClient().getNamenode()\n-        .getDatanodeReport(HdfsConstants.DatanodeReportType.ALL);\n-    return ECTopologyVerifier.getECTopologyVerifierResult(report, policies);\n+    Map\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e ret \u003d rpcClient\n+        .invokeConcurrent(nss, method, true, false,\n+            ECTopologyVerifierResult.class);\n+    for (Map.Entry\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e entry : ret\n+        .entrySet()) {\n+      if (!entry.getValue().isSupported()) {\n+        return entry.getValue();\n+      }\n+    }\n+    // If no negative result, return the result from the first namespace.\n+    return ret.get(nss.iterator().next());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public ECTopologyVerifierResult getECTopologyResultForPolicies(\n      String[] policyNames) throws IOException {\n    RemoteMethod method \u003d new RemoteMethod(\"getECTopologyResultForPolicies\",\n        new Class\u003c?\u003e[] {String[].class}, new Object[] {policyNames});\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    if (nss.isEmpty()) {\n      throw new IOException(\"No namespace availaible.\");\n    }\n    Map\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e ret \u003d rpcClient\n        .invokeConcurrent(nss, method, true, false,\n            ECTopologyVerifierResult.class);\n    for (Map.Entry\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e entry : ret\n        .entrySet()) {\n      if (!entry.getValue().isSupported()) {\n        return entry.getValue();\n      }\n    }\n    // If no negative result, return the result from the first namespace.\n    return ret.get(nss.iterator().next());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/ErasureCoding.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-15117. EC: Add getECTopologyResultForPolicies to DistributedFileSystem. Contributed by Ayush Saxena\n",
+          "commitDate": "23/01/20 4:48 AM",
+          "commitName": "92c58901d767f4fea571274544a590608c911cb8",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "22/01/20 7:25 AM",
+          "commitNameOld": "9520b2ad790bd8527033a03e7ee50da71a85df1d",
+          "commitAuthorOld": "Szilard Nemeth",
+          "daysBetweenCommits": 0.89,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,20 @@\n-  private static ECTopologyVerifierResult getECTopologyResultForPolicies(\n-      final DistributedFileSystem dfs, final String... policyNames)\n-      throws IOException {\n-    ErasureCodingPolicy[] policies \u003d\n-        new ErasureCodingPolicy[policyNames.length];\n-    for (int i \u003d 0; i \u003c policyNames.length; i++) {\n-      policies[i] \u003d\n-        getPolicy(dfs.getClient().getNamenode().getErasureCodingPolicies(),\n-            policyNames[i]);\n+  public ECTopologyVerifierResult getECTopologyResultForPolicies(\n+      String[] policyNames) throws IOException {\n+    RemoteMethod method \u003d new RemoteMethod(\"getECTopologyResultForPolicies\",\n+        new Class\u003c?\u003e[] {String[].class}, new Object[] {policyNames});\n+    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n+    if (nss.isEmpty()) {\n+      throw new IOException(\"No namespace availaible.\");\n     }\n-    final DatanodeInfo[] report \u003d dfs.getClient().getNamenode()\n-        .getDatanodeReport(HdfsConstants.DatanodeReportType.ALL);\n-    return ECTopologyVerifier.getECTopologyVerifierResult(report, policies);\n+    Map\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e ret \u003d rpcClient\n+        .invokeConcurrent(nss, method, true, false,\n+            ECTopologyVerifierResult.class);\n+    for (Map.Entry\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e entry : ret\n+        .entrySet()) {\n+      if (!entry.getValue().isSupported()) {\n+        return entry.getValue();\n+      }\n+    }\n+    // If no negative result, return the result from the first namespace.\n+    return ret.get(nss.iterator().next());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public ECTopologyVerifierResult getECTopologyResultForPolicies(\n      String[] policyNames) throws IOException {\n    RemoteMethod method \u003d new RemoteMethod(\"getECTopologyResultForPolicies\",\n        new Class\u003c?\u003e[] {String[].class}, new Object[] {policyNames});\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    if (nss.isEmpty()) {\n      throw new IOException(\"No namespace availaible.\");\n    }\n    Map\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e ret \u003d rpcClient\n        .invokeConcurrent(nss, method, true, false,\n            ECTopologyVerifierResult.class);\n    for (Map.Entry\u003cFederationNamespaceInfo, ECTopologyVerifierResult\u003e entry : ret\n        .entrySet()) {\n      if (!entry.getValue().isSupported()) {\n        return entry.getValue();\n      }\n    }\n    // If no negative result, return the result from the first namespace.\n    return ret.get(nss.iterator().next());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/ErasureCoding.java",
+          "extendedDetails": {
+            "oldValue": "[dfs-DistributedFileSystem(modifiers-final), policyNames-String(modifiers-final)]",
+            "newValue": "[policyNames-String[]]"
+          }
+        }
+      ]
+    },
+    "14282e311be6ffcaddd2f74fa8e67c4e98a32291": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-14188. Make hdfs ec -verifyClusterSetup command accept an erasure coding policy as a parameter. Contributed by Kitti Nanasi.\n\nSigned-off-by: Wei-Chiu Chuang \u003cweichiu@apache.org\u003e\n",
+      "commitDate": "19/02/19 12:04 PM",
+      "commitName": "14282e311be6ffcaddd2f74fa8e67c4e98a32291",
+      "commitAuthor": "Kitti Nanasi",
+      "diff": "@@ -0,0 +1,14 @@\n+  private static ECTopologyVerifierResult getECTopologyResultForPolicies(\n+      final DistributedFileSystem dfs, final String... policyNames)\n+      throws IOException {\n+    ErasureCodingPolicy[] policies \u003d\n+        new ErasureCodingPolicy[policyNames.length];\n+    for (int i \u003d 0; i \u003c policyNames.length; i++) {\n+      policies[i] \u003d\n+        getPolicy(dfs.getClient().getNamenode().getErasureCodingPolicies(),\n+            policyNames[i]);\n+    }\n+    final DatanodeInfo[] report \u003d dfs.getClient().getNamenode()\n+        .getDatanodeReport(HdfsConstants.DatanodeReportType.ALL);\n+    return ECTopologyVerifier.getECTopologyVerifierResult(report, policies);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static ECTopologyVerifierResult getECTopologyResultForPolicies(\n      final DistributedFileSystem dfs, final String... policyNames)\n      throws IOException {\n    ErasureCodingPolicy[] policies \u003d\n        new ErasureCodingPolicy[policyNames.length];\n    for (int i \u003d 0; i \u003c policyNames.length; i++) {\n      policies[i] \u003d\n        getPolicy(dfs.getClient().getNamenode().getErasureCodingPolicies(),\n            policyNames[i]);\n    }\n    final DatanodeInfo[] report \u003d dfs.getClient().getNamenode()\n        .getDatanodeReport(HdfsConstants.DatanodeReportType.ALL);\n    return ECTopologyVerifier.getECTopologyVerifierResult(report, policies);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/ECAdmin.java"
+    }
+  }
+}

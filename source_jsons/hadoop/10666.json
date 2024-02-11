@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbstractFuture.java",
+  "functionName": "setFuture",
+  "functionId": "setFuture___future-ListenableFuture__? extends V__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/AbstractFuture.java",
+  "functionStartLine": 773,
+  "functionEndLine": 818,
+  "numCommitsSeen": 4,
+  "timeTaken": 766,
+  "changeHistory": [
+    "d69a82c89c1e857a2a86ff614ae11fb5df993614"
+  ],
+  "changeHistoryShort": {
+    "d69a82c89c1e857a2a86ff614ae11fb5df993614": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d69a82c89c1e857a2a86ff614ae11fb5df993614": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11511. Support Timeout when checking single disk. Contributed by Hanisha Koneru.\n",
+      "commitDate": "15/03/17 6:01 PM",
+      "commitName": "d69a82c89c1e857a2a86ff614ae11fb5df993614",
+      "commitAuthor": "Hanisha Koneru",
+      "diff": "@@ -0,0 +1,46 @@\n+  protected boolean setFuture(ListenableFuture\u003c? extends V\u003e future) {\n+    checkNotNull(future);\n+    Object localValue \u003d value;\n+    if (localValue \u003d\u003d null) {\n+      if (future.isDone()) {\n+        Object value \u003d getFutureValue(future);\n+        if (ATOMIC_HELPER.casValue(this, null, value)) {\n+          complete(this);\n+          return true;\n+        }\n+        return false;\n+      }\n+      SetFuture valueToSet \u003d new SetFuture\u003cV\u003e(this, future);\n+      if (ATOMIC_HELPER.casValue(this, null, valueToSet)) {\n+        // the listener is responsible for calling completeWithFuture,\n+        // directExecutor is appropriate since all we are doing is unpacking\n+        // a completed future which should be fast.\n+        try {\n+          future.addListener(valueToSet, directExecutor());\n+        } catch (Throwable t) {\n+          // addListener has thrown an exception! SetFuture.run can\u0027t throw\n+          // any exceptions so this must have been caused by addListener\n+          // itself. The most likely explanation is a misconfigured mock. Try\n+          // to switch to Failure.\n+          Failure failure;\n+          try {\n+            failure \u003d new Failure(t);\n+          } catch (Throwable oomMostLikely) {\n+            failure \u003d Failure.FALLBACK_INSTANCE;\n+          }\n+          // Note: The only way this CAS could fail is if cancel() has raced\n+          // with us. That is ok.\n+          boolean unused \u003d ATOMIC_HELPER.casValue(this, valueToSet, failure);\n+        }\n+        return true;\n+      }\n+      localValue \u003d value; // we lost the cas, fall through and maybe cancel\n+    }\n+    // The future has already been set to something. If it is cancellation we\n+    // should cancel the incoming future.\n+    if (localValue instanceof Cancellation) {\n+      // we don\u0027t care if it fails, this is best-effort.\n+      future.cancel(((Cancellation) localValue).wasInterrupted);\n+    }\n+    return false;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected boolean setFuture(ListenableFuture\u003c? extends V\u003e future) {\n    checkNotNull(future);\n    Object localValue \u003d value;\n    if (localValue \u003d\u003d null) {\n      if (future.isDone()) {\n        Object value \u003d getFutureValue(future);\n        if (ATOMIC_HELPER.casValue(this, null, value)) {\n          complete(this);\n          return true;\n        }\n        return false;\n      }\n      SetFuture valueToSet \u003d new SetFuture\u003cV\u003e(this, future);\n      if (ATOMIC_HELPER.casValue(this, null, valueToSet)) {\n        // the listener is responsible for calling completeWithFuture,\n        // directExecutor is appropriate since all we are doing is unpacking\n        // a completed future which should be fast.\n        try {\n          future.addListener(valueToSet, directExecutor());\n        } catch (Throwable t) {\n          // addListener has thrown an exception! SetFuture.run can\u0027t throw\n          // any exceptions so this must have been caused by addListener\n          // itself. The most likely explanation is a misconfigured mock. Try\n          // to switch to Failure.\n          Failure failure;\n          try {\n            failure \u003d new Failure(t);\n          } catch (Throwable oomMostLikely) {\n            failure \u003d Failure.FALLBACK_INSTANCE;\n          }\n          // Note: The only way this CAS could fail is if cancel() has raced\n          // with us. That is ok.\n          boolean unused \u003d ATOMIC_HELPER.casValue(this, valueToSet, failure);\n        }\n        return true;\n      }\n      localValue \u003d value; // we lost the cas, fall through and maybe cancel\n    }\n    // The future has already been set to something. If it is cancellation we\n    // should cancel the incoming future.\n    if (localValue instanceof Cancellation) {\n      // we don\u0027t care if it fails, this is best-effort.\n      future.cancel(((Cancellation) localValue).wasInterrupted);\n    }\n    return false;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/AbstractFuture.java"
+    }
+  }
+}

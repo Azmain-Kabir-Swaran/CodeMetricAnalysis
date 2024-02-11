@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileChecksumHelper.java",
+  "functionName": "makeCompositeCrcResult",
+  "functionId": "makeCompositeCrcResult",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+  "functionStartLine": 296,
+  "functionEndLine": 346,
+  "numCommitsSeen": 9,
+  "timeTaken": 1398,
+  "changeHistory": [
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf"
+  ],
+  "changeHistoryShort": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13056. Expose file-level composite CRCs in HDFS which are comparable across different instances/layouts. Contributed by Dennis Huo.\n",
+      "commitDate": "10/04/18 9:31 PM",
+      "commitName": "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+      "commitAuthor": "Xiao Chen",
+      "diff": "@@ -0,0 +1,51 @@\n+    FileChecksum makeCompositeCrcResult() throws IOException {\n+      long blockSizeHint \u003d 0;\n+      if (locatedBlocks.size() \u003e 0) {\n+        blockSizeHint \u003d locatedBlocks.get(0).getBlockSize();\n+      }\n+      CrcComposer crcComposer \u003d\n+          CrcComposer.newCrcComposer(getCrcType(), blockSizeHint);\n+      byte[] blockChecksumBytes \u003d blockChecksumBuf.getData();\n+\n+      long sumBlockLengths \u003d 0;\n+      for (int i \u003d 0; i \u003c locatedBlocks.size() - 1; ++i) {\n+        LocatedBlock block \u003d locatedBlocks.get(i);\n+        // For everything except the last LocatedBlock, we expect getBlockSize()\n+        // to accurately reflect the number of file bytes digested in the block\n+        // checksum.\n+        sumBlockLengths +\u003d block.getBlockSize();\n+        int blockCrc \u003d CrcUtil.readInt(blockChecksumBytes, i * 4);\n+\n+        crcComposer.update(blockCrc, block.getBlockSize());\n+        LOG.debug(\n+            \"Added blockCrc 0x{} for block index {} of size {}\",\n+            Integer.toString(blockCrc, 16), i, block.getBlockSize());\n+      }\n+\n+      // NB: In some cases the located blocks have their block size adjusted\n+      // explicitly based on the requested length, but not all cases;\n+      // these numbers may or may not reflect actual sizes on disk.\n+      long reportedLastBlockSize \u003d\n+          blockLocations.getLastLocatedBlock().getBlockSize();\n+      long consumedLastBlockLength \u003d reportedLastBlockSize;\n+      if (length - sumBlockLengths \u003c reportedLastBlockSize) {\n+        LOG.warn(\n+            \"Last block length {} is less than reportedLastBlockSize {}\",\n+            length - sumBlockLengths, reportedLastBlockSize);\n+        consumedLastBlockLength \u003d length - sumBlockLengths;\n+      }\n+      // NB: blockChecksumBytes.length may be much longer than actual bytes\n+      // written into the DataOutput.\n+      int lastBlockCrc \u003d CrcUtil.readInt(\n+          blockChecksumBytes, 4 * (locatedBlocks.size() - 1));\n+      crcComposer.update(lastBlockCrc, consumedLastBlockLength);\n+      LOG.debug(\n+          \"Added lastBlockCrc 0x{} for block index {} of size {}\",\n+          Integer.toString(lastBlockCrc, 16),\n+          locatedBlocks.size() - 1,\n+          consumedLastBlockLength);\n+\n+      int compositeCrc \u003d CrcUtil.readInt(crcComposer.digest(), 0);\n+      return new CompositeCrcFileChecksum(\n+          compositeCrc, getCrcType(), bytesPerCRC);\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    FileChecksum makeCompositeCrcResult() throws IOException {\n      long blockSizeHint \u003d 0;\n      if (locatedBlocks.size() \u003e 0) {\n        blockSizeHint \u003d locatedBlocks.get(0).getBlockSize();\n      }\n      CrcComposer crcComposer \u003d\n          CrcComposer.newCrcComposer(getCrcType(), blockSizeHint);\n      byte[] blockChecksumBytes \u003d blockChecksumBuf.getData();\n\n      long sumBlockLengths \u003d 0;\n      for (int i \u003d 0; i \u003c locatedBlocks.size() - 1; ++i) {\n        LocatedBlock block \u003d locatedBlocks.get(i);\n        // For everything except the last LocatedBlock, we expect getBlockSize()\n        // to accurately reflect the number of file bytes digested in the block\n        // checksum.\n        sumBlockLengths +\u003d block.getBlockSize();\n        int blockCrc \u003d CrcUtil.readInt(blockChecksumBytes, i * 4);\n\n        crcComposer.update(blockCrc, block.getBlockSize());\n        LOG.debug(\n            \"Added blockCrc 0x{} for block index {} of size {}\",\n            Integer.toString(blockCrc, 16), i, block.getBlockSize());\n      }\n\n      // NB: In some cases the located blocks have their block size adjusted\n      // explicitly based on the requested length, but not all cases;\n      // these numbers may or may not reflect actual sizes on disk.\n      long reportedLastBlockSize \u003d\n          blockLocations.getLastLocatedBlock().getBlockSize();\n      long consumedLastBlockLength \u003d reportedLastBlockSize;\n      if (length - sumBlockLengths \u003c reportedLastBlockSize) {\n        LOG.warn(\n            \"Last block length {} is less than reportedLastBlockSize {}\",\n            length - sumBlockLengths, reportedLastBlockSize);\n        consumedLastBlockLength \u003d length - sumBlockLengths;\n      }\n      // NB: blockChecksumBytes.length may be much longer than actual bytes\n      // written into the DataOutput.\n      int lastBlockCrc \u003d CrcUtil.readInt(\n          blockChecksumBytes, 4 * (locatedBlocks.size() - 1));\n      crcComposer.update(lastBlockCrc, consumedLastBlockLength);\n      LOG.debug(\n          \"Added lastBlockCrc 0x{} for block index {} of size {}\",\n          Integer.toString(lastBlockCrc, 16),\n          locatedBlocks.size() - 1,\n          consumedLastBlockLength);\n\n      int compositeCrc \u003d CrcUtil.readInt(crcComposer.digest(), 0);\n      return new CompositeCrcFileChecksum(\n          compositeCrc, getCrcType(), bytesPerCRC);\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java"
+    }
+  }
+}

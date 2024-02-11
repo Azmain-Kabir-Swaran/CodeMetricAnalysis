@@ -1,0 +1,147 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DataStorage.java",
+  "functionName": "addStorageLocations",
+  "functionId": "addStorageLocations___datanode-DataNode__nsInfo-NamespaceInfo__dataDirs-Collection__StorageLocation____startOpt-StartupOption",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+  "functionStartLine": 382,
+  "functionEndLine": 396,
+  "numCommitsSeen": 75,
+  "timeTaken": 2921,
+  "changeHistory": [
+    "66289a3bf403f307844ea0b6ceed35b603d12c0b",
+    "662e17b46a0f41ade6a304e12925b70b5d09fc2f",
+    "a9331fe9b071fdcdae0c6c747d7b6b306142e671",
+    "eca80dca3ee0888304519ec96e9e4113cc35b112"
+  ],
+  "changeHistoryShort": {
+    "66289a3bf403f307844ea0b6ceed35b603d12c0b": "Ybodychange",
+    "662e17b46a0f41ade6a304e12925b70b5d09fc2f": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "a9331fe9b071fdcdae0c6c747d7b6b306142e671": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "eca80dca3ee0888304519ec96e9e4113cc35b112": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "66289a3bf403f307844ea0b6ceed35b603d12c0b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8578. On upgrade, Datanode should process all storage/data dirs in parallel.  Contributed by vinayakumarb and szetszwo\n",
+      "commitDate": "22/02/16 3:01 PM",
+      "commitName": "66289a3bf403f307844ea0b6ceed35b603d12c0b",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "04/02/16 11:19 AM",
+      "commitNameOld": "496f33de0ce80dc455cfd51f19612da6f9b914f9",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 18.15,
+      "commitsBetweenForRepo": 115,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,8 +1,15 @@\n   synchronized List\u003cStorageDirectory\u003e addStorageLocations(DataNode datanode,\n       NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n       StartupOption startOpt) throws IOException {\n-    final List\u003cStorageLocation\u003e successLocations \u003d loadDataStorage(\n-        datanode, nsInfo, dataDirs, startOpt);\n-    return loadBlockPoolSliceStorage(\n-        datanode, nsInfo, successLocations, startOpt);\n+    final int numThreads \u003d getParallelVolumeLoadThreadsNum(\n+        dataDirs.size(), datanode.getConf());\n+    final ExecutorService executor \u003d Executors.newFixedThreadPool(numThreads);\n+    try {\n+      final List\u003cStorageLocation\u003e successLocations \u003d loadDataStorage(\n+          datanode, nsInfo, dataDirs, startOpt, executor);\n+      return loadBlockPoolSliceStorage(\n+          datanode, nsInfo, successLocations, startOpt, executor);\n+    } finally {\n+      executor.shutdown();\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  synchronized List\u003cStorageDirectory\u003e addStorageLocations(DataNode datanode,\n      NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n      StartupOption startOpt) throws IOException {\n    final int numThreads \u003d getParallelVolumeLoadThreadsNum(\n        dataDirs.size(), datanode.getConf());\n    final ExecutorService executor \u003d Executors.newFixedThreadPool(numThreads);\n    try {\n      final List\u003cStorageLocation\u003e successLocations \u003d loadDataStorage(\n          datanode, nsInfo, dataDirs, startOpt, executor);\n      return loadBlockPoolSliceStorage(\n          datanode, nsInfo, successLocations, startOpt, executor);\n    } finally {\n      executor.shutdown();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+      "extendedDetails": {}
+    },
+    "662e17b46a0f41ade6a304e12925b70b5d09fc2f": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-9654. Code refactoring for HDFS-8578.\n",
+      "commitDate": "27/01/16 6:58 PM",
+      "commitName": "662e17b46a0f41ade6a304e12925b70b5d09fc2f",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-9654. Code refactoring for HDFS-8578.\n",
+          "commitDate": "27/01/16 6:58 PM",
+          "commitName": "662e17b46a0f41ade6a304e12925b70b5d09fc2f",
+          "commitAuthor": "Tsz-Wo Nicholas Sze",
+          "commitDateOld": "05/11/15 10:00 AM",
+          "commitNameOld": "efc73d7896e65a8a03d226ac21309257a7dc126c",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 83.37,
+          "commitsBetweenForRepo": 510,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,44 +1,8 @@\n-  synchronized List\u003cStorageLocation\u003e addStorageLocations(DataNode datanode,\n+  synchronized List\u003cStorageDirectory\u003e addStorageLocations(DataNode datanode,\n       NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n       StartupOption startOpt) throws IOException {\n-    final String bpid \u003d nsInfo.getBlockPoolID();\n-    List\u003cStorageLocation\u003e successVolumes \u003d Lists.newArrayList();\n-    for (StorageLocation dataDir : dataDirs) {\n-      File root \u003d dataDir.getFile();\n-      if (!containsStorageDir(root)) {\n-        try {\n-          // It first ensures the datanode level format is completed.\n-          StorageDirectory sd \u003d loadStorageDirectory(\n-              datanode, nsInfo, root, startOpt);\n-          addStorageDir(sd);\n-        } catch (IOException e) {\n-          LOG.warn(e);\n-          continue;\n-        }\n-      } else {\n-        LOG.info(\"Storage directory \" + dataDir + \" has already been used.\");\n-      }\n-\n-      List\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n-      bpDataDirs.add(BlockPoolSliceStorage.getBpRoot(bpid, new File(root,\n-              STORAGE_DIR_CURRENT)));\n-      try {\n-        makeBlockPoolDataDir(bpDataDirs, null);\n-        BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n-        if (bpStorage \u003d\u003d null) {\n-          bpStorage \u003d new BlockPoolSliceStorage(\n-              nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n-              nsInfo.getClusterID());\n-        }\n-\n-        bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n-        addBlockPoolStorage(bpid, bpStorage);\n-      } catch (IOException e) {\n-        LOG.warn(\"Failed to add storage for block pool: \" + bpid + \" : \"\n-            + e.getMessage());\n-        continue;\n-      }\n-      successVolumes.add(dataDir);\n-    }\n-    return successVolumes;\n+    final List\u003cStorageLocation\u003e successLocations \u003d loadDataStorage(\n+        datanode, nsInfo, dataDirs, startOpt);\n+    return loadBlockPoolSliceStorage(\n+        datanode, nsInfo, successLocations, startOpt);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized List\u003cStorageDirectory\u003e addStorageLocations(DataNode datanode,\n      NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n      StartupOption startOpt) throws IOException {\n    final List\u003cStorageLocation\u003e successLocations \u003d loadDataStorage(\n        datanode, nsInfo, dataDirs, startOpt);\n    return loadBlockPoolSliceStorage(\n        datanode, nsInfo, successLocations, startOpt);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+          "extendedDetails": {
+            "oldValue": "List\u003cStorageLocation\u003e",
+            "newValue": "List\u003cStorageDirectory\u003e"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-9654. Code refactoring for HDFS-8578.\n",
+          "commitDate": "27/01/16 6:58 PM",
+          "commitName": "662e17b46a0f41ade6a304e12925b70b5d09fc2f",
+          "commitAuthor": "Tsz-Wo Nicholas Sze",
+          "commitDateOld": "05/11/15 10:00 AM",
+          "commitNameOld": "efc73d7896e65a8a03d226ac21309257a7dc126c",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 83.37,
+          "commitsBetweenForRepo": 510,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,44 +1,8 @@\n-  synchronized List\u003cStorageLocation\u003e addStorageLocations(DataNode datanode,\n+  synchronized List\u003cStorageDirectory\u003e addStorageLocations(DataNode datanode,\n       NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n       StartupOption startOpt) throws IOException {\n-    final String bpid \u003d nsInfo.getBlockPoolID();\n-    List\u003cStorageLocation\u003e successVolumes \u003d Lists.newArrayList();\n-    for (StorageLocation dataDir : dataDirs) {\n-      File root \u003d dataDir.getFile();\n-      if (!containsStorageDir(root)) {\n-        try {\n-          // It first ensures the datanode level format is completed.\n-          StorageDirectory sd \u003d loadStorageDirectory(\n-              datanode, nsInfo, root, startOpt);\n-          addStorageDir(sd);\n-        } catch (IOException e) {\n-          LOG.warn(e);\n-          continue;\n-        }\n-      } else {\n-        LOG.info(\"Storage directory \" + dataDir + \" has already been used.\");\n-      }\n-\n-      List\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n-      bpDataDirs.add(BlockPoolSliceStorage.getBpRoot(bpid, new File(root,\n-              STORAGE_DIR_CURRENT)));\n-      try {\n-        makeBlockPoolDataDir(bpDataDirs, null);\n-        BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n-        if (bpStorage \u003d\u003d null) {\n-          bpStorage \u003d new BlockPoolSliceStorage(\n-              nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n-              nsInfo.getClusterID());\n-        }\n-\n-        bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n-        addBlockPoolStorage(bpid, bpStorage);\n-      } catch (IOException e) {\n-        LOG.warn(\"Failed to add storage for block pool: \" + bpid + \" : \"\n-            + e.getMessage());\n-        continue;\n-      }\n-      successVolumes.add(dataDir);\n-    }\n-    return successVolumes;\n+    final List\u003cStorageLocation\u003e successLocations \u003d loadDataStorage(\n+        datanode, nsInfo, dataDirs, startOpt);\n+    return loadBlockPoolSliceStorage(\n+        datanode, nsInfo, successLocations, startOpt);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized List\u003cStorageDirectory\u003e addStorageLocations(DataNode datanode,\n      NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n      StartupOption startOpt) throws IOException {\n    final List\u003cStorageLocation\u003e successLocations \u003d loadDataStorage(\n        datanode, nsInfo, dataDirs, startOpt);\n    return loadBlockPoolSliceStorage(\n        datanode, nsInfo, successLocations, startOpt);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "a9331fe9b071fdcdae0c6c747d7b6b306142e671": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-7035. Make adding a new data directory to the DataNode an atomic operation and improve error handling (Lei Xu via Colin P. McCabe)\n",
+      "commitDate": "30/10/14 5:31 PM",
+      "commitName": "a9331fe9b071fdcdae0c6c747d7b6b306142e671",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-7035. Make adding a new data directory to the DataNode an atomic operation and improve error handling (Lei Xu via Colin P. McCabe)\n",
+          "commitDate": "30/10/14 5:31 PM",
+          "commitName": "a9331fe9b071fdcdae0c6c747d7b6b306142e671",
+          "commitAuthor": "Colin Patrick Mccabe",
+          "commitDateOld": "22/09/14 6:00 PM",
+          "commitNameOld": "889122bd5580b6a83d35ef945db7ec001b7b550a",
+          "commitAuthorOld": "",
+          "daysBetweenCommits": 37.98,
+          "commitsBetweenForRepo": 371,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,44 @@\n-  synchronized void addStorageLocations(DataNode datanode,\n+  synchronized List\u003cStorageLocation\u003e addStorageLocations(DataNode datanode,\n       NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n-      StartupOption startOpt)\n-      throws IOException {\n-    // Similar to recoverTransitionRead, it first ensures the datanode level\n-    // format is completed.\n-    List\u003cStorageLocation\u003e tmpDataDirs \u003d\n-        new ArrayList\u003cStorageLocation\u003e(dataDirs);\n-    addStorageLocations(datanode, nsInfo, tmpDataDirs, startOpt, false, true);\n+      StartupOption startOpt) throws IOException {\n+    final String bpid \u003d nsInfo.getBlockPoolID();\n+    List\u003cStorageLocation\u003e successVolumes \u003d Lists.newArrayList();\n+    for (StorageLocation dataDir : dataDirs) {\n+      File root \u003d dataDir.getFile();\n+      if (!containsStorageDir(root)) {\n+        try {\n+          // It first ensures the datanode level format is completed.\n+          StorageDirectory sd \u003d loadStorageDirectory(\n+              datanode, nsInfo, root, startOpt);\n+          addStorageDir(sd);\n+        } catch (IOException e) {\n+          LOG.warn(e);\n+          continue;\n+        }\n+      } else {\n+        LOG.info(\"Storage directory \" + dataDir + \" has already been used.\");\n+      }\n \n-    Collection\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n-    String bpid \u003d nsInfo.getBlockPoolID();\n-    for (StorageLocation dir : dataDirs) {\n-      File dnRoot \u003d dir.getFile();\n-      File bpRoot \u003d BlockPoolSliceStorage.getBpRoot(bpid, new File(dnRoot,\n-          STORAGE_DIR_CURRENT));\n-      bpDataDirs.add(bpRoot);\n-    }\n-    // mkdir for the list of BlockPoolStorage\n-    makeBlockPoolDataDir(bpDataDirs, null);\n-    BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n-    if (bpStorage \u003d\u003d null) {\n-      bpStorage \u003d new BlockPoolSliceStorage(\n-          nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n-          nsInfo.getClusterID());\n-    }\n+      List\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n+      bpDataDirs.add(BlockPoolSliceStorage.getBpRoot(bpid, new File(root,\n+              STORAGE_DIR_CURRENT)));\n+      try {\n+        makeBlockPoolDataDir(bpDataDirs, null);\n+        BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n+        if (bpStorage \u003d\u003d null) {\n+          bpStorage \u003d new BlockPoolSliceStorage(\n+              nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n+              nsInfo.getClusterID());\n+        }\n \n-    bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n-    addBlockPoolStorage(bpid, bpStorage);\n+        bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n+        addBlockPoolStorage(bpid, bpStorage);\n+      } catch (IOException e) {\n+        LOG.warn(\"Failed to add storage for block pool: \" + bpid + \" : \"\n+            + e.getMessage());\n+        continue;\n+      }\n+      successVolumes.add(dataDir);\n+    }\n+    return successVolumes;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized List\u003cStorageLocation\u003e addStorageLocations(DataNode datanode,\n      NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n      StartupOption startOpt) throws IOException {\n    final String bpid \u003d nsInfo.getBlockPoolID();\n    List\u003cStorageLocation\u003e successVolumes \u003d Lists.newArrayList();\n    for (StorageLocation dataDir : dataDirs) {\n      File root \u003d dataDir.getFile();\n      if (!containsStorageDir(root)) {\n        try {\n          // It first ensures the datanode level format is completed.\n          StorageDirectory sd \u003d loadStorageDirectory(\n              datanode, nsInfo, root, startOpt);\n          addStorageDir(sd);\n        } catch (IOException e) {\n          LOG.warn(e);\n          continue;\n        }\n      } else {\n        LOG.info(\"Storage directory \" + dataDir + \" has already been used.\");\n      }\n\n      List\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n      bpDataDirs.add(BlockPoolSliceStorage.getBpRoot(bpid, new File(root,\n              STORAGE_DIR_CURRENT)));\n      try {\n        makeBlockPoolDataDir(bpDataDirs, null);\n        BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n        if (bpStorage \u003d\u003d null) {\n          bpStorage \u003d new BlockPoolSliceStorage(\n              nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n              nsInfo.getClusterID());\n        }\n\n        bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n        addBlockPoolStorage(bpid, bpStorage);\n      } catch (IOException e) {\n        LOG.warn(\"Failed to add storage for block pool: \" + bpid + \" : \"\n            + e.getMessage());\n        continue;\n      }\n      successVolumes.add(dataDir);\n    }\n    return successVolumes;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "List\u003cStorageLocation\u003e"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7035. Make adding a new data directory to the DataNode an atomic operation and improve error handling (Lei Xu via Colin P. McCabe)\n",
+          "commitDate": "30/10/14 5:31 PM",
+          "commitName": "a9331fe9b071fdcdae0c6c747d7b6b306142e671",
+          "commitAuthor": "Colin Patrick Mccabe",
+          "commitDateOld": "22/09/14 6:00 PM",
+          "commitNameOld": "889122bd5580b6a83d35ef945db7ec001b7b550a",
+          "commitAuthorOld": "",
+          "daysBetweenCommits": 37.98,
+          "commitsBetweenForRepo": 371,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,44 @@\n-  synchronized void addStorageLocations(DataNode datanode,\n+  synchronized List\u003cStorageLocation\u003e addStorageLocations(DataNode datanode,\n       NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n-      StartupOption startOpt)\n-      throws IOException {\n-    // Similar to recoverTransitionRead, it first ensures the datanode level\n-    // format is completed.\n-    List\u003cStorageLocation\u003e tmpDataDirs \u003d\n-        new ArrayList\u003cStorageLocation\u003e(dataDirs);\n-    addStorageLocations(datanode, nsInfo, tmpDataDirs, startOpt, false, true);\n+      StartupOption startOpt) throws IOException {\n+    final String bpid \u003d nsInfo.getBlockPoolID();\n+    List\u003cStorageLocation\u003e successVolumes \u003d Lists.newArrayList();\n+    for (StorageLocation dataDir : dataDirs) {\n+      File root \u003d dataDir.getFile();\n+      if (!containsStorageDir(root)) {\n+        try {\n+          // It first ensures the datanode level format is completed.\n+          StorageDirectory sd \u003d loadStorageDirectory(\n+              datanode, nsInfo, root, startOpt);\n+          addStorageDir(sd);\n+        } catch (IOException e) {\n+          LOG.warn(e);\n+          continue;\n+        }\n+      } else {\n+        LOG.info(\"Storage directory \" + dataDir + \" has already been used.\");\n+      }\n \n-    Collection\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n-    String bpid \u003d nsInfo.getBlockPoolID();\n-    for (StorageLocation dir : dataDirs) {\n-      File dnRoot \u003d dir.getFile();\n-      File bpRoot \u003d BlockPoolSliceStorage.getBpRoot(bpid, new File(dnRoot,\n-          STORAGE_DIR_CURRENT));\n-      bpDataDirs.add(bpRoot);\n-    }\n-    // mkdir for the list of BlockPoolStorage\n-    makeBlockPoolDataDir(bpDataDirs, null);\n-    BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n-    if (bpStorage \u003d\u003d null) {\n-      bpStorage \u003d new BlockPoolSliceStorage(\n-          nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n-          nsInfo.getClusterID());\n-    }\n+      List\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n+      bpDataDirs.add(BlockPoolSliceStorage.getBpRoot(bpid, new File(root,\n+              STORAGE_DIR_CURRENT)));\n+      try {\n+        makeBlockPoolDataDir(bpDataDirs, null);\n+        BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n+        if (bpStorage \u003d\u003d null) {\n+          bpStorage \u003d new BlockPoolSliceStorage(\n+              nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n+              nsInfo.getClusterID());\n+        }\n \n-    bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n-    addBlockPoolStorage(bpid, bpStorage);\n+        bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n+        addBlockPoolStorage(bpid, bpStorage);\n+      } catch (IOException e) {\n+        LOG.warn(\"Failed to add storage for block pool: \" + bpid + \" : \"\n+            + e.getMessage());\n+        continue;\n+      }\n+      successVolumes.add(dataDir);\n+    }\n+    return successVolumes;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized List\u003cStorageLocation\u003e addStorageLocations(DataNode datanode,\n      NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n      StartupOption startOpt) throws IOException {\n    final String bpid \u003d nsInfo.getBlockPoolID();\n    List\u003cStorageLocation\u003e successVolumes \u003d Lists.newArrayList();\n    for (StorageLocation dataDir : dataDirs) {\n      File root \u003d dataDir.getFile();\n      if (!containsStorageDir(root)) {\n        try {\n          // It first ensures the datanode level format is completed.\n          StorageDirectory sd \u003d loadStorageDirectory(\n              datanode, nsInfo, root, startOpt);\n          addStorageDir(sd);\n        } catch (IOException e) {\n          LOG.warn(e);\n          continue;\n        }\n      } else {\n        LOG.info(\"Storage directory \" + dataDir + \" has already been used.\");\n      }\n\n      List\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n      bpDataDirs.add(BlockPoolSliceStorage.getBpRoot(bpid, new File(root,\n              STORAGE_DIR_CURRENT)));\n      try {\n        makeBlockPoolDataDir(bpDataDirs, null);\n        BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n        if (bpStorage \u003d\u003d null) {\n          bpStorage \u003d new BlockPoolSliceStorage(\n              nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n              nsInfo.getClusterID());\n        }\n\n        bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n        addBlockPoolStorage(bpid, bpStorage);\n      } catch (IOException e) {\n        LOG.warn(\"Failed to add storage for block pool: \" + bpid + \" : \"\n            + e.getMessage());\n        continue;\n      }\n      successVolumes.add(dataDir);\n    }\n    return successVolumes;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "eca80dca3ee0888304519ec96e9e4113cc35b112": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-6728. Dynamically add new volumes to DataStorage, formatted if necessary. Contributed by Lei Xu.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1616615 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/14 3:46 PM",
+      "commitName": "eca80dca3ee0888304519ec96e9e4113cc35b112",
+      "commitAuthor": "Aaron Myers",
+      "diff": "@@ -0,0 +1,30 @@\n+  synchronized void addStorageLocations(DataNode datanode,\n+      NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n+      StartupOption startOpt)\n+      throws IOException {\n+    // Similar to recoverTransitionRead, it first ensures the datanode level\n+    // format is completed.\n+    List\u003cStorageLocation\u003e tmpDataDirs \u003d\n+        new ArrayList\u003cStorageLocation\u003e(dataDirs);\n+    addStorageLocations(datanode, nsInfo, tmpDataDirs, startOpt, false, true);\n+\n+    Collection\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n+    String bpid \u003d nsInfo.getBlockPoolID();\n+    for (StorageLocation dir : dataDirs) {\n+      File dnRoot \u003d dir.getFile();\n+      File bpRoot \u003d BlockPoolSliceStorage.getBpRoot(bpid, new File(dnRoot,\n+          STORAGE_DIR_CURRENT));\n+      bpDataDirs.add(bpRoot);\n+    }\n+    // mkdir for the list of BlockPoolStorage\n+    makeBlockPoolDataDir(bpDataDirs, null);\n+    BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n+    if (bpStorage \u003d\u003d null) {\n+      bpStorage \u003d new BlockPoolSliceStorage(\n+          nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n+          nsInfo.getClusterID());\n+    }\n+\n+    bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n+    addBlockPoolStorage(bpid, bpStorage);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  synchronized void addStorageLocations(DataNode datanode,\n      NamespaceInfo nsInfo, Collection\u003cStorageLocation\u003e dataDirs,\n      StartupOption startOpt)\n      throws IOException {\n    // Similar to recoverTransitionRead, it first ensures the datanode level\n    // format is completed.\n    List\u003cStorageLocation\u003e tmpDataDirs \u003d\n        new ArrayList\u003cStorageLocation\u003e(dataDirs);\n    addStorageLocations(datanode, nsInfo, tmpDataDirs, startOpt, false, true);\n\n    Collection\u003cFile\u003e bpDataDirs \u003d new ArrayList\u003cFile\u003e();\n    String bpid \u003d nsInfo.getBlockPoolID();\n    for (StorageLocation dir : dataDirs) {\n      File dnRoot \u003d dir.getFile();\n      File bpRoot \u003d BlockPoolSliceStorage.getBpRoot(bpid, new File(dnRoot,\n          STORAGE_DIR_CURRENT));\n      bpDataDirs.add(bpRoot);\n    }\n    // mkdir for the list of BlockPoolStorage\n    makeBlockPoolDataDir(bpDataDirs, null);\n    BlockPoolSliceStorage bpStorage \u003d this.bpStorageMap.get(bpid);\n    if (bpStorage \u003d\u003d null) {\n      bpStorage \u003d new BlockPoolSliceStorage(\n          nsInfo.getNamespaceID(), bpid, nsInfo.getCTime(),\n          nsInfo.getClusterID());\n    }\n\n    bpStorage.recoverTransitionRead(datanode, nsInfo, bpDataDirs, startOpt);\n    addBlockPoolStorage(bpid, bpStorage);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataStorage.java"
+    }
+  }
+}

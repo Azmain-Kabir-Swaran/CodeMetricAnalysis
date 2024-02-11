@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "HistoryServerFileSystemStateStoreService.java",
+  "functionName": "loadTokensFromBucket",
+  "functionId": "loadTokensFromBucket___state-HistoryServerState__bucket-Path",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-hs/src/main/java/org/apache/hadoop/mapreduce/v2/hs/HistoryServerFileSystemStateStoreService.java",
+  "functionStartLine": 358,
+  "functionEndLine": 394,
+  "numCommitsSeen": 6,
+  "timeTaken": 749,
+  "changeHistory": [
+    "9579554988f82d506a32b81834f3a4fa9c698471",
+    "2627e352d630d19c35b97eea9ef603342feb379f"
+  ],
+  "changeHistoryShort": {
+    "9579554988f82d506a32b81834f3a4fa9c698471": "Ybodychange",
+    "2627e352d630d19c35b97eea9ef603342feb379f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9579554988f82d506a32b81834f3a4fa9c698471": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6010. HistoryServerFileSystemStateStore fails to update tokens. Contributed by Jason Lowe\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1617984 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "14/08/14 8:55 AM",
+      "commitName": "9579554988f82d506a32b81834f3a4fa9c698471",
+      "commitAuthor": "Jason Darrell Lowe",
+      "commitDateOld": "10/04/14 9:28 PM",
+      "commitNameOld": "c1127d19c4233b0d9c2d5016069276c391c895b0",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 125.48,
+      "commitsBetweenForRepo": 797,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,37 @@\n   private int loadTokensFromBucket(HistoryServerState state, Path bucket)\n       throws IOException {\n     String numStr \u003d\n         bucket.getName().substring(TOKEN_BUCKET_DIR_PREFIX.length());\n     final int bucketId \u003d Integer.parseInt(numStr);\n     int numTokens \u003d 0;\n     FileStatus[] tokenStats \u003d fs.listStatus(bucket);\n+    Set\u003cString\u003e loadedTokens \u003d new HashSet\u003cString\u003e(tokenStats.length);\n     for (FileStatus stat : tokenStats) {\n       String name \u003d stat.getPath().getName();\n       if (name.startsWith(TOKEN_FILE_PREFIX)) {\n-        MRDelegationTokenIdentifier token \u003d\n-            loadToken(state, stat.getPath(), stat.getLen());\n-        int tokenBucketId \u003d getBucketId(token);\n-        if (tokenBucketId !\u003d bucketId) {\n-          throw new IOException(\"Token \" + stat.getPath()\n-              + \" should be in bucket \" + tokenBucketId + \", found in bucket \"\n-              + bucketId);\n-        }\n+        loadTokenFromBucket(bucketId, state, stat.getPath(), stat.getLen());\n+        loadedTokens.add(name);\n         ++numTokens;\n+      } else if (name.startsWith(UPDATE_TMP_FILE_PREFIX)) {\n+        String tokenName \u003d name.substring(UPDATE_TMP_FILE_PREFIX.length());\n+        if (loadedTokens.contains(tokenName)) {\n+          // already have the token, update may be partial so ignore it\n+          fs.delete(stat.getPath(), false);\n+        } else {\n+          // token is missing, so try to parse the update temp file\n+          loadTokenFromBucket(bucketId, state, stat.getPath(), stat.getLen());\n+          fs.rename(stat.getPath(),\n+              new Path(stat.getPath().getParent(), tokenName));\n+          loadedTokens.add(tokenName);\n+          ++numTokens;\n+        }\n+      } else if (name.startsWith(TMP_FILE_PREFIX)) {\n+        // cleanup incomplete temp files\n+        fs.delete(stat.getPath(), false);\n       } else {\n         LOG.warn(\"Skipping unexpected file in history server token bucket: \"\n             + stat.getPath());\n       }\n     }\n     return numTokens;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private int loadTokensFromBucket(HistoryServerState state, Path bucket)\n      throws IOException {\n    String numStr \u003d\n        bucket.getName().substring(TOKEN_BUCKET_DIR_PREFIX.length());\n    final int bucketId \u003d Integer.parseInt(numStr);\n    int numTokens \u003d 0;\n    FileStatus[] tokenStats \u003d fs.listStatus(bucket);\n    Set\u003cString\u003e loadedTokens \u003d new HashSet\u003cString\u003e(tokenStats.length);\n    for (FileStatus stat : tokenStats) {\n      String name \u003d stat.getPath().getName();\n      if (name.startsWith(TOKEN_FILE_PREFIX)) {\n        loadTokenFromBucket(bucketId, state, stat.getPath(), stat.getLen());\n        loadedTokens.add(name);\n        ++numTokens;\n      } else if (name.startsWith(UPDATE_TMP_FILE_PREFIX)) {\n        String tokenName \u003d name.substring(UPDATE_TMP_FILE_PREFIX.length());\n        if (loadedTokens.contains(tokenName)) {\n          // already have the token, update may be partial so ignore it\n          fs.delete(stat.getPath(), false);\n        } else {\n          // token is missing, so try to parse the update temp file\n          loadTokenFromBucket(bucketId, state, stat.getPath(), stat.getLen());\n          fs.rename(stat.getPath(),\n              new Path(stat.getPath().getParent(), tokenName));\n          loadedTokens.add(tokenName);\n          ++numTokens;\n        }\n      } else if (name.startsWith(TMP_FILE_PREFIX)) {\n        // cleanup incomplete temp files\n        fs.delete(stat.getPath(), false);\n      } else {\n        LOG.warn(\"Skipping unexpected file in history server token bucket: \"\n            + stat.getPath());\n      }\n    }\n    return numTokens;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-hs/src/main/java/org/apache/hadoop/mapreduce/v2/hs/HistoryServerFileSystemStateStoreService.java",
+      "extendedDetails": {}
+    },
+    "2627e352d630d19c35b97eea9ef603342feb379f": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-5332. Support token-preserving restart of history server. Contributed by Jason Lowe\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1527015 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "27/09/13 11:19 AM",
+      "commitName": "2627e352d630d19c35b97eea9ef603342feb379f",
+      "commitAuthor": "Jason Darrell Lowe",
+      "diff": "@@ -0,0 +1,26 @@\n+  private int loadTokensFromBucket(HistoryServerState state, Path bucket)\n+      throws IOException {\n+    String numStr \u003d\n+        bucket.getName().substring(TOKEN_BUCKET_DIR_PREFIX.length());\n+    final int bucketId \u003d Integer.parseInt(numStr);\n+    int numTokens \u003d 0;\n+    FileStatus[] tokenStats \u003d fs.listStatus(bucket);\n+    for (FileStatus stat : tokenStats) {\n+      String name \u003d stat.getPath().getName();\n+      if (name.startsWith(TOKEN_FILE_PREFIX)) {\n+        MRDelegationTokenIdentifier token \u003d\n+            loadToken(state, stat.getPath(), stat.getLen());\n+        int tokenBucketId \u003d getBucketId(token);\n+        if (tokenBucketId !\u003d bucketId) {\n+          throw new IOException(\"Token \" + stat.getPath()\n+              + \" should be in bucket \" + tokenBucketId + \", found in bucket \"\n+              + bucketId);\n+        }\n+        ++numTokens;\n+      } else {\n+        LOG.warn(\"Skipping unexpected file in history server token bucket: \"\n+            + stat.getPath());\n+      }\n+    }\n+    return numTokens;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private int loadTokensFromBucket(HistoryServerState state, Path bucket)\n      throws IOException {\n    String numStr \u003d\n        bucket.getName().substring(TOKEN_BUCKET_DIR_PREFIX.length());\n    final int bucketId \u003d Integer.parseInt(numStr);\n    int numTokens \u003d 0;\n    FileStatus[] tokenStats \u003d fs.listStatus(bucket);\n    for (FileStatus stat : tokenStats) {\n      String name \u003d stat.getPath().getName();\n      if (name.startsWith(TOKEN_FILE_PREFIX)) {\n        MRDelegationTokenIdentifier token \u003d\n            loadToken(state, stat.getPath(), stat.getLen());\n        int tokenBucketId \u003d getBucketId(token);\n        if (tokenBucketId !\u003d bucketId) {\n          throw new IOException(\"Token \" + stat.getPath()\n              + \" should be in bucket \" + tokenBucketId + \", found in bucket \"\n              + bucketId);\n        }\n        ++numTokens;\n      } else {\n        LOG.warn(\"Skipping unexpected file in history server token bucket: \"\n            + stat.getPath());\n      }\n    }\n    return numTokens;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-hs/src/main/java/org/apache/hadoop/mapreduce/v2/hs/HistoryServerFileSystemStateStoreService.java"
+    }
+  }
+}

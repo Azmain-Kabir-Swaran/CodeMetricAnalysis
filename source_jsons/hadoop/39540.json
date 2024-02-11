@@ -1,0 +1,138 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CSQueueUtils.java",
+  "functionName": "getMaxAvailableResourceToQueuePartition",
+  "functionId": "getMaxAvailableResourceToQueuePartition___rc-ResourceCalculator(modifiers-final)__queue-CSQueue__cluster-Resource__partition-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CSQueueUtils.java",
+  "functionStartLine": 254,
+  "functionEndLine": 272,
+  "numCommitsSeen": 59,
+  "timeTaken": 5155,
+  "changeHistory": [
+    "42683aef1a694af883c14842bf41f30b91e039f3",
+    "46f90581641feec37e285964df983d221bee5e1d",
+    "5e798b1a0ddceeaf54703b94052501867156e979",
+    "24db9167f16ba643a186624b33a6b9b80020f476"
+  ],
+  "changeHistoryShort": {
+    "42683aef1a694af883c14842bf41f30b91e039f3": "Ymultichange(Yrename,Yparameterchange,Ybodychange)",
+    "46f90581641feec37e285964df983d221bee5e1d": "Ybodychange",
+    "5e798b1a0ddceeaf54703b94052501867156e979": "Ybodychange",
+    "24db9167f16ba643a186624b33a6b9b80020f476": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "42683aef1a694af883c14842bf41f30b91e039f3": {
+      "type": "Ymultichange(Yrename,Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-9596: QueueMetrics has incorrect metrics when labelled partitions are involved. Contributed by  Muhammad Samir Khan.\n",
+      "commitDate": "30/07/19 11:58 AM",
+      "commitName": "42683aef1a694af883c14842bf41f30b91e039f3",
+      "commitAuthor": "Eric E Payne",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "YARN-9596: QueueMetrics has incorrect metrics when labelled partitions are involved. Contributed by  Muhammad Samir Khan.\n",
+          "commitDate": "30/07/19 11:58 AM",
+          "commitName": "42683aef1a694af883c14842bf41f30b91e039f3",
+          "commitAuthor": "Eric E Payne",
+          "commitDateOld": "10/04/19 7:51 AM",
+          "commitNameOld": "8c1bba375b144fd515b389174ddb349f2d9246fa",
+          "commitAuthorOld": "Weiwei Yang",
+          "daysBetweenCommits": 111.17,
+          "commitsBetweenForRepo": 772,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,19 @@\n-  private static Resource getMaxAvailableResourceToQueue(\n-      final ResourceCalculator rc, RMNodeLabelsManager nlm, CSQueue queue,\n-      Resource cluster) {\n-    Set\u003cString\u003e nodeLabels \u003d queue.getNodeLabelsForQueue();\n-    Resource totalAvailableResource \u003d Resources.createResource(0, 0);\n+  private static Resource getMaxAvailableResourceToQueuePartition(\n+      final ResourceCalculator rc, CSQueue queue,\n+      Resource cluster, String partition) {\n+    // Calculate guaranteed resource for a label in a queue by below logic.\n+    // (total label resource) * (absolute capacity of label in that queue)\n+    Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n \n-    for (String partition : nodeLabels) {\n-      // Calculate guaranteed resource for a label in a queue by below logic.\n-      // (total label resource) * (absolute capacity of label in that queue)\n-      Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n+    // Available resource in queue for a specific label will be calculated as\n+    // {(guaranteed resource for a label in a queue) -\n+    // (resource usage of that label in the queue)}\n+    Resource available \u003d (Resources.greaterThan(rc, cluster,\n+        queueGuaranteedResource,\n+        queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n+        .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n+            queue.getQueueResourceUsage().getUsed(partition)), Resources\n+            .none()) : Resources.none();\n \n-      // Available resource in queue for a specific label will be calculated as\n-      // {(guaranteed resource for a label in a queue) -\n-      // (resource usage of that label in the queue)}\n-      // Finally accumulate this available resource to get total.\n-      Resource available \u003d (Resources.greaterThan(rc, cluster,\n-          queueGuaranteedResource,\n-          queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n-          .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n-              queue.getQueueResourceUsage().getUsed(partition)), Resources\n-              .none()) : Resources.none();\n-      Resources.addTo(totalAvailableResource, available);\n-    }\n-    return totalAvailableResource;\n+    return available;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static Resource getMaxAvailableResourceToQueuePartition(\n      final ResourceCalculator rc, CSQueue queue,\n      Resource cluster, String partition) {\n    // Calculate guaranteed resource for a label in a queue by below logic.\n    // (total label resource) * (absolute capacity of label in that queue)\n    Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n\n    // Available resource in queue for a specific label will be calculated as\n    // {(guaranteed resource for a label in a queue) -\n    // (resource usage of that label in the queue)}\n    Resource available \u003d (Resources.greaterThan(rc, cluster,\n        queueGuaranteedResource,\n        queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n        .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n            queue.getQueueResourceUsage().getUsed(partition)), Resources\n            .none()) : Resources.none();\n\n    return available;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CSQueueUtils.java",
+          "extendedDetails": {
+            "oldValue": "getMaxAvailableResourceToQueue",
+            "newValue": "getMaxAvailableResourceToQueuePartition"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-9596: QueueMetrics has incorrect metrics when labelled partitions are involved. Contributed by  Muhammad Samir Khan.\n",
+          "commitDate": "30/07/19 11:58 AM",
+          "commitName": "42683aef1a694af883c14842bf41f30b91e039f3",
+          "commitAuthor": "Eric E Payne",
+          "commitDateOld": "10/04/19 7:51 AM",
+          "commitNameOld": "8c1bba375b144fd515b389174ddb349f2d9246fa",
+          "commitAuthorOld": "Weiwei Yang",
+          "daysBetweenCommits": 111.17,
+          "commitsBetweenForRepo": 772,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,19 @@\n-  private static Resource getMaxAvailableResourceToQueue(\n-      final ResourceCalculator rc, RMNodeLabelsManager nlm, CSQueue queue,\n-      Resource cluster) {\n-    Set\u003cString\u003e nodeLabels \u003d queue.getNodeLabelsForQueue();\n-    Resource totalAvailableResource \u003d Resources.createResource(0, 0);\n+  private static Resource getMaxAvailableResourceToQueuePartition(\n+      final ResourceCalculator rc, CSQueue queue,\n+      Resource cluster, String partition) {\n+    // Calculate guaranteed resource for a label in a queue by below logic.\n+    // (total label resource) * (absolute capacity of label in that queue)\n+    Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n \n-    for (String partition : nodeLabels) {\n-      // Calculate guaranteed resource for a label in a queue by below logic.\n-      // (total label resource) * (absolute capacity of label in that queue)\n-      Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n+    // Available resource in queue for a specific label will be calculated as\n+    // {(guaranteed resource for a label in a queue) -\n+    // (resource usage of that label in the queue)}\n+    Resource available \u003d (Resources.greaterThan(rc, cluster,\n+        queueGuaranteedResource,\n+        queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n+        .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n+            queue.getQueueResourceUsage().getUsed(partition)), Resources\n+            .none()) : Resources.none();\n \n-      // Available resource in queue for a specific label will be calculated as\n-      // {(guaranteed resource for a label in a queue) -\n-      // (resource usage of that label in the queue)}\n-      // Finally accumulate this available resource to get total.\n-      Resource available \u003d (Resources.greaterThan(rc, cluster,\n-          queueGuaranteedResource,\n-          queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n-          .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n-              queue.getQueueResourceUsage().getUsed(partition)), Resources\n-              .none()) : Resources.none();\n-      Resources.addTo(totalAvailableResource, available);\n-    }\n-    return totalAvailableResource;\n+    return available;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static Resource getMaxAvailableResourceToQueuePartition(\n      final ResourceCalculator rc, CSQueue queue,\n      Resource cluster, String partition) {\n    // Calculate guaranteed resource for a label in a queue by below logic.\n    // (total label resource) * (absolute capacity of label in that queue)\n    Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n\n    // Available resource in queue for a specific label will be calculated as\n    // {(guaranteed resource for a label in a queue) -\n    // (resource usage of that label in the queue)}\n    Resource available \u003d (Resources.greaterThan(rc, cluster,\n        queueGuaranteedResource,\n        queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n        .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n            queue.getQueueResourceUsage().getUsed(partition)), Resources\n            .none()) : Resources.none();\n\n    return available;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CSQueueUtils.java",
+          "extendedDetails": {
+            "oldValue": "[rc-ResourceCalculator(modifiers-final), nlm-RMNodeLabelsManager, queue-CSQueue, cluster-Resource]",
+            "newValue": "[rc-ResourceCalculator(modifiers-final), queue-CSQueue, cluster-Resource, partition-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-9596: QueueMetrics has incorrect metrics when labelled partitions are involved. Contributed by  Muhammad Samir Khan.\n",
+          "commitDate": "30/07/19 11:58 AM",
+          "commitName": "42683aef1a694af883c14842bf41f30b91e039f3",
+          "commitAuthor": "Eric E Payne",
+          "commitDateOld": "10/04/19 7:51 AM",
+          "commitNameOld": "8c1bba375b144fd515b389174ddb349f2d9246fa",
+          "commitAuthorOld": "Weiwei Yang",
+          "daysBetweenCommits": 111.17,
+          "commitsBetweenForRepo": 772,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,19 @@\n-  private static Resource getMaxAvailableResourceToQueue(\n-      final ResourceCalculator rc, RMNodeLabelsManager nlm, CSQueue queue,\n-      Resource cluster) {\n-    Set\u003cString\u003e nodeLabels \u003d queue.getNodeLabelsForQueue();\n-    Resource totalAvailableResource \u003d Resources.createResource(0, 0);\n+  private static Resource getMaxAvailableResourceToQueuePartition(\n+      final ResourceCalculator rc, CSQueue queue,\n+      Resource cluster, String partition) {\n+    // Calculate guaranteed resource for a label in a queue by below logic.\n+    // (total label resource) * (absolute capacity of label in that queue)\n+    Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n \n-    for (String partition : nodeLabels) {\n-      // Calculate guaranteed resource for a label in a queue by below logic.\n-      // (total label resource) * (absolute capacity of label in that queue)\n-      Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n+    // Available resource in queue for a specific label will be calculated as\n+    // {(guaranteed resource for a label in a queue) -\n+    // (resource usage of that label in the queue)}\n+    Resource available \u003d (Resources.greaterThan(rc, cluster,\n+        queueGuaranteedResource,\n+        queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n+        .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n+            queue.getQueueResourceUsage().getUsed(partition)), Resources\n+            .none()) : Resources.none();\n \n-      // Available resource in queue for a specific label will be calculated as\n-      // {(guaranteed resource for a label in a queue) -\n-      // (resource usage of that label in the queue)}\n-      // Finally accumulate this available resource to get total.\n-      Resource available \u003d (Resources.greaterThan(rc, cluster,\n-          queueGuaranteedResource,\n-          queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n-          .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n-              queue.getQueueResourceUsage().getUsed(partition)), Resources\n-              .none()) : Resources.none();\n-      Resources.addTo(totalAvailableResource, available);\n-    }\n-    return totalAvailableResource;\n+    return available;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static Resource getMaxAvailableResourceToQueuePartition(\n      final ResourceCalculator rc, CSQueue queue,\n      Resource cluster, String partition) {\n    // Calculate guaranteed resource for a label in a queue by below logic.\n    // (total label resource) * (absolute capacity of label in that queue)\n    Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n\n    // Available resource in queue for a specific label will be calculated as\n    // {(guaranteed resource for a label in a queue) -\n    // (resource usage of that label in the queue)}\n    Resource available \u003d (Resources.greaterThan(rc, cluster,\n        queueGuaranteedResource,\n        queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n        .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n            queue.getQueueResourceUsage().getUsed(partition)), Resources\n            .none()) : Resources.none();\n\n    return available;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CSQueueUtils.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "46f90581641feec37e285964df983d221bee5e1d": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8441. Typo in CSQueueUtils local variable names: queueGuranteedResource. Contributed by Szilard Nemeth.\n",
+      "commitDate": "20/06/18 11:58 AM",
+      "commitName": "46f90581641feec37e285964df983d221bee5e1d",
+      "commitAuthor": "Miklos Szegedi",
+      "commitDateOld": "18/12/17 5:24 AM",
+      "commitNameOld": "001008958d8da008ed2e3be370ea4431fd023c97",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 184.23,
+      "commitsBetweenForRepo": 1827,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,25 @@\n   private static Resource getMaxAvailableResourceToQueue(\n       final ResourceCalculator rc, RMNodeLabelsManager nlm, CSQueue queue,\n       Resource cluster) {\n     Set\u003cString\u003e nodeLabels \u003d queue.getNodeLabelsForQueue();\n     Resource totalAvailableResource \u003d Resources.createResource(0, 0);\n \n     for (String partition : nodeLabels) {\n       // Calculate guaranteed resource for a label in a queue by below logic.\n       // (total label resource) * (absolute capacity of label in that queue)\n-      Resource queueGuranteedResource \u003d queue.getEffectiveCapacity(partition);\n+      Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n \n       // Available resource in queue for a specific label will be calculated as\n       // {(guaranteed resource for a label in a queue) -\n       // (resource usage of that label in the queue)}\n       // Finally accumulate this available resource to get total.\n       Resource available \u003d (Resources.greaterThan(rc, cluster,\n-          queueGuranteedResource,\n+          queueGuaranteedResource,\n           queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n-          .componentwiseMax(Resources.subtractFrom(queueGuranteedResource,\n+          .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n               queue.getQueueResourceUsage().getUsed(partition)), Resources\n               .none()) : Resources.none();\n       Resources.addTo(totalAvailableResource, available);\n     }\n     return totalAvailableResource;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static Resource getMaxAvailableResourceToQueue(\n      final ResourceCalculator rc, RMNodeLabelsManager nlm, CSQueue queue,\n      Resource cluster) {\n    Set\u003cString\u003e nodeLabels \u003d queue.getNodeLabelsForQueue();\n    Resource totalAvailableResource \u003d Resources.createResource(0, 0);\n\n    for (String partition : nodeLabels) {\n      // Calculate guaranteed resource for a label in a queue by below logic.\n      // (total label resource) * (absolute capacity of label in that queue)\n      Resource queueGuaranteedResource \u003d queue.getEffectiveCapacity(partition);\n\n      // Available resource in queue for a specific label will be calculated as\n      // {(guaranteed resource for a label in a queue) -\n      // (resource usage of that label in the queue)}\n      // Finally accumulate this available resource to get total.\n      Resource available \u003d (Resources.greaterThan(rc, cluster,\n          queueGuaranteedResource,\n          queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n          .componentwiseMax(Resources.subtractFrom(queueGuaranteedResource,\n              queue.getQueueResourceUsage().getUsed(partition)), Resources\n              .none()) : Resources.none();\n      Resources.addTo(totalAvailableResource, available);\n    }\n    return totalAvailableResource;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CSQueueUtils.java",
+      "extendedDetails": {}
+    },
+    "5e798b1a0ddceeaf54703b94052501867156e979": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6471. Support to add min/max resource configuration for a queue. (Sunil G via wangda)\n\nChange-Id: I9213f5297a6841fab5c573e85ee4c4e5f4a0b7ff\n",
+      "commitDate": "07/12/17 6:56 PM",
+      "commitName": "5e798b1a0ddceeaf54703b94052501867156e979",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "19/06/17 9:01 AM",
+      "commitNameOld": "e9c2aa1bc383cb08784846534415bf17667d6e41",
+      "commitAuthorOld": "Naganarasimha",
+      "daysBetweenCommits": 171.46,
+      "commitsBetweenForRepo": 1316,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,25 @@\n   private static Resource getMaxAvailableResourceToQueue(\n       final ResourceCalculator rc, RMNodeLabelsManager nlm, CSQueue queue,\n       Resource cluster) {\n     Set\u003cString\u003e nodeLabels \u003d queue.getNodeLabelsForQueue();\n     Resource totalAvailableResource \u003d Resources.createResource(0, 0);\n \n     for (String partition : nodeLabels) {\n       // Calculate guaranteed resource for a label in a queue by below logic.\n       // (total label resource) * (absolute capacity of label in that queue)\n-      Resource queueGuranteedResource \u003d Resources.multiply(nlm\n-          .getResourceByLabel(partition, cluster), queue.getQueueCapacities()\n-          .getAbsoluteCapacity(partition));\n+      Resource queueGuranteedResource \u003d queue.getEffectiveCapacity(partition);\n \n       // Available resource in queue for a specific label will be calculated as\n       // {(guaranteed resource for a label in a queue) -\n       // (resource usage of that label in the queue)}\n       // Finally accumulate this available resource to get total.\n       Resource available \u003d (Resources.greaterThan(rc, cluster,\n           queueGuranteedResource,\n           queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n           .componentwiseMax(Resources.subtractFrom(queueGuranteedResource,\n               queue.getQueueResourceUsage().getUsed(partition)), Resources\n               .none()) : Resources.none();\n       Resources.addTo(totalAvailableResource, available);\n     }\n     return totalAvailableResource;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static Resource getMaxAvailableResourceToQueue(\n      final ResourceCalculator rc, RMNodeLabelsManager nlm, CSQueue queue,\n      Resource cluster) {\n    Set\u003cString\u003e nodeLabels \u003d queue.getNodeLabelsForQueue();\n    Resource totalAvailableResource \u003d Resources.createResource(0, 0);\n\n    for (String partition : nodeLabels) {\n      // Calculate guaranteed resource for a label in a queue by below logic.\n      // (total label resource) * (absolute capacity of label in that queue)\n      Resource queueGuranteedResource \u003d queue.getEffectiveCapacity(partition);\n\n      // Available resource in queue for a specific label will be calculated as\n      // {(guaranteed resource for a label in a queue) -\n      // (resource usage of that label in the queue)}\n      // Finally accumulate this available resource to get total.\n      Resource available \u003d (Resources.greaterThan(rc, cluster,\n          queueGuranteedResource,\n          queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n          .componentwiseMax(Resources.subtractFrom(queueGuranteedResource,\n              queue.getQueueResourceUsage().getUsed(partition)), Resources\n              .none()) : Resources.none();\n      Resources.addTo(totalAvailableResource, available);\n    }\n    return totalAvailableResource;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CSQueueUtils.java",
+      "extendedDetails": {}
+    },
+    "24db9167f16ba643a186624b33a6b9b80020f476": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4484. Available Resource calculation for a queue is not correct when used with labels. (Sunil G via wangda)\n",
+      "commitDate": "15/07/16 11:40 AM",
+      "commitName": "24db9167f16ba643a186624b33a6b9b80020f476",
+      "commitAuthor": "Wangda Tan",
+      "diff": "@@ -0,0 +1,27 @@\n+  private static Resource getMaxAvailableResourceToQueue(\n+      final ResourceCalculator rc, RMNodeLabelsManager nlm, CSQueue queue,\n+      Resource cluster) {\n+    Set\u003cString\u003e nodeLabels \u003d queue.getNodeLabelsForQueue();\n+    Resource totalAvailableResource \u003d Resources.createResource(0, 0);\n+\n+    for (String partition : nodeLabels) {\n+      // Calculate guaranteed resource for a label in a queue by below logic.\n+      // (total label resource) * (absolute capacity of label in that queue)\n+      Resource queueGuranteedResource \u003d Resources.multiply(nlm\n+          .getResourceByLabel(partition, cluster), queue.getQueueCapacities()\n+          .getAbsoluteCapacity(partition));\n+\n+      // Available resource in queue for a specific label will be calculated as\n+      // {(guaranteed resource for a label in a queue) -\n+      // (resource usage of that label in the queue)}\n+      // Finally accumulate this available resource to get total.\n+      Resource available \u003d (Resources.greaterThan(rc, cluster,\n+          queueGuranteedResource,\n+          queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n+          .componentwiseMax(Resources.subtractFrom(queueGuranteedResource,\n+              queue.getQueueResourceUsage().getUsed(partition)), Resources\n+              .none()) : Resources.none();\n+      Resources.addTo(totalAvailableResource, available);\n+    }\n+    return totalAvailableResource;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static Resource getMaxAvailableResourceToQueue(\n      final ResourceCalculator rc, RMNodeLabelsManager nlm, CSQueue queue,\n      Resource cluster) {\n    Set\u003cString\u003e nodeLabels \u003d queue.getNodeLabelsForQueue();\n    Resource totalAvailableResource \u003d Resources.createResource(0, 0);\n\n    for (String partition : nodeLabels) {\n      // Calculate guaranteed resource for a label in a queue by below logic.\n      // (total label resource) * (absolute capacity of label in that queue)\n      Resource queueGuranteedResource \u003d Resources.multiply(nlm\n          .getResourceByLabel(partition, cluster), queue.getQueueCapacities()\n          .getAbsoluteCapacity(partition));\n\n      // Available resource in queue for a specific label will be calculated as\n      // {(guaranteed resource for a label in a queue) -\n      // (resource usage of that label in the queue)}\n      // Finally accumulate this available resource to get total.\n      Resource available \u003d (Resources.greaterThan(rc, cluster,\n          queueGuranteedResource,\n          queue.getQueueResourceUsage().getUsed(partition))) ? Resources\n          .componentwiseMax(Resources.subtractFrom(queueGuranteedResource,\n              queue.getQueueResourceUsage().getUsed(partition)), Resources\n              .none()) : Resources.none();\n      Resources.addTo(totalAvailableResource, available);\n    }\n    return totalAvailableResource;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CSQueueUtils.java"
+    }
+  }
+}

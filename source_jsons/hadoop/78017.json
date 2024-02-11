@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "Find.java",
+  "functionName": "parseExpression",
+  "functionId": "parseExpression___args-Deque__String__",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/shell/find/Find.java",
+  "functionStartLine": 272,
+  "functionEndLine": 332,
+  "numCommitsSeen": 3,
+  "timeTaken": 595,
+  "changeHistory": [
+    "ba879a5dadbb0f33bba7e05ebc329a9942f34276"
+  ],
+  "changeHistoryShort": {
+    "ba879a5dadbb0f33bba7e05ebc329a9942f34276": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ba879a5dadbb0f33bba7e05ebc329a9942f34276": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-8989. hadoop fs -find feature (Jonathan Allen via aw)\n",
+      "commitDate": "13/11/14 11:52 AM",
+      "commitName": "ba879a5dadbb0f33bba7e05ebc329a9942f34276",
+      "commitAuthor": "Allen Wittenauer",
+      "diff": "@@ -0,0 +1,61 @@\n+  private Expression parseExpression(Deque\u003cString\u003e args) throws IOException {\n+    Deque\u003cExpression\u003e primaries \u003d new LinkedList\u003cExpression\u003e();\n+    Deque\u003cExpression\u003e operators \u003d new LinkedList\u003cExpression\u003e();\n+    Expression prevExpr \u003d getExpression(And.class);\n+    while (!args.isEmpty()) {\n+      String arg \u003d args.pop();\n+      if (\"(\".equals(arg)) {\n+        Expression expr \u003d parseExpression(args);\n+        primaries.add(expr);\n+        prevExpr \u003d new BaseExpression() {\n+          @Override\n+          public Result apply(PathData item, int depth) throws IOException {\n+            return Result.PASS;\n+          }\n+        }; // stub the previous expression to be a non-op\n+      } else if (\")\".equals(arg)) {\n+        break;\n+      } else if (isExpression(arg)) {\n+        Expression expr \u003d getExpression(arg);\n+        expr.addArguments(args);\n+        if (expr.isOperator()) {\n+          while (!operators.isEmpty()) {\n+            if (operators.peek().getPrecedence() \u003e\u003d expr.getPrecedence()) {\n+              Expression op \u003d operators.pop();\n+              op.addChildren(primaries);\n+              primaries.push(op);\n+            } else {\n+              break;\n+            }\n+          }\n+          operators.push(expr);\n+        } else {\n+          if (!prevExpr.isOperator()) {\n+            Expression and \u003d getExpression(And.class);\n+            while (!operators.isEmpty()) {\n+              if (operators.peek().getPrecedence() \u003e\u003d and.getPrecedence()) {\n+                Expression op \u003d operators.pop();\n+                op.addChildren(primaries);\n+                primaries.push(op);\n+              } else {\n+                break;\n+              }\n+            }\n+            operators.push(and);\n+          }\n+          primaries.push(expr);\n+        }\n+        prevExpr \u003d expr;\n+      } else {\n+        throw new IOException(\"Unexpected argument: \" + arg);\n+      }\n+    }\n+\n+    while (!operators.isEmpty()) {\n+      Expression operator \u003d operators.pop();\n+      operator.addChildren(primaries);\n+      primaries.push(operator);\n+    }\n+\n+    return primaries.isEmpty() ? getExpression(Print.class) : primaries.pop();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Expression parseExpression(Deque\u003cString\u003e args) throws IOException {\n    Deque\u003cExpression\u003e primaries \u003d new LinkedList\u003cExpression\u003e();\n    Deque\u003cExpression\u003e operators \u003d new LinkedList\u003cExpression\u003e();\n    Expression prevExpr \u003d getExpression(And.class);\n    while (!args.isEmpty()) {\n      String arg \u003d args.pop();\n      if (\"(\".equals(arg)) {\n        Expression expr \u003d parseExpression(args);\n        primaries.add(expr);\n        prevExpr \u003d new BaseExpression() {\n          @Override\n          public Result apply(PathData item, int depth) throws IOException {\n            return Result.PASS;\n          }\n        }; // stub the previous expression to be a non-op\n      } else if (\")\".equals(arg)) {\n        break;\n      } else if (isExpression(arg)) {\n        Expression expr \u003d getExpression(arg);\n        expr.addArguments(args);\n        if (expr.isOperator()) {\n          while (!operators.isEmpty()) {\n            if (operators.peek().getPrecedence() \u003e\u003d expr.getPrecedence()) {\n              Expression op \u003d operators.pop();\n              op.addChildren(primaries);\n              primaries.push(op);\n            } else {\n              break;\n            }\n          }\n          operators.push(expr);\n        } else {\n          if (!prevExpr.isOperator()) {\n            Expression and \u003d getExpression(And.class);\n            while (!operators.isEmpty()) {\n              if (operators.peek().getPrecedence() \u003e\u003d and.getPrecedence()) {\n                Expression op \u003d operators.pop();\n                op.addChildren(primaries);\n                primaries.push(op);\n              } else {\n                break;\n              }\n            }\n            operators.push(and);\n          }\n          primaries.push(expr);\n        }\n        prevExpr \u003d expr;\n      } else {\n        throw new IOException(\"Unexpected argument: \" + arg);\n      }\n    }\n\n    while (!operators.isEmpty()) {\n      Expression operator \u003d operators.pop();\n      operator.addChildren(primaries);\n      primaries.push(operator);\n    }\n\n    return primaries.isEmpty() ? getExpression(Print.class) : primaries.pop();\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/shell/find/Find.java"
+    }
+  }
+}

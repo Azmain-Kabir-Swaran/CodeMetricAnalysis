@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PartitionedStagingCommitter.java",
+  "functionName": "replacePartitions",
+  "functionId": "replacePartitions___context-JobContext(modifiers-final)__pending-ActiveCommit(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/PartitionedStagingCommitter.java",
+  "functionStartLine": 184,
+  "functionEndLine": 225,
+  "numCommitsSeen": 3,
+  "timeTaken": 2188,
+  "changeHistory": [
+    "6574f27fa348542411bff888b184cd7ce34e5d9e"
+  ],
+  "changeHistoryShort": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-16570. S3A committers encounter scale issues.\n\nContributed by Steve Loughran.\n\nThis addresses two scale issues which has surfaced in large scale benchmarks\nof the S3A Committers.\n\n* Thread pools are not cleaned up.\n  This now happens, with tests.\n\n* OOM on job commit for jobs with many thousands of tasks,\n  each generating tens of (very large) files.\n\nInstead of loading all pending commits into memory as a single list, the list\nof files to load is the sole list which is passed around; .pendingset files are\nloaded and processed in isolation -and reloaded if necessary for any\nabort/rollback operation.\n\nThe parallel commit/abort/revert operations now work at the .pendingset level,\nrather than that of individual pending commit files. The existing parallelized\nTasks API is still used to commit those files, but with a null thread pool, so\nas to serialize the operations.\n\nChange-Id: I5c8240cd31800eaa83d112358770ca0eb2bca797\n",
+      "commitDate": "04/10/19 10:54 AM",
+      "commitName": "6574f27fa348542411bff888b184cd7ce34e5d9e",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,42 @@\n+  private void replacePartitions(\n+      final JobContext context,\n+      final ActiveCommit pending) throws IOException {\n+\n+    Map\u003cPath, String\u003e partitions \u003d new ConcurrentHashMap\u003c\u003e();\n+    FileSystem sourceFS \u003d pending.getSourceFS();\n+    ExecutorService pool \u003d buildThreadPool(context);\n+    try (DurationInfo ignored \u003d\n+             new DurationInfo(LOG, \"Replacing partitions\")) {\n+\n+      // the parent directories are saved to a concurrent hash map.\n+      // for a marginal optimisation, the previous parent is tracked, so\n+      // if a task writes many files to the same dir, the synchronized map\n+      // is updated only once.\n+      Tasks.foreach(pending.getSourceFiles())\n+          .stopOnFailure()\n+          .suppressExceptions(false)\n+          .executeWith(pool)\n+          .run(path -\u003e {\n+            PendingSet pendingSet \u003d PendingSet.load(sourceFS, path);\n+            Path lastParent \u003d null;\n+            for (SinglePendingCommit commit : pendingSet.getCommits()) {\n+              Path parent \u003d commit.destinationPath().getParent();\n+              if (parent !\u003d null \u0026\u0026 !parent.equals(lastParent)) {\n+                partitions.put(parent, \"\");\n+                lastParent \u003d parent;\n+              }\n+            }\n+          });\n+    }\n+    // now do the deletes\n+    FileSystem fs \u003d getDestFS();\n+    Tasks.foreach(partitions.keySet())\n+        .stopOnFailure()\n+        .suppressExceptions(false)\n+        .executeWith(pool)\n+        .run(partitionPath -\u003e {\n+          LOG.debug(\"{}: removing partition path to be replaced: \" +\n+              getRole(), partitionPath);\n+          fs.delete(partitionPath, true);\n+        });\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void replacePartitions(\n      final JobContext context,\n      final ActiveCommit pending) throws IOException {\n\n    Map\u003cPath, String\u003e partitions \u003d new ConcurrentHashMap\u003c\u003e();\n    FileSystem sourceFS \u003d pending.getSourceFS();\n    ExecutorService pool \u003d buildThreadPool(context);\n    try (DurationInfo ignored \u003d\n             new DurationInfo(LOG, \"Replacing partitions\")) {\n\n      // the parent directories are saved to a concurrent hash map.\n      // for a marginal optimisation, the previous parent is tracked, so\n      // if a task writes many files to the same dir, the synchronized map\n      // is updated only once.\n      Tasks.foreach(pending.getSourceFiles())\n          .stopOnFailure()\n          .suppressExceptions(false)\n          .executeWith(pool)\n          .run(path -\u003e {\n            PendingSet pendingSet \u003d PendingSet.load(sourceFS, path);\n            Path lastParent \u003d null;\n            for (SinglePendingCommit commit : pendingSet.getCommits()) {\n              Path parent \u003d commit.destinationPath().getParent();\n              if (parent !\u003d null \u0026\u0026 !parent.equals(lastParent)) {\n                partitions.put(parent, \"\");\n                lastParent \u003d parent;\n              }\n            }\n          });\n    }\n    // now do the deletes\n    FileSystem fs \u003d getDestFS();\n    Tasks.foreach(partitions.keySet())\n        .stopOnFailure()\n        .suppressExceptions(false)\n        .executeWith(pool)\n        .run(partitionPath -\u003e {\n          LOG.debug(\"{}: removing partition path to be replaced: \" +\n              getRole(), partitionPath);\n          fs.delete(partitionPath, true);\n        });\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/PartitionedStagingCommitter.java"
+    }
+  }
+}

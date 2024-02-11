@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DiskBalancer.java",
+  "functionName": "cancelPlan",
+  "functionId": "cancelPlan___planID-String",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DiskBalancer.java",
+  "functionStartLine": 266,
+  "functionEndLine": 292,
+  "numCommitsSeen": 32,
+  "timeTaken": 1870,
+  "changeHistory": [
+    "baab48922a301d639ea84ecf00d8a7616acd950d",
+    "8a6e3541226fb1b6798cedecc56f1f160012becf",
+    "6c606bf5c8c1ace381ce73679c2be96d5475ba34",
+    "9847640603ace60d169206a40a256f988b314983"
+  ],
+  "changeHistoryShort": {
+    "baab48922a301d639ea84ecf00d8a7616acd950d": "Ybodychange",
+    "8a6e3541226fb1b6798cedecc56f1f160012becf": "Ybodychange",
+    "6c606bf5c8c1ace381ce73679c2be96d5475ba34": "Ybodychange",
+    "9847640603ace60d169206a40a256f988b314983": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "baab48922a301d639ea84ecf00d8a7616acd950d": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9849. DiskBalancer: reduce lock path in shutdown code. Contributed by Yuanbo Liu.\n",
+      "commitDate": "08/09/16 8:00 PM",
+      "commitName": "baab48922a301d639ea84ecf00d8a7616acd950d",
+      "commitAuthor": "Anu Engineer",
+      "commitDateOld": "16/08/16 10:20 AM",
+      "commitNameOld": "b047bc7270f3461156e4d08423c728ee9c67dba5",
+      "commitAuthorOld": "Anu Engineer",
+      "daysBetweenCommits": 23.4,
+      "commitsBetweenForRepo": 145,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,27 @@\n   public void cancelPlan(String planID) throws DiskBalancerException {\n     lock.lock();\n+    boolean needShutdown \u003d false;\n     try {\n       checkDiskBalancerEnabled();\n       if (this.planID \u003d\u003d null ||\n           !this.planID.equals(planID) ||\n           this.planID.isEmpty()) {\n         LOG.error(\"Disk Balancer - No such plan. Cancel plan failed. PlanID: \" +\n             planID);\n         throw new DiskBalancerException(\"No such plan.\",\n             DiskBalancerException.Result.NO_SUCH_PLAN);\n       }\n       if (!this.future.isDone()) {\n-        this.blockMover.setExitFlag();\n-        shutdownExecutor();\n         this.currentResult \u003d Result.PLAN_CANCELLED;\n+        this.blockMover.setExitFlag();\n+        scheduler.shutdown();\n+        needShutdown \u003d true;\n       }\n     } finally {\n       lock.unlock();\n     }\n+    // no need to hold lock while shutting down executor.\n+    if (needShutdown) {\n+      shutdownExecutor();\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cancelPlan(String planID) throws DiskBalancerException {\n    lock.lock();\n    boolean needShutdown \u003d false;\n    try {\n      checkDiskBalancerEnabled();\n      if (this.planID \u003d\u003d null ||\n          !this.planID.equals(planID) ||\n          this.planID.isEmpty()) {\n        LOG.error(\"Disk Balancer - No such plan. Cancel plan failed. PlanID: \" +\n            planID);\n        throw new DiskBalancerException(\"No such plan.\",\n            DiskBalancerException.Result.NO_SUCH_PLAN);\n      }\n      if (!this.future.isDone()) {\n        this.currentResult \u003d Result.PLAN_CANCELLED;\n        this.blockMover.setExitFlag();\n        scheduler.shutdown();\n        needShutdown \u003d true;\n      }\n    } finally {\n      lock.unlock();\n    }\n    // no need to hold lock while shutting down executor.\n    if (needShutdown) {\n      shutdownExecutor();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DiskBalancer.java",
+      "extendedDetails": {}
+    },
+    "8a6e3541226fb1b6798cedecc56f1f160012becf": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10552. DiskBalancer \"-query\" results in NPE if no plan for the node. Contributed by Anu Engineer.\n",
+      "commitDate": "23/06/16 6:27 PM",
+      "commitName": "8a6e3541226fb1b6798cedecc56f1f160012becf",
+      "commitAuthor": "Anu Engineer",
+      "commitDateOld": "23/06/16 6:27 PM",
+      "commitNameOld": "cb68e5b3bdb0079af867a9e49559827ecee03010",
+      "commitAuthorOld": "Anu Engineer",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 7,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,21 @@\n   public void cancelPlan(String planID) throws DiskBalancerException {\n     lock.lock();\n     try {\n       checkDiskBalancerEnabled();\n-      if ((this.planID \u003d\u003d null) || (!this.planID.equals(planID))) {\n+      if (this.planID \u003d\u003d null ||\n+          !this.planID.equals(planID) ||\n+          this.planID.isEmpty()) {\n         LOG.error(\"Disk Balancer - No such plan. Cancel plan failed. PlanID: \" +\n             planID);\n         throw new DiskBalancerException(\"No such plan.\",\n             DiskBalancerException.Result.NO_SUCH_PLAN);\n       }\n       if (!this.future.isDone()) {\n         this.blockMover.setExitFlag();\n         shutdownExecutor();\n         this.currentResult \u003d Result.PLAN_CANCELLED;\n       }\n     } finally {\n       lock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cancelPlan(String planID) throws DiskBalancerException {\n    lock.lock();\n    try {\n      checkDiskBalancerEnabled();\n      if (this.planID \u003d\u003d null ||\n          !this.planID.equals(planID) ||\n          this.planID.isEmpty()) {\n        LOG.error(\"Disk Balancer - No such plan. Cancel plan failed. PlanID: \" +\n            planID);\n        throw new DiskBalancerException(\"No such plan.\",\n            DiskBalancerException.Result.NO_SUCH_PLAN);\n      }\n      if (!this.future.isDone()) {\n        this.blockMover.setExitFlag();\n        shutdownExecutor();\n        this.currentResult \u003d Result.PLAN_CANCELLED;\n      }\n    } finally {\n      lock.unlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DiskBalancer.java",
+      "extendedDetails": {}
+    },
+    "6c606bf5c8c1ace381ce73679c2be96d5475ba34": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9709. DiskBalancer : Add tests for disk balancer using a Mock Mover class. Contributed by Anu Engineer.\n",
+      "commitDate": "23/06/16 6:18 PM",
+      "commitName": "6c606bf5c8c1ace381ce73679c2be96d5475ba34",
+      "commitAuthor": "Anu Engineer",
+      "commitDateOld": "23/06/16 6:18 PM",
+      "commitNameOld": "75a711a2d53966361f5d5fa727b43c9fddb01504",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 3,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,19 @@\n   public void cancelPlan(String planID) throws DiskBalancerException {\n     lock.lock();\n     try {\n       checkDiskBalancerEnabled();\n       if ((this.planID \u003d\u003d null) || (!this.planID.equals(planID))) {\n         LOG.error(\"Disk Balancer - No such plan. Cancel plan failed. PlanID: \" +\n             planID);\n         throw new DiskBalancerException(\"No such plan.\",\n             DiskBalancerException.Result.NO_SUCH_PLAN);\n       }\n       if (!this.future.isDone()) {\n         this.blockMover.setExitFlag();\n         shutdownExecutor();\n+        this.currentResult \u003d Result.PLAN_CANCELLED;\n       }\n     } finally {\n       lock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cancelPlan(String planID) throws DiskBalancerException {\n    lock.lock();\n    try {\n      checkDiskBalancerEnabled();\n      if ((this.planID \u003d\u003d null) || (!this.planID.equals(planID))) {\n        LOG.error(\"Disk Balancer - No such plan. Cancel plan failed. PlanID: \" +\n            planID);\n        throw new DiskBalancerException(\"No such plan.\",\n            DiskBalancerException.Result.NO_SUCH_PLAN);\n      }\n      if (!this.future.isDone()) {\n        this.blockMover.setExitFlag();\n        shutdownExecutor();\n        this.currentResult \u003d Result.PLAN_CANCELLED;\n      }\n    } finally {\n      lock.unlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DiskBalancer.java",
+      "extendedDetails": {}
+    },
+    "9847640603ace60d169206a40a256f988b314983": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9683. DiskBalancer: Add cancelPlan implementation. (Contributed by Anu Engineer)\n",
+      "commitDate": "23/06/16 6:18 PM",
+      "commitName": "9847640603ace60d169206a40a256f988b314983",
+      "commitAuthor": "Arpit Agarwal",
+      "diff": "@@ -0,0 +1,18 @@\n+  public void cancelPlan(String planID) throws DiskBalancerException {\n+    lock.lock();\n+    try {\n+      checkDiskBalancerEnabled();\n+      if ((this.planID \u003d\u003d null) || (!this.planID.equals(planID))) {\n+        LOG.error(\"Disk Balancer - No such plan. Cancel plan failed. PlanID: \" +\n+            planID);\n+        throw new DiskBalancerException(\"No such plan.\",\n+            DiskBalancerException.Result.NO_SUCH_PLAN);\n+      }\n+      if (!this.future.isDone()) {\n+        this.blockMover.setExitFlag();\n+        shutdownExecutor();\n+      }\n+    } finally {\n+      lock.unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cancelPlan(String planID) throws DiskBalancerException {\n    lock.lock();\n    try {\n      checkDiskBalancerEnabled();\n      if ((this.planID \u003d\u003d null) || (!this.planID.equals(planID))) {\n        LOG.error(\"Disk Balancer - No such plan. Cancel plan failed. PlanID: \" +\n            planID);\n        throw new DiskBalancerException(\"No such plan.\",\n            DiskBalancerException.Result.NO_SUCH_PLAN);\n      }\n      if (!this.future.isDone()) {\n        this.blockMover.setExitFlag();\n        shutdownExecutor();\n      }\n    } finally {\n      lock.unlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DiskBalancer.java"
+    }
+  }
+}

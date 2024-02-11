@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "XMLParser.java",
+  "functionName": "parseLine",
+  "functionId": "parseLine___line-String",
+  "sourceFilePath": "hadoop-tools/hadoop-dynamometer/hadoop-dynamometer-blockgen/src/main/java/org/apache/hadoop/tools/dynamometer/blockgenerator/XMLParser.java",
+  "functionStartLine": 74,
+  "functionEndLine": 116,
+  "numCommitsSeen": 3,
+  "timeTaken": 868,
+  "changeHistory": [
+    "90b10a0d54c9f16ef423707a33be290b1e3f8c3f",
+    "ab0b180ddb5d0775a2452d5eeb7badd252aadb91"
+  ],
+  "changeHistoryShort": {
+    "90b10a0d54c9f16ef423707a33be290b1e3f8c3f": "Ybodychange",
+    "ab0b180ddb5d0775a2452d5eeb7badd252aadb91": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "90b10a0d54c9f16ef423707a33be290b1e3f8c3f": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14622. [Dynamometer] Update XML FsImage parsing logic to ignore non-INodeSection entries to fix an issue caused by the presence of Centralized Cache Management functionality. Contributed by Erik Krogen.\n",
+      "commitDate": "10/07/19 9:59 AM",
+      "commitName": "90b10a0d54c9f16ef423707a33be290b1e3f8c3f",
+      "commitAuthor": "Erik Krogen",
+      "commitDateOld": "25/06/19 8:07 AM",
+      "commitNameOld": "ab0b180ddb5d0775a2452d5eeb7badd252aadb91",
+      "commitAuthorOld": "Erik Krogen",
+      "daysBetweenCommits": 15.08,
+      "commitsBetweenForRepo": 65,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,33 +1,43 @@\n   List\u003cBlockInfo\u003e parseLine(String line) throws IOException {\n+    if (currentState \u003d\u003d State.DEFAULT) {\n+      if (line.contains(\"\u003cINodeSection\u003e\")) {\n+        transitionTo(State.INODE_SECTION);\n+      } else {\n+        return Collections.emptyList();\n+      }\n+    }\n     if (line.contains(\"\u003cinode\u003e\")) {\n       transitionTo(State.INODE);\n     }\n     if (line.contains(\"\u003ctype\u003eFILE\u003c/type\u003e\")) {\n       transitionTo(State.FILE);\n     }\n     List\u003cString\u003e replicationStrings \u003d valuesFromXMLString(line, \"replication\");\n     if (!replicationStrings.isEmpty()) {\n       if (replicationStrings.size() \u003e 1) {\n         throw new IOException(String.format(\"Found %s replication strings\",\n             replicationStrings.size()));\n       }\n       transitionTo(State.FILE_WITH_REPLICATION);\n       currentReplication \u003d Short.parseShort(replicationStrings.get(0));\n     }\n     Matcher blockMatcher \u003d BLOCK_PATTERN.matcher(line);\n     List\u003cBlockInfo\u003e blockInfos \u003d new ArrayList\u003c\u003e();\n     while (blockMatcher.find()) {\n       if (currentState !\u003d State.FILE_WITH_REPLICATION) {\n         throw new IOException(\n             \"Found a block string when in state: \" + currentState);\n       }\n       long id \u003d Long.parseLong(blockMatcher.group(1));\n       long gs \u003d Long.parseLong(blockMatcher.group(2));\n       long size \u003d Long.parseLong(blockMatcher.group(3));\n       blockInfos.add(new BlockInfo(id, gs, size, currentReplication));\n     }\n     if (line.contains(\"\u003c/inode\u003e\")) {\n+      transitionTo(State.INODE_SECTION);\n+    }\n+    if (line.contains(\"\u003c/INodeSection\u003e\")) {\n       transitionTo(State.DEFAULT);\n     }\n     return blockInfos;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  List\u003cBlockInfo\u003e parseLine(String line) throws IOException {\n    if (currentState \u003d\u003d State.DEFAULT) {\n      if (line.contains(\"\u003cINodeSection\u003e\")) {\n        transitionTo(State.INODE_SECTION);\n      } else {\n        return Collections.emptyList();\n      }\n    }\n    if (line.contains(\"\u003cinode\u003e\")) {\n      transitionTo(State.INODE);\n    }\n    if (line.contains(\"\u003ctype\u003eFILE\u003c/type\u003e\")) {\n      transitionTo(State.FILE);\n    }\n    List\u003cString\u003e replicationStrings \u003d valuesFromXMLString(line, \"replication\");\n    if (!replicationStrings.isEmpty()) {\n      if (replicationStrings.size() \u003e 1) {\n        throw new IOException(String.format(\"Found %s replication strings\",\n            replicationStrings.size()));\n      }\n      transitionTo(State.FILE_WITH_REPLICATION);\n      currentReplication \u003d Short.parseShort(replicationStrings.get(0));\n    }\n    Matcher blockMatcher \u003d BLOCK_PATTERN.matcher(line);\n    List\u003cBlockInfo\u003e blockInfos \u003d new ArrayList\u003c\u003e();\n    while (blockMatcher.find()) {\n      if (currentState !\u003d State.FILE_WITH_REPLICATION) {\n        throw new IOException(\n            \"Found a block string when in state: \" + currentState);\n      }\n      long id \u003d Long.parseLong(blockMatcher.group(1));\n      long gs \u003d Long.parseLong(blockMatcher.group(2));\n      long size \u003d Long.parseLong(blockMatcher.group(3));\n      blockInfos.add(new BlockInfo(id, gs, size, currentReplication));\n    }\n    if (line.contains(\"\u003c/inode\u003e\")) {\n      transitionTo(State.INODE_SECTION);\n    }\n    if (line.contains(\"\u003c/INodeSection\u003e\")) {\n      transitionTo(State.DEFAULT);\n    }\n    return blockInfos;\n  }",
+      "path": "hadoop-tools/hadoop-dynamometer/hadoop-dynamometer-blockgen/src/main/java/org/apache/hadoop/tools/dynamometer/blockgenerator/XMLParser.java",
+      "extendedDetails": {}
+    },
+    "ab0b180ddb5d0775a2452d5eeb7badd252aadb91": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-12345 Add Dynamometer to hadoop-tools, a tool for scale testing the HDFS NameNode with real metadata and workloads. Contributed by Erik Krogen.\n",
+      "commitDate": "25/06/19 8:07 AM",
+      "commitName": "ab0b180ddb5d0775a2452d5eeb7badd252aadb91",
+      "commitAuthor": "Erik Krogen",
+      "diff": "@@ -0,0 +1,33 @@\n+  List\u003cBlockInfo\u003e parseLine(String line) throws IOException {\n+    if (line.contains(\"\u003cinode\u003e\")) {\n+      transitionTo(State.INODE);\n+    }\n+    if (line.contains(\"\u003ctype\u003eFILE\u003c/type\u003e\")) {\n+      transitionTo(State.FILE);\n+    }\n+    List\u003cString\u003e replicationStrings \u003d valuesFromXMLString(line, \"replication\");\n+    if (!replicationStrings.isEmpty()) {\n+      if (replicationStrings.size() \u003e 1) {\n+        throw new IOException(String.format(\"Found %s replication strings\",\n+            replicationStrings.size()));\n+      }\n+      transitionTo(State.FILE_WITH_REPLICATION);\n+      currentReplication \u003d Short.parseShort(replicationStrings.get(0));\n+    }\n+    Matcher blockMatcher \u003d BLOCK_PATTERN.matcher(line);\n+    List\u003cBlockInfo\u003e blockInfos \u003d new ArrayList\u003c\u003e();\n+    while (blockMatcher.find()) {\n+      if (currentState !\u003d State.FILE_WITH_REPLICATION) {\n+        throw new IOException(\n+            \"Found a block string when in state: \" + currentState);\n+      }\n+      long id \u003d Long.parseLong(blockMatcher.group(1));\n+      long gs \u003d Long.parseLong(blockMatcher.group(2));\n+      long size \u003d Long.parseLong(blockMatcher.group(3));\n+      blockInfos.add(new BlockInfo(id, gs, size, currentReplication));\n+    }\n+    if (line.contains(\"\u003c/inode\u003e\")) {\n+      transitionTo(State.DEFAULT);\n+    }\n+    return blockInfos;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  List\u003cBlockInfo\u003e parseLine(String line) throws IOException {\n    if (line.contains(\"\u003cinode\u003e\")) {\n      transitionTo(State.INODE);\n    }\n    if (line.contains(\"\u003ctype\u003eFILE\u003c/type\u003e\")) {\n      transitionTo(State.FILE);\n    }\n    List\u003cString\u003e replicationStrings \u003d valuesFromXMLString(line, \"replication\");\n    if (!replicationStrings.isEmpty()) {\n      if (replicationStrings.size() \u003e 1) {\n        throw new IOException(String.format(\"Found %s replication strings\",\n            replicationStrings.size()));\n      }\n      transitionTo(State.FILE_WITH_REPLICATION);\n      currentReplication \u003d Short.parseShort(replicationStrings.get(0));\n    }\n    Matcher blockMatcher \u003d BLOCK_PATTERN.matcher(line);\n    List\u003cBlockInfo\u003e blockInfos \u003d new ArrayList\u003c\u003e();\n    while (blockMatcher.find()) {\n      if (currentState !\u003d State.FILE_WITH_REPLICATION) {\n        throw new IOException(\n            \"Found a block string when in state: \" + currentState);\n      }\n      long id \u003d Long.parseLong(blockMatcher.group(1));\n      long gs \u003d Long.parseLong(blockMatcher.group(2));\n      long size \u003d Long.parseLong(blockMatcher.group(3));\n      blockInfos.add(new BlockInfo(id, gs, size, currentReplication));\n    }\n    if (line.contains(\"\u003c/inode\u003e\")) {\n      transitionTo(State.DEFAULT);\n    }\n    return blockInfos;\n  }",
+      "path": "hadoop-tools/hadoop-dynamometer/hadoop-dynamometer-blockgen/src/main/java/org/apache/hadoop/tools/dynamometer/blockgenerator/XMLParser.java"
+    }
+  }
+}

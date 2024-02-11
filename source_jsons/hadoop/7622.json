@@ -1,0 +1,185 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NameNode.java",
+  "functionName": "reconfigureSPSModeEvent",
+  "functionId": "reconfigureSPSModeEvent___newVal-String__property-String",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+  "functionStartLine": 2324,
+  "functionEndLine": 2363,
+  "numCommitsSeen": 594,
+  "timeTaken": 6714,
+  "changeHistory": [
+    "2acc50b826fa8b00f2b09d9546c4b3215b89d46d",
+    "4402f3f8557527d5c6cdad6f5bdcbd707b8cbf52",
+    "3b83110d5ed582b9f913ecf3f62ce410535f8fca",
+    "0e820f16af309cc8476edba448dd548686431133",
+    "681d2804c95e5a569ffb8d9ceafaf5a4f8be2b88",
+    "5179d99b7e1faeac1ce041967480115913d9f795"
+  ],
+  "changeHistoryShort": {
+    "2acc50b826fa8b00f2b09d9546c4b3215b89d46d": "Ybodychange",
+    "4402f3f8557527d5c6cdad6f5bdcbd707b8cbf52": "Ymultichange(Yrename,Ybodychange)",
+    "3b83110d5ed582b9f913ecf3f62ce410535f8fca": "Ybodychange",
+    "0e820f16af309cc8476edba448dd548686431133": "Ymultichange(Yrename,Ybodychange)",
+    "681d2804c95e5a569ffb8d9ceafaf5a4f8be2b88": "Ybodychange",
+    "5179d99b7e1faeac1ce041967480115913d9f795": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2acc50b826fa8b00f2b09d9546c4b3215b89d46d": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13165: [SPS]: Collects successfully moved block details via IBR. Contributed by Rakesh R.\n",
+      "commitDate": "12/08/18 3:06 AM",
+      "commitName": "2acc50b826fa8b00f2b09d9546c4b3215b89d46d",
+      "commitAuthor": "Rakesh Radhakrishnan",
+      "commitDateOld": "12/08/18 3:06 AM",
+      "commitNameOld": "4402f3f8557527d5c6cdad6f5bdcbd707b8cbf52",
+      "commitAuthorOld": "Uma Maheswara Rao G",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 3,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,40 @@\n   String reconfigureSPSModeEvent(String newVal, String property)\n       throws ReconfigurationException {\n     if (newVal \u003d\u003d null\n         || StoragePolicySatisfierMode.fromString(newVal) \u003d\u003d null) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property),\n           new HadoopIllegalArgumentException(\n               \"For enabling or disabling storage policy satisfier, must \"\n                   + \"pass either internal/external/none string value only\"));\n     }\n \n     if (!isActiveState()) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property),\n           new HadoopIllegalArgumentException(\n               \"Enabling or disabling storage policy satisfier service on \"\n                   + state + \" NameNode is not allowed\"));\n     }\n     StoragePolicySatisfierMode mode \u003d StoragePolicySatisfierMode\n         .fromString(newVal);\n-    namesystem.getBlockManager().getSPSManager().changeModeEvent(mode);\n+    if (mode \u003d\u003d StoragePolicySatisfierMode.NONE) {\n+      // disabling sps service\n+      if (namesystem.getBlockManager().getSPSManager() !\u003d null) {\n+        namesystem.getBlockManager().getSPSManager().changeModeEvent(mode);\n+        namesystem.getBlockManager().disableSPS();\n+      }\n+    } else {\n+      // enabling sps service\n+      boolean spsCreated \u003d (namesystem.getBlockManager()\n+          .getSPSManager() !\u003d null);\n+      if (!spsCreated) {\n+        spsCreated \u003d namesystem.getBlockManager().createSPSManager(getConf(),\n+            newVal);\n+      }\n+      if (spsCreated) {\n+        namesystem.getBlockManager().getSPSManager().changeModeEvent(mode);\n+      }\n+    }\n     return newVal;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  String reconfigureSPSModeEvent(String newVal, String property)\n      throws ReconfigurationException {\n    if (newVal \u003d\u003d null\n        || StoragePolicySatisfierMode.fromString(newVal) \u003d\u003d null) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"For enabling or disabling storage policy satisfier, must \"\n                  + \"pass either internal/external/none string value only\"));\n    }\n\n    if (!isActiveState()) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"Enabling or disabling storage policy satisfier service on \"\n                  + state + \" NameNode is not allowed\"));\n    }\n    StoragePolicySatisfierMode mode \u003d StoragePolicySatisfierMode\n        .fromString(newVal);\n    if (mode \u003d\u003d StoragePolicySatisfierMode.NONE) {\n      // disabling sps service\n      if (namesystem.getBlockManager().getSPSManager() !\u003d null) {\n        namesystem.getBlockManager().getSPSManager().changeModeEvent(mode);\n        namesystem.getBlockManager().disableSPS();\n      }\n    } else {\n      // enabling sps service\n      boolean spsCreated \u003d (namesystem.getBlockManager()\n          .getSPSManager() !\u003d null);\n      if (!spsCreated) {\n        spsCreated \u003d namesystem.getBlockManager().createSPSManager(getConf(),\n            newVal);\n      }\n      if (spsCreated) {\n        namesystem.getBlockManager().getSPSManager().changeModeEvent(mode);\n      }\n    }\n    return newVal;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+      "extendedDetails": {}
+    },
+    "4402f3f8557527d5c6cdad6f5bdcbd707b8cbf52": {
+      "type": "Ymultichange(Yrename,Ybodychange)",
+      "commitMessage": "HDFS-13097: [SPS]: Fix the branch review comments(Part1). Contributed by Surendra Singh.\n",
+      "commitDate": "12/08/18 3:06 AM",
+      "commitName": "4402f3f8557527d5c6cdad6f5bdcbd707b8cbf52",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-13097: [SPS]: Fix the branch review comments(Part1). Contributed by Surendra Singh.\n",
+          "commitDate": "12/08/18 3:06 AM",
+          "commitName": "4402f3f8557527d5c6cdad6f5bdcbd707b8cbf52",
+          "commitAuthor": "Uma Maheswara Rao G",
+          "commitDateOld": "12/08/18 3:06 AM",
+          "commitNameOld": "3b83110d5ed582b9f913ecf3f62ce410535f8fca",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 4,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,35 +1,23 @@\n-  String reconfigureSPSEnabled(String newVal, String property)\n+  String reconfigureSPSModeEvent(String newVal, String property)\n       throws ReconfigurationException {\n     if (newVal \u003d\u003d null\n         || StoragePolicySatisfierMode.fromString(newVal) \u003d\u003d null) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property),\n           new HadoopIllegalArgumentException(\n-              \"For enabling or disabling storage policy satisfier, we must \"\n-                  + \"pass either none/internal/external string value only\"));\n+              \"For enabling or disabling storage policy satisfier, must \"\n+                  + \"pass either internal/external/none string value only\"));\n     }\n \n     if (!isActiveState()) {\n       throw new ReconfigurationException(property, newVal,\n-          getConf().get(property), new HadoopIllegalArgumentException(\n-          \"Enabling or disabling storage policy satisfier service on \"\n-              + state + \" NameNode is not allowed\"));\n+          getConf().get(property),\n+          new HadoopIllegalArgumentException(\n+              \"Enabling or disabling storage policy satisfier service on \"\n+                  + state + \" NameNode is not allowed\"));\n     }\n     StoragePolicySatisfierMode mode \u003d StoragePolicySatisfierMode\n         .fromString(newVal);\n-    switch(mode){\n-    case NONE:\n-      namesystem.getBlockManager().disableSPS();\n-      break;\n-    case INTERNAL:\n-      namesystem.getBlockManager().enableInternalSPS();\n-      break;\n-    case EXTERNAL:\n-      namesystem.getBlockManager().enableExternalSPS();\n-      break;\n-    default:\n-      // nothing\n-      break;\n-    }\n+    namesystem.getBlockManager().getSPSManager().changeModeEvent(mode);\n     return newVal;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  String reconfigureSPSModeEvent(String newVal, String property)\n      throws ReconfigurationException {\n    if (newVal \u003d\u003d null\n        || StoragePolicySatisfierMode.fromString(newVal) \u003d\u003d null) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"For enabling or disabling storage policy satisfier, must \"\n                  + \"pass either internal/external/none string value only\"));\n    }\n\n    if (!isActiveState()) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"Enabling or disabling storage policy satisfier service on \"\n                  + state + \" NameNode is not allowed\"));\n    }\n    StoragePolicySatisfierMode mode \u003d StoragePolicySatisfierMode\n        .fromString(newVal);\n    namesystem.getBlockManager().getSPSManager().changeModeEvent(mode);\n    return newVal;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+          "extendedDetails": {
+            "oldValue": "reconfigureSPSEnabled",
+            "newValue": "reconfigureSPSModeEvent"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13097: [SPS]: Fix the branch review comments(Part1). Contributed by Surendra Singh.\n",
+          "commitDate": "12/08/18 3:06 AM",
+          "commitName": "4402f3f8557527d5c6cdad6f5bdcbd707b8cbf52",
+          "commitAuthor": "Uma Maheswara Rao G",
+          "commitDateOld": "12/08/18 3:06 AM",
+          "commitNameOld": "3b83110d5ed582b9f913ecf3f62ce410535f8fca",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 4,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,35 +1,23 @@\n-  String reconfigureSPSEnabled(String newVal, String property)\n+  String reconfigureSPSModeEvent(String newVal, String property)\n       throws ReconfigurationException {\n     if (newVal \u003d\u003d null\n         || StoragePolicySatisfierMode.fromString(newVal) \u003d\u003d null) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property),\n           new HadoopIllegalArgumentException(\n-              \"For enabling or disabling storage policy satisfier, we must \"\n-                  + \"pass either none/internal/external string value only\"));\n+              \"For enabling or disabling storage policy satisfier, must \"\n+                  + \"pass either internal/external/none string value only\"));\n     }\n \n     if (!isActiveState()) {\n       throw new ReconfigurationException(property, newVal,\n-          getConf().get(property), new HadoopIllegalArgumentException(\n-          \"Enabling or disabling storage policy satisfier service on \"\n-              + state + \" NameNode is not allowed\"));\n+          getConf().get(property),\n+          new HadoopIllegalArgumentException(\n+              \"Enabling or disabling storage policy satisfier service on \"\n+                  + state + \" NameNode is not allowed\"));\n     }\n     StoragePolicySatisfierMode mode \u003d StoragePolicySatisfierMode\n         .fromString(newVal);\n-    switch(mode){\n-    case NONE:\n-      namesystem.getBlockManager().disableSPS();\n-      break;\n-    case INTERNAL:\n-      namesystem.getBlockManager().enableInternalSPS();\n-      break;\n-    case EXTERNAL:\n-      namesystem.getBlockManager().enableExternalSPS();\n-      break;\n-    default:\n-      // nothing\n-      break;\n-    }\n+    namesystem.getBlockManager().getSPSManager().changeModeEvent(mode);\n     return newVal;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  String reconfigureSPSModeEvent(String newVal, String property)\n      throws ReconfigurationException {\n    if (newVal \u003d\u003d null\n        || StoragePolicySatisfierMode.fromString(newVal) \u003d\u003d null) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"For enabling or disabling storage policy satisfier, must \"\n                  + \"pass either internal/external/none string value only\"));\n    }\n\n    if (!isActiveState()) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"Enabling or disabling storage policy satisfier service on \"\n                  + state + \" NameNode is not allowed\"));\n    }\n    StoragePolicySatisfierMode mode \u003d StoragePolicySatisfierMode\n        .fromString(newVal);\n    namesystem.getBlockManager().getSPSManager().changeModeEvent(mode);\n    return newVal;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "3b83110d5ed582b9f913ecf3f62ce410535f8fca": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13057: [SPS]: Revisit configurations to make SPS service modes internal/external/none. Contributed by Rakesh R.\n",
+      "commitDate": "12/08/18 3:06 AM",
+      "commitName": "3b83110d5ed582b9f913ecf3f62ce410535f8fca",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "commitDateOld": "12/08/18 3:06 AM",
+      "commitNameOld": "0e820f16af309cc8476edba448dd548686431133",
+      "commitAuthorOld": "Uma Maheswara Rao G",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 13,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,35 @@\n   String reconfigureSPSEnabled(String newVal, String property)\n       throws ReconfigurationException {\n-    if (newVal \u003d\u003d null || !(newVal.equalsIgnoreCase(Boolean.TRUE.toString())\n-        || newVal.equalsIgnoreCase(Boolean.FALSE.toString()))) {\n+    if (newVal \u003d\u003d null\n+        || StoragePolicySatisfierMode.fromString(newVal) \u003d\u003d null) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property),\n           new HadoopIllegalArgumentException(\n-              \"For enabling or disabling storage policy satisfier, \"\n-                  + \"we must pass true/false only\"));\n+              \"For enabling or disabling storage policy satisfier, we must \"\n+                  + \"pass either none/internal/external string value only\"));\n     }\n \n     if (!isActiveState()) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property), new HadoopIllegalArgumentException(\n           \"Enabling or disabling storage policy satisfier service on \"\n               + state + \" NameNode is not allowed\"));\n     }\n-\n-    boolean enableSPS \u003d Boolean.parseBoolean(newVal);\n-    if (enableSPS) {\n-      namesystem.getBlockManager().enableSPS();\n-    } else {\n+    StoragePolicySatisfierMode mode \u003d StoragePolicySatisfierMode\n+        .fromString(newVal);\n+    switch(mode){\n+    case NONE:\n       namesystem.getBlockManager().disableSPS();\n+      break;\n+    case INTERNAL:\n+      namesystem.getBlockManager().enableInternalSPS();\n+      break;\n+    case EXTERNAL:\n+      namesystem.getBlockManager().enableExternalSPS();\n+      break;\n+    default:\n+      // nothing\n+      break;\n     }\n     return newVal;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  String reconfigureSPSEnabled(String newVal, String property)\n      throws ReconfigurationException {\n    if (newVal \u003d\u003d null\n        || StoragePolicySatisfierMode.fromString(newVal) \u003d\u003d null) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"For enabling or disabling storage policy satisfier, we must \"\n                  + \"pass either none/internal/external string value only\"));\n    }\n\n    if (!isActiveState()) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property), new HadoopIllegalArgumentException(\n          \"Enabling or disabling storage policy satisfier service on \"\n              + state + \" NameNode is not allowed\"));\n    }\n    StoragePolicySatisfierMode mode \u003d StoragePolicySatisfierMode\n        .fromString(newVal);\n    switch(mode){\n    case NONE:\n      namesystem.getBlockManager().disableSPS();\n      break;\n    case INTERNAL:\n      namesystem.getBlockManager().enableInternalSPS();\n      break;\n    case EXTERNAL:\n      namesystem.getBlockManager().enableExternalSPS();\n      break;\n    default:\n      // nothing\n      break;\n    }\n    return newVal;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+      "extendedDetails": {}
+    },
+    "0e820f16af309cc8476edba448dd548686431133": {
+      "type": "Ymultichange(Yrename,Ybodychange)",
+      "commitMessage": "HDFS-12214: [SPS]: Fix review comments of StoragePolicySatisfier feature. Contributed by Rakesh R.\n",
+      "commitDate": "12/08/18 3:06 AM",
+      "commitName": "0e820f16af309cc8476edba448dd548686431133",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-12214: [SPS]: Fix review comments of StoragePolicySatisfier feature. Contributed by Rakesh R.\n",
+          "commitDate": "12/08/18 3:06 AM",
+          "commitName": "0e820f16af309cc8476edba448dd548686431133",
+          "commitAuthor": "Uma Maheswara Rao G",
+          "commitDateOld": "12/08/18 3:05 AM",
+          "commitNameOld": "681d2804c95e5a569ffb8d9ceafaf5a4f8be2b88",
+          "commitAuthorOld": "Rakesh Radhakrishnan",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 20,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,26 @@\n-  String reconfigureSPSActivate(String newVal, String property)\n+  String reconfigureSPSEnabled(String newVal, String property)\n       throws ReconfigurationException {\n     if (newVal \u003d\u003d null || !(newVal.equalsIgnoreCase(Boolean.TRUE.toString())\n         || newVal.equalsIgnoreCase(Boolean.FALSE.toString()))) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property),\n           new HadoopIllegalArgumentException(\n-              \"For activating or deactivating storage policy satisfier, \"\n+              \"For enabling or disabling storage policy satisfier, \"\n                   + \"we must pass true/false only\"));\n     }\n \n     if (!isActiveState()) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property), new HadoopIllegalArgumentException(\n-          \"Activating or deactivating storage policy satisfier service on \"\n+          \"Enabling or disabling storage policy satisfier service on \"\n               + state + \" NameNode is not allowed\"));\n     }\n \n-    boolean activateSPS \u003d Boolean.parseBoolean(newVal);\n-    if (activateSPS) {\n-      namesystem.getBlockManager().activateSPS();\n+    boolean enableSPS \u003d Boolean.parseBoolean(newVal);\n+    if (enableSPS) {\n+      namesystem.getBlockManager().enableSPS();\n     } else {\n-      namesystem.getBlockManager().deactivateSPS();\n+      namesystem.getBlockManager().disableSPS();\n     }\n     return newVal;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  String reconfigureSPSEnabled(String newVal, String property)\n      throws ReconfigurationException {\n    if (newVal \u003d\u003d null || !(newVal.equalsIgnoreCase(Boolean.TRUE.toString())\n        || newVal.equalsIgnoreCase(Boolean.FALSE.toString()))) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"For enabling or disabling storage policy satisfier, \"\n                  + \"we must pass true/false only\"));\n    }\n\n    if (!isActiveState()) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property), new HadoopIllegalArgumentException(\n          \"Enabling or disabling storage policy satisfier service on \"\n              + state + \" NameNode is not allowed\"));\n    }\n\n    boolean enableSPS \u003d Boolean.parseBoolean(newVal);\n    if (enableSPS) {\n      namesystem.getBlockManager().enableSPS();\n    } else {\n      namesystem.getBlockManager().disableSPS();\n    }\n    return newVal;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+          "extendedDetails": {
+            "oldValue": "reconfigureSPSActivate",
+            "newValue": "reconfigureSPSEnabled"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-12214: [SPS]: Fix review comments of StoragePolicySatisfier feature. Contributed by Rakesh R.\n",
+          "commitDate": "12/08/18 3:06 AM",
+          "commitName": "0e820f16af309cc8476edba448dd548686431133",
+          "commitAuthor": "Uma Maheswara Rao G",
+          "commitDateOld": "12/08/18 3:05 AM",
+          "commitNameOld": "681d2804c95e5a569ffb8d9ceafaf5a4f8be2b88",
+          "commitAuthorOld": "Rakesh Radhakrishnan",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 20,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,26 @@\n-  String reconfigureSPSActivate(String newVal, String property)\n+  String reconfigureSPSEnabled(String newVal, String property)\n       throws ReconfigurationException {\n     if (newVal \u003d\u003d null || !(newVal.equalsIgnoreCase(Boolean.TRUE.toString())\n         || newVal.equalsIgnoreCase(Boolean.FALSE.toString()))) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property),\n           new HadoopIllegalArgumentException(\n-              \"For activating or deactivating storage policy satisfier, \"\n+              \"For enabling or disabling storage policy satisfier, \"\n                   + \"we must pass true/false only\"));\n     }\n \n     if (!isActiveState()) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property), new HadoopIllegalArgumentException(\n-          \"Activating or deactivating storage policy satisfier service on \"\n+          \"Enabling or disabling storage policy satisfier service on \"\n               + state + \" NameNode is not allowed\"));\n     }\n \n-    boolean activateSPS \u003d Boolean.parseBoolean(newVal);\n-    if (activateSPS) {\n-      namesystem.getBlockManager().activateSPS();\n+    boolean enableSPS \u003d Boolean.parseBoolean(newVal);\n+    if (enableSPS) {\n+      namesystem.getBlockManager().enableSPS();\n     } else {\n-      namesystem.getBlockManager().deactivateSPS();\n+      namesystem.getBlockManager().disableSPS();\n     }\n     return newVal;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  String reconfigureSPSEnabled(String newVal, String property)\n      throws ReconfigurationException {\n    if (newVal \u003d\u003d null || !(newVal.equalsIgnoreCase(Boolean.TRUE.toString())\n        || newVal.equalsIgnoreCase(Boolean.FALSE.toString()))) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"For enabling or disabling storage policy satisfier, \"\n                  + \"we must pass true/false only\"));\n    }\n\n    if (!isActiveState()) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property), new HadoopIllegalArgumentException(\n          \"Enabling or disabling storage policy satisfier service on \"\n              + state + \" NameNode is not allowed\"));\n    }\n\n    boolean enableSPS \u003d Boolean.parseBoolean(newVal);\n    if (enableSPS) {\n      namesystem.getBlockManager().enableSPS();\n    } else {\n      namesystem.getBlockManager().disableSPS();\n    }\n    return newVal;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "681d2804c95e5a569ffb8d9ceafaf5a4f8be2b88": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11186. [SPS]: Daemon thread of SPS should start only in Active NN. Contributed by Wei Zhou\n",
+      "commitDate": "12/08/18 3:05 AM",
+      "commitName": "681d2804c95e5a569ffb8d9ceafaf5a4f8be2b88",
+      "commitAuthor": "Rakesh Radhakrishnan",
+      "commitDateOld": "12/08/18 3:05 AM",
+      "commitNameOld": "5179d99b7e1faeac1ce041967480115913d9f795",
+      "commitAuthorOld": "Rakesh Radhakrishnan",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 7,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,26 @@\n   String reconfigureSPSActivate(String newVal, String property)\n       throws ReconfigurationException {\n     if (newVal \u003d\u003d null || !(newVal.equalsIgnoreCase(Boolean.TRUE.toString())\n         || newVal.equalsIgnoreCase(Boolean.FALSE.toString()))) {\n       throw new ReconfigurationException(property, newVal,\n           getConf().get(property),\n           new HadoopIllegalArgumentException(\n               \"For activating or deactivating storage policy satisfier, \"\n                   + \"we must pass true/false only\"));\n     }\n \n+    if (!isActiveState()) {\n+      throw new ReconfigurationException(property, newVal,\n+          getConf().get(property), new HadoopIllegalArgumentException(\n+          \"Activating or deactivating storage policy satisfier service on \"\n+              + state + \" NameNode is not allowed\"));\n+    }\n+\n     boolean activateSPS \u003d Boolean.parseBoolean(newVal);\n     if (activateSPS) {\n       namesystem.getBlockManager().activateSPS();\n     } else {\n       namesystem.getBlockManager().deactivateSPS();\n     }\n     return newVal;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  String reconfigureSPSActivate(String newVal, String property)\n      throws ReconfigurationException {\n    if (newVal \u003d\u003d null || !(newVal.equalsIgnoreCase(Boolean.TRUE.toString())\n        || newVal.equalsIgnoreCase(Boolean.FALSE.toString()))) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"For activating or deactivating storage policy satisfier, \"\n                  + \"we must pass true/false only\"));\n    }\n\n    if (!isActiveState()) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property), new HadoopIllegalArgumentException(\n          \"Activating or deactivating storage policy satisfier service on \"\n              + state + \" NameNode is not allowed\"));\n    }\n\n    boolean activateSPS \u003d Boolean.parseBoolean(newVal);\n    if (activateSPS) {\n      namesystem.getBlockManager().activateSPS();\n    } else {\n      namesystem.getBlockManager().deactivateSPS();\n    }\n    return newVal;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+      "extendedDetails": {}
+    },
+    "5179d99b7e1faeac1ce041967480115913d9f795": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11123. [SPS] Make storage policy satisfier daemon work on/off dynamically. Contributed by Uma Maheswara Rao G\n",
+      "commitDate": "12/08/18 3:05 AM",
+      "commitName": "5179d99b7e1faeac1ce041967480115913d9f795",
+      "commitAuthor": "Rakesh Radhakrishnan",
+      "diff": "@@ -0,0 +1,19 @@\n+  String reconfigureSPSActivate(String newVal, String property)\n+      throws ReconfigurationException {\n+    if (newVal \u003d\u003d null || !(newVal.equalsIgnoreCase(Boolean.TRUE.toString())\n+        || newVal.equalsIgnoreCase(Boolean.FALSE.toString()))) {\n+      throw new ReconfigurationException(property, newVal,\n+          getConf().get(property),\n+          new HadoopIllegalArgumentException(\n+              \"For activating or deactivating storage policy satisfier, \"\n+                  + \"we must pass true/false only\"));\n+    }\n+\n+    boolean activateSPS \u003d Boolean.parseBoolean(newVal);\n+    if (activateSPS) {\n+      namesystem.getBlockManager().activateSPS();\n+    } else {\n+      namesystem.getBlockManager().deactivateSPS();\n+    }\n+    return newVal;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  String reconfigureSPSActivate(String newVal, String property)\n      throws ReconfigurationException {\n    if (newVal \u003d\u003d null || !(newVal.equalsIgnoreCase(Boolean.TRUE.toString())\n        || newVal.equalsIgnoreCase(Boolean.FALSE.toString()))) {\n      throw new ReconfigurationException(property, newVal,\n          getConf().get(property),\n          new HadoopIllegalArgumentException(\n              \"For activating or deactivating storage policy satisfier, \"\n                  + \"we must pass true/false only\"));\n    }\n\n    boolean activateSPS \u003d Boolean.parseBoolean(newVal);\n    if (activateSPS) {\n      namesystem.getBlockManager().activateSPS();\n    } else {\n      namesystem.getBlockManager().deactivateSPS();\n    }\n    return newVal;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java"
+    }
+  }
+}

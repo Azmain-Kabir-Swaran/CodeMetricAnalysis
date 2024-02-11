@@ -1,0 +1,111 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ProvidedStorageMap.java",
+  "functionName": "choose",
+  "functionId": "choose___client-DatanodeDescriptor__excludedUUids-Set__String__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java",
+  "functionStartLine": 357,
+  "functionEndLine": 372,
+  "numCommitsSeen": 24,
+  "timeTaken": 3211,
+  "changeHistory": [
+    "0f6aa9564cbe0812a8cab36d999e353269dd6bc9",
+    "4d59dabb7f6ef1d8565bf2bb2d38aeb91bf7f7cc",
+    "3d3be87e301d9f8ab1a220bc5dbeae0f032c5a86",
+    "aa5ec85f7fd2dc6ac568a88716109bab8df8be19",
+    "d65df0f27395792c6e25f5e03b6ba1765e2ba925"
+  ],
+  "changeHistoryShort": {
+    "0f6aa9564cbe0812a8cab36d999e353269dd6bc9": "Ybodychange",
+    "4d59dabb7f6ef1d8565bf2bb2d38aeb91bf7f7cc": "Ybodychange",
+    "3d3be87e301d9f8ab1a220bc5dbeae0f032c5a86": "Yparameterchange",
+    "aa5ec85f7fd2dc6ac568a88716109bab8df8be19": "Ybodychange",
+    "d65df0f27395792c6e25f5e03b6ba1765e2ba925": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0f6aa9564cbe0812a8cab36d999e353269dd6bc9": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12905. [READ] Handle decommissioning and under-maintenance Datanodes with Provided storage.\n",
+      "commitDate": "15/12/17 5:51 PM",
+      "commitName": "0f6aa9564cbe0812a8cab36d999e353269dd6bc9",
+      "commitAuthor": "Virajith Jalaparti",
+      "commitDateOld": "15/12/17 5:51 PM",
+      "commitNameOld": "9c35be86e17021202823bfd3c2067ff3b312ce5c",
+      "commitAuthorOld": "Virajith Jalaparti",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 6,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,16 @@\n     DatanodeDescriptor choose(DatanodeDescriptor client,\n         Set\u003cString\u003e excludedUUids) {\n       // exact match for now\n       if (client !\u003d null \u0026\u0026 !excludedUUids.contains(client.getDatanodeUuid())) {\n         DatanodeDescriptor dn \u003d dns.get(client.getDatanodeUuid());\n         if (dn !\u003d null) {\n           return dn;\n         }\n       }\n-\n-      Random r \u003d new Random();\n-      for (int i \u003d dnR.size() - 1; i \u003e\u003d 0; --i) {\n-        int pos \u003d r.nextInt(i + 1);\n-        DatanodeDescriptor node \u003d dnR.get(pos);\n-        String uuid \u003d node.getDatanodeUuid();\n-        if (!excludedUUids.contains(uuid)) {\n-          return node;\n-        }\n-        Collections.swap(dnR, i, pos);\n+      // prefer live nodes first.\n+      DatanodeDescriptor dn \u003d chooseRandomNode(excludedUUids, true);\n+      if (dn \u003d\u003d null) {\n+        dn \u003d chooseRandomNode(excludedUUids, false);\n       }\n-      return null;\n+      return dn;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    DatanodeDescriptor choose(DatanodeDescriptor client,\n        Set\u003cString\u003e excludedUUids) {\n      // exact match for now\n      if (client !\u003d null \u0026\u0026 !excludedUUids.contains(client.getDatanodeUuid())) {\n        DatanodeDescriptor dn \u003d dns.get(client.getDatanodeUuid());\n        if (dn !\u003d null) {\n          return dn;\n        }\n      }\n      // prefer live nodes first.\n      DatanodeDescriptor dn \u003d chooseRandomNode(excludedUUids, true);\n      if (dn \u003d\u003d null) {\n        dn \u003d chooseRandomNode(excludedUUids, false);\n      }\n      return dn;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java",
+      "extendedDetails": {}
+    },
+    "4d59dabb7f6ef1d8565bf2bb2d38aeb91bf7f7cc": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12809. [READ] Fix the randomized selection of locations in {{ProvidedBlocksBuilder}}.\n",
+      "commitDate": "15/12/17 5:51 PM",
+      "commitName": "4d59dabb7f6ef1d8565bf2bb2d38aeb91bf7f7cc",
+      "commitAuthor": "Virajith Jalaparti",
+      "commitDateOld": "15/12/17 5:51 PM",
+      "commitNameOld": "3d3be87e301d9f8ab1a220bc5dbeae0f032c5a86",
+      "commitAuthorOld": "Virajith Jalaparti",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,22 @@\n     DatanodeDescriptor choose(DatanodeDescriptor client,\n         Set\u003cString\u003e excludedUUids) {\n       // exact match for now\n-      DatanodeDescriptor dn \u003d client !\u003d null ?\n-          dns.get(client.getDatanodeUuid()) : null;\n-\n-      if (null \u003d\u003d dn || excludedUUids.contains(client.getDatanodeUuid())) {\n-        dn \u003d null;\n-        Set\u003cString\u003e exploredUUids \u003d new HashSet\u003cString\u003e();\n-\n-        while(exploredUUids.size() \u003c dns.size()) {\n-          Map.Entry\u003cString, DatanodeDescriptor\u003e d \u003d\n-                  dns.ceilingEntry(UUID.randomUUID().toString());\n-          if (null \u003d\u003d d) {\n-            d \u003d dns.firstEntry();\n-          }\n-          String uuid \u003d d.getValue().getDatanodeUuid();\n-          //this node has already been explored, and was not selected earlier\n-          if (exploredUUids.contains(uuid)) {\n-            continue;\n-          }\n-          exploredUUids.add(uuid);\n-          //this node has been excluded\n-          if (excludedUUids.contains(uuid)) {\n-            continue;\n-          }\n-          return dns.get(uuid);\n+      if (client !\u003d null \u0026\u0026 !excludedUUids.contains(client.getDatanodeUuid())) {\n+        DatanodeDescriptor dn \u003d dns.get(client.getDatanodeUuid());\n+        if (dn !\u003d null) {\n+          return dn;\n         }\n       }\n \n-      return dn;\n+      Random r \u003d new Random();\n+      for (int i \u003d dnR.size() - 1; i \u003e\u003d 0; --i) {\n+        int pos \u003d r.nextInt(i + 1);\n+        DatanodeDescriptor node \u003d dnR.get(pos);\n+        String uuid \u003d node.getDatanodeUuid();\n+        if (!excludedUUids.contains(uuid)) {\n+          return node;\n+        }\n+        Collections.swap(dnR, i, pos);\n+      }\n+      return null;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    DatanodeDescriptor choose(DatanodeDescriptor client,\n        Set\u003cString\u003e excludedUUids) {\n      // exact match for now\n      if (client !\u003d null \u0026\u0026 !excludedUUids.contains(client.getDatanodeUuid())) {\n        DatanodeDescriptor dn \u003d dns.get(client.getDatanodeUuid());\n        if (dn !\u003d null) {\n          return dn;\n        }\n      }\n\n      Random r \u003d new Random();\n      for (int i \u003d dnR.size() - 1; i \u003e\u003d 0; --i) {\n        int pos \u003d r.nextInt(i + 1);\n        DatanodeDescriptor node \u003d dnR.get(pos);\n        String uuid \u003d node.getDatanodeUuid();\n        if (!excludedUUids.contains(uuid)) {\n          return node;\n        }\n        Collections.swap(dnR, i, pos);\n      }\n      return null;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java",
+      "extendedDetails": {}
+    },
+    "3d3be87e301d9f8ab1a220bc5dbeae0f032c5a86": {
+      "type": "Yparameterchange",
+      "commitMessage": "HDFS-12778. [READ] Report multiple locations for PROVIDED blocks\n",
+      "commitDate": "15/12/17 5:51 PM",
+      "commitName": "3d3be87e301d9f8ab1a220bc5dbeae0f032c5a86",
+      "commitAuthor": "Virajith Jalaparti",
+      "commitDateOld": "15/12/17 5:51 PM",
+      "commitNameOld": "3b1d30301bcd35bbe525a7e122d3e5acfab92c88",
+      "commitAuthorOld": "Virajith Jalaparti",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,32 @@\n     DatanodeDescriptor choose(DatanodeDescriptor client,\n-        List\u003cString\u003e excludedUUids) {\n+        Set\u003cString\u003e excludedUUids) {\n       // exact match for now\n       DatanodeDescriptor dn \u003d client !\u003d null ?\n-              dns.get(client.getDatanodeUuid()) : null;\n+          dns.get(client.getDatanodeUuid()) : null;\n \n       if (null \u003d\u003d dn || excludedUUids.contains(client.getDatanodeUuid())) {\n         dn \u003d null;\n         Set\u003cString\u003e exploredUUids \u003d new HashSet\u003cString\u003e();\n \n         while(exploredUUids.size() \u003c dns.size()) {\n           Map.Entry\u003cString, DatanodeDescriptor\u003e d \u003d\n                   dns.ceilingEntry(UUID.randomUUID().toString());\n           if (null \u003d\u003d d) {\n             d \u003d dns.firstEntry();\n           }\n           String uuid \u003d d.getValue().getDatanodeUuid();\n           //this node has already been explored, and was not selected earlier\n           if (exploredUUids.contains(uuid)) {\n             continue;\n           }\n           exploredUUids.add(uuid);\n           //this node has been excluded\n           if (excludedUUids.contains(uuid)) {\n             continue;\n           }\n           return dns.get(uuid);\n         }\n       }\n \n       return dn;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    DatanodeDescriptor choose(DatanodeDescriptor client,\n        Set\u003cString\u003e excludedUUids) {\n      // exact match for now\n      DatanodeDescriptor dn \u003d client !\u003d null ?\n          dns.get(client.getDatanodeUuid()) : null;\n\n      if (null \u003d\u003d dn || excludedUUids.contains(client.getDatanodeUuid())) {\n        dn \u003d null;\n        Set\u003cString\u003e exploredUUids \u003d new HashSet\u003cString\u003e();\n\n        while(exploredUUids.size() \u003c dns.size()) {\n          Map.Entry\u003cString, DatanodeDescriptor\u003e d \u003d\n                  dns.ceilingEntry(UUID.randomUUID().toString());\n          if (null \u003d\u003d d) {\n            d \u003d dns.firstEntry();\n          }\n          String uuid \u003d d.getValue().getDatanodeUuid();\n          //this node has already been explored, and was not selected earlier\n          if (exploredUUids.contains(uuid)) {\n            continue;\n          }\n          exploredUUids.add(uuid);\n          //this node has been excluded\n          if (excludedUUids.contains(uuid)) {\n            continue;\n          }\n          return dns.get(uuid);\n        }\n      }\n\n      return dn;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java",
+      "extendedDetails": {
+        "oldValue": "[client-DatanodeDescriptor, excludedUUids-List\u003cString\u003e]",
+        "newValue": "[client-DatanodeDescriptor, excludedUUids-Set\u003cString\u003e]"
+      }
+    },
+    "aa5ec85f7fd2dc6ac568a88716109bab8df8be19": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11663. [READ] Fix NullPointerException in ProvidedBlocksBuilder\n",
+      "commitDate": "15/12/17 5:51 PM",
+      "commitName": "aa5ec85f7fd2dc6ac568a88716109bab8df8be19",
+      "commitAuthor": "Virajith Jalaparti",
+      "commitDateOld": "15/12/17 5:51 PM",
+      "commitNameOld": "d65df0f27395792c6e25f5e03b6ba1765e2ba925",
+      "commitAuthorOld": "Virajith Jalaparti",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 2,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,32 @@\n     DatanodeDescriptor choose(DatanodeDescriptor client,\n         List\u003cString\u003e excludedUUids) {\n       // exact match for now\n-      DatanodeDescriptor dn \u003d dns.get(client.getDatanodeUuid());\n+      DatanodeDescriptor dn \u003d client !\u003d null ?\n+              dns.get(client.getDatanodeUuid()) : null;\n \n       if (null \u003d\u003d dn || excludedUUids.contains(client.getDatanodeUuid())) {\n         dn \u003d null;\n         Set\u003cString\u003e exploredUUids \u003d new HashSet\u003cString\u003e();\n \n         while(exploredUUids.size() \u003c dns.size()) {\n           Map.Entry\u003cString, DatanodeDescriptor\u003e d \u003d\n                   dns.ceilingEntry(UUID.randomUUID().toString());\n           if (null \u003d\u003d d) {\n             d \u003d dns.firstEntry();\n           }\n           String uuid \u003d d.getValue().getDatanodeUuid();\n           //this node has already been explored, and was not selected earlier\n           if (exploredUUids.contains(uuid)) {\n             continue;\n           }\n           exploredUUids.add(uuid);\n           //this node has been excluded\n           if (excludedUUids.contains(uuid)) {\n             continue;\n           }\n           return dns.get(uuid);\n         }\n       }\n \n       return dn;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    DatanodeDescriptor choose(DatanodeDescriptor client,\n        List\u003cString\u003e excludedUUids) {\n      // exact match for now\n      DatanodeDescriptor dn \u003d client !\u003d null ?\n              dns.get(client.getDatanodeUuid()) : null;\n\n      if (null \u003d\u003d dn || excludedUUids.contains(client.getDatanodeUuid())) {\n        dn \u003d null;\n        Set\u003cString\u003e exploredUUids \u003d new HashSet\u003cString\u003e();\n\n        while(exploredUUids.size() \u003c dns.size()) {\n          Map.Entry\u003cString, DatanodeDescriptor\u003e d \u003d\n                  dns.ceilingEntry(UUID.randomUUID().toString());\n          if (null \u003d\u003d d) {\n            d \u003d dns.firstEntry();\n          }\n          String uuid \u003d d.getValue().getDatanodeUuid();\n          //this node has already been explored, and was not selected earlier\n          if (exploredUUids.contains(uuid)) {\n            continue;\n          }\n          exploredUUids.add(uuid);\n          //this node has been excluded\n          if (excludedUUids.contains(uuid)) {\n            continue;\n          }\n          return dns.get(uuid);\n        }\n      }\n\n      return dn;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java",
+      "extendedDetails": {}
+    },
+    "d65df0f27395792c6e25f5e03b6ba1765e2ba925": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11190. [READ] Namenode support for data stored in external stores.\n",
+      "commitDate": "15/12/17 5:51 PM",
+      "commitName": "d65df0f27395792c6e25f5e03b6ba1765e2ba925",
+      "commitAuthor": "Virajith Jalaparti",
+      "diff": "@@ -0,0 +1,31 @@\n+    DatanodeDescriptor choose(DatanodeDescriptor client,\n+        List\u003cString\u003e excludedUUids) {\n+      // exact match for now\n+      DatanodeDescriptor dn \u003d dns.get(client.getDatanodeUuid());\n+\n+      if (null \u003d\u003d dn || excludedUUids.contains(client.getDatanodeUuid())) {\n+        dn \u003d null;\n+        Set\u003cString\u003e exploredUUids \u003d new HashSet\u003cString\u003e();\n+\n+        while(exploredUUids.size() \u003c dns.size()) {\n+          Map.Entry\u003cString, DatanodeDescriptor\u003e d \u003d\n+                  dns.ceilingEntry(UUID.randomUUID().toString());\n+          if (null \u003d\u003d d) {\n+            d \u003d dns.firstEntry();\n+          }\n+          String uuid \u003d d.getValue().getDatanodeUuid();\n+          //this node has already been explored, and was not selected earlier\n+          if (exploredUUids.contains(uuid)) {\n+            continue;\n+          }\n+          exploredUUids.add(uuid);\n+          //this node has been excluded\n+          if (excludedUUids.contains(uuid)) {\n+            continue;\n+          }\n+          return dns.get(uuid);\n+        }\n+      }\n+\n+      return dn;\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    DatanodeDescriptor choose(DatanodeDescriptor client,\n        List\u003cString\u003e excludedUUids) {\n      // exact match for now\n      DatanodeDescriptor dn \u003d dns.get(client.getDatanodeUuid());\n\n      if (null \u003d\u003d dn || excludedUUids.contains(client.getDatanodeUuid())) {\n        dn \u003d null;\n        Set\u003cString\u003e exploredUUids \u003d new HashSet\u003cString\u003e();\n\n        while(exploredUUids.size() \u003c dns.size()) {\n          Map.Entry\u003cString, DatanodeDescriptor\u003e d \u003d\n                  dns.ceilingEntry(UUID.randomUUID().toString());\n          if (null \u003d\u003d d) {\n            d \u003d dns.firstEntry();\n          }\n          String uuid \u003d d.getValue().getDatanodeUuid();\n          //this node has already been explored, and was not selected earlier\n          if (exploredUUids.contains(uuid)) {\n            continue;\n          }\n          exploredUUids.add(uuid);\n          //this node has been excluded\n          if (excludedUUids.contains(uuid)) {\n            continue;\n          }\n          return dns.get(uuid);\n        }\n      }\n\n      return dn;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/ProvidedStorageMap.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DiskBalancer.java",
+  "functionName": "createWorkPlan",
+  "functionId": "createWorkPlan___plan-NodePlan",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DiskBalancer.java",
+  "functionStartLine": 461,
+  "functionEndLine": 494,
+  "numCommitsSeen": 32,
+  "timeTaken": 1647,
+  "changeHistory": [
+    "03f519a757ce83d76e7fc9f6aadf271e38bb9f6d",
+    "050677077beaf42255b3936952b8e816a9201203",
+    "2b1b2faf76a7ff148650a7836935a85439f60c49"
+  ],
+  "changeHistoryShort": {
+    "03f519a757ce83d76e7fc9f6aadf271e38bb9f6d": "Ybodychange",
+    "050677077beaf42255b3936952b8e816a9201203": "Ybodychange",
+    "2b1b2faf76a7ff148650a7836935a85439f60c49": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "03f519a757ce83d76e7fc9f6aadf271e38bb9f6d": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9850. DiskBalancer: Explore removing references to FsVolumeSpi. Contributed by Manoj Govindassamy.\n",
+      "commitDate": "27/09/16 9:35 PM",
+      "commitName": "03f519a757ce83d76e7fc9f6aadf271e38bb9f6d",
+      "commitAuthor": "Anu Engineer",
+      "commitDateOld": "09/09/16 3:00 PM",
+      "commitNameOld": "bee9f57f5ca9f037ade932c6fd01b0dad47a1296",
+      "commitAuthorOld": "Anu Engineer",
+      "daysBetweenCommits": 18.27,
+      "commitsBetweenForRepo": 96,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,34 @@\n   private void createWorkPlan(NodePlan plan) throws DiskBalancerException {\n     Preconditions.checkState(lock.isHeldByCurrentThread());\n \n     // Cleanup any residual work in the map.\n     workMap.clear();\n-    Map\u003cString, FsVolumeSpi\u003e pathMap \u003d getStorageIDToVolumeMap();\n+    Map\u003cString, String\u003e storageIDToVolBasePathMap \u003d\n+        getStorageIDToVolumeBasePathMap();\n \n     for (Step step : plan.getVolumeSetPlans()) {\n-      String sourceuuid \u003d step.getSourceVolume().getUuid();\n-      String destinationuuid \u003d step.getDestinationVolume().getUuid();\n+      String sourceVolUuid \u003d step.getSourceVolume().getUuid();\n+      String destVolUuid \u003d step.getDestinationVolume().getUuid();\n \n-      FsVolumeSpi sourceVol \u003d pathMap.get(sourceuuid);\n-      if (sourceVol \u003d\u003d null) {\n-        LOG.error(\"Disk Balancer - Unable to find source volume. submitPlan \" +\n-            \"failed.\");\n-        throw new DiskBalancerException(\"Unable to find source volume.\",\n+      String sourceVolBasePath \u003d storageIDToVolBasePathMap.get(sourceVolUuid);\n+      if (sourceVolBasePath \u003d\u003d null) {\n+        final String errMsg \u003d \"Disk Balancer - Unable to find volume: \"\n+            + step.getSourceVolume().getPath() + \". SubmitPlan failed.\";\n+        LOG.error(errMsg);\n+        throw new DiskBalancerException(errMsg,\n             DiskBalancerException.Result.INVALID_VOLUME);\n       }\n \n-      FsVolumeSpi destVol \u003d pathMap.get(destinationuuid);\n-      if (destVol \u003d\u003d null) {\n-        LOG.error(\"Disk Balancer - Unable to find destination volume. \" +\n-            \"submitPlan failed.\");\n-        throw new DiskBalancerException(\"Unable to find destination volume.\",\n+      String destVolBasePath \u003d storageIDToVolBasePathMap.get(destVolUuid);\n+      if (destVolBasePath \u003d\u003d null) {\n+        final String errMsg \u003d \"Disk Balancer - Unable to find volume: \"\n+            + step.getDestinationVolume().getPath() + \". SubmitPlan failed.\";\n+        LOG.error(errMsg);\n+        throw new DiskBalancerException(errMsg,\n             DiskBalancerException.Result.INVALID_VOLUME);\n       }\n-      createWorkPlan(sourceVol, destVol, step);\n+      VolumePair volumePair \u003d new VolumePair(sourceVolUuid,\n+          sourceVolBasePath, destVolUuid, destVolBasePath);\n+      createWorkPlan(volumePair, step);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void createWorkPlan(NodePlan plan) throws DiskBalancerException {\n    Preconditions.checkState(lock.isHeldByCurrentThread());\n\n    // Cleanup any residual work in the map.\n    workMap.clear();\n    Map\u003cString, String\u003e storageIDToVolBasePathMap \u003d\n        getStorageIDToVolumeBasePathMap();\n\n    for (Step step : plan.getVolumeSetPlans()) {\n      String sourceVolUuid \u003d step.getSourceVolume().getUuid();\n      String destVolUuid \u003d step.getDestinationVolume().getUuid();\n\n      String sourceVolBasePath \u003d storageIDToVolBasePathMap.get(sourceVolUuid);\n      if (sourceVolBasePath \u003d\u003d null) {\n        final String errMsg \u003d \"Disk Balancer - Unable to find volume: \"\n            + step.getSourceVolume().getPath() + \". SubmitPlan failed.\";\n        LOG.error(errMsg);\n        throw new DiskBalancerException(errMsg,\n            DiskBalancerException.Result.INVALID_VOLUME);\n      }\n\n      String destVolBasePath \u003d storageIDToVolBasePathMap.get(destVolUuid);\n      if (destVolBasePath \u003d\u003d null) {\n        final String errMsg \u003d \"Disk Balancer - Unable to find volume: \"\n            + step.getDestinationVolume().getPath() + \". SubmitPlan failed.\";\n        LOG.error(errMsg);\n        throw new DiskBalancerException(errMsg,\n            DiskBalancerException.Result.INVALID_VOLUME);\n      }\n      VolumePair volumePair \u003d new VolumePair(sourceVolUuid,\n          sourceVolBasePath, destVolUuid, destVolBasePath);\n      createWorkPlan(volumePair, step);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DiskBalancer.java",
+      "extendedDetails": {}
+    },
+    "050677077beaf42255b3936952b8e816a9201203": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9720. DiskBalancer : Add configuration parameters. Contributed by Anu Engineer.\n",
+      "commitDate": "23/06/16 6:18 PM",
+      "commitName": "050677077beaf42255b3936952b8e816a9201203",
+      "commitAuthor": "Anu Engineer",
+      "commitDateOld": "23/06/16 6:18 PM",
+      "commitNameOld": "6c606bf5c8c1ace381ce73679c2be96d5475ba34",
+      "commitAuthorOld": "Anu Engineer",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,29 @@\n   private void createWorkPlan(NodePlan plan) throws DiskBalancerException {\n     Preconditions.checkState(lock.isHeldByCurrentThread());\n \n     // Cleanup any residual work in the map.\n     workMap.clear();\n     Map\u003cString, FsVolumeSpi\u003e pathMap \u003d getStorageIDToVolumeMap();\n \n     for (Step step : plan.getVolumeSetPlans()) {\n       String sourceuuid \u003d step.getSourceVolume().getUuid();\n       String destinationuuid \u003d step.getDestinationVolume().getUuid();\n \n       FsVolumeSpi sourceVol \u003d pathMap.get(sourceuuid);\n       if (sourceVol \u003d\u003d null) {\n         LOG.error(\"Disk Balancer - Unable to find source volume. submitPlan \" +\n             \"failed.\");\n         throw new DiskBalancerException(\"Unable to find source volume.\",\n             DiskBalancerException.Result.INVALID_VOLUME);\n       }\n \n       FsVolumeSpi destVol \u003d pathMap.get(destinationuuid);\n       if (destVol \u003d\u003d null) {\n         LOG.error(\"Disk Balancer - Unable to find destination volume. \" +\n             \"submitPlan failed.\");\n         throw new DiskBalancerException(\"Unable to find destination volume.\",\n             DiskBalancerException.Result.INVALID_VOLUME);\n       }\n-      createWorkPlan(sourceVol, destVol, step.getBytesToMove());\n+      createWorkPlan(sourceVol, destVol, step);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void createWorkPlan(NodePlan plan) throws DiskBalancerException {\n    Preconditions.checkState(lock.isHeldByCurrentThread());\n\n    // Cleanup any residual work in the map.\n    workMap.clear();\n    Map\u003cString, FsVolumeSpi\u003e pathMap \u003d getStorageIDToVolumeMap();\n\n    for (Step step : plan.getVolumeSetPlans()) {\n      String sourceuuid \u003d step.getSourceVolume().getUuid();\n      String destinationuuid \u003d step.getDestinationVolume().getUuid();\n\n      FsVolumeSpi sourceVol \u003d pathMap.get(sourceuuid);\n      if (sourceVol \u003d\u003d null) {\n        LOG.error(\"Disk Balancer - Unable to find source volume. submitPlan \" +\n            \"failed.\");\n        throw new DiskBalancerException(\"Unable to find source volume.\",\n            DiskBalancerException.Result.INVALID_VOLUME);\n      }\n\n      FsVolumeSpi destVol \u003d pathMap.get(destinationuuid);\n      if (destVol \u003d\u003d null) {\n        LOG.error(\"Disk Balancer - Unable to find destination volume. \" +\n            \"submitPlan failed.\");\n        throw new DiskBalancerException(\"Unable to find destination volume.\",\n            DiskBalancerException.Result.INVALID_VOLUME);\n      }\n      createWorkPlan(sourceVol, destVol, step);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DiskBalancer.java",
+      "extendedDetails": {}
+    },
+    "2b1b2faf76a7ff148650a7836935a85439f60c49": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9671. DiskBalancer: SubmitPlan implementation. (Contributed by Anu Engineer)\n",
+      "commitDate": "23/06/16 6:18 PM",
+      "commitName": "2b1b2faf76a7ff148650a7836935a85439f60c49",
+      "commitAuthor": "Arpit Agarwal",
+      "diff": "@@ -0,0 +1,29 @@\n+  private void createWorkPlan(NodePlan plan) throws DiskBalancerException {\n+    Preconditions.checkState(lock.isHeldByCurrentThread());\n+\n+    // Cleanup any residual work in the map.\n+    workMap.clear();\n+    Map\u003cString, FsVolumeSpi\u003e pathMap \u003d getStorageIDToVolumeMap();\n+\n+    for (Step step : plan.getVolumeSetPlans()) {\n+      String sourceuuid \u003d step.getSourceVolume().getUuid();\n+      String destinationuuid \u003d step.getDestinationVolume().getUuid();\n+\n+      FsVolumeSpi sourceVol \u003d pathMap.get(sourceuuid);\n+      if (sourceVol \u003d\u003d null) {\n+        LOG.error(\"Disk Balancer - Unable to find source volume. submitPlan \" +\n+            \"failed.\");\n+        throw new DiskBalancerException(\"Unable to find source volume.\",\n+            DiskBalancerException.Result.INVALID_VOLUME);\n+      }\n+\n+      FsVolumeSpi destVol \u003d pathMap.get(destinationuuid);\n+      if (destVol \u003d\u003d null) {\n+        LOG.error(\"Disk Balancer - Unable to find destination volume. \" +\n+            \"submitPlan failed.\");\n+        throw new DiskBalancerException(\"Unable to find destination volume.\",\n+            DiskBalancerException.Result.INVALID_VOLUME);\n+      }\n+      createWorkPlan(sourceVol, destVol, step.getBytesToMove());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void createWorkPlan(NodePlan plan) throws DiskBalancerException {\n    Preconditions.checkState(lock.isHeldByCurrentThread());\n\n    // Cleanup any residual work in the map.\n    workMap.clear();\n    Map\u003cString, FsVolumeSpi\u003e pathMap \u003d getStorageIDToVolumeMap();\n\n    for (Step step : plan.getVolumeSetPlans()) {\n      String sourceuuid \u003d step.getSourceVolume().getUuid();\n      String destinationuuid \u003d step.getDestinationVolume().getUuid();\n\n      FsVolumeSpi sourceVol \u003d pathMap.get(sourceuuid);\n      if (sourceVol \u003d\u003d null) {\n        LOG.error(\"Disk Balancer - Unable to find source volume. submitPlan \" +\n            \"failed.\");\n        throw new DiskBalancerException(\"Unable to find source volume.\",\n            DiskBalancerException.Result.INVALID_VOLUME);\n      }\n\n      FsVolumeSpi destVol \u003d pathMap.get(destinationuuid);\n      if (destVol \u003d\u003d null) {\n        LOG.error(\"Disk Balancer - Unable to find destination volume. \" +\n            \"submitPlan failed.\");\n        throw new DiskBalancerException(\"Unable to find destination volume.\",\n            DiskBalancerException.Result.INVALID_VOLUME);\n      }\n      createWorkPlan(sourceVol, destVol, step.getBytesToMove());\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DiskBalancer.java"
+    }
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMProxy.java",
+  "functionName": "newProxyInstance",
+  "functionId": "newProxyInstance___conf-YarnConfiguration(modifiers-final)__protocol-Class__T__(modifiers-final)__instance-RMProxy__T____retryPolicy-RetryPolicy",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/RMProxy.java",
+  "functionStartLine": 124,
+  "functionEndLine": 134,
+  "numCommitsSeen": 42,
+  "timeTaken": 4430,
+  "changeHistory": [
+    "2d294bd575f81ced4b562ac7275b014c267e480d",
+    "bdfad4523f1a5a776e20773c371ce99d0c538ac1",
+    "9855225a790e66835c79816712f432ffa8c599b4",
+    "618bfd6ac2a5b62d39e9bed80f75362bafc0ef28",
+    "4ac6799d4a8b071e0d367c2d709e84d8ea06942d"
+  ],
+  "changeHistoryShort": {
+    "2d294bd575f81ced4b562ac7275b014c267e480d": "Ybodychange",
+    "bdfad4523f1a5a776e20773c371ce99d0c538ac1": "Ybodychange",
+    "9855225a790e66835c79816712f432ffa8c599b4": "Ymultichange(Yparameterchange,Ybodychange)",
+    "618bfd6ac2a5b62d39e9bed80f75362bafc0ef28": "Yrename",
+    "4ac6799d4a8b071e0d367c2d709e84d8ea06942d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2d294bd575f81ced4b562ac7275b014c267e480d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16938. Make non-HA proxy providers pluggable\n\n",
+      "commitDate": "25/03/20 8:06 AM",
+      "commitName": "2d294bd575f81ced4b562ac7275b014c267e480d",
+      "commitAuthor": "RogPodge",
+      "commitDateOld": "03/03/19 11:59 PM",
+      "commitNameOld": "bd8d299ded742813cabd4b4e7ce1e33e0d1f9509",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 387.3,
+      "commitsBetweenForRepo": 2309,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,11 @@\n   private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n       final Class\u003cT\u003e protocol, RMProxy\u003cT\u003e instance, RetryPolicy retryPolicy)\n           throws IOException{\n+    RMFailoverProxyProvider\u003cT\u003e provider;\n     if (HAUtil.isHAEnabled(conf) || HAUtil.isFederationEnabled(conf)) {\n-      RMFailoverProxyProvider\u003cT\u003e provider \u003d\n-          instance.createRMFailoverProxyProvider(conf, protocol);\n-      return (T) RetryProxy.create(protocol, provider, retryPolicy);\n+      provider \u003d instance.createRMFailoverProxyProvider(conf, protocol);\n     } else {\n-      InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n-      LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n-      T proxy \u003d instance.getProxy(conf, protocol, rmAddress);\n-      return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n+      provider \u003d instance.createNonHaRMFailoverProxyProvider(conf, protocol);\n     }\n+    return (T) RetryProxy.create(protocol, provider, retryPolicy);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n      final Class\u003cT\u003e protocol, RMProxy\u003cT\u003e instance, RetryPolicy retryPolicy)\n          throws IOException{\n    RMFailoverProxyProvider\u003cT\u003e provider;\n    if (HAUtil.isHAEnabled(conf) || HAUtil.isFederationEnabled(conf)) {\n      provider \u003d instance.createRMFailoverProxyProvider(conf, protocol);\n    } else {\n      provider \u003d instance.createNonHaRMFailoverProxyProvider(conf, protocol);\n    }\n    return (T) RetryProxy.create(protocol, provider, retryPolicy);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/RMProxy.java",
+      "extendedDetails": {}
+    },
+    "bdfad4523f1a5a776e20773c371ce99d0c538ac1": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3673. Create a FailoverProxy for Federation services. Contributed by Subru Krishnan\n\n(cherry picked from commit 3307564a5f8c8abc5fe84efcd05ee0f7dfdd921c)\n",
+      "commitDate": "01/08/17 5:28 PM",
+      "commitName": "bdfad4523f1a5a776e20773c371ce99d0c538ac1",
+      "commitAuthor": "Jian He",
+      "commitDateOld": "19/05/17 3:43 PM",
+      "commitNameOld": "9855225a790e66835c79816712f432ffa8c599b4",
+      "commitAuthorOld": "Robert Kanter",
+      "daysBetweenCommits": 74.07,
+      "commitsBetweenForRepo": 371,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,14 @@\n   private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n       final Class\u003cT\u003e protocol, RMProxy\u003cT\u003e instance, RetryPolicy retryPolicy)\n           throws IOException{\n-    if (HAUtil.isHAEnabled(conf)) {\n+    if (HAUtil.isHAEnabled(conf) || HAUtil.isFederationEnabled(conf)) {\n       RMFailoverProxyProvider\u003cT\u003e provider \u003d\n           instance.createRMFailoverProxyProvider(conf, protocol);\n       return (T) RetryProxy.create(protocol, provider, retryPolicy);\n     } else {\n       InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n       LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n       T proxy \u003d instance.getProxy(conf, protocol, rmAddress);\n       return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n      final Class\u003cT\u003e protocol, RMProxy\u003cT\u003e instance, RetryPolicy retryPolicy)\n          throws IOException{\n    if (HAUtil.isHAEnabled(conf) || HAUtil.isFederationEnabled(conf)) {\n      RMFailoverProxyProvider\u003cT\u003e provider \u003d\n          instance.createRMFailoverProxyProvider(conf, protocol);\n      return (T) RetryProxy.create(protocol, provider, retryPolicy);\n    } else {\n      InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n      LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n      T proxy \u003d instance.getProxy(conf, protocol, rmAddress);\n      return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/RMProxy.java",
+      "extendedDetails": {}
+    },
+    "9855225a790e66835c79816712f432ffa8c599b4": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-6602. Impersonation does not work if standby RM is contacted first (rkanter)\n",
+      "commitDate": "19/05/17 3:43 PM",
+      "commitName": "9855225a790e66835c79816712f432ffa8c599b4",
+      "commitAuthor": "Robert Kanter",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-6602. Impersonation does not work if standby RM is contacted first (rkanter)\n",
+          "commitDate": "19/05/17 3:43 PM",
+          "commitName": "9855225a790e66835c79816712f432ffa8c599b4",
+          "commitAuthor": "Robert Kanter",
+          "commitDateOld": "22/01/16 6:20 PM",
+          "commitNameOld": "618bfd6ac2a5b62d39e9bed80f75362bafc0ef28",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 482.85,
+          "commitsBetweenForRepo": 3164,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,14 @@\n   private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n-      final Class\u003cT\u003e protocol, RMProxy instance, RetryPolicy retryPolicy)\n+      final Class\u003cT\u003e protocol, RMProxy\u003cT\u003e instance, RetryPolicy retryPolicy)\n           throws IOException{\n     if (HAUtil.isHAEnabled(conf)) {\n       RMFailoverProxyProvider\u003cT\u003e provider \u003d\n           instance.createRMFailoverProxyProvider(conf, protocol);\n       return (T) RetryProxy.create(protocol, provider, retryPolicy);\n     } else {\n       InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n       LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n-      T proxy \u003d RMProxy.\u003cT\u003egetProxy(conf, protocol, rmAddress);\n+      T proxy \u003d instance.getProxy(conf, protocol, rmAddress);\n       return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n      final Class\u003cT\u003e protocol, RMProxy\u003cT\u003e instance, RetryPolicy retryPolicy)\n          throws IOException{\n    if (HAUtil.isHAEnabled(conf)) {\n      RMFailoverProxyProvider\u003cT\u003e provider \u003d\n          instance.createRMFailoverProxyProvider(conf, protocol);\n      return (T) RetryProxy.create(protocol, provider, retryPolicy);\n    } else {\n      InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n      LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n      T proxy \u003d instance.getProxy(conf, protocol, rmAddress);\n      return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/RMProxy.java",
+          "extendedDetails": {
+            "oldValue": "[conf-YarnConfiguration(modifiers-final), protocol-Class\u003cT\u003e(modifiers-final), instance-RMProxy, retryPolicy-RetryPolicy]",
+            "newValue": "[conf-YarnConfiguration(modifiers-final), protocol-Class\u003cT\u003e(modifiers-final), instance-RMProxy\u003cT\u003e, retryPolicy-RetryPolicy]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-6602. Impersonation does not work if standby RM is contacted first (rkanter)\n",
+          "commitDate": "19/05/17 3:43 PM",
+          "commitName": "9855225a790e66835c79816712f432ffa8c599b4",
+          "commitAuthor": "Robert Kanter",
+          "commitDateOld": "22/01/16 6:20 PM",
+          "commitNameOld": "618bfd6ac2a5b62d39e9bed80f75362bafc0ef28",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 482.85,
+          "commitsBetweenForRepo": 3164,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,14 @@\n   private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n-      final Class\u003cT\u003e protocol, RMProxy instance, RetryPolicy retryPolicy)\n+      final Class\u003cT\u003e protocol, RMProxy\u003cT\u003e instance, RetryPolicy retryPolicy)\n           throws IOException{\n     if (HAUtil.isHAEnabled(conf)) {\n       RMFailoverProxyProvider\u003cT\u003e provider \u003d\n           instance.createRMFailoverProxyProvider(conf, protocol);\n       return (T) RetryProxy.create(protocol, provider, retryPolicy);\n     } else {\n       InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n       LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n-      T proxy \u003d RMProxy.\u003cT\u003egetProxy(conf, protocol, rmAddress);\n+      T proxy \u003d instance.getProxy(conf, protocol, rmAddress);\n       return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n      final Class\u003cT\u003e protocol, RMProxy\u003cT\u003e instance, RetryPolicy retryPolicy)\n          throws IOException{\n    if (HAUtil.isHAEnabled(conf)) {\n      RMFailoverProxyProvider\u003cT\u003e provider \u003d\n          instance.createRMFailoverProxyProvider(conf, protocol);\n      return (T) RetryProxy.create(protocol, provider, retryPolicy);\n    } else {\n      InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n      LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n      T proxy \u003d instance.getProxy(conf, protocol, rmAddress);\n      return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/RMProxy.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "618bfd6ac2a5b62d39e9bed80f75362bafc0ef28": {
+      "type": "Yrename",
+      "commitMessage": "YARN-4496. Improve HA ResourceManager Failover detection on the client.\nContributed by Jian He\n",
+      "commitDate": "22/01/16 6:20 PM",
+      "commitName": "618bfd6ac2a5b62d39e9bed80f75362bafc0ef28",
+      "commitAuthor": "Xuan",
+      "commitDateOld": "24/11/15 2:35 PM",
+      "commitNameOld": "4ac6799d4a8b071e0d367c2d709e84d8ea06942d",
+      "commitAuthorOld": "Jason Lowe",
+      "daysBetweenCommits": 59.16,
+      "commitsBetweenForRepo": 346,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,14 @@\n-  private static \u003cT\u003e T createRMProxy(final YarnConfiguration conf,\n+  private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n       final Class\u003cT\u003e protocol, RMProxy instance, RetryPolicy retryPolicy)\n           throws IOException{\n     if (HAUtil.isHAEnabled(conf)) {\n       RMFailoverProxyProvider\u003cT\u003e provider \u003d\n           instance.createRMFailoverProxyProvider(conf, protocol);\n       return (T) RetryProxy.create(protocol, provider, retryPolicy);\n     } else {\n       InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n       LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n       T proxy \u003d RMProxy.\u003cT\u003egetProxy(conf, protocol, rmAddress);\n       return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static \u003cT\u003e T newProxyInstance(final YarnConfiguration conf,\n      final Class\u003cT\u003e protocol, RMProxy instance, RetryPolicy retryPolicy)\n          throws IOException{\n    if (HAUtil.isHAEnabled(conf)) {\n      RMFailoverProxyProvider\u003cT\u003e provider \u003d\n          instance.createRMFailoverProxyProvider(conf, protocol);\n      return (T) RetryProxy.create(protocol, provider, retryPolicy);\n    } else {\n      InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n      LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n      T proxy \u003d RMProxy.\u003cT\u003egetProxy(conf, protocol, rmAddress);\n      return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/RMProxy.java",
+      "extendedDetails": {
+        "oldValue": "createRMProxy",
+        "newValue": "newProxyInstance"
+      }
+    },
+    "4ac6799d4a8b071e0d367c2d709e84d8ea06942d": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4132. Separate configs for nodemanager to resourcemanager connection timeout and retries. Contributed by Chang Li\n",
+      "commitDate": "24/11/15 2:35 PM",
+      "commitName": "4ac6799d4a8b071e0d367c2d709e84d8ea06942d",
+      "commitAuthor": "Jason Lowe",
+      "diff": "@@ -0,0 +1,14 @@\n+  private static \u003cT\u003e T createRMProxy(final YarnConfiguration conf,\n+      final Class\u003cT\u003e protocol, RMProxy instance, RetryPolicy retryPolicy)\n+          throws IOException{\n+    if (HAUtil.isHAEnabled(conf)) {\n+      RMFailoverProxyProvider\u003cT\u003e provider \u003d\n+          instance.createRMFailoverProxyProvider(conf, protocol);\n+      return (T) RetryProxy.create(protocol, provider, retryPolicy);\n+    } else {\n+      InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n+      LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n+      T proxy \u003d RMProxy.\u003cT\u003egetProxy(conf, protocol, rmAddress);\n+      return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static \u003cT\u003e T createRMProxy(final YarnConfiguration conf,\n      final Class\u003cT\u003e protocol, RMProxy instance, RetryPolicy retryPolicy)\n          throws IOException{\n    if (HAUtil.isHAEnabled(conf)) {\n      RMFailoverProxyProvider\u003cT\u003e provider \u003d\n          instance.createRMFailoverProxyProvider(conf, protocol);\n      return (T) RetryProxy.create(protocol, provider, retryPolicy);\n    } else {\n      InetSocketAddress rmAddress \u003d instance.getRMAddress(conf, protocol);\n      LOG.info(\"Connecting to ResourceManager at \" + rmAddress);\n      T proxy \u003d RMProxy.\u003cT\u003egetProxy(conf, protocol, rmAddress);\n      return (T) RetryProxy.create(protocol, proxy, retryPolicy);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/RMProxy.java"
+    }
+  }
+}

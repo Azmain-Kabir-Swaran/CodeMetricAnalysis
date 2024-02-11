@@ -1,0 +1,99 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PlanningAlgorithm.java",
+  "functionName": "allocationsToPaddedMap",
+  "functionId": "allocationsToPaddedMap___allocation-RLESparseResourceAllocation__jobArrival-long__jobDeadline-long__period-long",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/PlanningAlgorithm.java",
+  "functionStartLine": 115,
+  "functionEndLine": 155,
+  "numCommitsSeen": 15,
+  "timeTaken": 2675,
+  "changeHistory": [
+    "e6e614e380ed1d746973b50f666a9c40d272073e",
+    "742632e346604fd2b263bd42367165638fcf2416",
+    "156f24ead00436faad5d4aeef327a546392cd265"
+  ],
+  "changeHistoryShort": {
+    "e6e614e380ed1d746973b50f666a9c40d272073e": "Ymultichange(Yparameterchange,Ybodychange)",
+    "742632e346604fd2b263bd42367165638fcf2416": "Ybodychange",
+    "156f24ead00436faad5d4aeef327a546392cd265": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e6e614e380ed1d746973b50f666a9c40d272073e": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-5329. Placement Agent enhancements required to support recurring reservations in ReservationSystem. (Carlo Curino via Subru).\n",
+      "commitDate": "04/10/17 7:28 PM",
+      "commitName": "e6e614e380ed1d746973b50f666a9c40d272073e",
+      "commitAuthor": "Subru Krishnan",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-5329. Placement Agent enhancements required to support recurring reservations in ReservationSystem. (Carlo Curino via Subru).\n",
+          "commitDate": "04/10/17 7:28 PM",
+          "commitName": "e6e614e380ed1d746973b50f666a9c40d272073e",
+          "commitAuthor": "Subru Krishnan",
+          "commitDateOld": "06/09/17 4:46 PM",
+          "commitNameOld": "b6e7d1369690eaf50ce9ea7968f91a72ecb74de0",
+          "commitAuthorOld": "Subru Krishnan",
+          "daysBetweenCommits": 28.11,
+          "commitsBetweenForRepo": 262,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,27 +1,41 @@\n-      allocationsToPaddedMap(RLESparseResourceAllocation allocation,\n-          long jobArrival, long jobDeadline) {\n-\n-    // Allocate\n-    Map\u003cReservationInterval, Resource\u003e mapAllocations \u003d\n-        allocation.toIntervalMap();\n+  private Map\u003cReservationInterval, Resource\u003e allocationsToPaddedMap(\n+      RLESparseResourceAllocation allocation, long jobArrival, long jobDeadline,\n+      long period) {\n \n     // Zero allocation\n     Resource zeroResource \u003d Resource.newInstance(0, 0);\n \n-    // Pad at the beginning\n-    long earliestStart \u003d findEarliestTime(mapAllocations);\n-    if (jobArrival \u003c earliestStart) {\n-      mapAllocations.put(new ReservationInterval(jobArrival, earliestStart),\n-          zeroResource);\n+    if (period \u003e 0) {\n+      if ((jobDeadline - jobArrival) \u003e\u003d period) {\n+        allocation.addInterval(new ReservationInterval(0L, period),\n+            zeroResource);\n+      }\n+      jobArrival \u003d jobArrival % period;\n+      jobDeadline \u003d jobDeadline % period;\n+\n+      if (jobArrival \u003c\u003d jobDeadline) {\n+        allocation.addInterval(new ReservationInterval(0, jobArrival),\n+            zeroResource);\n+        allocation.addInterval(new ReservationInterval(jobDeadline, period),\n+            zeroResource);\n+      } else {\n+        allocation.addInterval(new ReservationInterval(jobDeadline, jobArrival),\n+            zeroResource);\n+      }\n+    } else {\n+      // Pad at the beginning\n+      long earliestStart \u003d findEarliestTime(allocation.toIntervalMap());\n+      if (jobArrival \u003c earliestStart) {\n+        allocation.addInterval(\n+            new ReservationInterval(jobArrival, earliestStart), zeroResource);\n+      }\n+\n+      // Pad at the beginning\n+      long latestEnd \u003d findLatestTime(allocation.toIntervalMap());\n+      if (latestEnd \u003c jobDeadline) {\n+        allocation.addInterval(new ReservationInterval(latestEnd, jobDeadline),\n+            zeroResource);\n+      }\n     }\n-\n-    // Pad at the beginning\n-    long latestEnd \u003d findLatestTime(mapAllocations);\n-    if (latestEnd \u003c jobDeadline) {\n-      mapAllocations.put(new ReservationInterval(latestEnd, jobDeadline),\n-          zeroResource);\n-    }\n-\n-    return mapAllocations;\n-\n+    return allocation.toIntervalMap();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Map\u003cReservationInterval, Resource\u003e allocationsToPaddedMap(\n      RLESparseResourceAllocation allocation, long jobArrival, long jobDeadline,\n      long period) {\n\n    // Zero allocation\n    Resource zeroResource \u003d Resource.newInstance(0, 0);\n\n    if (period \u003e 0) {\n      if ((jobDeadline - jobArrival) \u003e\u003d period) {\n        allocation.addInterval(new ReservationInterval(0L, period),\n            zeroResource);\n      }\n      jobArrival \u003d jobArrival % period;\n      jobDeadline \u003d jobDeadline % period;\n\n      if (jobArrival \u003c\u003d jobDeadline) {\n        allocation.addInterval(new ReservationInterval(0, jobArrival),\n            zeroResource);\n        allocation.addInterval(new ReservationInterval(jobDeadline, period),\n            zeroResource);\n      } else {\n        allocation.addInterval(new ReservationInterval(jobDeadline, jobArrival),\n            zeroResource);\n      }\n    } else {\n      // Pad at the beginning\n      long earliestStart \u003d findEarliestTime(allocation.toIntervalMap());\n      if (jobArrival \u003c earliestStart) {\n        allocation.addInterval(\n            new ReservationInterval(jobArrival, earliestStart), zeroResource);\n      }\n\n      // Pad at the beginning\n      long latestEnd \u003d findLatestTime(allocation.toIntervalMap());\n      if (latestEnd \u003c jobDeadline) {\n        allocation.addInterval(new ReservationInterval(latestEnd, jobDeadline),\n            zeroResource);\n      }\n    }\n    return allocation.toIntervalMap();\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/PlanningAlgorithm.java",
+          "extendedDetails": {
+            "oldValue": "[allocation-RLESparseResourceAllocation, jobArrival-long, jobDeadline-long]",
+            "newValue": "[allocation-RLESparseResourceAllocation, jobArrival-long, jobDeadline-long, period-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-5329. Placement Agent enhancements required to support recurring reservations in ReservationSystem. (Carlo Curino via Subru).\n",
+          "commitDate": "04/10/17 7:28 PM",
+          "commitName": "e6e614e380ed1d746973b50f666a9c40d272073e",
+          "commitAuthor": "Subru Krishnan",
+          "commitDateOld": "06/09/17 4:46 PM",
+          "commitNameOld": "b6e7d1369690eaf50ce9ea7968f91a72ecb74de0",
+          "commitAuthorOld": "Subru Krishnan",
+          "daysBetweenCommits": 28.11,
+          "commitsBetweenForRepo": 262,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,27 +1,41 @@\n-      allocationsToPaddedMap(RLESparseResourceAllocation allocation,\n-          long jobArrival, long jobDeadline) {\n-\n-    // Allocate\n-    Map\u003cReservationInterval, Resource\u003e mapAllocations \u003d\n-        allocation.toIntervalMap();\n+  private Map\u003cReservationInterval, Resource\u003e allocationsToPaddedMap(\n+      RLESparseResourceAllocation allocation, long jobArrival, long jobDeadline,\n+      long period) {\n \n     // Zero allocation\n     Resource zeroResource \u003d Resource.newInstance(0, 0);\n \n-    // Pad at the beginning\n-    long earliestStart \u003d findEarliestTime(mapAllocations);\n-    if (jobArrival \u003c earliestStart) {\n-      mapAllocations.put(new ReservationInterval(jobArrival, earliestStart),\n-          zeroResource);\n+    if (period \u003e 0) {\n+      if ((jobDeadline - jobArrival) \u003e\u003d period) {\n+        allocation.addInterval(new ReservationInterval(0L, period),\n+            zeroResource);\n+      }\n+      jobArrival \u003d jobArrival % period;\n+      jobDeadline \u003d jobDeadline % period;\n+\n+      if (jobArrival \u003c\u003d jobDeadline) {\n+        allocation.addInterval(new ReservationInterval(0, jobArrival),\n+            zeroResource);\n+        allocation.addInterval(new ReservationInterval(jobDeadline, period),\n+            zeroResource);\n+      } else {\n+        allocation.addInterval(new ReservationInterval(jobDeadline, jobArrival),\n+            zeroResource);\n+      }\n+    } else {\n+      // Pad at the beginning\n+      long earliestStart \u003d findEarliestTime(allocation.toIntervalMap());\n+      if (jobArrival \u003c earliestStart) {\n+        allocation.addInterval(\n+            new ReservationInterval(jobArrival, earliestStart), zeroResource);\n+      }\n+\n+      // Pad at the beginning\n+      long latestEnd \u003d findLatestTime(allocation.toIntervalMap());\n+      if (latestEnd \u003c jobDeadline) {\n+        allocation.addInterval(new ReservationInterval(latestEnd, jobDeadline),\n+            zeroResource);\n+      }\n     }\n-\n-    // Pad at the beginning\n-    long latestEnd \u003d findLatestTime(mapAllocations);\n-    if (latestEnd \u003c jobDeadline) {\n-      mapAllocations.put(new ReservationInterval(latestEnd, jobDeadline),\n-          zeroResource);\n-    }\n-\n-    return mapAllocations;\n-\n+    return allocation.toIntervalMap();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Map\u003cReservationInterval, Resource\u003e allocationsToPaddedMap(\n      RLESparseResourceAllocation allocation, long jobArrival, long jobDeadline,\n      long period) {\n\n    // Zero allocation\n    Resource zeroResource \u003d Resource.newInstance(0, 0);\n\n    if (period \u003e 0) {\n      if ((jobDeadline - jobArrival) \u003e\u003d period) {\n        allocation.addInterval(new ReservationInterval(0L, period),\n            zeroResource);\n      }\n      jobArrival \u003d jobArrival % period;\n      jobDeadline \u003d jobDeadline % period;\n\n      if (jobArrival \u003c\u003d jobDeadline) {\n        allocation.addInterval(new ReservationInterval(0, jobArrival),\n            zeroResource);\n        allocation.addInterval(new ReservationInterval(jobDeadline, period),\n            zeroResource);\n      } else {\n        allocation.addInterval(new ReservationInterval(jobDeadline, jobArrival),\n            zeroResource);\n      }\n    } else {\n      // Pad at the beginning\n      long earliestStart \u003d findEarliestTime(allocation.toIntervalMap());\n      if (jobArrival \u003c earliestStart) {\n        allocation.addInterval(\n            new ReservationInterval(jobArrival, earliestStart), zeroResource);\n      }\n\n      // Pad at the beginning\n      long latestEnd \u003d findLatestTime(allocation.toIntervalMap());\n      if (latestEnd \u003c jobDeadline) {\n        allocation.addInterval(new ReservationInterval(latestEnd, jobDeadline),\n            zeroResource);\n      }\n    }\n    return allocation.toIntervalMap();\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/PlanningAlgorithm.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "742632e346604fd2b263bd42367165638fcf2416": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4358. Reservation System: Improve relationship between SharingPolicy and ReservationAgent. (Carlo Curino via asuresh)\n",
+      "commitDate": "05/12/15 9:26 PM",
+      "commitName": "742632e346604fd2b263bd42367165638fcf2416",
+      "commitAuthor": "Arun Suresh",
+      "commitDateOld": "22/10/15 6:51 AM",
+      "commitNameOld": "2798723a5443d04455b9d79c48d61f435ab52267",
+      "commitAuthorOld": "Anubhav Dhoot",
+      "daysBetweenCommits": 44.65,
+      "commitsBetweenForRepo": 336,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,27 @@\n       allocationsToPaddedMap(RLESparseResourceAllocation allocation,\n           long jobArrival, long jobDeadline) {\n \n     // Allocate\n     Map\u003cReservationInterval, Resource\u003e mapAllocations \u003d\n         allocation.toIntervalMap();\n \n     // Zero allocation\n     Resource zeroResource \u003d Resource.newInstance(0, 0);\n \n     // Pad at the beginning\n-    long earliestStart \u003d findEarliestTime(mapAllocations.keySet());\n+    long earliestStart \u003d findEarliestTime(mapAllocations);\n     if (jobArrival \u003c earliestStart) {\n       mapAllocations.put(new ReservationInterval(jobArrival, earliestStart),\n           zeroResource);\n     }\n \n     // Pad at the beginning\n-    long latestEnd \u003d findLatestTime(mapAllocations.keySet());\n+    long latestEnd \u003d findLatestTime(mapAllocations);\n     if (latestEnd \u003c jobDeadline) {\n       mapAllocations.put(new ReservationInterval(latestEnd, jobDeadline),\n           zeroResource);\n     }\n \n     return mapAllocations;\n \n   }\n\\ No newline at end of file\n",
+      "actualSource": "      allocationsToPaddedMap(RLESparseResourceAllocation allocation,\n          long jobArrival, long jobDeadline) {\n\n    // Allocate\n    Map\u003cReservationInterval, Resource\u003e mapAllocations \u003d\n        allocation.toIntervalMap();\n\n    // Zero allocation\n    Resource zeroResource \u003d Resource.newInstance(0, 0);\n\n    // Pad at the beginning\n    long earliestStart \u003d findEarliestTime(mapAllocations);\n    if (jobArrival \u003c earliestStart) {\n      mapAllocations.put(new ReservationInterval(jobArrival, earliestStart),\n          zeroResource);\n    }\n\n    // Pad at the beginning\n    long latestEnd \u003d findLatestTime(mapAllocations);\n    if (latestEnd \u003c jobDeadline) {\n      mapAllocations.put(new ReservationInterval(latestEnd, jobDeadline),\n          zeroResource);\n    }\n\n    return mapAllocations;\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/PlanningAlgorithm.java",
+      "extendedDetails": {}
+    },
+    "156f24ead00436faad5d4aeef327a546392cd265": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3656. LowCost: A Cost-Based Placement Agent for YARN Reservations. (Jonathan Yaniv and Ishai Menache via curino)\n",
+      "commitDate": "25/07/15 7:39 AM",
+      "commitName": "156f24ead00436faad5d4aeef327a546392cd265",
+      "commitAuthor": "ccurino",
+      "diff": "@@ -0,0 +1,27 @@\n+      allocationsToPaddedMap(RLESparseResourceAllocation allocation,\n+          long jobArrival, long jobDeadline) {\n+\n+    // Allocate\n+    Map\u003cReservationInterval, Resource\u003e mapAllocations \u003d\n+        allocation.toIntervalMap();\n+\n+    // Zero allocation\n+    Resource zeroResource \u003d Resource.newInstance(0, 0);\n+\n+    // Pad at the beginning\n+    long earliestStart \u003d findEarliestTime(mapAllocations.keySet());\n+    if (jobArrival \u003c earliestStart) {\n+      mapAllocations.put(new ReservationInterval(jobArrival, earliestStart),\n+          zeroResource);\n+    }\n+\n+    // Pad at the beginning\n+    long latestEnd \u003d findLatestTime(mapAllocations.keySet());\n+    if (latestEnd \u003c jobDeadline) {\n+      mapAllocations.put(new ReservationInterval(latestEnd, jobDeadline),\n+          zeroResource);\n+    }\n+\n+    return mapAllocations;\n+\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "      allocationsToPaddedMap(RLESparseResourceAllocation allocation,\n          long jobArrival, long jobDeadline) {\n\n    // Allocate\n    Map\u003cReservationInterval, Resource\u003e mapAllocations \u003d\n        allocation.toIntervalMap();\n\n    // Zero allocation\n    Resource zeroResource \u003d Resource.newInstance(0, 0);\n\n    // Pad at the beginning\n    long earliestStart \u003d findEarliestTime(mapAllocations.keySet());\n    if (jobArrival \u003c earliestStart) {\n      mapAllocations.put(new ReservationInterval(jobArrival, earliestStart),\n          zeroResource);\n    }\n\n    // Pad at the beginning\n    long latestEnd \u003d findLatestTime(mapAllocations.keySet());\n    if (latestEnd \u003c jobDeadline) {\n      mapAllocations.put(new ReservationInterval(latestEnd, jobDeadline),\n          zeroResource);\n    }\n\n    return mapAllocations;\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/PlanningAlgorithm.java"
+    }
+  }
+}

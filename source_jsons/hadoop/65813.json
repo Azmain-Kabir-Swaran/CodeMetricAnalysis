@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DynamoDBMetadataStore.java",
+  "functionName": "retryBackoffOnBatchWrite",
+  "functionId": "retryBackoffOnBatchWrite___retryCount-int",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+  "functionStartLine": 1246,
+  "functionEndLine": 1281,
+  "numCommitsSeen": 55,
+  "timeTaken": 3568,
+  "changeHistory": [
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+    "a08812a1b10df059b26f6a216e6339490298ba28",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": "Ymultichange(Yrename,Ybodychange)",
+    "a08812a1b10df059b26f6a216e6339490298ba28": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Ybodychange",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": {
+      "type": "Ymultichange(Yrename,Ybodychange)",
+      "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+      "commitDate": "12/09/18 9:04 PM",
+      "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+          "commitDate": "12/09/18 9:04 PM",
+          "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "12/09/18 4:36 PM",
+          "commitNameOld": "d32a8d5d582725eb724b78f27310ad1efd33ed2a",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 0.19,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,36 @@\n-  private void retryBackoff(int retryCount) throws IOException {\n+  private void retryBackoffOnBatchWrite(int retryCount) throws IOException {\n     try {\n       // Our RetryPolicy ignores everything but retryCount here.\n-      RetryPolicy.RetryAction action \u003d dataAccessRetryPolicy.shouldRetry(null,\n+      RetryPolicy.RetryAction action \u003d batchWriteRetryPolicy.shouldRetry(\n+          null,\n           retryCount, 0, true);\n       if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n-        throw new IOException(\n-            String.format(\"Max retries exceeded (%d) for DynamoDB. This may be\"\n-                    + \" because write threshold of DynamoDB is set too low.\",\n-                retryCount));\n+        // Create an AWSServiceThrottledException, with a fake inner cause\n+        // which we fill in to look like a real exception so\n+        // error messages look sensible\n+        AmazonServiceException cause \u003d new AmazonServiceException(\n+            \"Throttling\");\n+        cause.setServiceName(\"S3Guard\");\n+        cause.setStatusCode(AWSServiceThrottledException.STATUS_CODE);\n+        cause.setErrorCode(THROTTLING);  // used in real AWS errors\n+        cause.setErrorType(AmazonServiceException.ErrorType.Service);\n+        cause.setErrorMessage(THROTTLING);\n+        cause.setRequestId(\"n/a\");\n+        throw new AWSServiceThrottledException(\n+            String.format(\"Max retries during batch write exceeded\"\n+                    + \" (%d) for DynamoDB.\"\n+                    + HINT_DDB_IOPS_TOO_LOW,\n+                retryCount),\n+            cause);\n       } else {\n         LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n         Thread.sleep(action.delayMillis);\n       }\n     } catch (InterruptedException e) {\n       throw (IOException)new InterruptedIOException(e.toString()).initCause(e);\n     } catch (IOException e) {\n       throw e;\n     } catch (Exception e) {\n-      throw new IOException(\"Unexpected exception\", e);\n+      throw new IOException(\"Unexpected exception \" + e, e);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void retryBackoffOnBatchWrite(int retryCount) throws IOException {\n    try {\n      // Our RetryPolicy ignores everything but retryCount here.\n      RetryPolicy.RetryAction action \u003d batchWriteRetryPolicy.shouldRetry(\n          null,\n          retryCount, 0, true);\n      if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n        // Create an AWSServiceThrottledException, with a fake inner cause\n        // which we fill in to look like a real exception so\n        // error messages look sensible\n        AmazonServiceException cause \u003d new AmazonServiceException(\n            \"Throttling\");\n        cause.setServiceName(\"S3Guard\");\n        cause.setStatusCode(AWSServiceThrottledException.STATUS_CODE);\n        cause.setErrorCode(THROTTLING);  // used in real AWS errors\n        cause.setErrorType(AmazonServiceException.ErrorType.Service);\n        cause.setErrorMessage(THROTTLING);\n        cause.setRequestId(\"n/a\");\n        throw new AWSServiceThrottledException(\n            String.format(\"Max retries during batch write exceeded\"\n                    + \" (%d) for DynamoDB.\"\n                    + HINT_DDB_IOPS_TOO_LOW,\n                retryCount),\n            cause);\n      } else {\n        LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n        Thread.sleep(action.delayMillis);\n      }\n    } catch (InterruptedException e) {\n      throw (IOException)new InterruptedIOException(e.toString()).initCause(e);\n    } catch (IOException e) {\n      throw e;\n    } catch (Exception e) {\n      throw new IOException(\"Unexpected exception \" + e, e);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "retryBackoff",
+            "newValue": "retryBackoffOnBatchWrite"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+          "commitDate": "12/09/18 9:04 PM",
+          "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "12/09/18 4:36 PM",
+          "commitNameOld": "d32a8d5d582725eb724b78f27310ad1efd33ed2a",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 0.19,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,36 @@\n-  private void retryBackoff(int retryCount) throws IOException {\n+  private void retryBackoffOnBatchWrite(int retryCount) throws IOException {\n     try {\n       // Our RetryPolicy ignores everything but retryCount here.\n-      RetryPolicy.RetryAction action \u003d dataAccessRetryPolicy.shouldRetry(null,\n+      RetryPolicy.RetryAction action \u003d batchWriteRetryPolicy.shouldRetry(\n+          null,\n           retryCount, 0, true);\n       if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n-        throw new IOException(\n-            String.format(\"Max retries exceeded (%d) for DynamoDB. This may be\"\n-                    + \" because write threshold of DynamoDB is set too low.\",\n-                retryCount));\n+        // Create an AWSServiceThrottledException, with a fake inner cause\n+        // which we fill in to look like a real exception so\n+        // error messages look sensible\n+        AmazonServiceException cause \u003d new AmazonServiceException(\n+            \"Throttling\");\n+        cause.setServiceName(\"S3Guard\");\n+        cause.setStatusCode(AWSServiceThrottledException.STATUS_CODE);\n+        cause.setErrorCode(THROTTLING);  // used in real AWS errors\n+        cause.setErrorType(AmazonServiceException.ErrorType.Service);\n+        cause.setErrorMessage(THROTTLING);\n+        cause.setRequestId(\"n/a\");\n+        throw new AWSServiceThrottledException(\n+            String.format(\"Max retries during batch write exceeded\"\n+                    + \" (%d) for DynamoDB.\"\n+                    + HINT_DDB_IOPS_TOO_LOW,\n+                retryCount),\n+            cause);\n       } else {\n         LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n         Thread.sleep(action.delayMillis);\n       }\n     } catch (InterruptedException e) {\n       throw (IOException)new InterruptedIOException(e.toString()).initCause(e);\n     } catch (IOException e) {\n       throw e;\n     } catch (Exception e) {\n-      throw new IOException(\"Unexpected exception\", e);\n+      throw new IOException(\"Unexpected exception \" + e, e);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void retryBackoffOnBatchWrite(int retryCount) throws IOException {\n    try {\n      // Our RetryPolicy ignores everything but retryCount here.\n      RetryPolicy.RetryAction action \u003d batchWriteRetryPolicy.shouldRetry(\n          null,\n          retryCount, 0, true);\n      if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n        // Create an AWSServiceThrottledException, with a fake inner cause\n        // which we fill in to look like a real exception so\n        // error messages look sensible\n        AmazonServiceException cause \u003d new AmazonServiceException(\n            \"Throttling\");\n        cause.setServiceName(\"S3Guard\");\n        cause.setStatusCode(AWSServiceThrottledException.STATUS_CODE);\n        cause.setErrorCode(THROTTLING);  // used in real AWS errors\n        cause.setErrorType(AmazonServiceException.ErrorType.Service);\n        cause.setErrorMessage(THROTTLING);\n        cause.setRequestId(\"n/a\");\n        throw new AWSServiceThrottledException(\n            String.format(\"Max retries during batch write exceeded\"\n                    + \" (%d) for DynamoDB.\"\n                    + HINT_DDB_IOPS_TOO_LOW,\n                retryCount),\n            cause);\n      } else {\n        LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n        Thread.sleep(action.delayMillis);\n      }\n    } catch (InterruptedException e) {\n      throw (IOException)new InterruptedIOException(e.toString()).initCause(e);\n    } catch (IOException e) {\n      throw e;\n    } catch (Exception e) {\n      throw new IOException(\"Unexpected exception \" + e, e);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "a08812a1b10df059b26f6a216e6339490298ba28": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15349. S3Guard DDB retryBackoff to be more informative on limits exceeded. Contributed by Gabor Bota.\n",
+      "commitDate": "12/07/18 8:24 AM",
+      "commitName": "a08812a1b10df059b26f6a216e6339490298ba28",
+      "commitAuthor": "Sean Mackrory",
+      "commitDateOld": "27/06/18 10:37 PM",
+      "commitNameOld": "2b2399d623539ab68e71a38fa9fbfc9a405bddb8",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 14.41,
+      "commitsBetweenForRepo": 90,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,22 @@\n   private void retryBackoff(int retryCount) throws IOException {\n     try {\n       // Our RetryPolicy ignores everything but retryCount here.\n       RetryPolicy.RetryAction action \u003d dataAccessRetryPolicy.shouldRetry(null,\n           retryCount, 0, true);\n       if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n         throw new IOException(\n-            String.format(\"Max retries exceeded (%d) for DynamoDB\",\n+            String.format(\"Max retries exceeded (%d) for DynamoDB. This may be\"\n+                    + \" because write threshold of DynamoDB is set too low.\",\n                 retryCount));\n       } else {\n         LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n         Thread.sleep(action.delayMillis);\n       }\n     } catch (InterruptedException e) {\n       throw (IOException)new InterruptedIOException(e.toString()).initCause(e);\n     } catch (IOException e) {\n       throw e;\n     } catch (Exception e) {\n       throw new IOException(\"Unexpected exception\", e);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void retryBackoff(int retryCount) throws IOException {\n    try {\n      // Our RetryPolicy ignores everything but retryCount here.\n      RetryPolicy.RetryAction action \u003d dataAccessRetryPolicy.shouldRetry(null,\n          retryCount, 0, true);\n      if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n        throw new IOException(\n            String.format(\"Max retries exceeded (%d) for DynamoDB. This may be\"\n                    + \" because write threshold of DynamoDB is set too low.\",\n                retryCount));\n      } else {\n        LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n        Thread.sleep(action.delayMillis);\n      }\n    } catch (InterruptedException e) {\n      throw (IOException)new InterruptedIOException(e.toString()).initCause(e);\n    } catch (IOException e) {\n      throw e;\n    } catch (Exception e) {\n      throw new IOException(\"Unexpected exception\", e);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "25/09/17 3:59 PM",
+      "commitNameOld": "47011d7dd300b0c74bb6cfe25b918c479d718f4f",
+      "commitAuthorOld": "Aaron Fabbri",
+      "daysBetweenCommits": 57.69,
+      "commitsBetweenForRepo": 477,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,21 @@\n   private void retryBackoff(int retryCount) throws IOException {\n     try {\n       // Our RetryPolicy ignores everything but retryCount here.\n       RetryPolicy.RetryAction action \u003d dataAccessRetryPolicy.shouldRetry(null,\n           retryCount, 0, true);\n       if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n         throw new IOException(\n             String.format(\"Max retries exceeded (%d) for DynamoDB\",\n                 retryCount));\n       } else {\n         LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n         Thread.sleep(action.delayMillis);\n       }\n+    } catch (InterruptedException e) {\n+      throw (IOException)new InterruptedIOException(e.toString()).initCause(e);\n+    } catch (IOException e) {\n+      throw e;\n     } catch (Exception e) {\n       throw new IOException(\"Unexpected exception\", e);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void retryBackoff(int retryCount) throws IOException {\n    try {\n      // Our RetryPolicy ignores everything but retryCount here.\n      RetryPolicy.RetryAction action \u003d dataAccessRetryPolicy.shouldRetry(null,\n          retryCount, 0, true);\n      if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n        throw new IOException(\n            String.format(\"Max retries exceeded (%d) for DynamoDB\",\n                retryCount));\n      } else {\n        LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n        Thread.sleep(action.delayMillis);\n      }\n    } catch (InterruptedException e) {\n      throw (IOException)new InterruptedIOException(e.toString()).initCause(e);\n    } catch (IOException e) {\n      throw e;\n    } catch (Exception e) {\n      throw new IOException(\"Unexpected exception\", e);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,17 @@\n+  private void retryBackoff(int retryCount) throws IOException {\n+    try {\n+      // Our RetryPolicy ignores everything but retryCount here.\n+      RetryPolicy.RetryAction action \u003d dataAccessRetryPolicy.shouldRetry(null,\n+          retryCount, 0, true);\n+      if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n+        throw new IOException(\n+            String.format(\"Max retries exceeded (%d) for DynamoDB\",\n+                retryCount));\n+      } else {\n+        LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n+        Thread.sleep(action.delayMillis);\n+      }\n+    } catch (Exception e) {\n+      throw new IOException(\"Unexpected exception\", e);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void retryBackoff(int retryCount) throws IOException {\n    try {\n      // Our RetryPolicy ignores everything but retryCount here.\n      RetryPolicy.RetryAction action \u003d dataAccessRetryPolicy.shouldRetry(null,\n          retryCount, 0, true);\n      if (action.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAIL) {\n        throw new IOException(\n            String.format(\"Max retries exceeded (%d) for DynamoDB\",\n                retryCount));\n      } else {\n        LOG.debug(\"Sleeping {} msec before next retry\", action.delayMillis);\n        Thread.sleep(action.delayMillis);\n      }\n    } catch (Exception e) {\n      throw new IOException(\"Unexpected exception\", e);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java"
+    }
+  }
+}

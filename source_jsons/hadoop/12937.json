@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AvailableSpaceBlockPlacementPolicy.java",
+  "functionName": "chooseLocalStorage",
+  "functionId": "chooseLocalStorage___localMachine-Node__excludedNodes-Set__Node____blocksize-long__maxNodesPerRack-int__results-List__DatanodeStorageInfo____avoidStaleNodes-boolean__storageTypes-EnumMap__StorageType,Integer____fallbackToLocalRack-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/AvailableSpaceBlockPlacementPolicy.java",
+  "functionStartLine": 97,
+  "functionEndLine": 146,
+  "numCommitsSeen": 7,
+  "timeTaken": 1336,
+  "changeHistory": [
+    "cebce0a348d60ded20eb4a55d1c26ee20017ed17"
+  ],
+  "changeHistoryShort": {
+    "cebce0a348d60ded20eb4a55d1c26ee20017ed17": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "cebce0a348d60ded20eb4a55d1c26ee20017ed17": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-14578. AvailableSpaceBlockPlacementPolicy always prefers local node. Contributed by Ayush Saxena.\n",
+      "commitDate": "10/01/20 8:59 PM",
+      "commitName": "cebce0a348d60ded20eb4a55d1c26ee20017ed17",
+      "commitAuthor": "Ayush Saxena",
+      "diff": "@@ -0,0 +1,50 @@\n+  protected DatanodeStorageInfo chooseLocalStorage(Node localMachine,\n+      Set\u003cNode\u003e excludedNodes, long blocksize, int maxNodesPerRack,\n+      List\u003cDatanodeStorageInfo\u003e results, boolean avoidStaleNodes,\n+      EnumMap\u003cStorageType, Integer\u003e storageTypes, boolean fallbackToLocalRack)\n+      throws NotEnoughReplicasException {\n+    if (!optimizeLocal) {\n+      return super.chooseLocalStorage(localMachine, excludedNodes, blocksize,\n+          maxNodesPerRack, results, avoidStaleNodes, storageTypes,\n+          fallbackToLocalRack);\n+    }\n+    final EnumMap\u003cStorageType, Integer\u003e initialStorageTypesLocal \u003d\n+        storageTypes.clone();\n+    final EnumMap\u003cStorageType, Integer\u003e initialStorageTypesLocalRack \u003d\n+        storageTypes.clone();\n+    DatanodeStorageInfo local \u003d\n+        chooseLocalStorage(localMachine, excludedNodes, blocksize,\n+            maxNodesPerRack, results, avoidStaleNodes,\n+            initialStorageTypesLocal);\n+    if (!fallbackToLocalRack) {\n+      return local;\n+    }\n+    if (local !\u003d null) {\n+      results.remove(local);\n+    }\n+    DatanodeStorageInfo localRack \u003d\n+        chooseLocalRack(localMachine, excludedNodes, blocksize, maxNodesPerRack,\n+            results, avoidStaleNodes, initialStorageTypesLocalRack);\n+    if (local !\u003d null \u0026\u0026 localRack !\u003d null) {\n+      if (select(local.getDatanodeDescriptor(),\n+          localRack.getDatanodeDescriptor(), true) \u003d\u003d local\n+          .getDatanodeDescriptor()) {\n+        results.remove(localRack);\n+        results.add(local);\n+        swapStorageTypes(initialStorageTypesLocal, storageTypes);\n+        excludedNodes.remove(localRack.getDatanodeDescriptor());\n+        return local;\n+      } else {\n+        swapStorageTypes(initialStorageTypesLocalRack, storageTypes);\n+        excludedNodes.remove(local.getDatanodeDescriptor());\n+        return localRack;\n+      }\n+    } else if (localRack \u003d\u003d null \u0026\u0026 local !\u003d null) {\n+      results.add(local);\n+      swapStorageTypes(initialStorageTypesLocal, storageTypes);\n+      return local;\n+    } else {\n+      swapStorageTypes(initialStorageTypesLocalRack, storageTypes);\n+      return localRack;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected DatanodeStorageInfo chooseLocalStorage(Node localMachine,\n      Set\u003cNode\u003e excludedNodes, long blocksize, int maxNodesPerRack,\n      List\u003cDatanodeStorageInfo\u003e results, boolean avoidStaleNodes,\n      EnumMap\u003cStorageType, Integer\u003e storageTypes, boolean fallbackToLocalRack)\n      throws NotEnoughReplicasException {\n    if (!optimizeLocal) {\n      return super.chooseLocalStorage(localMachine, excludedNodes, blocksize,\n          maxNodesPerRack, results, avoidStaleNodes, storageTypes,\n          fallbackToLocalRack);\n    }\n    final EnumMap\u003cStorageType, Integer\u003e initialStorageTypesLocal \u003d\n        storageTypes.clone();\n    final EnumMap\u003cStorageType, Integer\u003e initialStorageTypesLocalRack \u003d\n        storageTypes.clone();\n    DatanodeStorageInfo local \u003d\n        chooseLocalStorage(localMachine, excludedNodes, blocksize,\n            maxNodesPerRack, results, avoidStaleNodes,\n            initialStorageTypesLocal);\n    if (!fallbackToLocalRack) {\n      return local;\n    }\n    if (local !\u003d null) {\n      results.remove(local);\n    }\n    DatanodeStorageInfo localRack \u003d\n        chooseLocalRack(localMachine, excludedNodes, blocksize, maxNodesPerRack,\n            results, avoidStaleNodes, initialStorageTypesLocalRack);\n    if (local !\u003d null \u0026\u0026 localRack !\u003d null) {\n      if (select(local.getDatanodeDescriptor(),\n          localRack.getDatanodeDescriptor(), true) \u003d\u003d local\n          .getDatanodeDescriptor()) {\n        results.remove(localRack);\n        results.add(local);\n        swapStorageTypes(initialStorageTypesLocal, storageTypes);\n        excludedNodes.remove(localRack.getDatanodeDescriptor());\n        return local;\n      } else {\n        swapStorageTypes(initialStorageTypesLocalRack, storageTypes);\n        excludedNodes.remove(local.getDatanodeDescriptor());\n        return localRack;\n      }\n    } else if (localRack \u003d\u003d null \u0026\u0026 local !\u003d null) {\n      results.add(local);\n      swapStorageTypes(initialStorageTypesLocal, storageTypes);\n      return local;\n    } else {\n      swapStorageTypes(initialStorageTypesLocalRack, storageTypes);\n      return localRack;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/AvailableSpaceBlockPlacementPolicy.java"
+    }
+  }
+}

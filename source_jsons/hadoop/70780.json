@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockBlobAppendStream.java",
+  "functionName": "close",
+  "functionId": "close",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java",
+  "functionStartLine": 572,
+  "functionEndLine": 622,
+  "numCommitsSeen": 7,
+  "timeTaken": 1543,
+  "changeHistory": [
+    "13eda5000304099d1145631f9be13ce8a00b600d",
+    "6eba79232f36b36e0196163adc8fe4219a6b6bf9",
+    "8bc93db2e7c64830b6a662f28c8917a9eef4e7c9"
+  ],
+  "changeHistoryShort": {
+    "13eda5000304099d1145631f9be13ce8a00b600d": "Ybodychange",
+    "6eba79232f36b36e0196163adc8fe4219a6b6bf9": "Ybodychange",
+    "8bc93db2e7c64830b6a662f28c8917a9eef4e7c9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "13eda5000304099d1145631f9be13ce8a00b600d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14520. WASB: Block compaction for Azure Block Blobs.\nContributed by Georgi Chalakov\n",
+      "commitDate": "07/09/17 10:35 AM",
+      "commitName": "13eda5000304099d1145631f9be13ce8a00b600d",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "03/04/17 8:13 PM",
+      "commitNameOld": "6eba79232f36b36e0196163adc8fe4219a6b6bf9",
+      "commitAuthorOld": "Chris Douglas",
+      "daysBetweenCommits": 156.6,
+      "commitsBetweenForRepo": 957,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,48 +1,51 @@\n   public synchronized void close() throws IOException {\n \n-    if (!initialized) {\n-      throw new IOException(\"Trying to close an uninitialized Append stream\");\n-    }\n+    LOG.debug(\"close {} \", key);\n \n     if (closed) {\n       return;\n     }\n \n-    if (leaseFreed) {\n-      throw new IOException(String.format(\"Attempting to close an append stream on blob : %s \"\n-          + \" that does not have lease on the Blob. Failing close\", key));\n-    }\n+    // Upload the last block regardless of compactionEnabled flag\n+    flush();\n \n-    if (outBuffer.size() \u003e 0) {\n-      uploadBlockToStorage(outBuffer.toByteArray());\n-    }\n-\n+    // Initiates an orderly shutdown in which previously submitted tasks are\n+    // executed.\n     ioThreadPool.shutdown();\n \n     try {\n-      if (!ioThreadPool.awaitTermination(10, TimeUnit.MINUTES)) {\n-        LOG.error(\"Time out occurred while waiting for IO request to finish in append\"\n-            + \" for blob : {}\", key);\n+      // wait up to CLOSE_UPLOAD_DELAY minutes to upload all the blocks\n+      if (!ioThreadPool.awaitTermination(CLOSE_UPLOAD_DELAY, TimeUnit.MINUTES)) {\n+        LOG.error(\"Time out occurred while close() is waiting for IO request to\"\n+            + \" finish in append\"\n+            + \" for blob : {}\",\n+            key);\n         NativeAzureFileSystemHelper.logAllLiveStackTraces();\n-        throw new IOException(\"Timed out waiting for IO requests to finish\");\n+        throw new AzureException(\"Timed out waiting for IO requests to finish\");\n       }\n-    } catch(InterruptedException intrEx) {\n-\n-      // Restore the interrupted status\n+    } catch(InterruptedException ex) {\n       Thread.currentThread().interrupt();\n-      LOG.error(\"Upload block operation in append interrupted for blob {}. Failing close\", key);\n-      throw new IOException(\"Append Commit interrupted.\");\n     }\n \n-    // Calling commit after all blocks are succesfully uploaded.\n-    if (lastError \u003d\u003d null) {\n-      commitAppendBlocks();\n+    // release the lease\n+    if (firstError.get() \u003d\u003d null \u0026\u0026 blobExist) {\n+        try {\n+          lease.free();\n+        } catch (StorageException ex) {\n+          LOG.debug(\"Lease free update blob {} encountered Storage Exception:\"\n+              + \" {} Error Code : {}\",\n+              key,\n+              ex,\n+              ex.getErrorCode());\n+          maybeSetFirstError(new AzureException(ex));\n+        }\n     }\n \n-    // Perform cleanup.\n-    cleanup();\n+    closed \u003d true;\n \n-    if (lastError !\u003d null) {\n-      throw lastError;\n+    // finally, throw the first exception raised if it has not\n+    // been thrown elsewhere.\n+    if (firstError.get() !\u003d null \u0026\u0026 !firstErrorThrown) {\n+      throw firstError.get();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void close() throws IOException {\n\n    LOG.debug(\"close {} \", key);\n\n    if (closed) {\n      return;\n    }\n\n    // Upload the last block regardless of compactionEnabled flag\n    flush();\n\n    // Initiates an orderly shutdown in which previously submitted tasks are\n    // executed.\n    ioThreadPool.shutdown();\n\n    try {\n      // wait up to CLOSE_UPLOAD_DELAY minutes to upload all the blocks\n      if (!ioThreadPool.awaitTermination(CLOSE_UPLOAD_DELAY, TimeUnit.MINUTES)) {\n        LOG.error(\"Time out occurred while close() is waiting for IO request to\"\n            + \" finish in append\"\n            + \" for blob : {}\",\n            key);\n        NativeAzureFileSystemHelper.logAllLiveStackTraces();\n        throw new AzureException(\"Timed out waiting for IO requests to finish\");\n      }\n    } catch(InterruptedException ex) {\n      Thread.currentThread().interrupt();\n    }\n\n    // release the lease\n    if (firstError.get() \u003d\u003d null \u0026\u0026 blobExist) {\n        try {\n          lease.free();\n        } catch (StorageException ex) {\n          LOG.debug(\"Lease free update blob {} encountered Storage Exception:\"\n              + \" {} Error Code : {}\",\n              key,\n              ex,\n              ex.getErrorCode());\n          maybeSetFirstError(new AzureException(ex));\n        }\n    }\n\n    closed \u003d true;\n\n    // finally, throw the first exception raised if it has not\n    // been thrown elsewhere.\n    if (firstError.get() !\u003d null \u0026\u0026 !firstErrorThrown) {\n      throw firstError.get();\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java",
+      "extendedDetails": {}
+    },
+    "6eba79232f36b36e0196163adc8fe4219a6b6bf9": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14271. Correct spelling of \u0027occurred\u0027 and variants. Contributed by Yeliang Cang\n",
+      "commitDate": "03/04/17 8:13 PM",
+      "commitName": "6eba79232f36b36e0196163adc8fe4219a6b6bf9",
+      "commitAuthor": "Chris Douglas",
+      "commitDateOld": "27/10/16 4:09 PM",
+      "commitNameOld": "5877f20f9c3f6f0afa505715e9a2ee312475af17",
+      "commitAuthorOld": "Robert Kanter",
+      "daysBetweenCommits": 158.17,
+      "commitsBetweenForRepo": 914,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,48 +1,48 @@\n   public synchronized void close() throws IOException {\n \n     if (!initialized) {\n       throw new IOException(\"Trying to close an uninitialized Append stream\");\n     }\n \n     if (closed) {\n       return;\n     }\n \n     if (leaseFreed) {\n       throw new IOException(String.format(\"Attempting to close an append stream on blob : %s \"\n           + \" that does not have lease on the Blob. Failing close\", key));\n     }\n \n     if (outBuffer.size() \u003e 0) {\n       uploadBlockToStorage(outBuffer.toByteArray());\n     }\n \n     ioThreadPool.shutdown();\n \n     try {\n       if (!ioThreadPool.awaitTermination(10, TimeUnit.MINUTES)) {\n-        LOG.error(\"Time out occured while waiting for IO request to finish in append\"\n+        LOG.error(\"Time out occurred while waiting for IO request to finish in append\"\n             + \" for blob : {}\", key);\n         NativeAzureFileSystemHelper.logAllLiveStackTraces();\n         throw new IOException(\"Timed out waiting for IO requests to finish\");\n       }\n     } catch(InterruptedException intrEx) {\n \n       // Restore the interrupted status\n       Thread.currentThread().interrupt();\n       LOG.error(\"Upload block operation in append interrupted for blob {}. Failing close\", key);\n       throw new IOException(\"Append Commit interrupted.\");\n     }\n \n     // Calling commit after all blocks are succesfully uploaded.\n     if (lastError \u003d\u003d null) {\n       commitAppendBlocks();\n     }\n \n     // Perform cleanup.\n     cleanup();\n \n     if (lastError !\u003d null) {\n       throw lastError;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void close() throws IOException {\n\n    if (!initialized) {\n      throw new IOException(\"Trying to close an uninitialized Append stream\");\n    }\n\n    if (closed) {\n      return;\n    }\n\n    if (leaseFreed) {\n      throw new IOException(String.format(\"Attempting to close an append stream on blob : %s \"\n          + \" that does not have lease on the Blob. Failing close\", key));\n    }\n\n    if (outBuffer.size() \u003e 0) {\n      uploadBlockToStorage(outBuffer.toByteArray());\n    }\n\n    ioThreadPool.shutdown();\n\n    try {\n      if (!ioThreadPool.awaitTermination(10, TimeUnit.MINUTES)) {\n        LOG.error(\"Time out occurred while waiting for IO request to finish in append\"\n            + \" for blob : {}\", key);\n        NativeAzureFileSystemHelper.logAllLiveStackTraces();\n        throw new IOException(\"Timed out waiting for IO requests to finish\");\n      }\n    } catch(InterruptedException intrEx) {\n\n      // Restore the interrupted status\n      Thread.currentThread().interrupt();\n      LOG.error(\"Upload block operation in append interrupted for blob {}. Failing close\", key);\n      throw new IOException(\"Append Commit interrupted.\");\n    }\n\n    // Calling commit after all blocks are succesfully uploaded.\n    if (lastError \u003d\u003d null) {\n      commitAppendBlocks();\n    }\n\n    // Perform cleanup.\n    cleanup();\n\n    if (lastError !\u003d null) {\n      throw lastError;\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java",
+      "extendedDetails": {}
+    },
+    "8bc93db2e7c64830b6a662f28c8917a9eef4e7c9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12635. Adding Append API support for WASB. Contributed by Dushyanth.\n",
+      "commitDate": "18/01/16 9:08 AM",
+      "commitName": "8bc93db2e7c64830b6a662f28c8917a9eef4e7c9",
+      "commitAuthor": "cnauroth",
+      "diff": "@@ -0,0 +1,48 @@\n+  public synchronized void close() throws IOException {\n+\n+    if (!initialized) {\n+      throw new IOException(\"Trying to close an uninitialized Append stream\");\n+    }\n+\n+    if (closed) {\n+      return;\n+    }\n+\n+    if (leaseFreed) {\n+      throw new IOException(String.format(\"Attempting to close an append stream on blob : %s \"\n+          + \" that does not have lease on the Blob. Failing close\", key));\n+    }\n+\n+    if (outBuffer.size() \u003e 0) {\n+      uploadBlockToStorage(outBuffer.toByteArray());\n+    }\n+\n+    ioThreadPool.shutdown();\n+\n+    try {\n+      if (!ioThreadPool.awaitTermination(10, TimeUnit.MINUTES)) {\n+        LOG.error(\"Time out occured while waiting for IO request to finish in append\"\n+            + \" for blob : {}\", key);\n+        NativeAzureFileSystemHelper.logAllLiveStackTraces();\n+        throw new IOException(\"Timed out waiting for IO requests to finish\");\n+      }\n+    } catch(InterruptedException intrEx) {\n+\n+      // Restore the interrupted status\n+      Thread.currentThread().interrupt();\n+      LOG.error(\"Upload block operation in append interrupted for blob {}. Failing close\", key);\n+      throw new IOException(\"Append Commit interrupted.\");\n+    }\n+\n+    // Calling commit after all blocks are succesfully uploaded.\n+    if (lastError \u003d\u003d null) {\n+      commitAppendBlocks();\n+    }\n+\n+    // Perform cleanup.\n+    cleanup();\n+\n+    if (lastError !\u003d null) {\n+      throw lastError;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void close() throws IOException {\n\n    if (!initialized) {\n      throw new IOException(\"Trying to close an uninitialized Append stream\");\n    }\n\n    if (closed) {\n      return;\n    }\n\n    if (leaseFreed) {\n      throw new IOException(String.format(\"Attempting to close an append stream on blob : %s \"\n          + \" that does not have lease on the Blob. Failing close\", key));\n    }\n\n    if (outBuffer.size() \u003e 0) {\n      uploadBlockToStorage(outBuffer.toByteArray());\n    }\n\n    ioThreadPool.shutdown();\n\n    try {\n      if (!ioThreadPool.awaitTermination(10, TimeUnit.MINUTES)) {\n        LOG.error(\"Time out occured while waiting for IO request to finish in append\"\n            + \" for blob : {}\", key);\n        NativeAzureFileSystemHelper.logAllLiveStackTraces();\n        throw new IOException(\"Timed out waiting for IO requests to finish\");\n      }\n    } catch(InterruptedException intrEx) {\n\n      // Restore the interrupted status\n      Thread.currentThread().interrupt();\n      LOG.error(\"Upload block operation in append interrupted for blob {}. Failing close\", key);\n      throw new IOException(\"Append Commit interrupted.\");\n    }\n\n    // Calling commit after all blocks are succesfully uploaded.\n    if (lastError \u003d\u003d null) {\n      commitAppendBlocks();\n    }\n\n    // Perform cleanup.\n    cleanup();\n\n    if (lastError !\u003d null) {\n      throw lastError;\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java"
+    }
+  }
+}

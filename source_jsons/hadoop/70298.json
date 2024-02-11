@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NativeAzureFileSystem.java",
+  "functionName": "execute",
+  "functionId": "execute",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/NativeAzureFileSystem.java",
+  "functionStartLine": 438,
+  "functionEndLine": 468,
+  "numCommitsSeen": 66,
+  "timeTaken": 3166,
+  "changeHistory": [
+    "2ed58c40e5dcbf5c5303c00e85096085b1055f85",
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40"
+  ],
+  "changeHistoryShort": {
+    "2ed58c40e5dcbf5c5303c00e85096085b1055f85": "Ybodychange",
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2ed58c40e5dcbf5c5303c00e85096085b1055f85": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13403. AzureNativeFileSystem rename/delete performance improvements. Contributed by Subramanyam Pattipaka.\n",
+      "commitDate": "08/08/16 12:28 PM",
+      "commitName": "2ed58c40e5dcbf5c5303c00e85096085b1055f85",
+      "commitAuthor": "Chris Nauroth",
+      "commitDateOld": "08/04/16 1:36 PM",
+      "commitNameOld": "843ee8d59d8bacbca0d87ccf0790772e39d16138",
+      "commitAuthorOld": "Chris Nauroth",
+      "daysBetweenCommits": 121.95,
+      "commitsBetweenForRepo": 924,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,31 @@\n     public void execute() throws IOException {\n \n-      for (FileMetadata file : this.getFiles()) {\n-\n-        // Rename all materialized entries under the folder to point to the\n-        // final destination.\n-        if (file.getBlobMaterialization() \u003d\u003d BlobMaterialization.Explicit) {\n-          String srcName \u003d file.getKey();\n-          String suffix  \u003d srcName.substring((this.getSrcKey()).length());\n-          String dstName \u003d this.getDstKey() + suffix;\n-\n-          // Rename gets exclusive access (via a lease) for files\n-          // designated for atomic rename.\n-          // The main use case is for HBase write-ahead log (WAL) and data\n-          // folder processing correctness.  See the rename code for details.\n-          boolean acquireLease \u003d fs.getStoreInterface().isAtomicRenameKey(srcName);\n-          fs.getStoreInterface().rename(srcName, dstName, acquireLease, null);\n+      AzureFileSystemThreadTask task \u003d new AzureFileSystemThreadTask() {\n+        @Override\n+        public boolean execute(FileMetadata file) throws IOException{\n+          renameFile(file);\n+          return true;\n         }\n-      }\n+      };\n+\n+      AzureFileSystemThreadPoolExecutor executor \u003d this.fs.getThreadPoolExecutor(this.fs.renameThreadCount,\n+          \"AzureBlobRenameThread\", \"Rename\", getSrcKey(), AZURE_RENAME_THREADS);\n+\n+      executor.executeParallel(this.getFiles(), task);\n \n       // Rename the source folder 0-byte root file itself.\n       FileMetadata srcMetadata2 \u003d this.getSourceMetadata();\n       if (srcMetadata2.getBlobMaterialization() \u003d\u003d\n           BlobMaterialization.Explicit) {\n \n         // It already has a lease on it from the \"prepare\" phase so there\u0027s no\n         // need to get one now. Pass in existing lease to allow file delete.\n         fs.getStoreInterface().rename(this.getSrcKey(), this.getDstKey(),\n             false, folderLease);\n       }\n \n       // Update the last-modified time of the parent folders of both source and\n       // destination.\n       fs.updateParentFolderLastModifiedTime(srcKey);\n       fs.updateParentFolderLastModifiedTime(dstKey);\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void execute() throws IOException {\n\n      AzureFileSystemThreadTask task \u003d new AzureFileSystemThreadTask() {\n        @Override\n        public boolean execute(FileMetadata file) throws IOException{\n          renameFile(file);\n          return true;\n        }\n      };\n\n      AzureFileSystemThreadPoolExecutor executor \u003d this.fs.getThreadPoolExecutor(this.fs.renameThreadCount,\n          \"AzureBlobRenameThread\", \"Rename\", getSrcKey(), AZURE_RENAME_THREADS);\n\n      executor.executeParallel(this.getFiles(), task);\n\n      // Rename the source folder 0-byte root file itself.\n      FileMetadata srcMetadata2 \u003d this.getSourceMetadata();\n      if (srcMetadata2.getBlobMaterialization() \u003d\u003d\n          BlobMaterialization.Explicit) {\n\n        // It already has a lease on it from the \"prepare\" phase so there\u0027s no\n        // need to get one now. Pass in existing lease to allow file delete.\n        fs.getStoreInterface().rename(this.getSrcKey(), this.getDstKey(),\n            false, folderLease);\n      }\n\n      // Update the last-modified time of the parent folders of both source and\n      // destination.\n      fs.updateParentFolderLastModifiedTime(srcKey);\n      fs.updateParentFolderLastModifiedTime(dstKey);\n    }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/NativeAzureFileSystem.java",
+      "extendedDetails": {}
+    },
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10809. hadoop-azure: page blob support. Contributed by Dexter Bradshaw, Mostafa Elhemali, Eric Hanson, and Mike Liddell.\n",
+      "commitDate": "08/10/14 2:20 PM",
+      "commitName": "2217e2f8ff418b88eac6ad36cafe3a9795a11f40",
+      "commitAuthor": "cnauroth",
+      "diff": "@@ -0,0 +1,36 @@\n+    public void execute() throws IOException {\n+\n+      for (FileMetadata file : this.getFiles()) {\n+\n+        // Rename all materialized entries under the folder to point to the\n+        // final destination.\n+        if (file.getBlobMaterialization() \u003d\u003d BlobMaterialization.Explicit) {\n+          String srcName \u003d file.getKey();\n+          String suffix  \u003d srcName.substring((this.getSrcKey()).length());\n+          String dstName \u003d this.getDstKey() + suffix;\n+\n+          // Rename gets exclusive access (via a lease) for files\n+          // designated for atomic rename.\n+          // The main use case is for HBase write-ahead log (WAL) and data\n+          // folder processing correctness.  See the rename code for details.\n+          boolean acquireLease \u003d fs.getStoreInterface().isAtomicRenameKey(srcName);\n+          fs.getStoreInterface().rename(srcName, dstName, acquireLease, null);\n+        }\n+      }\n+\n+      // Rename the source folder 0-byte root file itself.\n+      FileMetadata srcMetadata2 \u003d this.getSourceMetadata();\n+      if (srcMetadata2.getBlobMaterialization() \u003d\u003d\n+          BlobMaterialization.Explicit) {\n+\n+        // It already has a lease on it from the \"prepare\" phase so there\u0027s no\n+        // need to get one now. Pass in existing lease to allow file delete.\n+        fs.getStoreInterface().rename(this.getSrcKey(), this.getDstKey(),\n+            false, folderLease);\n+      }\n+\n+      // Update the last-modified time of the parent folders of both source and\n+      // destination.\n+      fs.updateParentFolderLastModifiedTime(srcKey);\n+      fs.updateParentFolderLastModifiedTime(dstKey);\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void execute() throws IOException {\n\n      for (FileMetadata file : this.getFiles()) {\n\n        // Rename all materialized entries under the folder to point to the\n        // final destination.\n        if (file.getBlobMaterialization() \u003d\u003d BlobMaterialization.Explicit) {\n          String srcName \u003d file.getKey();\n          String suffix  \u003d srcName.substring((this.getSrcKey()).length());\n          String dstName \u003d this.getDstKey() + suffix;\n\n          // Rename gets exclusive access (via a lease) for files\n          // designated for atomic rename.\n          // The main use case is for HBase write-ahead log (WAL) and data\n          // folder processing correctness.  See the rename code for details.\n          boolean acquireLease \u003d fs.getStoreInterface().isAtomicRenameKey(srcName);\n          fs.getStoreInterface().rename(srcName, dstName, acquireLease, null);\n        }\n      }\n\n      // Rename the source folder 0-byte root file itself.\n      FileMetadata srcMetadata2 \u003d this.getSourceMetadata();\n      if (srcMetadata2.getBlobMaterialization() \u003d\u003d\n          BlobMaterialization.Explicit) {\n\n        // It already has a lease on it from the \"prepare\" phase so there\u0027s no\n        // need to get one now. Pass in existing lease to allow file delete.\n        fs.getStoreInterface().rename(this.getSrcKey(), this.getDstKey(),\n            false, folderLease);\n      }\n\n      // Update the last-modified time of the parent folders of both source and\n      // destination.\n      fs.updateParentFolderLastModifiedTime(srcKey);\n      fs.updateParentFolderLastModifiedTime(dstKey);\n    }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/NativeAzureFileSystem.java"
+    }
+  }
+}

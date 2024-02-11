@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSAppAttempt.java",
+  "functionName": "getStarvedResourceRequests",
+  "functionId": "getStarvedResourceRequests",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSAppAttempt.java",
+  "functionStartLine": 1216,
+  "functionEndLine": 1261,
+  "numCommitsSeen": 76,
+  "timeTaken": 1523,
+  "changeHistory": [
+    "6c25dbcdc0517a825b92fb16444aa1d3761e160c"
+  ],
+  "changeHistoryShort": {
+    "6c25dbcdc0517a825b92fb16444aa1d3761e160c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6c25dbcdc0517a825b92fb16444aa1d3761e160c": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6163. FS Preemption is a trickle for severely starved applications. (kasha)\n",
+      "commitDate": "15/02/17 11:16 PM",
+      "commitName": "6c25dbcdc0517a825b92fb16444aa1d3761e160c",
+      "commitAuthor": "Karthik Kambatla",
+      "diff": "@@ -0,0 +1,46 @@\n+  List\u003cResourceRequest\u003e getStarvedResourceRequests() {\n+    // List of RRs we build in this method to return\n+    List\u003cResourceRequest\u003e ret \u003d new ArrayList\u003c\u003e();\n+\n+    // Track visited RRs to avoid the same RR at multiple locality levels\n+    VisitedResourceRequestTracker visitedRRs \u003d\n+        new VisitedResourceRequestTracker(scheduler.getNodeTracker());\n+\n+    // Start with current starvation and track the pending amount\n+    Resource pending \u003d getStarvation();\n+    for (ResourceRequest rr : appSchedulingInfo.getAllResourceRequests()) {\n+      if (Resources.isNone(pending)) {\n+        // Found enough RRs to match the starvation\n+        break;\n+      }\n+\n+      // See if we have already seen this RR\n+      if (!visitedRRs.visit(rr)) {\n+        continue;\n+      }\n+\n+      // A RR can have multiple containers of a capability. We need to\n+      // compute the number of containers that fit in \"pending\".\n+      int numContainersThatFit \u003d (int) Math.floor(\n+          Resources.ratio(scheduler.getResourceCalculator(),\n+              pending, rr.getCapability()));\n+      if (numContainersThatFit \u003d\u003d 0) {\n+        // This RR\u0027s capability is too large to fit in pending\n+        continue;\n+      }\n+\n+      // If the RR is only partially being satisfied, include only the\n+      // partial number of containers.\n+      if (numContainersThatFit \u003c rr.getNumContainers()) {\n+        rr \u003d ResourceRequest.newInstance(rr.getPriority(),\n+            rr.getResourceName(), rr.getCapability(), numContainersThatFit);\n+      }\n+\n+      // Add the RR to return list and adjust \"pending\" accordingly\n+      ret.add(rr);\n+      Resources.subtractFromNonNegative(pending,\n+          Resources.multiply(rr.getCapability(), rr.getNumContainers()));\n+    }\n+\n+    return ret;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  List\u003cResourceRequest\u003e getStarvedResourceRequests() {\n    // List of RRs we build in this method to return\n    List\u003cResourceRequest\u003e ret \u003d new ArrayList\u003c\u003e();\n\n    // Track visited RRs to avoid the same RR at multiple locality levels\n    VisitedResourceRequestTracker visitedRRs \u003d\n        new VisitedResourceRequestTracker(scheduler.getNodeTracker());\n\n    // Start with current starvation and track the pending amount\n    Resource pending \u003d getStarvation();\n    for (ResourceRequest rr : appSchedulingInfo.getAllResourceRequests()) {\n      if (Resources.isNone(pending)) {\n        // Found enough RRs to match the starvation\n        break;\n      }\n\n      // See if we have already seen this RR\n      if (!visitedRRs.visit(rr)) {\n        continue;\n      }\n\n      // A RR can have multiple containers of a capability. We need to\n      // compute the number of containers that fit in \"pending\".\n      int numContainersThatFit \u003d (int) Math.floor(\n          Resources.ratio(scheduler.getResourceCalculator(),\n              pending, rr.getCapability()));\n      if (numContainersThatFit \u003d\u003d 0) {\n        // This RR\u0027s capability is too large to fit in pending\n        continue;\n      }\n\n      // If the RR is only partially being satisfied, include only the\n      // partial number of containers.\n      if (numContainersThatFit \u003c rr.getNumContainers()) {\n        rr \u003d ResourceRequest.newInstance(rr.getPriority(),\n            rr.getResourceName(), rr.getCapability(), numContainersThatFit);\n      }\n\n      // Add the RR to return list and adjust \"pending\" accordingly\n      ret.add(rr);\n      Resources.subtractFromNonNegative(pending,\n          Resources.multiply(rr.getCapability(), rr.getNumContainers()));\n    }\n\n    return ret;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSAppAttempt.java"
+    }
+  }
+}

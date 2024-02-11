@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AdlFileSystem.java",
+  "functionName": "toFileStatus",
+  "functionId": "toFileStatus___entry-DirectoryEntry(modifiers-final)__f-Path(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java",
+  "functionStartLine": 656,
+  "functionEndLine": 663,
+  "numCommitsSeen": 19,
+  "timeTaken": 2046,
+  "changeHistory": [
+    "55a181f845adcdcc9b008e9906ade1544fc220e4",
+    "f4329990250bed62efdebe3ce2bc740092cf9573",
+    "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417"
+  ],
+  "changeHistoryShort": {
+    "55a181f845adcdcc9b008e9906ade1544fc220e4": "Ybodychange",
+    "f4329990250bed62efdebe3ce2bc740092cf9573": "Ybodychange",
+    "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "55a181f845adcdcc9b008e9906ade1544fc220e4": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14730. Support protobuf FileStatus in AdlFileSystem.\n",
+      "commitDate": "07/08/17 9:31 PM",
+      "commitName": "55a181f845adcdcc9b008e9906ade1544fc220e4",
+      "commitAuthor": "Chris Douglas",
+      "commitDateOld": "28/07/17 9:46 AM",
+      "commitNameOld": "f735ad1b67ed82d9b11b1afd7ae39035a6aed18b",
+      "commitAuthorOld": "John Zhuge",
+      "daysBetweenCommits": 10.49,
+      "commitsBetweenForRepo": 120,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,8 @@\n   private FileStatus toFileStatus(final DirectoryEntry entry, final Path f) {\n-    boolean isDirectory \u003d entry.type \u003d\u003d DirectoryEntryType.DIRECTORY;\n-    long lastModificationData \u003d entry.lastModifiedTime.getTime();\n-    long lastAccessTime \u003d entry.lastAccessTime.getTime();\n-    // set aclBit from ADLS backend response if\n-    // ADL_SUPPORT_ACL_BIT_IN_FSPERMISSION is true.\n-    final boolean aclBit \u003d aclBitStatus ? entry.aclBit : false;\n-\n-    FsPermission permission \u003d new AdlPermission(aclBit,\n-        Short.valueOf(entry.permission, 8));\n-    String user \u003d entry.user;\n-    String group \u003d entry.group;\n-\n-    FileStatus status;\n+    Path p \u003d makeQualified(f);\n+    boolean aclBit \u003d aclBitStatus ? entry.aclBit : false;\n     if (overrideOwner) {\n-      status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n-          ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n-          userName, \"hdfs\", this.makeQualified(f));\n-    } else {\n-      status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n-          ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n-          user, group, this.makeQualified(f));\n+      return new AdlFileStatus(entry, p, userName, \"hdfs\", aclBit);\n     }\n-\n-    return status;\n+    return new AdlFileStatus(entry, p, aclBit);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private FileStatus toFileStatus(final DirectoryEntry entry, final Path f) {\n    Path p \u003d makeQualified(f);\n    boolean aclBit \u003d aclBitStatus ? entry.aclBit : false;\n    if (overrideOwner) {\n      return new AdlFileStatus(entry, p, userName, \"hdfs\", aclBit);\n    }\n    return new AdlFileStatus(entry, p, aclBit);\n  }",
+      "path": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java",
+      "extendedDetails": {}
+    },
+    "f4329990250bed62efdebe3ce2bc740092cf9573": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14049. Honour AclBit flag associated to file/folder permission for Azure datalake account. Contributed by Vishwajeet Dusane\n",
+      "commitDate": "16/02/17 3:14 PM",
+      "commitName": "f4329990250bed62efdebe3ce2bc740092cf9573",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "13/02/17 1:33 PM",
+      "commitNameOld": "71c23c9fc94cfdf58de80effbc3f51c0925d0cfe",
+      "commitAuthorOld": "Lei Xu",
+      "daysBetweenCommits": 3.07,
+      "commitsBetweenForRepo": 32,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,26 @@\n   private FileStatus toFileStatus(final DirectoryEntry entry, final Path f) {\n     boolean isDirectory \u003d entry.type \u003d\u003d DirectoryEntryType.DIRECTORY;\n     long lastModificationData \u003d entry.lastModifiedTime.getTime();\n     long lastAccessTime \u003d entry.lastAccessTime.getTime();\n-    FsPermission permission \u003d new AdlPermission(aclBitStatus,\n+    // set aclBit from ADLS backend response if\n+    // ADL_SUPPORT_ACL_BIT_IN_FSPERMISSION is true.\n+    final boolean aclBit \u003d aclBitStatus ? entry.aclBit : false;\n+\n+    FsPermission permission \u003d new AdlPermission(aclBit,\n         Short.valueOf(entry.permission, 8));\n     String user \u003d entry.user;\n     String group \u003d entry.group;\n \n     FileStatus status;\n     if (overrideOwner) {\n       status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n           ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n           userName, \"hdfs\", this.makeQualified(f));\n     } else {\n       status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n           ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n           user, group, this.makeQualified(f));\n     }\n \n     return status;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private FileStatus toFileStatus(final DirectoryEntry entry, final Path f) {\n    boolean isDirectory \u003d entry.type \u003d\u003d DirectoryEntryType.DIRECTORY;\n    long lastModificationData \u003d entry.lastModifiedTime.getTime();\n    long lastAccessTime \u003d entry.lastAccessTime.getTime();\n    // set aclBit from ADLS backend response if\n    // ADL_SUPPORT_ACL_BIT_IN_FSPERMISSION is true.\n    final boolean aclBit \u003d aclBitStatus ? entry.aclBit : false;\n\n    FsPermission permission \u003d new AdlPermission(aclBit,\n        Short.valueOf(entry.permission, 8));\n    String user \u003d entry.user;\n    String group \u003d entry.group;\n\n    FileStatus status;\n    if (overrideOwner) {\n      status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n          ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n          userName, \"hdfs\", this.makeQualified(f));\n    } else {\n      status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n          ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n          user, group, this.makeQualified(f));\n    }\n\n    return status;\n  }",
+      "path": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java",
+      "extendedDetails": {}
+    },
+    "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13037. Refactor Azure Data Lake Store as an independent FileSystem. Contributed by Vishwajeet Dusane\n",
+      "commitDate": "11/11/16 11:15 AM",
+      "commitName": "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417",
+      "commitAuthor": "Chris Douglas",
+      "diff": "@@ -0,0 +1,22 @@\n+  private FileStatus toFileStatus(final DirectoryEntry entry, final Path f) {\n+    boolean isDirectory \u003d entry.type \u003d\u003d DirectoryEntryType.DIRECTORY;\n+    long lastModificationData \u003d entry.lastModifiedTime.getTime();\n+    long lastAccessTime \u003d entry.lastAccessTime.getTime();\n+    FsPermission permission \u003d new AdlPermission(aclBitStatus,\n+        Short.valueOf(entry.permission, 8));\n+    String user \u003d entry.user;\n+    String group \u003d entry.group;\n+\n+    FileStatus status;\n+    if (overrideOwner) {\n+      status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n+          ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n+          userName, \"hdfs\", this.makeQualified(f));\n+    } else {\n+      status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n+          ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n+          user, group, this.makeQualified(f));\n+    }\n+\n+    return status;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private FileStatus toFileStatus(final DirectoryEntry entry, final Path f) {\n    boolean isDirectory \u003d entry.type \u003d\u003d DirectoryEntryType.DIRECTORY;\n    long lastModificationData \u003d entry.lastModifiedTime.getTime();\n    long lastAccessTime \u003d entry.lastAccessTime.getTime();\n    FsPermission permission \u003d new AdlPermission(aclBitStatus,\n        Short.valueOf(entry.permission, 8));\n    String user \u003d entry.user;\n    String group \u003d entry.group;\n\n    FileStatus status;\n    if (overrideOwner) {\n      status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n          ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n          userName, \"hdfs\", this.makeQualified(f));\n    } else {\n      status \u003d new FileStatus(entry.length, isDirectory, ADL_REPLICATION_FACTOR,\n          ADL_BLOCK_SIZE, lastModificationData, lastAccessTime, permission,\n          user, group, this.makeQualified(f));\n    }\n\n    return status;\n  }",
+      "path": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java"
+    }
+  }
+}

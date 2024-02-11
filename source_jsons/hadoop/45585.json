@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LogCLIHelpers.java",
+  "functionName": "printContainersList",
+  "functionId": "printContainersList___options-ContainerLogsRequest__out-PrintStream__err-PrintStream",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/LogCLIHelpers.java",
+  "functionStartLine": 345,
+  "functionEndLine": 373,
+  "numCommitsSeen": 30,
+  "timeTaken": 1441,
+  "changeHistory": [
+    "91cc070d67533ebb3325b982eba2135e0d175a82",
+    "eb471632349deac4b62f8dec853c8ceb64c9617a"
+  ],
+  "changeHistoryShort": {
+    "91cc070d67533ebb3325b982eba2135e0d175a82": "Ybodychange",
+    "eb471632349deac4b62f8dec853c8ceb64c9617a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "91cc070d67533ebb3325b982eba2135e0d175a82": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6877. Create an abstract log reader for extendability. Contributed by Xuan Gong.\n",
+      "commitDate": "31/08/17 4:41 PM",
+      "commitName": "91cc070d67533ebb3325b982eba2135e0d175a82",
+      "commitAuthor": "Junping Du",
+      "commitDateOld": "14/03/17 12:58 PM",
+      "commitNameOld": "871dc420f8a4f151189c0925e062c64859a8f275",
+      "commitAuthorOld": "Junping Du",
+      "daysBetweenCommits": 170.16,
+      "commitsBetweenForRepo": 1032,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,52 +1,29 @@\n   public void printContainersList(ContainerLogsRequest options,\n       PrintStream out, PrintStream err) throws IOException {\n     ApplicationId appId \u003d options.getAppId();\n-    String appOwner \u003d options.getAppOwner();\n     String nodeId \u003d options.getNodeId();\n-    String nodeIdStr \u003d (nodeId \u003d\u003d null) ? null\n-        : LogAggregationUtils.getNodeString(nodeId);\n-    RemoteIterator\u003cFileStatus\u003e nodeFiles \u003d getRemoteNodeFileDir(\n-        appId, appOwner);\n-    if (nodeFiles \u003d\u003d null) {\n-      return;\n-    }\n     boolean foundAnyLogs \u003d false;\n-    while (nodeFiles.hasNext()) {\n-      FileStatus thisNodeFile \u003d nodeFiles.next();\n-      if (nodeIdStr !\u003d null) {\n-        if (!thisNodeFile.getPath().getName().contains(nodeIdStr)) {\n-          continue;\n-        }\n-      }\n-      if (!thisNodeFile.getPath().getName()\n-          .endsWith(LogAggregationUtils.TMP_FILE_SUFFIX)) {\n-        AggregatedLogFormat.LogReader reader \u003d\n-            new AggregatedLogFormat.LogReader(getConf(),\n-            thisNodeFile.getPath());\n-        try {\n-          DataInputStream valueStream;\n-          LogKey key \u003d new LogKey();\n-          valueStream \u003d reader.next(key);\n-          while (valueStream !\u003d null) {\n-            out.println(String.format(CONTAINER_ON_NODE_PATTERN, key,\n-                thisNodeFile.getPath().getName()));\n-            foundAnyLogs \u003d true;\n-            // Next container\n-            key \u003d new LogKey();\n-            valueStream \u003d reader.next(key);\n-          }\n-        } finally {\n-          reader.close();\n-        }\n-      }\n+    List\u003cContainerLogMeta\u003e containersLogMeta \u003d new ArrayList\u003c\u003e();\n+    try {\n+      containersLogMeta \u003d getFileController(options.getAppId(),\n+          options.getAppOwner()).readAggregatedLogsMeta(\n+          options);\n+    } catch (Exception ex) {\n+      err.println(ex.getMessage());\n+    }\n+    for(ContainerLogMeta logMeta : containersLogMeta) {\n+      out.println(String.format(CONTAINER_ON_NODE_PATTERN,\n+          logMeta.getContainerId(),\n+          logMeta.getNodeId()));\n+      foundAnyLogs \u003d true;\n     }\n     if (!foundAnyLogs) {\n       if (nodeId !\u003d null) {\n         err.println(\"Can not find information for any containers on \"\n             + nodeId);\n       } else {\n         err.println(\"Can not find any container information for \"\n             + \"the application: \" + appId);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void printContainersList(ContainerLogsRequest options,\n      PrintStream out, PrintStream err) throws IOException {\n    ApplicationId appId \u003d options.getAppId();\n    String nodeId \u003d options.getNodeId();\n    boolean foundAnyLogs \u003d false;\n    List\u003cContainerLogMeta\u003e containersLogMeta \u003d new ArrayList\u003c\u003e();\n    try {\n      containersLogMeta \u003d getFileController(options.getAppId(),\n          options.getAppOwner()).readAggregatedLogsMeta(\n          options);\n    } catch (Exception ex) {\n      err.println(ex.getMessage());\n    }\n    for(ContainerLogMeta logMeta : containersLogMeta) {\n      out.println(String.format(CONTAINER_ON_NODE_PATTERN,\n          logMeta.getContainerId(),\n          logMeta.getNodeId()));\n      foundAnyLogs \u003d true;\n    }\n    if (!foundAnyLogs) {\n      if (nodeId !\u003d null) {\n        err.println(\"Can not find information for any containers on \"\n            + nodeId);\n      } else {\n        err.println(\"Can not find any container information for \"\n            + \"the application: \" + appId);\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/LogCLIHelpers.java",
+      "extendedDetails": {}
+    },
+    "eb471632349deac4b62f8dec853c8ceb64c9617a": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5200. Enhanced \"yarn logs\" to be able to get a list of containers whose logs are aggregated via a \"show_container_log_info\" option. Contributed by Xuan Gong.\n",
+      "commitDate": "13/07/16 10:54 AM",
+      "commitName": "eb471632349deac4b62f8dec853c8ceb64c9617a",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,52 @@\n+  public void printContainersList(ContainerLogsRequest options,\n+      PrintStream out, PrintStream err) throws IOException {\n+    ApplicationId appId \u003d options.getAppId();\n+    String appOwner \u003d options.getAppOwner();\n+    String nodeId \u003d options.getNodeId();\n+    String nodeIdStr \u003d (nodeId \u003d\u003d null) ? null\n+        : LogAggregationUtils.getNodeString(nodeId);\n+    RemoteIterator\u003cFileStatus\u003e nodeFiles \u003d getRemoteNodeFileDir(\n+        appId, appOwner);\n+    if (nodeFiles \u003d\u003d null) {\n+      return;\n+    }\n+    boolean foundAnyLogs \u003d false;\n+    while (nodeFiles.hasNext()) {\n+      FileStatus thisNodeFile \u003d nodeFiles.next();\n+      if (nodeIdStr !\u003d null) {\n+        if (!thisNodeFile.getPath().getName().contains(nodeIdStr)) {\n+          continue;\n+        }\n+      }\n+      if (!thisNodeFile.getPath().getName()\n+          .endsWith(LogAggregationUtils.TMP_FILE_SUFFIX)) {\n+        AggregatedLogFormat.LogReader reader \u003d\n+            new AggregatedLogFormat.LogReader(getConf(),\n+            thisNodeFile.getPath());\n+        try {\n+          DataInputStream valueStream;\n+          LogKey key \u003d new LogKey();\n+          valueStream \u003d reader.next(key);\n+          while (valueStream !\u003d null) {\n+            out.println(String.format(CONTAINER_ON_NODE_PATTERN, key,\n+                thisNodeFile.getPath().getName()));\n+            foundAnyLogs \u003d true;\n+            // Next container\n+            key \u003d new LogKey();\n+            valueStream \u003d reader.next(key);\n+          }\n+        } finally {\n+          reader.close();\n+        }\n+      }\n+    }\n+    if (!foundAnyLogs) {\n+      if (nodeId !\u003d null) {\n+        err.println(\"Can not find information for any containers on \"\n+            + nodeId);\n+      } else {\n+        err.println(\"Can not find any container information for \"\n+            + \"the application: \" + appId);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void printContainersList(ContainerLogsRequest options,\n      PrintStream out, PrintStream err) throws IOException {\n    ApplicationId appId \u003d options.getAppId();\n    String appOwner \u003d options.getAppOwner();\n    String nodeId \u003d options.getNodeId();\n    String nodeIdStr \u003d (nodeId \u003d\u003d null) ? null\n        : LogAggregationUtils.getNodeString(nodeId);\n    RemoteIterator\u003cFileStatus\u003e nodeFiles \u003d getRemoteNodeFileDir(\n        appId, appOwner);\n    if (nodeFiles \u003d\u003d null) {\n      return;\n    }\n    boolean foundAnyLogs \u003d false;\n    while (nodeFiles.hasNext()) {\n      FileStatus thisNodeFile \u003d nodeFiles.next();\n      if (nodeIdStr !\u003d null) {\n        if (!thisNodeFile.getPath().getName().contains(nodeIdStr)) {\n          continue;\n        }\n      }\n      if (!thisNodeFile.getPath().getName()\n          .endsWith(LogAggregationUtils.TMP_FILE_SUFFIX)) {\n        AggregatedLogFormat.LogReader reader \u003d\n            new AggregatedLogFormat.LogReader(getConf(),\n            thisNodeFile.getPath());\n        try {\n          DataInputStream valueStream;\n          LogKey key \u003d new LogKey();\n          valueStream \u003d reader.next(key);\n          while (valueStream !\u003d null) {\n            out.println(String.format(CONTAINER_ON_NODE_PATTERN, key,\n                thisNodeFile.getPath().getName()));\n            foundAnyLogs \u003d true;\n            // Next container\n            key \u003d new LogKey();\n            valueStream \u003d reader.next(key);\n          }\n        } finally {\n          reader.close();\n        }\n      }\n    }\n    if (!foundAnyLogs) {\n      if (nodeId !\u003d null) {\n        err.println(\"Can not find information for any containers on \"\n            + nodeId);\n      } else {\n        err.println(\"Can not find any container information for \"\n            + \"the application: \" + appId);\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/LogCLIHelpers.java"
+    }
+  }
+}

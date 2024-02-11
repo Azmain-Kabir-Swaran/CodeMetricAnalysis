@@ -1,0 +1,88 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSDirectory.java",
+  "functionName": "resolveDotInodesPath",
+  "functionId": "resolveDotInodesPath___pathComponents-byte[][]__fsd-FSDirectory",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+  "functionStartLine": 1707,
+  "functionEndLine": 1740,
+  "numCommitsSeen": 600,
+  "timeTaken": 5366,
+  "changeHistory": [
+    "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2"
+  ],
+  "changeHistoryShort": {
+    "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-10744. Internally optimize path component resolution. Contributed by Daryn Sharp.\n",
+      "commitDate": "15/08/16 2:45 PM",
+      "commitName": "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2",
+      "commitAuthor": "Kihwal Lee",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10744. Internally optimize path component resolution. Contributed by Daryn Sharp.\n",
+          "commitDate": "15/08/16 2:45 PM",
+          "commitName": "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "12/08/16 5:58 AM",
+          "commitNameOld": "9019606b69bfb7019c8642b6cbcbb93645cc19e3",
+          "commitAuthorOld": "Wei-Chiu Chuang",
+          "daysBetweenCommits": 3.37,
+          "commitsBetweenForRepo": 8,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,37 +1,34 @@\n-  private static String resolveDotInodesPath(String src,\n+  private static byte[][] resolveDotInodesPath(\n       byte[][] pathComponents, FSDirectory fsd)\n       throws FileNotFoundException {\n     final String inodeId \u003d DFSUtil.bytes2String(pathComponents[3]);\n     final long id;\n     try {\n       id \u003d Long.parseLong(inodeId);\n     } catch (NumberFormatException e) {\n-      throw new FileNotFoundException(\"Invalid inode path: \" + src);\n+      throw new FileNotFoundException(\"Invalid inode path: \" +\n+          DFSUtil.byteArray2PathString(pathComponents));\n     }\n     if (id \u003d\u003d INodeId.ROOT_INODE_ID \u0026\u0026 pathComponents.length \u003d\u003d 4) {\n-      return Path.SEPARATOR;\n+      return new byte[][]{INodeDirectory.ROOT_NAME};\n     }\n     INode inode \u003d fsd.getInode(id);\n     if (inode \u003d\u003d null) {\n       throw new FileNotFoundException(\n-          \"File for given inode path does not exist: \" + src);\n+          \"File for given inode path does not exist: \" +\n+              DFSUtil.byteArray2PathString(pathComponents));\n     }\n-    \n+\n     // Handle single \"..\" for NFS lookup support.\n     if ((pathComponents.length \u003e 4)\n-        \u0026\u0026 DFSUtil.bytes2String(pathComponents[4]).equals(\"..\")) {\n+        \u0026\u0026 Arrays.equals(pathComponents[4], DOT_DOT)) {\n       INode parent \u003d inode.getParent();\n       if (parent \u003d\u003d null || parent.getId() \u003d\u003d INodeId.ROOT_INODE_ID) {\n         // inode is root, or its parent is root.\n-        return Path.SEPARATOR;\n-      } else {\n-        return parent.getFullPathName();\n+        return new byte[][]{INodeDirectory.ROOT_NAME};\n       }\n+      return parent.getPathComponents();\n     }\n-\n-    String path \u003d \"\";\n-    if (id !\u003d INodeId.ROOT_INODE_ID) {\n-      path \u003d inode.getFullPathName();\n-    }\n-    return constructRemainingPath(path, pathComponents, 4);\n+    return constructRemainingPath(\n+        inode.getPathComponents(), pathComponents, 4);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static byte[][] resolveDotInodesPath(\n      byte[][] pathComponents, FSDirectory fsd)\n      throws FileNotFoundException {\n    final String inodeId \u003d DFSUtil.bytes2String(pathComponents[3]);\n    final long id;\n    try {\n      id \u003d Long.parseLong(inodeId);\n    } catch (NumberFormatException e) {\n      throw new FileNotFoundException(\"Invalid inode path: \" +\n          DFSUtil.byteArray2PathString(pathComponents));\n    }\n    if (id \u003d\u003d INodeId.ROOT_INODE_ID \u0026\u0026 pathComponents.length \u003d\u003d 4) {\n      return new byte[][]{INodeDirectory.ROOT_NAME};\n    }\n    INode inode \u003d fsd.getInode(id);\n    if (inode \u003d\u003d null) {\n      throw new FileNotFoundException(\n          \"File for given inode path does not exist: \" +\n              DFSUtil.byteArray2PathString(pathComponents));\n    }\n\n    // Handle single \"..\" for NFS lookup support.\n    if ((pathComponents.length \u003e 4)\n        \u0026\u0026 Arrays.equals(pathComponents[4], DOT_DOT)) {\n      INode parent \u003d inode.getParent();\n      if (parent \u003d\u003d null || parent.getId() \u003d\u003d INodeId.ROOT_INODE_ID) {\n        // inode is root, or its parent is root.\n        return new byte[][]{INodeDirectory.ROOT_NAME};\n      }\n      return parent.getPathComponents();\n    }\n    return constructRemainingPath(\n        inode.getPathComponents(), pathComponents, 4);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[src-String, pathComponents-byte[][], fsd-FSDirectory]",
+            "newValue": "[pathComponents-byte[][], fsd-FSDirectory]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-10744. Internally optimize path component resolution. Contributed by Daryn Sharp.\n",
+          "commitDate": "15/08/16 2:45 PM",
+          "commitName": "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "12/08/16 5:58 AM",
+          "commitNameOld": "9019606b69bfb7019c8642b6cbcbb93645cc19e3",
+          "commitAuthorOld": "Wei-Chiu Chuang",
+          "daysBetweenCommits": 3.37,
+          "commitsBetweenForRepo": 8,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,37 +1,34 @@\n-  private static String resolveDotInodesPath(String src,\n+  private static byte[][] resolveDotInodesPath(\n       byte[][] pathComponents, FSDirectory fsd)\n       throws FileNotFoundException {\n     final String inodeId \u003d DFSUtil.bytes2String(pathComponents[3]);\n     final long id;\n     try {\n       id \u003d Long.parseLong(inodeId);\n     } catch (NumberFormatException e) {\n-      throw new FileNotFoundException(\"Invalid inode path: \" + src);\n+      throw new FileNotFoundException(\"Invalid inode path: \" +\n+          DFSUtil.byteArray2PathString(pathComponents));\n     }\n     if (id \u003d\u003d INodeId.ROOT_INODE_ID \u0026\u0026 pathComponents.length \u003d\u003d 4) {\n-      return Path.SEPARATOR;\n+      return new byte[][]{INodeDirectory.ROOT_NAME};\n     }\n     INode inode \u003d fsd.getInode(id);\n     if (inode \u003d\u003d null) {\n       throw new FileNotFoundException(\n-          \"File for given inode path does not exist: \" + src);\n+          \"File for given inode path does not exist: \" +\n+              DFSUtil.byteArray2PathString(pathComponents));\n     }\n-    \n+\n     // Handle single \"..\" for NFS lookup support.\n     if ((pathComponents.length \u003e 4)\n-        \u0026\u0026 DFSUtil.bytes2String(pathComponents[4]).equals(\"..\")) {\n+        \u0026\u0026 Arrays.equals(pathComponents[4], DOT_DOT)) {\n       INode parent \u003d inode.getParent();\n       if (parent \u003d\u003d null || parent.getId() \u003d\u003d INodeId.ROOT_INODE_ID) {\n         // inode is root, or its parent is root.\n-        return Path.SEPARATOR;\n-      } else {\n-        return parent.getFullPathName();\n+        return new byte[][]{INodeDirectory.ROOT_NAME};\n       }\n+      return parent.getPathComponents();\n     }\n-\n-    String path \u003d \"\";\n-    if (id !\u003d INodeId.ROOT_INODE_ID) {\n-      path \u003d inode.getFullPathName();\n-    }\n-    return constructRemainingPath(path, pathComponents, 4);\n+    return constructRemainingPath(\n+        inode.getPathComponents(), pathComponents, 4);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static byte[][] resolveDotInodesPath(\n      byte[][] pathComponents, FSDirectory fsd)\n      throws FileNotFoundException {\n    final String inodeId \u003d DFSUtil.bytes2String(pathComponents[3]);\n    final long id;\n    try {\n      id \u003d Long.parseLong(inodeId);\n    } catch (NumberFormatException e) {\n      throw new FileNotFoundException(\"Invalid inode path: \" +\n          DFSUtil.byteArray2PathString(pathComponents));\n    }\n    if (id \u003d\u003d INodeId.ROOT_INODE_ID \u0026\u0026 pathComponents.length \u003d\u003d 4) {\n      return new byte[][]{INodeDirectory.ROOT_NAME};\n    }\n    INode inode \u003d fsd.getInode(id);\n    if (inode \u003d\u003d null) {\n      throw new FileNotFoundException(\n          \"File for given inode path does not exist: \" +\n              DFSUtil.byteArray2PathString(pathComponents));\n    }\n\n    // Handle single \"..\" for NFS lookup support.\n    if ((pathComponents.length \u003e 4)\n        \u0026\u0026 Arrays.equals(pathComponents[4], DOT_DOT)) {\n      INode parent \u003d inode.getParent();\n      if (parent \u003d\u003d null || parent.getId() \u003d\u003d INodeId.ROOT_INODE_ID) {\n        // inode is root, or its parent is root.\n        return new byte[][]{INodeDirectory.ROOT_NAME};\n      }\n      return parent.getPathComponents();\n    }\n    return constructRemainingPath(\n        inode.getPathComponents(), pathComponents, 4);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+          "extendedDetails": {
+            "oldValue": "String",
+            "newValue": "byte[][]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10744. Internally optimize path component resolution. Contributed by Daryn Sharp.\n",
+          "commitDate": "15/08/16 2:45 PM",
+          "commitName": "03dea65e0b17ca2f9460bb6110f6ab3a321b8bf2",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "12/08/16 5:58 AM",
+          "commitNameOld": "9019606b69bfb7019c8642b6cbcbb93645cc19e3",
+          "commitAuthorOld": "Wei-Chiu Chuang",
+          "daysBetweenCommits": 3.37,
+          "commitsBetweenForRepo": 8,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,37 +1,34 @@\n-  private static String resolveDotInodesPath(String src,\n+  private static byte[][] resolveDotInodesPath(\n       byte[][] pathComponents, FSDirectory fsd)\n       throws FileNotFoundException {\n     final String inodeId \u003d DFSUtil.bytes2String(pathComponents[3]);\n     final long id;\n     try {\n       id \u003d Long.parseLong(inodeId);\n     } catch (NumberFormatException e) {\n-      throw new FileNotFoundException(\"Invalid inode path: \" + src);\n+      throw new FileNotFoundException(\"Invalid inode path: \" +\n+          DFSUtil.byteArray2PathString(pathComponents));\n     }\n     if (id \u003d\u003d INodeId.ROOT_INODE_ID \u0026\u0026 pathComponents.length \u003d\u003d 4) {\n-      return Path.SEPARATOR;\n+      return new byte[][]{INodeDirectory.ROOT_NAME};\n     }\n     INode inode \u003d fsd.getInode(id);\n     if (inode \u003d\u003d null) {\n       throw new FileNotFoundException(\n-          \"File for given inode path does not exist: \" + src);\n+          \"File for given inode path does not exist: \" +\n+              DFSUtil.byteArray2PathString(pathComponents));\n     }\n-    \n+\n     // Handle single \"..\" for NFS lookup support.\n     if ((pathComponents.length \u003e 4)\n-        \u0026\u0026 DFSUtil.bytes2String(pathComponents[4]).equals(\"..\")) {\n+        \u0026\u0026 Arrays.equals(pathComponents[4], DOT_DOT)) {\n       INode parent \u003d inode.getParent();\n       if (parent \u003d\u003d null || parent.getId() \u003d\u003d INodeId.ROOT_INODE_ID) {\n         // inode is root, or its parent is root.\n-        return Path.SEPARATOR;\n-      } else {\n-        return parent.getFullPathName();\n+        return new byte[][]{INodeDirectory.ROOT_NAME};\n       }\n+      return parent.getPathComponents();\n     }\n-\n-    String path \u003d \"\";\n-    if (id !\u003d INodeId.ROOT_INODE_ID) {\n-      path \u003d inode.getFullPathName();\n-    }\n-    return constructRemainingPath(path, pathComponents, 4);\n+    return constructRemainingPath(\n+        inode.getPathComponents(), pathComponents, 4);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static byte[][] resolveDotInodesPath(\n      byte[][] pathComponents, FSDirectory fsd)\n      throws FileNotFoundException {\n    final String inodeId \u003d DFSUtil.bytes2String(pathComponents[3]);\n    final long id;\n    try {\n      id \u003d Long.parseLong(inodeId);\n    } catch (NumberFormatException e) {\n      throw new FileNotFoundException(\"Invalid inode path: \" +\n          DFSUtil.byteArray2PathString(pathComponents));\n    }\n    if (id \u003d\u003d INodeId.ROOT_INODE_ID \u0026\u0026 pathComponents.length \u003d\u003d 4) {\n      return new byte[][]{INodeDirectory.ROOT_NAME};\n    }\n    INode inode \u003d fsd.getInode(id);\n    if (inode \u003d\u003d null) {\n      throw new FileNotFoundException(\n          \"File for given inode path does not exist: \" +\n              DFSUtil.byteArray2PathString(pathComponents));\n    }\n\n    // Handle single \"..\" for NFS lookup support.\n    if ((pathComponents.length \u003e 4)\n        \u0026\u0026 Arrays.equals(pathComponents[4], DOT_DOT)) {\n      INode parent \u003d inode.getParent();\n      if (parent \u003d\u003d null || parent.getId() \u003d\u003d INodeId.ROOT_INODE_ID) {\n        // inode is root, or its parent is root.\n        return new byte[][]{INodeDirectory.ROOT_NAME};\n      }\n      return parent.getPathComponents();\n    }\n    return constructRemainingPath(\n        inode.getPathComponents(), pathComponents, 4);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SchedulerApplicationAttempt.java",
+  "functionName": "reserveIncreasedContainer",
+  "functionId": "reserveIncreasedContainer___node-SchedulerNode__schedulerKey-SchedulerRequestKey__rmContainer-RMContainer__reservedResource-Resource",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApplicationAttempt.java",
+  "functionStartLine": 534,
+  "functionEndLine": 550,
+  "numCommitsSeen": 164,
+  "timeTaken": 5709,
+  "changeHistory": [
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+    "b8a30f2f170ffbd590e7366c3c944ab4919e40df",
+    "5aace38b748ba71aaadd2c4d64eba8dc1f816828",
+    "89cab1ba5f0671f8ef30dbe7432079c18362b434"
+  ],
+  "changeHistoryShort": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": "Ybodychange",
+    "b8a30f2f170ffbd590e7366c3c944ab4919e40df": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "5aace38b748ba71aaadd2c4d64eba8dc1f816828": "Ymultichange(Yparameterchange,Ybodychange)",
+    "89cab1ba5f0671f8ef30dbe7432079c18362b434": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9341.  Fixed enentrant lock usage in YARN project.\n            Contributed by Prabhu Joseph\n",
+      "commitDate": "07/03/19 1:47 PM",
+      "commitName": "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "04/03/19 9:10 PM",
+      "commitNameOld": "e40e2d6ad5cbe782c3a067229270738b501ed27e",
+      "commitAuthorOld": "Prabhu Joseph",
+      "daysBetweenCommits": 2.69,
+      "commitsBetweenForRepo": 39,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,17 @@\n   public boolean reserveIncreasedContainer(SchedulerNode node,\n       SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n       Resource reservedResource) {\n+    writeLock.lock();\n     try {\n-      writeLock.lock();\n       if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n         attemptResourceUsage.incReserved(node.getPartition(), reservedResource);\n         // succeeded\n         return true;\n       }\n \n       return false;\n     } finally {\n       writeLock.unlock();\n     }\n \n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public boolean reserveIncreasedContainer(SchedulerNode node,\n      SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n      Resource reservedResource) {\n    writeLock.lock();\n    try {\n      if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n        attemptResourceUsage.incReserved(node.getPartition(), reservedResource);\n        // succeeded\n        return true;\n      }\n\n      return false;\n    } finally {\n      writeLock.unlock();\n    }\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApplicationAttempt.java",
+      "extendedDetails": {}
+    },
+    "b8a30f2f170ffbd590e7366c3c944ab4919e40df": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "YARN-3141. Improve locks in SchedulerApplicationAttempt/FSAppAttempt/FiCaSchedulerApp. Contributed by Wangda Tan\n",
+      "commitDate": "19/09/16 2:08 AM",
+      "commitName": "b8a30f2f170ffbd590e7366c3c944ab4919e40df",
+      "commitAuthor": "Jian He",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "YARN-3141. Improve locks in SchedulerApplicationAttempt/FSAppAttempt/FiCaSchedulerApp. Contributed by Wangda Tan\n",
+          "commitDate": "19/09/16 2:08 AM",
+          "commitName": "b8a30f2f170ffbd590e7366c3c944ab4919e40df",
+          "commitAuthor": "Jian He",
+          "commitDateOld": "30/08/16 3:52 PM",
+          "commitNameOld": "d6d9cff21b7b6141ed88359652cf22e8973c0661",
+          "commitAuthorOld": "Arun Suresh",
+          "daysBetweenCommits": 19.43,
+          "commitsBetweenForRepo": 91,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,17 @@\n-  public synchronized boolean reserveIncreasedContainer(SchedulerNode node,\n+  public boolean reserveIncreasedContainer(SchedulerNode node,\n       SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n       Resource reservedResource) {\n-    if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n-      attemptResourceUsage.incReserved(node.getPartition(),\n-          reservedResource);\n-      // succeeded\n-      return true;\n+    try {\n+      writeLock.lock();\n+      if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n+        attemptResourceUsage.incReserved(node.getPartition(), reservedResource);\n+        // succeeded\n+        return true;\n+      }\n+\n+      return false;\n+    } finally {\n+      writeLock.unlock();\n     }\n-    \n-    return false;\n+\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean reserveIncreasedContainer(SchedulerNode node,\n      SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n      Resource reservedResource) {\n    try {\n      writeLock.lock();\n      if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n        attemptResourceUsage.incReserved(node.getPartition(), reservedResource);\n        // succeeded\n        return true;\n      }\n\n      return false;\n    } finally {\n      writeLock.unlock();\n    }\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApplicationAttempt.java",
+          "extendedDetails": {
+            "oldValue": "[public, synchronized]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-3141. Improve locks in SchedulerApplicationAttempt/FSAppAttempt/FiCaSchedulerApp. Contributed by Wangda Tan\n",
+          "commitDate": "19/09/16 2:08 AM",
+          "commitName": "b8a30f2f170ffbd590e7366c3c944ab4919e40df",
+          "commitAuthor": "Jian He",
+          "commitDateOld": "30/08/16 3:52 PM",
+          "commitNameOld": "d6d9cff21b7b6141ed88359652cf22e8973c0661",
+          "commitAuthorOld": "Arun Suresh",
+          "daysBetweenCommits": 19.43,
+          "commitsBetweenForRepo": 91,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,17 @@\n-  public synchronized boolean reserveIncreasedContainer(SchedulerNode node,\n+  public boolean reserveIncreasedContainer(SchedulerNode node,\n       SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n       Resource reservedResource) {\n-    if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n-      attemptResourceUsage.incReserved(node.getPartition(),\n-          reservedResource);\n-      // succeeded\n-      return true;\n+    try {\n+      writeLock.lock();\n+      if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n+        attemptResourceUsage.incReserved(node.getPartition(), reservedResource);\n+        // succeeded\n+        return true;\n+      }\n+\n+      return false;\n+    } finally {\n+      writeLock.unlock();\n     }\n-    \n-    return false;\n+\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean reserveIncreasedContainer(SchedulerNode node,\n      SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n      Resource reservedResource) {\n    try {\n      writeLock.lock();\n      if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n        attemptResourceUsage.incReserved(node.getPartition(), reservedResource);\n        // succeeded\n        return true;\n      }\n\n      return false;\n    } finally {\n      writeLock.unlock();\n    }\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApplicationAttempt.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "5aace38b748ba71aaadd2c4d64eba8dc1f816828": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-5392. Replace use of Priority in the Scheduling infrastructure with an opaque ShedulerRequestKey. (asuresh and subru)\n",
+      "commitDate": "26/07/16 2:54 PM",
+      "commitName": "5aace38b748ba71aaadd2c4d64eba8dc1f816828",
+      "commitAuthor": "Arun Suresh",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-5392. Replace use of Priority in the Scheduling infrastructure with an opaque ShedulerRequestKey. (asuresh and subru)\n",
+          "commitDate": "26/07/16 2:54 PM",
+          "commitName": "5aace38b748ba71aaadd2c4d64eba8dc1f816828",
+          "commitAuthor": "Arun Suresh",
+          "commitDateOld": "11/07/16 10:36 PM",
+          "commitNameOld": "819224dcf9c683aa52f58633ac8e13663f1916d8",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 14.68,
+          "commitsBetweenForRepo": 98,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,12 @@\n   public synchronized boolean reserveIncreasedContainer(SchedulerNode node,\n-      Priority priority, RMContainer rmContainer, Resource reservedResource) {\n-    if (commonReserve(node, priority, rmContainer, reservedResource)) {\n+      SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n+      Resource reservedResource) {\n+    if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n       attemptResourceUsage.incReserved(node.getPartition(),\n           reservedResource);\n       // succeeded\n       return true;\n     }\n     \n     return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized boolean reserveIncreasedContainer(SchedulerNode node,\n      SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n      Resource reservedResource) {\n    if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n      attemptResourceUsage.incReserved(node.getPartition(),\n          reservedResource);\n      // succeeded\n      return true;\n    }\n    \n    return false;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApplicationAttempt.java",
+          "extendedDetails": {
+            "oldValue": "[node-SchedulerNode, priority-Priority, rmContainer-RMContainer, reservedResource-Resource]",
+            "newValue": "[node-SchedulerNode, schedulerKey-SchedulerRequestKey, rmContainer-RMContainer, reservedResource-Resource]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-5392. Replace use of Priority in the Scheduling infrastructure with an opaque ShedulerRequestKey. (asuresh and subru)\n",
+          "commitDate": "26/07/16 2:54 PM",
+          "commitName": "5aace38b748ba71aaadd2c4d64eba8dc1f816828",
+          "commitAuthor": "Arun Suresh",
+          "commitDateOld": "11/07/16 10:36 PM",
+          "commitNameOld": "819224dcf9c683aa52f58633ac8e13663f1916d8",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 14.68,
+          "commitsBetweenForRepo": 98,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,12 @@\n   public synchronized boolean reserveIncreasedContainer(SchedulerNode node,\n-      Priority priority, RMContainer rmContainer, Resource reservedResource) {\n-    if (commonReserve(node, priority, rmContainer, reservedResource)) {\n+      SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n+      Resource reservedResource) {\n+    if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n       attemptResourceUsage.incReserved(node.getPartition(),\n           reservedResource);\n       // succeeded\n       return true;\n     }\n     \n     return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized boolean reserveIncreasedContainer(SchedulerNode node,\n      SchedulerRequestKey schedulerKey, RMContainer rmContainer,\n      Resource reservedResource) {\n    if (commonReserve(node, schedulerKey, rmContainer, reservedResource)) {\n      attemptResourceUsage.incReserved(node.getPartition(),\n          reservedResource);\n      // succeeded\n      return true;\n    }\n    \n    return false;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApplicationAttempt.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "89cab1ba5f0671f8ef30dbe7432079c18362b434": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-1651. CapacityScheduler side changes to support container resize. Contributed by Wangda Tan\n",
+      "commitDate": "23/09/15 1:29 PM",
+      "commitName": "89cab1ba5f0671f8ef30dbe7432079c18362b434",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,11 @@\n+  public synchronized boolean reserveIncreasedContainer(SchedulerNode node,\n+      Priority priority, RMContainer rmContainer, Resource reservedResource) {\n+    if (commonReserve(node, priority, rmContainer, reservedResource)) {\n+      attemptResourceUsage.incReserved(node.getPartition(),\n+          reservedResource);\n+      // succeeded\n+      return true;\n+    }\n+    \n+    return false;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized boolean reserveIncreasedContainer(SchedulerNode node,\n      Priority priority, RMContainer rmContainer, Resource reservedResource) {\n    if (commonReserve(node, priority, rmContainer, reservedResource)) {\n      attemptResourceUsage.incReserved(node.getPartition(),\n          reservedResource);\n      // succeeded\n      return true;\n    }\n    \n    return false;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApplicationAttempt.java"
+    }
+  }
+}

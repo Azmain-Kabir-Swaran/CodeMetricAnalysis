@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CopyCommands.java",
+  "functionName": "processArguments",
+  "functionId": "processArguments___items-LinkedList__PathData__",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/shell/CopyCommands.java",
+  "functionStartLine": 95,
+  "functionEndLine": 116,
+  "numCommitsSeen": 27,
+  "timeTaken": 1159,
+  "changeHistory": [
+    "061c05cc05ff6257b14c5c4f25cbcec2d184cda7",
+    "fcacb14a1e3738d5a974d415ab98af46b9fd3ded",
+    "bb86825d49897cf95551ef67371f13760f2900bf"
+  ],
+  "changeHistoryShort": {
+    "061c05cc05ff6257b14c5c4f25cbcec2d184cda7": "Ybodychange",
+    "fcacb14a1e3738d5a974d415ab98af46b9fd3ded": "Ybodychange",
+    "bb86825d49897cf95551ef67371f13760f2900bf": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "061c05cc05ff6257b14c5c4f25cbcec2d184cda7": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-12657. Add a option to skip newline on empty files with getMerge -nl. Contributed by Kanaka Kumar Avvaru.\n",
+      "commitDate": "17/12/15 8:58 PM",
+      "commitName": "061c05cc05ff6257b14c5c4f25cbcec2d184cda7",
+      "commitAuthor": "Akira Ajisaka",
+      "commitDateOld": "18/10/15 11:46 PM",
+      "commitNameOld": "7f0e1eb43d3fb173e3c7932739ef20095e28ed7b",
+      "commitAuthorOld": "Vinayakumar B",
+      "daysBetweenCommits": 59.93,
+      "commitsBetweenForRepo": 451,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,22 @@\n     protected void processArguments(LinkedList\u003cPathData\u003e items)\n     throws IOException {\n       super.processArguments(items);\n       if (exitCode !\u003d 0) { // check for error collecting paths\n         return;\n       }\n       FSDataOutputStream out \u003d dst.fs.create(dst.path);\n       try {\n         for (PathData src : srcs) {\n-          FSDataInputStream in \u003d src.fs.open(src.path);\n-          try {\n-            IOUtils.copyBytes(in, out, getConf(), false);\n-            if (delimiter !\u003d null) {\n-              out.write(delimiter.getBytes(\"UTF-8\"));\n+          if (src.stat.getLen() !\u003d 0) {\n+            try (FSDataInputStream in \u003d src.fs.open(src.path)) {\n+              IOUtils.copyBytes(in, out, getConf(), false);\n+              writeDelimiter(out);\n             }\n-          } finally {\n-            in.close();\n+          } else if (!skipEmptyFileDelimiter) {\n+            writeDelimiter(out);\n           }\n         }\n       } finally {\n         out.close();\n-      }      \n+      }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    protected void processArguments(LinkedList\u003cPathData\u003e items)\n    throws IOException {\n      super.processArguments(items);\n      if (exitCode !\u003d 0) { // check for error collecting paths\n        return;\n      }\n      FSDataOutputStream out \u003d dst.fs.create(dst.path);\n      try {\n        for (PathData src : srcs) {\n          if (src.stat.getLen() !\u003d 0) {\n            try (FSDataInputStream in \u003d src.fs.open(src.path)) {\n              IOUtils.copyBytes(in, out, getConf(), false);\n              writeDelimiter(out);\n            }\n          } else if (!skipEmptyFileDelimiter) {\n            writeDelimiter(out);\n          }\n        }\n      } finally {\n        out.close();\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/shell/CopyCommands.java",
+      "extendedDetails": {}
+    },
+    "fcacb14a1e3738d5a974d415ab98af46b9fd3ded": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-8179. risk of NPE in CopyCommands processArguments() (Daryn Sharp via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1309572 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/04/12 12:53 PM",
+      "commitName": "fcacb14a1e3738d5a974d415ab98af46b9fd3ded",
+      "commitAuthor": "Robert Joseph Evans",
+      "commitDateOld": "06/03/12 2:44 PM",
+      "commitNameOld": "bb86825d49897cf95551ef67371f13760f2900bf",
+      "commitAuthorOld": "Robert Joseph Evans",
+      "daysBetweenCommits": 28.88,
+      "commitsBetweenForRepo": 192,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,23 @@\n     protected void processArguments(LinkedList\u003cPathData\u003e items)\n     throws IOException {\n       super.processArguments(items);\n       if (exitCode !\u003d 0) { // check for error collecting paths\n         return;\n       }\n       FSDataOutputStream out \u003d dst.fs.create(dst.path);\n       try {\n-        FSDataInputStream in \u003d null;\n         for (PathData src : srcs) {\n+          FSDataInputStream in \u003d src.fs.open(src.path);\n           try {\n-            in \u003d src.fs.open(src.path);\n             IOUtils.copyBytes(in, out, getConf(), false);\n             if (delimiter !\u003d null) {\n               out.write(delimiter.getBytes(\"UTF-8\"));\n             }\n           } finally {\n             in.close();\n           }\n         }\n       } finally {\n         out.close();\n       }      \n     }\n\\ No newline at end of file\n",
+      "actualSource": "    protected void processArguments(LinkedList\u003cPathData\u003e items)\n    throws IOException {\n      super.processArguments(items);\n      if (exitCode !\u003d 0) { // check for error collecting paths\n        return;\n      }\n      FSDataOutputStream out \u003d dst.fs.create(dst.path);\n      try {\n        for (PathData src : srcs) {\n          FSDataInputStream in \u003d src.fs.open(src.path);\n          try {\n            IOUtils.copyBytes(in, out, getConf(), false);\n            if (delimiter !\u003d null) {\n              out.write(delimiter.getBytes(\"UTF-8\"));\n            }\n          } finally {\n            in.close();\n          }\n        }\n      } finally {\n        out.close();\n      }      \n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/shell/CopyCommands.java",
+      "extendedDetails": {}
+    },
+    "bb86825d49897cf95551ef67371f13760f2900bf": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-8140. dfs -getmerge should process its argments better (Daryn Sharp via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1297771 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/03/12 2:44 PM",
+      "commitName": "bb86825d49897cf95551ef67371f13760f2900bf",
+      "commitAuthor": "Robert Joseph Evans",
+      "diff": "@@ -0,0 +1,24 @@\n+    protected void processArguments(LinkedList\u003cPathData\u003e items)\n+    throws IOException {\n+      super.processArguments(items);\n+      if (exitCode !\u003d 0) { // check for error collecting paths\n+        return;\n+      }\n+      FSDataOutputStream out \u003d dst.fs.create(dst.path);\n+      try {\n+        FSDataInputStream in \u003d null;\n+        for (PathData src : srcs) {\n+          try {\n+            in \u003d src.fs.open(src.path);\n+            IOUtils.copyBytes(in, out, getConf(), false);\n+            if (delimiter !\u003d null) {\n+              out.write(delimiter.getBytes(\"UTF-8\"));\n+            }\n+          } finally {\n+            in.close();\n+          }\n+        }\n+      } finally {\n+        out.close();\n+      }      \n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    protected void processArguments(LinkedList\u003cPathData\u003e items)\n    throws IOException {\n      super.processArguments(items);\n      if (exitCode !\u003d 0) { // check for error collecting paths\n        return;\n      }\n      FSDataOutputStream out \u003d dst.fs.create(dst.path);\n      try {\n        FSDataInputStream in \u003d null;\n        for (PathData src : srcs) {\n          try {\n            in \u003d src.fs.open(src.path);\n            IOUtils.copyBytes(in, out, getConf(), false);\n            if (delimiter !\u003d null) {\n              out.write(delimiter.getBytes(\"UTF-8\"));\n            }\n          } finally {\n            in.close();\n          }\n        }\n      } finally {\n        out.close();\n      }      \n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/shell/CopyCommands.java"
+    }
+  }
+}

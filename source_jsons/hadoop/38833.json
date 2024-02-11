@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NodeQueueLoadMonitor.java",
+  "functionName": "sortNodes",
+  "functionId": "sortNodes",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/distributed/NodeQueueLoadMonitor.java",
+  "functionStartLine": 408,
+  "functionEndLine": 432,
+  "numCommitsSeen": 12,
+  "timeTaken": 1729,
+  "changeHistory": [
+    "37ca4169508c3003dbe9044fefd37eb8cd8c0503",
+    "10be45986cdf86a89055065b752959bd6369d54f",
+    "f0ac18d001d97914a9ee810b1fab56c5cebff830"
+  ],
+  "changeHistoryShort": {
+    "37ca4169508c3003dbe9044fefd37eb8cd8c0503": "Ybodychange",
+    "10be45986cdf86a89055065b752959bd6369d54f": "Ybodychange",
+    "f0ac18d001d97914a9ee810b1fab56c5cebff830": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "37ca4169508c3003dbe9044fefd37eb8cd8c0503": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7587. Skip dispatching opportunistic containers to nodes whose queue is already full. (Weiwei Yang via asuresh)\n",
+      "commitDate": "03/12/17 10:22 PM",
+      "commitName": "37ca4169508c3003dbe9044fefd37eb8cd8c0503",
+      "commitAuthor": "Arun Suresh",
+      "commitDateOld": "23/08/17 9:56 AM",
+      "commitNameOld": "f49843a9888ad8fe5c1bb4c16bfb5217d693009d",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 102.56,
+      "commitsBetweenForRepo": 880,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,25 @@\n   private List\u003cNodeId\u003e sortNodes() {\n     ReentrantReadWriteLock.ReadLock readLock \u003d clusterNodesLock.readLock();\n     readLock.lock();\n     try {\n       ArrayList aList \u003d new ArrayList\u003c\u003e(this.clusterNodes.values());\n       List\u003cNodeId\u003e retList \u003d new ArrayList\u003c\u003e();\n       Object[] nodes \u003d aList.toArray();\n       // Collections.sort would do something similar by calling Arrays.sort\n       // internally but would finally iterate through the input list (aList)\n       // to reset the value of each element. Since we don\u0027t really care about\n       // \u0027aList\u0027, we can use the iteration to create the list of nodeIds which\n       // is what we ultimately care about.\n       Arrays.sort(nodes, (Comparator)comparator);\n       for (int j\u003d0; j \u003c nodes.length; j++) {\n-        retList.add(((ClusterNode)nodes[j]).nodeId);\n+        ClusterNode cNode \u003d (ClusterNode)nodes[j];\n+        // Exclude nodes whose queue is already full.\n+        if (!cNode.isQueueFull()) {\n+          retList.add(cNode.nodeId);\n+        }\n       }\n       return retList;\n     } finally {\n       readLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private List\u003cNodeId\u003e sortNodes() {\n    ReentrantReadWriteLock.ReadLock readLock \u003d clusterNodesLock.readLock();\n    readLock.lock();\n    try {\n      ArrayList aList \u003d new ArrayList\u003c\u003e(this.clusterNodes.values());\n      List\u003cNodeId\u003e retList \u003d new ArrayList\u003c\u003e();\n      Object[] nodes \u003d aList.toArray();\n      // Collections.sort would do something similar by calling Arrays.sort\n      // internally but would finally iterate through the input list (aList)\n      // to reset the value of each element. Since we don\u0027t really care about\n      // \u0027aList\u0027, we can use the iteration to create the list of nodeIds which\n      // is what we ultimately care about.\n      Arrays.sort(nodes, (Comparator)comparator);\n      for (int j\u003d0; j \u003c nodes.length; j++) {\n        ClusterNode cNode \u003d (ClusterNode)nodes[j];\n        // Exclude nodes whose queue is already full.\n        if (!cNode.isQueueFull()) {\n          retList.add(cNode.nodeId);\n        }\n      }\n      return retList;\n    } finally {\n      readLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/distributed/NodeQueueLoadMonitor.java",
+      "extendedDetails": {}
+    },
+    "10be45986cdf86a89055065b752959bd6369d54f": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-5486. Update OpportunisticContainerAllocatorAMService::allocate method to handle OPPORTUNISTIC container requests. (Konstantinos Karanasos via asuresh)\n",
+      "commitDate": "29/09/16 3:11 PM",
+      "commitName": "10be45986cdf86a89055065b752959bd6369d54f",
+      "commitAuthor": "Arun Suresh",
+      "commitDateOld": "18/05/16 6:46 PM",
+      "commitNameOld": "1597630681c784a3d59f5605b87e96197b8139d7",
+      "commitAuthorOld": "Arun Suresh",
+      "daysBetweenCommits": 133.85,
+      "commitsBetweenForRepo": 988,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,21 @@\n   private List\u003cNodeId\u003e sortNodes() {\n-    synchronized (this.clusterNodes) {\n+    ReentrantReadWriteLock.ReadLock readLock \u003d clusterNodesLock.readLock();\n+    readLock.lock();\n+    try {\n       ArrayList aList \u003d new ArrayList\u003c\u003e(this.clusterNodes.values());\n       List\u003cNodeId\u003e retList \u003d new ArrayList\u003c\u003e();\n       Object[] nodes \u003d aList.toArray();\n       // Collections.sort would do something similar by calling Arrays.sort\n       // internally but would finally iterate through the input list (aList)\n       // to reset the value of each element. Since we don\u0027t really care about\n       // \u0027aList\u0027, we can use the iteration to create the list of nodeIds which\n       // is what we ultimately care about.\n       Arrays.sort(nodes, (Comparator)comparator);\n       for (int j\u003d0; j \u003c nodes.length; j++) {\n         retList.add(((ClusterNode)nodes[j]).nodeId);\n       }\n       return retList;\n+    } finally {\n+      readLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private List\u003cNodeId\u003e sortNodes() {\n    ReentrantReadWriteLock.ReadLock readLock \u003d clusterNodesLock.readLock();\n    readLock.lock();\n    try {\n      ArrayList aList \u003d new ArrayList\u003c\u003e(this.clusterNodes.values());\n      List\u003cNodeId\u003e retList \u003d new ArrayList\u003c\u003e();\n      Object[] nodes \u003d aList.toArray();\n      // Collections.sort would do something similar by calling Arrays.sort\n      // internally but would finally iterate through the input list (aList)\n      // to reset the value of each element. Since we don\u0027t really care about\n      // \u0027aList\u0027, we can use the iteration to create the list of nodeIds which\n      // is what we ultimately care about.\n      Arrays.sort(nodes, (Comparator)comparator);\n      for (int j\u003d0; j \u003c nodes.length; j++) {\n        retList.add(((ClusterNode)nodes[j]).nodeId);\n      }\n      return retList;\n    } finally {\n      readLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/distributed/NodeQueueLoadMonitor.java",
+      "extendedDetails": {}
+    },
+    "f0ac18d001d97914a9ee810b1fab56c5cebff830": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2888. Corrective mechanisms for rebalancing NM container queues. (asuresh)\n",
+      "commitDate": "13/05/16 1:38 PM",
+      "commitName": "f0ac18d001d97914a9ee810b1fab56c5cebff830",
+      "commitAuthor": "Arun Suresh",
+      "diff": "@@ -0,0 +1,17 @@\n+  private List\u003cNodeId\u003e sortNodes() {\n+    synchronized (this.clusterNodes) {\n+      ArrayList aList \u003d new ArrayList\u003c\u003e(this.clusterNodes.values());\n+      List\u003cNodeId\u003e retList \u003d new ArrayList\u003c\u003e();\n+      Object[] nodes \u003d aList.toArray();\n+      // Collections.sort would do something similar by calling Arrays.sort\n+      // internally but would finally iterate through the input list (aList)\n+      // to reset the value of each element. Since we don\u0027t really care about\n+      // \u0027aList\u0027, we can use the iteration to create the list of nodeIds which\n+      // is what we ultimately care about.\n+      Arrays.sort(nodes, (Comparator)comparator);\n+      for (int j\u003d0; j \u003c nodes.length; j++) {\n+        retList.add(((ClusterNode)nodes[j]).nodeId);\n+      }\n+      return retList;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private List\u003cNodeId\u003e sortNodes() {\n    synchronized (this.clusterNodes) {\n      ArrayList aList \u003d new ArrayList\u003c\u003e(this.clusterNodes.values());\n      List\u003cNodeId\u003e retList \u003d new ArrayList\u003c\u003e();\n      Object[] nodes \u003d aList.toArray();\n      // Collections.sort would do something similar by calling Arrays.sort\n      // internally but would finally iterate through the input list (aList)\n      // to reset the value of each element. Since we don\u0027t really care about\n      // \u0027aList\u0027, we can use the iteration to create the list of nodeIds which\n      // is what we ultimately care about.\n      Arrays.sort(nodes, (Comparator)comparator);\n      for (int j\u003d0; j \u003c nodes.length; j++) {\n        retList.add(((ClusterNode)nodes[j]).nodeId);\n      }\n      return retList;\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/distributed/NodeQueueLoadMonitor.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "HAUtil.java",
+  "functionName": "getAddressOfActive",
+  "functionId": "getAddressOfActive___fs-FileSystem",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/HAUtil.java",
+  "functionStartLine": 267,
+  "functionEndLine": 297,
+  "numCommitsSeen": 39,
+  "timeTaken": 2275,
+  "changeHistory": [
+    "bb41ddaf1e0c9bf44830b2cf0ac653b7354abf46",
+    "f736408a8396ea0af2b77e4b30579cec5093c45b",
+    "ce1a7ec9755f17527c29b0db713d7e01750e10c9"
+  ],
+  "changeHistoryShort": {
+    "bb41ddaf1e0c9bf44830b2cf0ac653b7354abf46": "Ybodychange",
+    "f736408a8396ea0af2b77e4b30579cec5093c45b": "Ybodychange",
+    "ce1a7ec9755f17527c29b0db713d7e01750e10c9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "bb41ddaf1e0c9bf44830b2cf0ac653b7354abf46": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-15223. FSCK fails if one namenode is not available. Contributed by Ayush Saxena.\n",
+      "commitDate": "19/03/20 8:53 AM",
+      "commitName": "bb41ddaf1e0c9bf44830b2cf0ac653b7354abf46",
+      "commitAuthor": "Ayush Saxena",
+      "commitDateOld": "12/03/20 6:29 AM",
+      "commitNameOld": "f736408a8396ea0af2b77e4b30579cec5093c45b",
+      "commitAuthorOld": "Surendra Singh Lilhore",
+      "daysBetweenCommits": 7.1,
+      "commitsBetweenForRepo": 26,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,31 @@\n   public static InetSocketAddress getAddressOfActive(FileSystem fs)\n       throws IOException {\n     InetSocketAddress inAddr \u003d null;\n     if (!(fs instanceof DistributedFileSystem)) {\n       throw new IllegalArgumentException(\"FileSystem \" + fs + \" is not a DFS.\");\n     }\n     // force client address resolution.\n     fs.exists(new Path(\"/\"));\n     DistributedFileSystem dfs \u003d (DistributedFileSystem) fs;\n     Configuration dfsConf \u003d dfs.getConf();\n     URI dfsUri \u003d dfs.getUri();\n     String nsId \u003d dfsUri.getHost();\n     if (isHAEnabled(dfsConf, nsId)) {\n       List\u003cClientProtocol\u003e namenodes \u003d\n           getProxiesForAllNameNodesInNameservice(dfsConf, nsId);\n       for (ClientProtocol proxy : namenodes) {\n-        if (proxy.getHAServiceState().equals(HAServiceState.ACTIVE)) {\n-          inAddr \u003d RPC.getServerAddress(proxy);\n+        try {\n+          if (proxy.getHAServiceState().equals(HAServiceState.ACTIVE)) {\n+            inAddr \u003d RPC.getServerAddress(proxy);\n+          }\n+        } catch (Exception e) {\n+          //Ignore the exception while connecting to a namenode.\n+          LOG.debug(\"Error while connecting to namenode\", e);\n         }\n       }\n     } else {\n       DFSClient dfsClient \u003d dfs.getClient();\n       inAddr \u003d RPC.getServerAddress(dfsClient.getNamenode());\n     }\n     return inAddr;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static InetSocketAddress getAddressOfActive(FileSystem fs)\n      throws IOException {\n    InetSocketAddress inAddr \u003d null;\n    if (!(fs instanceof DistributedFileSystem)) {\n      throw new IllegalArgumentException(\"FileSystem \" + fs + \" is not a DFS.\");\n    }\n    // force client address resolution.\n    fs.exists(new Path(\"/\"));\n    DistributedFileSystem dfs \u003d (DistributedFileSystem) fs;\n    Configuration dfsConf \u003d dfs.getConf();\n    URI dfsUri \u003d dfs.getUri();\n    String nsId \u003d dfsUri.getHost();\n    if (isHAEnabled(dfsConf, nsId)) {\n      List\u003cClientProtocol\u003e namenodes \u003d\n          getProxiesForAllNameNodesInNameservice(dfsConf, nsId);\n      for (ClientProtocol proxy : namenodes) {\n        try {\n          if (proxy.getHAServiceState().equals(HAServiceState.ACTIVE)) {\n            inAddr \u003d RPC.getServerAddress(proxy);\n          }\n        } catch (Exception e) {\n          //Ignore the exception while connecting to a namenode.\n          LOG.debug(\"Error while connecting to namenode\", e);\n        }\n      }\n    } else {\n      DFSClient dfsClient \u003d dfs.getClient();\n      inAddr \u003d RPC.getServerAddress(dfsClient.getNamenode());\n    }\n    return inAddr;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/HAUtil.java",
+      "extendedDetails": {}
+    },
+    "f736408a8396ea0af2b77e4b30579cec5093c45b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14442. Disagreement between HAUtil.getAddressOfActive and RpcInvocationHandler.getConnectionId. Contributed by Ravuri Sushma sree.\n",
+      "commitDate": "12/03/20 6:29 AM",
+      "commitName": "f736408a8396ea0af2b77e4b30579cec5093c45b",
+      "commitAuthor": "Surendra Singh Lilhore",
+      "commitDateOld": "01/03/18 1:51 AM",
+      "commitNameOld": "ececeea8f2ba47b8618e22e52bc839f4f9ac511b",
+      "commitAuthorOld": "Yiqun Lin",
+      "daysBetweenCommits": 742.15,
+      "commitsBetweenForRepo": 5690,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,11 +1,26 @@\n   public static InetSocketAddress getAddressOfActive(FileSystem fs)\n       throws IOException {\n+    InetSocketAddress inAddr \u003d null;\n     if (!(fs instanceof DistributedFileSystem)) {\n       throw new IllegalArgumentException(\"FileSystem \" + fs + \" is not a DFS.\");\n     }\n     // force client address resolution.\n     fs.exists(new Path(\"/\"));\n     DistributedFileSystem dfs \u003d (DistributedFileSystem) fs;\n-    DFSClient dfsClient \u003d dfs.getClient();\n-    return RPC.getServerAddress(dfsClient.getNamenode());\n+    Configuration dfsConf \u003d dfs.getConf();\n+    URI dfsUri \u003d dfs.getUri();\n+    String nsId \u003d dfsUri.getHost();\n+    if (isHAEnabled(dfsConf, nsId)) {\n+      List\u003cClientProtocol\u003e namenodes \u003d\n+          getProxiesForAllNameNodesInNameservice(dfsConf, nsId);\n+      for (ClientProtocol proxy : namenodes) {\n+        if (proxy.getHAServiceState().equals(HAServiceState.ACTIVE)) {\n+          inAddr \u003d RPC.getServerAddress(proxy);\n+        }\n+      }\n+    } else {\n+      DFSClient dfsClient \u003d dfs.getClient();\n+      inAddr \u003d RPC.getServerAddress(dfsClient.getNamenode());\n+    }\n+    return inAddr;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static InetSocketAddress getAddressOfActive(FileSystem fs)\n      throws IOException {\n    InetSocketAddress inAddr \u003d null;\n    if (!(fs instanceof DistributedFileSystem)) {\n      throw new IllegalArgumentException(\"FileSystem \" + fs + \" is not a DFS.\");\n    }\n    // force client address resolution.\n    fs.exists(new Path(\"/\"));\n    DistributedFileSystem dfs \u003d (DistributedFileSystem) fs;\n    Configuration dfsConf \u003d dfs.getConf();\n    URI dfsUri \u003d dfs.getUri();\n    String nsId \u003d dfsUri.getHost();\n    if (isHAEnabled(dfsConf, nsId)) {\n      List\u003cClientProtocol\u003e namenodes \u003d\n          getProxiesForAllNameNodesInNameservice(dfsConf, nsId);\n      for (ClientProtocol proxy : namenodes) {\n        if (proxy.getHAServiceState().equals(HAServiceState.ACTIVE)) {\n          inAddr \u003d RPC.getServerAddress(proxy);\n        }\n      }\n    } else {\n      DFSClient dfsClient \u003d dfs.getClient();\n      inAddr \u003d RPC.getServerAddress(dfsClient.getNamenode());\n    }\n    return inAddr;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/HAUtil.java",
+      "extendedDetails": {}
+    },
+    "ce1a7ec9755f17527c29b0db713d7e01750e10c9": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-2941. Add an administrative command to download a copy of the fsimage from the NN. Contributed by Aaron T. Myers.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1305447 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "26/03/12 10:02 AM",
+      "commitName": "ce1a7ec9755f17527c29b0db713d7e01750e10c9",
+      "commitAuthor": "Aaron Myers",
+      "diff": "@@ -0,0 +1,11 @@\n+  public static InetSocketAddress getAddressOfActive(FileSystem fs)\n+      throws IOException {\n+    if (!(fs instanceof DistributedFileSystem)) {\n+      throw new IllegalArgumentException(\"FileSystem \" + fs + \" is not a DFS.\");\n+    }\n+    // force client address resolution.\n+    fs.exists(new Path(\"/\"));\n+    DistributedFileSystem dfs \u003d (DistributedFileSystem) fs;\n+    DFSClient dfsClient \u003d dfs.getClient();\n+    return RPC.getServerAddress(dfsClient.getNamenode());\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static InetSocketAddress getAddressOfActive(FileSystem fs)\n      throws IOException {\n    if (!(fs instanceof DistributedFileSystem)) {\n      throw new IllegalArgumentException(\"FileSystem \" + fs + \" is not a DFS.\");\n    }\n    // force client address resolution.\n    fs.exists(new Path(\"/\"));\n    DistributedFileSystem dfs \u003d (DistributedFileSystem) fs;\n    DFSClient dfsClient \u003d dfs.getClient();\n    return RPC.getServerAddress(dfsClient.getNamenode());\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/HAUtil.java"
+    }
+  }
+}

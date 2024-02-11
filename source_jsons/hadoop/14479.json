@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "JournalNodeSyncer.java",
+  "functionName": "getOtherJournalNodeAddrs",
+  "functionId": "getOtherJournalNodeAddrs",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNodeSyncer.java",
+  "functionStartLine": 263,
+  "functionEndLine": 311,
+  "numCommitsSeen": 14,
+  "timeTaken": 1463,
+  "changeHistory": [
+    "6d201f77c734d6c6a9e3e297fe3dbff251cbb8b3",
+    "13d4bcfe3535a2df79c2a56e7578716d15497ff4"
+  ],
+  "changeHistoryShort": {
+    "6d201f77c734d6c6a9e3e297fe3dbff251cbb8b3": "Ybodychange",
+    "13d4bcfe3535a2df79c2a56e7578716d15497ff4": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6d201f77c734d6c6a9e3e297fe3dbff251cbb8b3": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12498. Journal Syncer is not started in Federated + HA cluster. Contributed by Bharat Viswanadham.\n",
+      "commitDate": "10/11/17 4:30 PM",
+      "commitName": "6d201f77c734d6c6a9e3e297fe3dbff251cbb8b3",
+      "commitAuthor": "Arpit Agarwal",
+      "commitDateOld": "25/10/17 2:24 PM",
+      "commitNameOld": "7da15eac7abe59f446b184aa1766bbfd3a19db4e",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 16.13,
+      "commitsBetweenForRepo": 209,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,49 @@\n   private List\u003cInetSocketAddress\u003e getOtherJournalNodeAddrs() {\n-    URI uri \u003d null;\n+    String uriStr \u003d \"\";\n     try {\n-      String uriStr \u003d conf.get(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY);\n+      uriStr \u003d conf.getTrimmed(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY);\n+\n       if (uriStr \u003d\u003d null || uriStr.isEmpty()) {\n-        LOG.warn(\"Could not construct Shared Edits Uri\");\n-        return null;\n+        if (nameServiceId !\u003d null) {\n+          uriStr \u003d conf.getTrimmed(DFSConfigKeys\n+              .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \".\" + nameServiceId);\n+        }\n       }\n-      uri \u003d new URI(uriStr);\n-      return Util.getLoggerAddresses(uri,\n-          Sets.newHashSet(jn.getBoundIpcAddress()));\n+\n+      if (uriStr \u003d\u003d null || uriStr.isEmpty()) {\n+        HashSet\u003cString\u003e sharedEditsUri \u003d Sets.newHashSet();\n+        if (nameServiceId !\u003d null) {\n+          Collection\u003cString\u003e nnIds \u003d DFSUtilClient.getNameNodeIds(\n+              conf, nameServiceId);\n+          for (String nnId : nnIds) {\n+            String suffix \u003d nameServiceId + \".\" + nnId;\n+            uriStr \u003d conf.getTrimmed(DFSConfigKeys\n+                .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \".\" + suffix);\n+            sharedEditsUri.add(uriStr);\n+          }\n+          if (sharedEditsUri.size() \u003e 1) {\n+            uriStr \u003d null;\n+            LOG.error(\"The conf property \" + DFSConfigKeys\n+                .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \" not set properly, \" +\n+                \"it has been configured with different journalnode values \" +\n+                sharedEditsUri.toString() + \" for a\" +\n+                \" single nameserviceId\" + nameServiceId);\n+          }\n+        }\n+      }\n+\n+      if (uriStr \u003d\u003d null || uriStr.isEmpty()) {\n+        LOG.error(\"Could not construct Shared Edits Uri\");\n+        return null;\n+      } else {\n+        return getJournalAddrList(uriStr);\n+      }\n+\n     } catch (URISyntaxException e) {\n       LOG.error(\"The conf property \" + DFSConfigKeys\n           .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \" not set properly.\");\n     } catch (IOException e) {\n-      LOG.error(\"Could not parse JournalNode addresses: \" + uri);\n+      LOG.error(\"Could not parse JournalNode addresses: \" + uriStr);\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private List\u003cInetSocketAddress\u003e getOtherJournalNodeAddrs() {\n    String uriStr \u003d \"\";\n    try {\n      uriStr \u003d conf.getTrimmed(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY);\n\n      if (uriStr \u003d\u003d null || uriStr.isEmpty()) {\n        if (nameServiceId !\u003d null) {\n          uriStr \u003d conf.getTrimmed(DFSConfigKeys\n              .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \".\" + nameServiceId);\n        }\n      }\n\n      if (uriStr \u003d\u003d null || uriStr.isEmpty()) {\n        HashSet\u003cString\u003e sharedEditsUri \u003d Sets.newHashSet();\n        if (nameServiceId !\u003d null) {\n          Collection\u003cString\u003e nnIds \u003d DFSUtilClient.getNameNodeIds(\n              conf, nameServiceId);\n          for (String nnId : nnIds) {\n            String suffix \u003d nameServiceId + \".\" + nnId;\n            uriStr \u003d conf.getTrimmed(DFSConfigKeys\n                .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \".\" + suffix);\n            sharedEditsUri.add(uriStr);\n          }\n          if (sharedEditsUri.size() \u003e 1) {\n            uriStr \u003d null;\n            LOG.error(\"The conf property \" + DFSConfigKeys\n                .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \" not set properly, \" +\n                \"it has been configured with different journalnode values \" +\n                sharedEditsUri.toString() + \" for a\" +\n                \" single nameserviceId\" + nameServiceId);\n          }\n        }\n      }\n\n      if (uriStr \u003d\u003d null || uriStr.isEmpty()) {\n        LOG.error(\"Could not construct Shared Edits Uri\");\n        return null;\n      } else {\n        return getJournalAddrList(uriStr);\n      }\n\n    } catch (URISyntaxException e) {\n      LOG.error(\"The conf property \" + DFSConfigKeys\n          .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \" not set properly.\");\n    } catch (IOException e) {\n      LOG.error(\"Could not parse JournalNode addresses: \" + uriStr);\n    }\n    return null;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNodeSyncer.java",
+      "extendedDetails": {}
+    },
+    "13d4bcfe3535a2df79c2a56e7578716d15497ff4": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-4025. QJM: Sychronize past log segments to JNs that missed them. Contributed by Hanisha Koneru.\n",
+      "commitDate": "22/02/17 4:33 PM",
+      "commitName": "13d4bcfe3535a2df79c2a56e7578716d15497ff4",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,19 @@\n+  private List\u003cInetSocketAddress\u003e getOtherJournalNodeAddrs() {\n+    URI uri \u003d null;\n+    try {\n+      String uriStr \u003d conf.get(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY);\n+      if (uriStr \u003d\u003d null || uriStr.isEmpty()) {\n+        LOG.warn(\"Could not construct Shared Edits Uri\");\n+        return null;\n+      }\n+      uri \u003d new URI(uriStr);\n+      return Util.getLoggerAddresses(uri,\n+          Sets.newHashSet(jn.getBoundIpcAddress()));\n+    } catch (URISyntaxException e) {\n+      LOG.error(\"The conf property \" + DFSConfigKeys\n+          .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \" not set properly.\");\n+    } catch (IOException e) {\n+      LOG.error(\"Could not parse JournalNode addresses: \" + uri);\n+    }\n+    return null;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private List\u003cInetSocketAddress\u003e getOtherJournalNodeAddrs() {\n    URI uri \u003d null;\n    try {\n      String uriStr \u003d conf.get(DFSConfigKeys.DFS_NAMENODE_SHARED_EDITS_DIR_KEY);\n      if (uriStr \u003d\u003d null || uriStr.isEmpty()) {\n        LOG.warn(\"Could not construct Shared Edits Uri\");\n        return null;\n      }\n      uri \u003d new URI(uriStr);\n      return Util.getLoggerAddresses(uri,\n          Sets.newHashSet(jn.getBoundIpcAddress()));\n    } catch (URISyntaxException e) {\n      LOG.error(\"The conf property \" + DFSConfigKeys\n          .DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \" not set properly.\");\n    } catch (IOException e) {\n      LOG.error(\"Could not parse JournalNode addresses: \" + uri);\n    }\n    return null;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/JournalNodeSyncer.java"
+    }
+  }
+}

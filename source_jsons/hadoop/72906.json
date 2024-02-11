@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "JavaKeyStoreProvider.java",
+  "functionName": "getKeys",
+  "functionId": "getKeys",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/key/JavaKeyStoreProvider.java",
+  "functionStartLine": 353,
+  "functionEndLine": 374,
+  "numCommitsSeen": 26,
+  "timeTaken": 1061,
+  "changeHistory": [
+    "98a98ea0c57d01b875b820f53d43dbf885d07711",
+    "cbdad3d47150ef01440515128241af6bfd47a3ec"
+  ],
+  "changeHistoryShort": {
+    "98a98ea0c57d01b875b820f53d43dbf885d07711": "Ybodychange",
+    "cbdad3d47150ef01440515128241af6bfd47a3ec": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "98a98ea0c57d01b875b820f53d43dbf885d07711": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10427. KeyProvider implementations should be thread safe. (tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1586103 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "09/04/14 12:43 PM",
+      "commitName": "98a98ea0c57d01b875b820f53d43dbf885d07711",
+      "commitAuthor": "Alejandro Abdelnur",
+      "commitDateOld": "28/03/14 8:57 AM",
+      "commitNameOld": "92b9c6ff60bcfb270fc4d8631dcba2a3762212c2",
+      "commitAuthorOld": "Owen O\u0027Malley",
+      "daysBetweenCommits": 12.16,
+      "commitsBetweenForRepo": 67,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,22 @@\n   public List\u003cString\u003e getKeys() throws IOException {\n-    ArrayList\u003cString\u003e list \u003d new ArrayList\u003cString\u003e();\n-    String alias \u003d null;\n+    readLock.lock();\n     try {\n-      Enumeration\u003cString\u003e e \u003d keyStore.aliases();\n-      while (e.hasMoreElements()) {\n-         alias \u003d e.nextElement();\n-         // only include the metadata key names in the list of names\n-         if (!alias.contains(\"@\")) {\n-             list.add(alias);\n-         }\n+      ArrayList\u003cString\u003e list \u003d new ArrayList\u003cString\u003e();\n+      String alias \u003d null;\n+      try {\n+        Enumeration\u003cString\u003e e \u003d keyStore.aliases();\n+        while (e.hasMoreElements()) {\n+           alias \u003d e.nextElement();\n+           // only include the metadata key names in the list of names\n+           if (!alias.contains(\"@\")) {\n+               list.add(alias);\n+           }\n+        }\n+      } catch (KeyStoreException e) {\n+        throw new IOException(\"Can\u0027t get key \" + alias + \" from \" + path, e);\n       }\n-    } catch (KeyStoreException e) {\n-      throw new IOException(\"Can\u0027t get key \" + alias + \" from \" + path, e);\n+      return list;\n+    } finally {\n+      readLock.unlock();\n     }\n-    return list;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public List\u003cString\u003e getKeys() throws IOException {\n    readLock.lock();\n    try {\n      ArrayList\u003cString\u003e list \u003d new ArrayList\u003cString\u003e();\n      String alias \u003d null;\n      try {\n        Enumeration\u003cString\u003e e \u003d keyStore.aliases();\n        while (e.hasMoreElements()) {\n           alias \u003d e.nextElement();\n           // only include the metadata key names in the list of names\n           if (!alias.contains(\"@\")) {\n               list.add(alias);\n           }\n        }\n      } catch (KeyStoreException e) {\n        throw new IOException(\"Can\u0027t get key \" + alias + \" from \" + path, e);\n      }\n      return list;\n    } finally {\n      readLock.unlock();\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/key/JavaKeyStoreProvider.java",
+      "extendedDetails": {}
+    },
+    "cbdad3d47150ef01440515128241af6bfd47a3ec": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10201. Add listing to KeyProvider API. (Larry McCay via omalley)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1556072 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/01/14 3:43 PM",
+      "commitName": "cbdad3d47150ef01440515128241af6bfd47a3ec",
+      "commitAuthor": "Owen O\u0027Malley",
+      "diff": "@@ -0,0 +1,17 @@\n+  public List\u003cString\u003e getKeys() throws IOException {\n+    ArrayList\u003cString\u003e list \u003d new ArrayList\u003cString\u003e();\n+    String alias \u003d null;\n+    try {\n+      Enumeration\u003cString\u003e e \u003d keyStore.aliases();\n+      while (e.hasMoreElements()) {\n+         alias \u003d e.nextElement();\n+         // only include the metadata key names in the list of names\n+         if (!alias.contains(\"@\")) {\n+             list.add(alias);\n+         }\n+      }\n+    } catch (KeyStoreException e) {\n+      throw new IOException(\"Can\u0027t get key \" + alias + \" from \" + path, e);\n+    }\n+    return list;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public List\u003cString\u003e getKeys() throws IOException {\n    ArrayList\u003cString\u003e list \u003d new ArrayList\u003cString\u003e();\n    String alias \u003d null;\n    try {\n      Enumeration\u003cString\u003e e \u003d keyStore.aliases();\n      while (e.hasMoreElements()) {\n         alias \u003d e.nextElement();\n         // only include the metadata key names in the list of names\n         if (!alias.contains(\"@\")) {\n             list.add(alias);\n         }\n      }\n    } catch (KeyStoreException e) {\n      throw new IOException(\"Can\u0027t get key \" + alias + \" from \" + path, e);\n    }\n    return list;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/key/JavaKeyStoreProvider.java"
+    }
+  }
+}

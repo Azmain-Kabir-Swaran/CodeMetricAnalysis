@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "Tasks.java",
+  "functionName": "runSingleThreaded",
+  "functionId": "runSingleThreaded___task-Task__I,E__",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/Tasks.java",
+  "functionStartLine": 154,
+  "functionEndLine": 232,
+  "numCommitsSeen": 1,
+  "timeTaken": 1174,
+  "changeHistory": [
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,79 @@\n+    private \u003cE extends Exception\u003e boolean runSingleThreaded(Task\u003cI, E\u003e task)\n+        throws E {\n+      List\u003cI\u003e succeeded \u003d new ArrayList\u003c\u003e();\n+      List\u003cException\u003e exceptions \u003d new ArrayList\u003c\u003e();\n+\n+      Iterator\u003cI\u003e iterator \u003d items.iterator();\n+      boolean threw \u003d true;\n+      try {\n+        while (iterator.hasNext()) {\n+          I item \u003d iterator.next();\n+          try {\n+            task.run(item);\n+            succeeded.add(item);\n+\n+          } catch (Exception e) {\n+            exceptions.add(e);\n+\n+            if (onFailure !\u003d null) {\n+              try {\n+                onFailure.run(item, e);\n+              } catch (Exception failException) {\n+                LOG.error(\"Failed to clean up on failure\", e);\n+                // keep going\n+              }\n+            }\n+\n+            if (stopOnFailure) {\n+              break;\n+            }\n+          }\n+        }\n+\n+        threw \u003d false;\n+\n+      } finally {\n+        // threw handles exceptions that were *not* caught by the catch block,\n+        // and exceptions that were caught and possibly handled by onFailure\n+        // are kept in exceptions.\n+        if (threw || !exceptions.isEmpty()) {\n+          if (revertTask !\u003d null) {\n+            boolean failed \u003d false;\n+            for (I item : succeeded) {\n+              try {\n+                revertTask.run(item);\n+              } catch (Exception e) {\n+                LOG.error(\"Failed to revert task\", e);\n+                failed \u003d true;\n+                // keep going\n+              }\n+              if (stopRevertsOnFailure \u0026\u0026 failed) {\n+                break;\n+              }\n+            }\n+          }\n+\n+          if (abortTask !\u003d null) {\n+            boolean failed \u003d false;\n+            while (iterator.hasNext()) {\n+              try {\n+                abortTask.run(iterator.next());\n+              } catch (Exception e) {\n+                failed \u003d true;\n+                LOG.error(\"Failed to abort task\", e);\n+                // keep going\n+              }\n+              if (stopAbortsOnFailure \u0026\u0026 failed) {\n+                break;\n+              }\n+            }\n+          }\n+        }\n+      }\n+\n+      if (!suppressExceptions \u0026\u0026 !exceptions.isEmpty()) {\n+        Tasks.\u003cE\u003ethrowOne(exceptions);\n+      }\n+\n+      return !threw \u0026\u0026 exceptions.isEmpty();\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private \u003cE extends Exception\u003e boolean runSingleThreaded(Task\u003cI, E\u003e task)\n        throws E {\n      List\u003cI\u003e succeeded \u003d new ArrayList\u003c\u003e();\n      List\u003cException\u003e exceptions \u003d new ArrayList\u003c\u003e();\n\n      Iterator\u003cI\u003e iterator \u003d items.iterator();\n      boolean threw \u003d true;\n      try {\n        while (iterator.hasNext()) {\n          I item \u003d iterator.next();\n          try {\n            task.run(item);\n            succeeded.add(item);\n\n          } catch (Exception e) {\n            exceptions.add(e);\n\n            if (onFailure !\u003d null) {\n              try {\n                onFailure.run(item, e);\n              } catch (Exception failException) {\n                LOG.error(\"Failed to clean up on failure\", e);\n                // keep going\n              }\n            }\n\n            if (stopOnFailure) {\n              break;\n            }\n          }\n        }\n\n        threw \u003d false;\n\n      } finally {\n        // threw handles exceptions that were *not* caught by the catch block,\n        // and exceptions that were caught and possibly handled by onFailure\n        // are kept in exceptions.\n        if (threw || !exceptions.isEmpty()) {\n          if (revertTask !\u003d null) {\n            boolean failed \u003d false;\n            for (I item : succeeded) {\n              try {\n                revertTask.run(item);\n              } catch (Exception e) {\n                LOG.error(\"Failed to revert task\", e);\n                failed \u003d true;\n                // keep going\n              }\n              if (stopRevertsOnFailure \u0026\u0026 failed) {\n                break;\n              }\n            }\n          }\n\n          if (abortTask !\u003d null) {\n            boolean failed \u003d false;\n            while (iterator.hasNext()) {\n              try {\n                abortTask.run(iterator.next());\n              } catch (Exception e) {\n                failed \u003d true;\n                LOG.error(\"Failed to abort task\", e);\n                // keep going\n              }\n              if (stopAbortsOnFailure \u0026\u0026 failed) {\n                break;\n              }\n            }\n          }\n        }\n      }\n\n      if (!suppressExceptions \u0026\u0026 !exceptions.isEmpty()) {\n        Tasks.\u003cE\u003ethrowOne(exceptions);\n      }\n\n      return !threw \u0026\u0026 exceptions.isEmpty();\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/Tasks.java"
+    }
+  }
+}

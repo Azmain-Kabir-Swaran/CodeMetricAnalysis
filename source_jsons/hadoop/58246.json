@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ContainerTokenIdentifier.java",
+  "functionName": "readFieldsInOldFormat",
+  "functionId": "readFieldsInOldFormat___in-DataInputStream",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/security/ContainerTokenIdentifier.java",
+  "functionStartLine": 345,
+  "functionEndLine": 392,
+  "numCommitsSeen": 26,
+  "timeTaken": 1691,
+  "changeHistory": [
+    "3e5f7ea986600e084fcac723b0423e7de1b3bb8a"
+  ],
+  "changeHistoryShort": {
+    "3e5f7ea986600e084fcac723b0423e7de1b3bb8a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "3e5f7ea986600e084fcac723b0423e7de1b3bb8a": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-8310. Handle old NMTokenIdentifier, AMRMTokenIdentifier, and ContainerTokenIdentifier formats. Contributed by Robert Kanter.\n",
+      "commitDate": "22/05/18 6:10 PM",
+      "commitName": "3e5f7ea986600e084fcac723b0423e7de1b3bb8a",
+      "commitAuthor": "Miklos Szegedi",
+      "diff": "@@ -0,0 +1,48 @@\n+  private void readFieldsInOldFormat(DataInputStream in) throws IOException {\n+    ContainerTokenIdentifierProto.Builder builder \u003d\n+        ContainerTokenIdentifierProto.newBuilder();\n+    builder.setNodeLabelExpression(CommonNodeLabelsManager.NO_LABEL);\n+    builder.setContainerType(ProtoUtils.convertToProtoFormat(\n+        ContainerType.TASK));\n+    builder.setExecutionType(ProtoUtils.convertToProtoFormat(\n+        ExecutionType.GUARANTEED));\n+    builder.setAllocationRequestId(-1);\n+    builder.setVersion(0);\n+\n+    ApplicationId applicationId \u003d\n+        ApplicationId.newInstance(in.readLong(), in.readInt());\n+    ApplicationAttemptId applicationAttemptId \u003d\n+        ApplicationAttemptId.newInstance(applicationId, in.readInt());\n+    ContainerId containerId \u003d\n+        ContainerId.newContainerId(applicationAttemptId, in.readLong());\n+    builder.setContainerId(ProtoUtils.convertToProtoFormat(containerId));\n+    builder.setNmHostAddr(in.readUTF());\n+    builder.setAppSubmitter(in.readUTF());\n+    int memory \u003d in.readInt();\n+    int vCores \u003d in.readInt();\n+    Resource resource \u003d Resource.newInstance(memory, vCores);\n+    builder.setResource(ProtoUtils.convertToProtoFormat(resource));\n+    builder.setExpiryTimeStamp(in.readLong());\n+    builder.setMasterKeyId(in.readInt());\n+    builder.setRmIdentifier(in.readLong());\n+    Priority priority \u003d Priority.newInstance(in.readInt());\n+    builder.setPriority(((PriorityPBImpl)priority).getProto());\n+    builder.setCreationTime(in.readLong());\n+\n+    int logAggregationSize \u003d -1;\n+    try {\n+      logAggregationSize \u003d in.readInt();\n+    } catch (EOFException eof) {\n+      // In the old format, there was no versioning or proper handling of new\n+      // fields.  Depending on how old, the log aggregation size and data, may\n+      // or may not exist.  To handle that, we try to read it and ignore the\n+      // EOFException that\u0027s thrown if it\u0027s not there.\n+    }\n+    if (logAggregationSize !\u003d -1) {\n+      byte[] bytes \u003d new byte[logAggregationSize];\n+      in.readFully(bytes);\n+      builder.setLogAggregationContext(\n+          LogAggregationContextProto.parseFrom(bytes));\n+    }\n+    proto \u003d builder.build();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void readFieldsInOldFormat(DataInputStream in) throws IOException {\n    ContainerTokenIdentifierProto.Builder builder \u003d\n        ContainerTokenIdentifierProto.newBuilder();\n    builder.setNodeLabelExpression(CommonNodeLabelsManager.NO_LABEL);\n    builder.setContainerType(ProtoUtils.convertToProtoFormat(\n        ContainerType.TASK));\n    builder.setExecutionType(ProtoUtils.convertToProtoFormat(\n        ExecutionType.GUARANTEED));\n    builder.setAllocationRequestId(-1);\n    builder.setVersion(0);\n\n    ApplicationId applicationId \u003d\n        ApplicationId.newInstance(in.readLong(), in.readInt());\n    ApplicationAttemptId applicationAttemptId \u003d\n        ApplicationAttemptId.newInstance(applicationId, in.readInt());\n    ContainerId containerId \u003d\n        ContainerId.newContainerId(applicationAttemptId, in.readLong());\n    builder.setContainerId(ProtoUtils.convertToProtoFormat(containerId));\n    builder.setNmHostAddr(in.readUTF());\n    builder.setAppSubmitter(in.readUTF());\n    int memory \u003d in.readInt();\n    int vCores \u003d in.readInt();\n    Resource resource \u003d Resource.newInstance(memory, vCores);\n    builder.setResource(ProtoUtils.convertToProtoFormat(resource));\n    builder.setExpiryTimeStamp(in.readLong());\n    builder.setMasterKeyId(in.readInt());\n    builder.setRmIdentifier(in.readLong());\n    Priority priority \u003d Priority.newInstance(in.readInt());\n    builder.setPriority(((PriorityPBImpl)priority).getProto());\n    builder.setCreationTime(in.readLong());\n\n    int logAggregationSize \u003d -1;\n    try {\n      logAggregationSize \u003d in.readInt();\n    } catch (EOFException eof) {\n      // In the old format, there was no versioning or proper handling of new\n      // fields.  Depending on how old, the log aggregation size and data, may\n      // or may not exist.  To handle that, we try to read it and ignore the\n      // EOFException that\u0027s thrown if it\u0027s not there.\n    }\n    if (logAggregationSize !\u003d -1) {\n      byte[] bytes \u003d new byte[logAggregationSize];\n      in.readFully(bytes);\n      builder.setLogAggregationContext(\n          LogAggregationContextProto.parseFrom(bytes));\n    }\n    proto \u003d builder.build();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/security/ContainerTokenIdentifier.java"
+    }
+  }
+}

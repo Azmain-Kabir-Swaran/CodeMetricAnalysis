@@ -1,0 +1,111 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3GuardTool.java",
+  "functionName": "initS3AFileSystem",
+  "functionId": "initS3AFileSystem___path-String",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3GuardTool.java",
+  "functionStartLine": 383,
+  "functionEndLine": 403,
+  "numCommitsSeen": 42,
+  "timeTaken": 3462,
+  "changeHistory": [
+    "49df83899543586bbcaf80f01399ade031cf68b0",
+    "5db32b8ced8dc7533737caab88b97e151d2b223f",
+    "f365957c6326f88734bc0a5d01cfb7eac713db20",
+    "47011d7dd300b0c74bb6cfe25b918c479d718f4f",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "49df83899543586bbcaf80f01399ade031cf68b0": "Ybodychange",
+    "5db32b8ced8dc7533737caab88b97e151d2b223f": "Ybodychange",
+    "f365957c6326f88734bc0a5d01cfb7eac713db20": "Ymodifierchange",
+    "47011d7dd300b0c74bb6cfe25b918c479d718f4f": "Ybodychange",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "49df83899543586bbcaf80f01399ade031cf68b0": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16697. Tune/audit S3A authoritative mode.\n\nContains:\n\nHADOOP-16474. S3Guard ProgressiveRenameTracker to mark destination\n              dirirectory as authoritative on success.\nHADOOP-16684. S3guard bucket info to list a bit more about\n              authoritative paths.\nHADOOP-16722. S3GuardTool to support FilterFileSystem.\n\nThis patch improves the marking of newly created/import directory\ntrees in S3Guard DynamoDB tables as authoritative.\n\nSpecific changes:\n\n * Renamed directories are marked as authoritative if the entire\n   operation succeeded (HADOOP-16474).\n * When updating parent table entries as part of any table write,\n   there\u0027s no overwriting of their authoritative flag.\n\ns3guard import changes:\n\n* new -verbose flag to print out what is going on.\n\n* The \"s3guard import\" command lets you declare that a directory tree\nis to be marked as authoritative\n\n  hadoop s3guard import -authoritative -verbose s3a://bucket/path\n\nWhen importing a listing and a file is found, the import tool queries\nthe metastore and only updates the entry if the file is different from\nbefore, where different \u003d\u003d new timestamp, etag, or length. S3Guard can get\ntimestamp differences due to clock skew in PUT operations.\n\nAs the recursive list performed by the import command doesn\u0027t retrieve the\nversionID, the existing entry may in fact be more complete.\nWhen updating an existing due to clock skew the existing version ID\nis propagated to the new entry (note: the etags must match; this is needed\nto deal with inconsistent listings).\n\nThere is a new s3guard command to audit a s3guard bucket/path\u0027s\nauthoritative state:\n\n  hadoop s3guard authoritative -check-config s3a://bucket/path\n\nThis is primarily for testing/auditing.\n\nThe s3guard bucket-info command also provides some more details on the\nauthoritative state of a store (HADOOP-16684).\n\nChange-Id: I58001341c04f6f3597fcb4fcb1581ccefeb77d91\n",
+      "commitDate": "10/01/20 3:11 AM",
+      "commitName": "49df83899543586bbcaf80f01399ade031cf68b0",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "10/12/19 6:51 AM",
+      "commitNameOld": "875a3e97dd4a26fe224a1858c54d1b4512db6be3",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 30.85,
+      "commitsBetweenForRepo": 95,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,21 @@\n   protected void initS3AFileSystem(String path) throws IOException {\n     LOG.debug(\"Initializing S3A FS to {}\", path);\n     URI uri \u003d toUri(path);\n     // Make sure that S3AFileSystem does not hold an actual MetadataStore\n     // implementation.\n     Configuration conf \u003d new Configuration(getConf());\n     String nullStore \u003d NullMetadataStore.class.getName();\n     conf.set(S3_METADATA_STORE_IMPL, nullStore);\n     String bucket \u003d uri.getHost();\n     S3AUtils.setBucketOption(conf,\n         bucket,\n         S3_METADATA_STORE_IMPL, S3GUARD_METASTORE_NULL);\n     String updatedBucketOption \u003d S3AUtils.getBucketOption(conf, bucket,\n         S3_METADATA_STORE_IMPL);\n     LOG.debug(\"updated bucket store option {}\", updatedBucketOption);\n     Preconditions.checkState(S3GUARD_METASTORE_NULL.equals(updatedBucketOption),\n         \"Expected bucket option to be %s but was %s\",\n         S3GUARD_METASTORE_NULL, updatedBucketOption);\n \n-    FileSystem fs \u003d FileSystem.newInstance(uri, conf);\n-    if (!(fs instanceof S3AFileSystem)) {\n-      throw invalidArgs(\"URI %s is not a S3A file system: %s\",\n-          uri, fs.getClass().getName());\n-    }\n-    filesystem \u003d (S3AFileSystem) fs;\n+    bindFilesystem(FileSystem.newInstance(uri, conf));\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void initS3AFileSystem(String path) throws IOException {\n    LOG.debug(\"Initializing S3A FS to {}\", path);\n    URI uri \u003d toUri(path);\n    // Make sure that S3AFileSystem does not hold an actual MetadataStore\n    // implementation.\n    Configuration conf \u003d new Configuration(getConf());\n    String nullStore \u003d NullMetadataStore.class.getName();\n    conf.set(S3_METADATA_STORE_IMPL, nullStore);\n    String bucket \u003d uri.getHost();\n    S3AUtils.setBucketOption(conf,\n        bucket,\n        S3_METADATA_STORE_IMPL, S3GUARD_METASTORE_NULL);\n    String updatedBucketOption \u003d S3AUtils.getBucketOption(conf, bucket,\n        S3_METADATA_STORE_IMPL);\n    LOG.debug(\"updated bucket store option {}\", updatedBucketOption);\n    Preconditions.checkState(S3GUARD_METASTORE_NULL.equals(updatedBucketOption),\n        \"Expected bucket option to be %s but was %s\",\n        S3GUARD_METASTORE_NULL, updatedBucketOption);\n\n    bindFilesystem(FileSystem.newInstance(uri, conf));\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3GuardTool.java",
+      "extendedDetails": {}
+    },
+    "5db32b8ced8dc7533737caab88b97e151d2b223f": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16547. make sure that s3guard prune sets up the FS (#1402). Contributed by Steve Loughran.\n\nChange-Id: Iaf71561cef6c797a3c66fed110faf08da6cac361\r\n",
+      "commitDate": "18/09/19 10:22 AM",
+      "commitName": "5db32b8ced8dc7533737caab88b97e151d2b223f",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "12/09/19 4:12 AM",
+      "commitNameOld": "4e273a31f66013b7c20e8114451f5bc6c741f2cc",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 6.26,
+      "commitsBetweenForRepo": 56,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,26 @@\n   protected void initS3AFileSystem(String path) throws IOException {\n+    LOG.debug(\"Initializing S3A FS to {}\", path);\n     URI uri \u003d toUri(path);\n     // Make sure that S3AFileSystem does not hold an actual MetadataStore\n     // implementation.\n     Configuration conf \u003d new Configuration(getConf());\n     String nullStore \u003d NullMetadataStore.class.getName();\n     conf.set(S3_METADATA_STORE_IMPL, nullStore);\n     String bucket \u003d uri.getHost();\n     S3AUtils.setBucketOption(conf,\n         bucket,\n         S3_METADATA_STORE_IMPL, S3GUARD_METASTORE_NULL);\n     String updatedBucketOption \u003d S3AUtils.getBucketOption(conf, bucket,\n         S3_METADATA_STORE_IMPL);\n     LOG.debug(\"updated bucket store option {}\", updatedBucketOption);\n     Preconditions.checkState(S3GUARD_METASTORE_NULL.equals(updatedBucketOption),\n         \"Expected bucket option to be %s but was %s\",\n         S3GUARD_METASTORE_NULL, updatedBucketOption);\n \n     FileSystem fs \u003d FileSystem.newInstance(uri, conf);\n     if (!(fs instanceof S3AFileSystem)) {\n       throw invalidArgs(\"URI %s is not a S3A file system: %s\",\n           uri, fs.getClass().getName());\n     }\n     filesystem \u003d (S3AFileSystem) fs;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void initS3AFileSystem(String path) throws IOException {\n    LOG.debug(\"Initializing S3A FS to {}\", path);\n    URI uri \u003d toUri(path);\n    // Make sure that S3AFileSystem does not hold an actual MetadataStore\n    // implementation.\n    Configuration conf \u003d new Configuration(getConf());\n    String nullStore \u003d NullMetadataStore.class.getName();\n    conf.set(S3_METADATA_STORE_IMPL, nullStore);\n    String bucket \u003d uri.getHost();\n    S3AUtils.setBucketOption(conf,\n        bucket,\n        S3_METADATA_STORE_IMPL, S3GUARD_METASTORE_NULL);\n    String updatedBucketOption \u003d S3AUtils.getBucketOption(conf, bucket,\n        S3_METADATA_STORE_IMPL);\n    LOG.debug(\"updated bucket store option {}\", updatedBucketOption);\n    Preconditions.checkState(S3GUARD_METASTORE_NULL.equals(updatedBucketOption),\n        \"Expected bucket option to be %s but was %s\",\n        S3GUARD_METASTORE_NULL, updatedBucketOption);\n\n    FileSystem fs \u003d FileSystem.newInstance(uri, conf);\n    if (!(fs instanceof S3AFileSystem)) {\n      throw invalidArgs(\"URI %s is not a S3A file system: %s\",\n          uri, fs.getClass().getName());\n    }\n    filesystem \u003d (S3AFileSystem) fs;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3GuardTool.java",
+      "extendedDetails": {}
+    },
+    "f365957c6326f88734bc0a5d01cfb7eac713db20": {
+      "type": "Ymodifierchange",
+      "commitMessage": "HADOOP-15229. Add FileSystem builder-based openFile() API to match createFile();\nS3A to implement S3 Select through this API.\n\nThe new openFile() API is asynchronous, and implemented across FileSystem and FileContext.\n\nThe MapReduce V2 inputs are moved to this API, and you can actually set must/may\noptions to pass in.\n\nThis is more useful for setting things like s3a seek policy than for S3 select,\nas the existing input format/record readers can\u0027t handle S3 select output where\nthe stream is shorter than the file length, and splitting plain text is suboptimal.\nFuture work is needed there.\n\nIn the meantime, any/all filesystem connectors are now free to add their own filesystem-specific\nconfiguration parameters which can be set in jobs and used to set filesystem input stream\noptions (seek policy, retry, encryption secrets, etc).\n\nContributed by Steve Loughran\n",
+      "commitDate": "05/02/19 3:51 AM",
+      "commitName": "f365957c6326f88734bc0a5d01cfb7eac713db20",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "14/01/19 9:59 AM",
+      "commitNameOld": "6d0bffe17eadedd60d4599427248b0db4a7c5502",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 21.74,
+      "commitsBetweenForRepo": 167,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,25 @@\n-  void initS3AFileSystem(String path) throws IOException {\n+  protected void initS3AFileSystem(String path) throws IOException {\n     URI uri \u003d toUri(path);\n     // Make sure that S3AFileSystem does not hold an actual MetadataStore\n     // implementation.\n     Configuration conf \u003d new Configuration(getConf());\n     String nullStore \u003d NullMetadataStore.class.getName();\n     conf.set(S3_METADATA_STORE_IMPL, nullStore);\n     String bucket \u003d uri.getHost();\n     S3AUtils.setBucketOption(conf,\n         bucket,\n         S3_METADATA_STORE_IMPL, S3GUARD_METASTORE_NULL);\n     String updatedBucketOption \u003d S3AUtils.getBucketOption(conf, bucket,\n         S3_METADATA_STORE_IMPL);\n     LOG.debug(\"updated bucket store option {}\", updatedBucketOption);\n     Preconditions.checkState(S3GUARD_METASTORE_NULL.equals(updatedBucketOption),\n         \"Expected bucket option to be %s but was %s\",\n         S3GUARD_METASTORE_NULL, updatedBucketOption);\n \n     FileSystem fs \u003d FileSystem.newInstance(uri, conf);\n     if (!(fs instanceof S3AFileSystem)) {\n       throw invalidArgs(\"URI %s is not a S3A file system: %s\",\n           uri, fs.getClass().getName());\n     }\n     filesystem \u003d (S3AFileSystem) fs;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void initS3AFileSystem(String path) throws IOException {\n    URI uri \u003d toUri(path);\n    // Make sure that S3AFileSystem does not hold an actual MetadataStore\n    // implementation.\n    Configuration conf \u003d new Configuration(getConf());\n    String nullStore \u003d NullMetadataStore.class.getName();\n    conf.set(S3_METADATA_STORE_IMPL, nullStore);\n    String bucket \u003d uri.getHost();\n    S3AUtils.setBucketOption(conf,\n        bucket,\n        S3_METADATA_STORE_IMPL, S3GUARD_METASTORE_NULL);\n    String updatedBucketOption \u003d S3AUtils.getBucketOption(conf, bucket,\n        S3_METADATA_STORE_IMPL);\n    LOG.debug(\"updated bucket store option {}\", updatedBucketOption);\n    Preconditions.checkState(S3GUARD_METASTORE_NULL.equals(updatedBucketOption),\n        \"Expected bucket option to be %s but was %s\",\n        S3GUARD_METASTORE_NULL, updatedBucketOption);\n\n    FileSystem fs \u003d FileSystem.newInstance(uri, conf);\n    if (!(fs instanceof S3AFileSystem)) {\n      throw invalidArgs(\"URI %s is not a S3A file system: %s\",\n          uri, fs.getClass().getName());\n    }\n    filesystem \u003d (S3AFileSystem) fs;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3GuardTool.java",
+      "extendedDetails": {
+        "oldValue": "[]",
+        "newValue": "[protected]"
+      }
+    },
+    "47011d7dd300b0c74bb6cfe25b918c479d718f4f": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14220 Enhance S3GuardTool with bucket-info and set-capacity commands, tests. Contributed by Steve Loughran\n",
+      "commitDate": "25/09/17 3:59 PM",
+      "commitName": "47011d7dd300b0c74bb6cfe25b918c479d718f4f",
+      "commitAuthor": "Aaron Fabbri",
+      "commitDateOld": "01/09/17 6:13 AM",
+      "commitNameOld": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 24.41,
+      "commitsBetweenForRepo": 233,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,25 @@\n   void initS3AFileSystem(String path) throws IOException {\n-    URI uri;\n-    try {\n-      uri \u003d new URI(path);\n-    } catch (URISyntaxException e) {\n-      throw new IOException(e);\n-    }\n+    URI uri \u003d toUri(path);\n     // Make sure that S3AFileSystem does not hold an actual MetadataStore\n     // implementation.\n-    Configuration conf \u003d getConf();\n-    conf.setClass(S3_METADATA_STORE_IMPL, NullMetadataStore.class,\n-        MetadataStore.class);\n-    FileSystem fs \u003d FileSystem.get(uri, getConf());\n+    Configuration conf \u003d new Configuration(getConf());\n+    String nullStore \u003d NullMetadataStore.class.getName();\n+    conf.set(S3_METADATA_STORE_IMPL, nullStore);\n+    String bucket \u003d uri.getHost();\n+    S3AUtils.setBucketOption(conf,\n+        bucket,\n+        S3_METADATA_STORE_IMPL, S3GUARD_METASTORE_NULL);\n+    String updatedBucketOption \u003d S3AUtils.getBucketOption(conf, bucket,\n+        S3_METADATA_STORE_IMPL);\n+    LOG.debug(\"updated bucket store option {}\", updatedBucketOption);\n+    Preconditions.checkState(S3GUARD_METASTORE_NULL.equals(updatedBucketOption),\n+        \"Expected bucket option to be %s but was %s\",\n+        S3GUARD_METASTORE_NULL, updatedBucketOption);\n+\n+    FileSystem fs \u003d FileSystem.newInstance(uri, conf);\n     if (!(fs instanceof S3AFileSystem)) {\n-      throw new IOException(\n-          String.format(\"URI %s is not a S3A file system: %s\", uri,\n-              fs.getClass().getName()));\n+      throw invalidArgs(\"URI %s is not a S3A file system: %s\",\n+          uri, fs.getClass().getName());\n     }\n     filesystem \u003d (S3AFileSystem) fs;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void initS3AFileSystem(String path) throws IOException {\n    URI uri \u003d toUri(path);\n    // Make sure that S3AFileSystem does not hold an actual MetadataStore\n    // implementation.\n    Configuration conf \u003d new Configuration(getConf());\n    String nullStore \u003d NullMetadataStore.class.getName();\n    conf.set(S3_METADATA_STORE_IMPL, nullStore);\n    String bucket \u003d uri.getHost();\n    S3AUtils.setBucketOption(conf,\n        bucket,\n        S3_METADATA_STORE_IMPL, S3GUARD_METASTORE_NULL);\n    String updatedBucketOption \u003d S3AUtils.getBucketOption(conf, bucket,\n        S3_METADATA_STORE_IMPL);\n    LOG.debug(\"updated bucket store option {}\", updatedBucketOption);\n    Preconditions.checkState(S3GUARD_METASTORE_NULL.equals(updatedBucketOption),\n        \"Expected bucket option to be %s but was %s\",\n        S3GUARD_METASTORE_NULL, updatedBucketOption);\n\n    FileSystem fs \u003d FileSystem.newInstance(uri, conf);\n    if (!(fs instanceof S3AFileSystem)) {\n      throw invalidArgs(\"URI %s is not a S3A file system: %s\",\n          uri, fs.getClass().getName());\n    }\n    filesystem \u003d (S3AFileSystem) fs;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3GuardTool.java",
+      "extendedDetails": {}
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,20 @@\n+  void initS3AFileSystem(String path) throws IOException {\n+    URI uri;\n+    try {\n+      uri \u003d new URI(path);\n+    } catch (URISyntaxException e) {\n+      throw new IOException(e);\n+    }\n+    // Make sure that S3AFileSystem does not hold an actual MetadataStore\n+    // implementation.\n+    Configuration conf \u003d getConf();\n+    conf.setClass(S3_METADATA_STORE_IMPL, NullMetadataStore.class,\n+        MetadataStore.class);\n+    FileSystem fs \u003d FileSystem.get(uri, getConf());\n+    if (!(fs instanceof S3AFileSystem)) {\n+      throw new IOException(\n+          String.format(\"URI %s is not a S3A file system: %s\", uri,\n+              fs.getClass().getName()));\n+    }\n+    filesystem \u003d (S3AFileSystem) fs;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void initS3AFileSystem(String path) throws IOException {\n    URI uri;\n    try {\n      uri \u003d new URI(path);\n    } catch (URISyntaxException e) {\n      throw new IOException(e);\n    }\n    // Make sure that S3AFileSystem does not hold an actual MetadataStore\n    // implementation.\n    Configuration conf \u003d getConf();\n    conf.setClass(S3_METADATA_STORE_IMPL, NullMetadataStore.class,\n        MetadataStore.class);\n    FileSystem fs \u003d FileSystem.get(uri, getConf());\n    if (!(fs instanceof S3AFileSystem)) {\n      throw new IOException(\n          String.format(\"URI %s is not a S3A file system: %s\", uri,\n              fs.getClass().getName()));\n    }\n    filesystem \u003d (S3AFileSystem) fs;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3GuardTool.java"
+    }
+  }
+}

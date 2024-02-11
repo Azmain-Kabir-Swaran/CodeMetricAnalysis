@@ -1,0 +1,520 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "INodeDirectory.java",
+  "functionName": "cleanSubtree",
+  "functionId": "cleanSubtree___reclaimContext-ReclaimContext__snapshotId-int(modifiers-final)__priorSnapshotId-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+  "functionStartLine": 853,
+  "functionEndLine": 885,
+  "numCommitsSeen": 806,
+  "timeTaken": 9388,
+  "changeHistory": [
+    "a1b4eebcc92976a9fb78ad5d3ab70c52cc0a5fa7",
+    "6ef6594c7ee09b561e42c16ce4e91c0479908ad8",
+    "b2c85db86c9a62b0a03ee87547265077f664970a",
+    "4536399d47f6c061e149e2504600804a0f1e093d",
+    "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+    "5dae97a584d30cef3e34141edfaca49c4ec57913",
+    "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e",
+    "70cff9e2f0c8f78c1dc54a064182971bb2106795",
+    "44a6560b5da3f79d2299579a36e7a2a60a91f823",
+    "82ff2d3f2e569879500d851f4d67dfa2d02b5c9b",
+    "d46e1608626c64400d2b6c7693a4c035783c55b4",
+    "92e0416ced279a910616985bf11fa3f8b1b1de9b"
+  ],
+  "changeHistoryShort": {
+    "a1b4eebcc92976a9fb78ad5d3ab70c52cc0a5fa7": "Ybodychange",
+    "6ef6594c7ee09b561e42c16ce4e91c0479908ad8": "Ybodychange",
+    "b2c85db86c9a62b0a03ee87547265077f664970a": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "4536399d47f6c061e149e2504600804a0f1e093d": "Ymultichange(Yparameterchange,Ybodychange)",
+    "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63": "Ymultichange(Yparameterchange,Ybodychange)",
+    "5dae97a584d30cef3e34141edfaca49c4ec57913": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+    "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e": "Ymultichange(Yparameterchange,Yexceptionschange,Ybodychange)",
+    "70cff9e2f0c8f78c1dc54a064182971bb2106795": "Ymultichange(Yparameterchange,Ybodychange)",
+    "44a6560b5da3f79d2299579a36e7a2a60a91f823": "Ybodychange",
+    "82ff2d3f2e569879500d851f4d67dfa2d02b5c9b": "Ybodychange",
+    "d46e1608626c64400d2b6c7693a4c035783c55b4": "Ymultichange(Yparameterchange,Ybodychange)",
+    "92e0416ced279a910616985bf11fa3f8b1b1de9b": "Ymultichange(Yparameterchange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "a1b4eebcc92976a9fb78ad5d3ab70c52cc0a5fa7": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14910. Rename Snapshot with Pre Descendants Fail With IllegalArgumentException. Contributed by Wei-Chiu Chuang. (#1672)\n\nReviewed-by: Ayush Saxena \u003cayushsaxena@apache.org\u003e",
+      "commitDate": "24/10/19 1:09 PM",
+      "commitName": "a1b4eebcc92976a9fb78ad5d3ab70c52cc0a5fa7",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "01/10/19 8:46 AM",
+      "commitNameOld": "6ef6594c7ee09b561e42c16ce4e91c0479908ad8",
+      "commitAuthorOld": "Wei-Chiu Chuang",
+      "daysBetweenCommits": 23.18,
+      "commitsBetweenForRepo": 144,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,33 @@\n   public void cleanSubtree(ReclaimContext reclaimContext, final int snapshotId,\n       int priorSnapshotId) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n       sf.cleanDirectory(reclaimContext, this, snapshotId, priorSnapshotId);\n       // If the inode has empty diff list and sf is not a\n       // DirectorySnapshottableFeature, remove the feature to save heap.\n       if (sf.getDiffs().isEmpty() \u0026\u0026\n-          !(sf instanceof DirectorySnapshottableFeature)) {\n+          !(sf instanceof DirectorySnapshottableFeature) \u0026\u0026\n+          getDirectoryWithSnapshotFeature() !\u003d null) {\n         this.removeFeature(sf);\n       }\n     } else {\n       // there is no snapshot data\n       if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID \u0026\u0026\n           snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n         // destroy the whole subtree and collect blocks that should be deleted\n         destroyAndCollectBlocks(reclaimContext);\n       } else {\n         // make a copy the quota delta\n         QuotaCounts old \u003d reclaimContext.quotaDelta().getCountsCopy();\n         // process recursively down the subtree\n         cleanSubtreeRecursively(reclaimContext, snapshotId, priorSnapshotId,\n             null);\n         QuotaCounts current \u003d reclaimContext.quotaDelta().getCountsCopy();\n         current.subtract(old);\n         if (isQuotaSet()) {\n           reclaimContext.quotaDelta().addQuotaDirUpdate(this, current);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cleanSubtree(ReclaimContext reclaimContext, final int snapshotId,\n      int priorSnapshotId) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      sf.cleanDirectory(reclaimContext, this, snapshotId, priorSnapshotId);\n      // If the inode has empty diff list and sf is not a\n      // DirectorySnapshottableFeature, remove the feature to save heap.\n      if (sf.getDiffs().isEmpty() \u0026\u0026\n          !(sf instanceof DirectorySnapshottableFeature) \u0026\u0026\n          getDirectoryWithSnapshotFeature() !\u003d null) {\n        this.removeFeature(sf);\n      }\n    } else {\n      // there is no snapshot data\n      if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID \u0026\u0026\n          snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n        // destroy the whole subtree and collect blocks that should be deleted\n        destroyAndCollectBlocks(reclaimContext);\n      } else {\n        // make a copy the quota delta\n        QuotaCounts old \u003d reclaimContext.quotaDelta().getCountsCopy();\n        // process recursively down the subtree\n        cleanSubtreeRecursively(reclaimContext, snapshotId, priorSnapshotId,\n            null);\n        QuotaCounts current \u003d reclaimContext.quotaDelta().getCountsCopy();\n        current.subtract(old);\n        if (isQuotaSet()) {\n          reclaimContext.quotaDelta().addQuotaDirUpdate(this, current);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+      "extendedDetails": {}
+    },
+    "6ef6594c7ee09b561e42c16ce4e91c0479908ad8": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14492. Snapshot memory leak. Contributed by Wei-Chiu Chuang. (#1370)\n\n* HDFS-14492. Snapshot memory leak. Contributed by Wei-Chiu Chuang.\r\n\r\nChange-Id: I9e5e450c07ad70aa1905973896c4f627042dbd37\r\n\r\n* Fix checkstyle\r\n\r\nChange-Id: I16d4bd4f03a971e1ed36cf57d89dc42357ef8fbf\r\n",
+      "commitDate": "01/10/19 8:46 AM",
+      "commitName": "6ef6594c7ee09b561e42c16ce4e91c0479908ad8",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "14/08/19 9:46 PM",
+      "commitNameOld": "0a85af959ce505f0659e5c69d0ca83a5dce0a7c2",
+      "commitAuthorOld": "Shashikant Banerjee",
+      "daysBetweenCommits": 47.46,
+      "commitsBetweenForRepo": 405,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,32 @@\n   public void cleanSubtree(ReclaimContext reclaimContext, final int snapshotId,\n       int priorSnapshotId) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n       sf.cleanDirectory(reclaimContext, this, snapshotId, priorSnapshotId);\n+      // If the inode has empty diff list and sf is not a\n+      // DirectorySnapshottableFeature, remove the feature to save heap.\n+      if (sf.getDiffs().isEmpty() \u0026\u0026\n+          !(sf instanceof DirectorySnapshottableFeature)) {\n+        this.removeFeature(sf);\n+      }\n     } else {\n       // there is no snapshot data\n       if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID \u0026\u0026\n           snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n         // destroy the whole subtree and collect blocks that should be deleted\n         destroyAndCollectBlocks(reclaimContext);\n       } else {\n         // make a copy the quota delta\n         QuotaCounts old \u003d reclaimContext.quotaDelta().getCountsCopy();\n         // process recursively down the subtree\n         cleanSubtreeRecursively(reclaimContext, snapshotId, priorSnapshotId,\n             null);\n         QuotaCounts current \u003d reclaimContext.quotaDelta().getCountsCopy();\n         current.subtract(old);\n         if (isQuotaSet()) {\n           reclaimContext.quotaDelta().addQuotaDirUpdate(this, current);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cleanSubtree(ReclaimContext reclaimContext, final int snapshotId,\n      int priorSnapshotId) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      sf.cleanDirectory(reclaimContext, this, snapshotId, priorSnapshotId);\n      // If the inode has empty diff list and sf is not a\n      // DirectorySnapshottableFeature, remove the feature to save heap.\n      if (sf.getDiffs().isEmpty() \u0026\u0026\n          !(sf instanceof DirectorySnapshottableFeature)) {\n        this.removeFeature(sf);\n      }\n    } else {\n      // there is no snapshot data\n      if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID \u0026\u0026\n          snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n        // destroy the whole subtree and collect blocks that should be deleted\n        destroyAndCollectBlocks(reclaimContext);\n      } else {\n        // make a copy the quota delta\n        QuotaCounts old \u003d reclaimContext.quotaDelta().getCountsCopy();\n        // process recursively down the subtree\n        cleanSubtreeRecursively(reclaimContext, snapshotId, priorSnapshotId,\n            null);\n        QuotaCounts current \u003d reclaimContext.quotaDelta().getCountsCopy();\n        current.subtract(old);\n        if (isQuotaSet()) {\n          reclaimContext.quotaDelta().addQuotaDirUpdate(this, current);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+      "extendedDetails": {}
+    },
+    "b2c85db86c9a62b0a03ee87547265077f664970a": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-7728. Avoid updating quota usage while loading edits. Contributed by Jing Zhao.\n",
+      "commitDate": "13/05/15 9:50 PM",
+      "commitName": "b2c85db86c9a62b0a03ee87547265077f664970a",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-7728. Avoid updating quota usage while loading edits. Contributed by Jing Zhao.\n",
+          "commitDate": "13/05/15 9:50 PM",
+          "commitName": "b2c85db86c9a62b0a03ee87547265077f664970a",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "09/05/15 10:51 PM",
+          "commitNameOld": "4536399d47f6c061e149e2504600804a0f1e093d",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 3.96,
+          "commitsBetweenForRepo": 43,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,26 @@\n-  public QuotaCounts cleanSubtree(\n-      ReclaimContext reclaimContext, final int snapshotId, int priorSnapshotId) {\n+  public void cleanSubtree(ReclaimContext reclaimContext, final int snapshotId,\n+      int priorSnapshotId) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n-      return sf.cleanDirectory(reclaimContext, this, snapshotId,\n-                               priorSnapshotId);\n-    }\n-    // there is no snapshot data\n-    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n-        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n-      // destroy the whole subtree and collect blocks that should be deleted\n-      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n-      this.computeQuotaUsage(reclaimContext.bsps, counts, true);\n-      destroyAndCollectBlocks(reclaimContext);\n-      return counts; \n+      sf.cleanDirectory(reclaimContext, this, snapshotId, priorSnapshotId);\n     } else {\n-      // process recursively down the subtree\n-      QuotaCounts counts \u003d cleanSubtreeRecursively(\n-          reclaimContext, snapshotId, priorSnapshotId, null);\n-      if (isQuotaSet()) {\n-        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n+      // there is no snapshot data\n+      if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID \u0026\u0026\n+          snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n+        // destroy the whole subtree and collect blocks that should be deleted\n+        destroyAndCollectBlocks(reclaimContext);\n+      } else {\n+        // make a copy the quota delta\n+        QuotaCounts old \u003d reclaimContext.quotaDelta().getCountsCopy();\n+        // process recursively down the subtree\n+        cleanSubtreeRecursively(reclaimContext, snapshotId, priorSnapshotId,\n+            null);\n+        QuotaCounts current \u003d reclaimContext.quotaDelta().getCountsCopy();\n+        current.subtract(old);\n+        if (isQuotaSet()) {\n+          reclaimContext.quotaDelta().addQuotaDirUpdate(this, current);\n+        }\n       }\n-      return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void cleanSubtree(ReclaimContext reclaimContext, final int snapshotId,\n      int priorSnapshotId) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      sf.cleanDirectory(reclaimContext, this, snapshotId, priorSnapshotId);\n    } else {\n      // there is no snapshot data\n      if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID \u0026\u0026\n          snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n        // destroy the whole subtree and collect blocks that should be deleted\n        destroyAndCollectBlocks(reclaimContext);\n      } else {\n        // make a copy the quota delta\n        QuotaCounts old \u003d reclaimContext.quotaDelta().getCountsCopy();\n        // process recursively down the subtree\n        cleanSubtreeRecursively(reclaimContext, snapshotId, priorSnapshotId,\n            null);\n        QuotaCounts current \u003d reclaimContext.quotaDelta().getCountsCopy();\n        current.subtract(old);\n        if (isQuotaSet()) {\n          reclaimContext.quotaDelta().addQuotaDirUpdate(this, current);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "QuotaCounts",
+            "newValue": "void"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7728. Avoid updating quota usage while loading edits. Contributed by Jing Zhao.\n",
+          "commitDate": "13/05/15 9:50 PM",
+          "commitName": "b2c85db86c9a62b0a03ee87547265077f664970a",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "09/05/15 10:51 PM",
+          "commitNameOld": "4536399d47f6c061e149e2504600804a0f1e093d",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 3.96,
+          "commitsBetweenForRepo": 43,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,26 @@\n-  public QuotaCounts cleanSubtree(\n-      ReclaimContext reclaimContext, final int snapshotId, int priorSnapshotId) {\n+  public void cleanSubtree(ReclaimContext reclaimContext, final int snapshotId,\n+      int priorSnapshotId) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n-      return sf.cleanDirectory(reclaimContext, this, snapshotId,\n-                               priorSnapshotId);\n-    }\n-    // there is no snapshot data\n-    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n-        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n-      // destroy the whole subtree and collect blocks that should be deleted\n-      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n-      this.computeQuotaUsage(reclaimContext.bsps, counts, true);\n-      destroyAndCollectBlocks(reclaimContext);\n-      return counts; \n+      sf.cleanDirectory(reclaimContext, this, snapshotId, priorSnapshotId);\n     } else {\n-      // process recursively down the subtree\n-      QuotaCounts counts \u003d cleanSubtreeRecursively(\n-          reclaimContext, snapshotId, priorSnapshotId, null);\n-      if (isQuotaSet()) {\n-        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n+      // there is no snapshot data\n+      if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID \u0026\u0026\n+          snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n+        // destroy the whole subtree and collect blocks that should be deleted\n+        destroyAndCollectBlocks(reclaimContext);\n+      } else {\n+        // make a copy the quota delta\n+        QuotaCounts old \u003d reclaimContext.quotaDelta().getCountsCopy();\n+        // process recursively down the subtree\n+        cleanSubtreeRecursively(reclaimContext, snapshotId, priorSnapshotId,\n+            null);\n+        QuotaCounts current \u003d reclaimContext.quotaDelta().getCountsCopy();\n+        current.subtract(old);\n+        if (isQuotaSet()) {\n+          reclaimContext.quotaDelta().addQuotaDirUpdate(this, current);\n+        }\n       }\n-      return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void cleanSubtree(ReclaimContext reclaimContext, final int snapshotId,\n      int priorSnapshotId) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      sf.cleanDirectory(reclaimContext, this, snapshotId, priorSnapshotId);\n    } else {\n      // there is no snapshot data\n      if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID \u0026\u0026\n          snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n        // destroy the whole subtree and collect blocks that should be deleted\n        destroyAndCollectBlocks(reclaimContext);\n      } else {\n        // make a copy the quota delta\n        QuotaCounts old \u003d reclaimContext.quotaDelta().getCountsCopy();\n        // process recursively down the subtree\n        cleanSubtreeRecursively(reclaimContext, snapshotId, priorSnapshotId,\n            null);\n        QuotaCounts current \u003d reclaimContext.quotaDelta().getCountsCopy();\n        current.subtract(old);\n        if (isQuotaSet()) {\n          reclaimContext.quotaDelta().addQuotaDirUpdate(this, current);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "4536399d47f6c061e149e2504600804a0f1e093d": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-8357. Consolidate parameters of INode.CleanSubtree() into a parameter objects. Contributed by Li Lu.\n",
+      "commitDate": "09/05/15 10:51 PM",
+      "commitName": "4536399d47f6c061e149e2504600804a0f1e093d",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-8357. Consolidate parameters of INode.CleanSubtree() into a parameter objects. Contributed by Li Lu.\n",
+          "commitDate": "09/05/15 10:51 PM",
+          "commitName": "4536399d47f6c061e149e2504600804a0f1e093d",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "08/05/15 11:04 PM",
+          "commitNameOld": "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 0.99,
+          "commitsBetweenForRepo": 7,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,26 @@\n   public QuotaCounts cleanSubtree(\n-      final BlockStoragePolicySuite bsps, final int snapshotId, int priorSnapshotId,\n-      final BlocksMapUpdateInfo collectedBlocks,\n-      final List\u003cINode\u003e removedINodes, List\u003cLong\u003e removedUCFiles) {\n+      ReclaimContext reclaimContext, final int snapshotId, int priorSnapshotId) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n-      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, removedUCFiles);\n+      return sf.cleanDirectory(reclaimContext, this, snapshotId,\n+                               priorSnapshotId);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n-      this.computeQuotaUsage(bsps, counts, true);\n-      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes,\n-                              removedUCFiles);\n+      this.computeQuotaUsage(reclaimContext.bsps, counts, true);\n+      destroyAndCollectBlocks(reclaimContext);\n       return counts; \n     } else {\n       // process recursively down the subtree\n-      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, removedUCFiles, null);\n+      QuotaCounts counts \u003d cleanSubtreeRecursively(\n+          reclaimContext, snapshotId, priorSnapshotId, null);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public QuotaCounts cleanSubtree(\n      ReclaimContext reclaimContext, final int snapshotId, int priorSnapshotId) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(reclaimContext, this, snapshotId,\n                               priorSnapshotId);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n      this.computeQuotaUsage(reclaimContext.bsps, counts, true);\n      destroyAndCollectBlocks(reclaimContext);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      QuotaCounts counts \u003d cleanSubtreeRecursively(\n          reclaimContext, snapshotId, priorSnapshotId, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[bsps-BlockStoragePolicySuite(modifiers-final), snapshotId-int(modifiers-final), priorSnapshotId-int, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final), removedUCFiles-List\u003cLong\u003e]",
+            "newValue": "[reclaimContext-ReclaimContext, snapshotId-int(modifiers-final), priorSnapshotId-int]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-8357. Consolidate parameters of INode.CleanSubtree() into a parameter objects. Contributed by Li Lu.\n",
+          "commitDate": "09/05/15 10:51 PM",
+          "commitName": "4536399d47f6c061e149e2504600804a0f1e093d",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "08/05/15 11:04 PM",
+          "commitNameOld": "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 0.99,
+          "commitsBetweenForRepo": 7,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,26 @@\n   public QuotaCounts cleanSubtree(\n-      final BlockStoragePolicySuite bsps, final int snapshotId, int priorSnapshotId,\n-      final BlocksMapUpdateInfo collectedBlocks,\n-      final List\u003cINode\u003e removedINodes, List\u003cLong\u003e removedUCFiles) {\n+      ReclaimContext reclaimContext, final int snapshotId, int priorSnapshotId) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n-      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, removedUCFiles);\n+      return sf.cleanDirectory(reclaimContext, this, snapshotId,\n+                               priorSnapshotId);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n-      this.computeQuotaUsage(bsps, counts, true);\n-      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes,\n-                              removedUCFiles);\n+      this.computeQuotaUsage(reclaimContext.bsps, counts, true);\n+      destroyAndCollectBlocks(reclaimContext);\n       return counts; \n     } else {\n       // process recursively down the subtree\n-      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, removedUCFiles, null);\n+      QuotaCounts counts \u003d cleanSubtreeRecursively(\n+          reclaimContext, snapshotId, priorSnapshotId, null);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public QuotaCounts cleanSubtree(\n      ReclaimContext reclaimContext, final int snapshotId, int priorSnapshotId) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(reclaimContext, this, snapshotId,\n                               priorSnapshotId);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n      this.computeQuotaUsage(reclaimContext.bsps, counts, true);\n      destroyAndCollectBlocks(reclaimContext);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      QuotaCounts counts \u003d cleanSubtreeRecursively(\n          reclaimContext, snapshotId, priorSnapshotId, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-6757. Simplify lease manager with INodeID. Contributed by Haohui Mai.\n",
+      "commitDate": "08/05/15 11:04 PM",
+      "commitName": "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-6757. Simplify lease manager with INodeID. Contributed by Haohui Mai.\n",
+          "commitDate": "08/05/15 11:04 PM",
+          "commitName": "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "02/05/15 10:03 AM",
+          "commitNameOld": "6ae2a0d048e133b43249c248a75a4d77d9abb80d",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 6.54,
+          "commitsBetweenForRepo": 129,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n-  public QuotaCounts cleanSubtree(final BlockStoragePolicySuite bsps,\n-      final int snapshotId, int priorSnapshotId,\n+  public QuotaCounts cleanSubtree(\n+      final BlockStoragePolicySuite bsps, final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n-      final List\u003cINode\u003e removedINodes) {\n+      final List\u003cINode\u003e removedINodes, List\u003cLong\u003e removedUCFiles) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n       return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes);\n+          collectedBlocks, removedINodes, removedUCFiles);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n       this.computeQuotaUsage(bsps, counts, true);\n-      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes);\n+      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes,\n+                              removedUCFiles);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, null);\n+          collectedBlocks, removedINodes, removedUCFiles, null);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public QuotaCounts cleanSubtree(\n      final BlockStoragePolicySuite bsps, final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes, List\u003cLong\u003e removedUCFiles) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, removedUCFiles);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n      this.computeQuotaUsage(bsps, counts, true);\n      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes,\n                              removedUCFiles);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, removedUCFiles, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[bsps-BlockStoragePolicySuite(modifiers-final), snapshotId-int(modifiers-final), priorSnapshotId-int, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final)]",
+            "newValue": "[bsps-BlockStoragePolicySuite(modifiers-final), snapshotId-int(modifiers-final), priorSnapshotId-int, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final), removedUCFiles-List\u003cLong\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6757. Simplify lease manager with INodeID. Contributed by Haohui Mai.\n",
+          "commitDate": "08/05/15 11:04 PM",
+          "commitName": "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "02/05/15 10:03 AM",
+          "commitNameOld": "6ae2a0d048e133b43249c248a75a4d77d9abb80d",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 6.54,
+          "commitsBetweenForRepo": 129,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n-  public QuotaCounts cleanSubtree(final BlockStoragePolicySuite bsps,\n-      final int snapshotId, int priorSnapshotId,\n+  public QuotaCounts cleanSubtree(\n+      final BlockStoragePolicySuite bsps, final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n-      final List\u003cINode\u003e removedINodes) {\n+      final List\u003cINode\u003e removedINodes, List\u003cLong\u003e removedUCFiles) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n       return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes);\n+          collectedBlocks, removedINodes, removedUCFiles);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n       this.computeQuotaUsage(bsps, counts, true);\n-      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes);\n+      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes,\n+                              removedUCFiles);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, null);\n+          collectedBlocks, removedINodes, removedUCFiles, null);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public QuotaCounts cleanSubtree(\n      final BlockStoragePolicySuite bsps, final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes, List\u003cLong\u003e removedUCFiles) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, removedUCFiles);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n      this.computeQuotaUsage(bsps, counts, true);\n      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes,\n                              removedUCFiles);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, removedUCFiles, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "5dae97a584d30cef3e34141edfaca49c4ec57913": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-7723. Quota By Storage Type namenode implemenation. (Contributed by Xiaoyu Yao)\n",
+      "commitDate": "11/02/15 10:41 AM",
+      "commitName": "5dae97a584d30cef3e34141edfaca49c4ec57913",
+      "commitAuthor": "Arpit Agarwal",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-7723. Quota By Storage Type namenode implemenation. (Contributed by Xiaoyu Yao)\n",
+          "commitDate": "11/02/15 10:41 AM",
+          "commitName": "5dae97a584d30cef3e34141edfaca49c4ec57913",
+          "commitAuthor": "Arpit Agarwal",
+          "commitDateOld": "02/02/15 4:32 PM",
+          "commitNameOld": "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 8.76,
+          "commitsBetweenForRepo": 109,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,28 @@\n-  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n+  public QuotaCounts cleanSubtree(final BlockStoragePolicySuite bsps,\n+      final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n       final List\u003cINode\u003e removedINodes) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n-      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n+      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n           collectedBlocks, removedINodes);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n-      Quota.Counts counts \u003d Quota.Counts.newInstance();\n-      this.computeQuotaUsage(counts, true);\n-      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n+      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n+      this.computeQuotaUsage(bsps, counts, true);\n+      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n-      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n+      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n           collectedBlocks, removedINodes, null);\n       if (isQuotaSet()) {\n-        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n-            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n+        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public QuotaCounts cleanSubtree(final BlockStoragePolicySuite bsps,\n      final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n      this.computeQuotaUsage(bsps, counts, true);\n      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[snapshotId-int(modifiers-final), priorSnapshotId-int, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final)]",
+            "newValue": "[bsps-BlockStoragePolicySuite(modifiers-final), snapshotId-int(modifiers-final), priorSnapshotId-int, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-7723. Quota By Storage Type namenode implemenation. (Contributed by Xiaoyu Yao)\n",
+          "commitDate": "11/02/15 10:41 AM",
+          "commitName": "5dae97a584d30cef3e34141edfaca49c4ec57913",
+          "commitAuthor": "Arpit Agarwal",
+          "commitDateOld": "02/02/15 4:32 PM",
+          "commitNameOld": "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 8.76,
+          "commitsBetweenForRepo": 109,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,28 @@\n-  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n+  public QuotaCounts cleanSubtree(final BlockStoragePolicySuite bsps,\n+      final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n       final List\u003cINode\u003e removedINodes) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n-      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n+      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n           collectedBlocks, removedINodes);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n-      Quota.Counts counts \u003d Quota.Counts.newInstance();\n-      this.computeQuotaUsage(counts, true);\n-      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n+      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n+      this.computeQuotaUsage(bsps, counts, true);\n+      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n-      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n+      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n           collectedBlocks, removedINodes, null);\n       if (isQuotaSet()) {\n-        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n-            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n+        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public QuotaCounts cleanSubtree(final BlockStoragePolicySuite bsps,\n      final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n      this.computeQuotaUsage(bsps, counts, true);\n      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "Quota.Counts",
+            "newValue": "QuotaCounts"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7723. Quota By Storage Type namenode implemenation. (Contributed by Xiaoyu Yao)\n",
+          "commitDate": "11/02/15 10:41 AM",
+          "commitName": "5dae97a584d30cef3e34141edfaca49c4ec57913",
+          "commitAuthor": "Arpit Agarwal",
+          "commitDateOld": "02/02/15 4:32 PM",
+          "commitNameOld": "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 8.76,
+          "commitsBetweenForRepo": 109,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,28 @@\n-  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n+  public QuotaCounts cleanSubtree(final BlockStoragePolicySuite bsps,\n+      final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n       final List\u003cINode\u003e removedINodes) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n-      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n+      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n           collectedBlocks, removedINodes);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n-      Quota.Counts counts \u003d Quota.Counts.newInstance();\n-      this.computeQuotaUsage(counts, true);\n-      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n+      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n+      this.computeQuotaUsage(bsps, counts, true);\n+      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n-      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n+      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n           collectedBlocks, removedINodes, null);\n       if (isQuotaSet()) {\n-        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n-            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n+        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public QuotaCounts cleanSubtree(final BlockStoragePolicySuite bsps,\n      final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(bsps, this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      QuotaCounts counts \u003d new QuotaCounts.Builder().build();\n      this.computeQuotaUsage(bsps, counts, true);\n      destroyAndCollectBlocks(bsps, collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      QuotaCounts counts \u003d cleanSubtreeRecursively(bsps, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(counts.negation());\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e": {
+      "type": "Ymultichange(Yparameterchange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-6651. Deletion failure can leak inodes permanently. Contributed by Jing Zhao.\n",
+      "commitDate": "02/02/15 4:32 PM",
+      "commitName": "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-6651. Deletion failure can leak inodes permanently. Contributed by Jing Zhao.\n",
+          "commitDate": "02/02/15 4:32 PM",
+          "commitName": "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "22/12/14 11:05 PM",
+          "commitNameOld": "50ae1a6664a92619aa683d2a864d0da9fb4af026",
+          "commitAuthorOld": "Vinayakumar B",
+          "daysBetweenCommits": 41.73,
+          "commitsBetweenForRepo": 229,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,28 @@\n   public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n-      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n-      throws QuotaExceededException {\n+      final List\u003cINode\u003e removedINodes) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n       return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, countDiffChange);\n+          collectedBlocks, removedINodes);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n       destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, null, countDiffChange);\n+          collectedBlocks, removedINodes, null);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[snapshotId-int(modifiers-final), priorSnapshotId-int, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final), countDiffChange-boolean(modifiers-final)]",
+            "newValue": "[snapshotId-int(modifiers-final), priorSnapshotId-int, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-6651. Deletion failure can leak inodes permanently. Contributed by Jing Zhao.\n",
+          "commitDate": "02/02/15 4:32 PM",
+          "commitName": "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "22/12/14 11:05 PM",
+          "commitNameOld": "50ae1a6664a92619aa683d2a864d0da9fb4af026",
+          "commitAuthorOld": "Vinayakumar B",
+          "daysBetweenCommits": 41.73,
+          "commitsBetweenForRepo": 229,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,28 @@\n   public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n-      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n-      throws QuotaExceededException {\n+      final List\u003cINode\u003e removedINodes) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n       return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, countDiffChange);\n+          collectedBlocks, removedINodes);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n       destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, null, countDiffChange);\n+          collectedBlocks, removedINodes, null);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[QuotaExceededException]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6651. Deletion failure can leak inodes permanently. Contributed by Jing Zhao.\n",
+          "commitDate": "02/02/15 4:32 PM",
+          "commitName": "8cb473124c1cf1c6f68ead7bde06558ebf7ce47e",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "22/12/14 11:05 PM",
+          "commitNameOld": "50ae1a6664a92619aa683d2a864d0da9fb4af026",
+          "commitAuthorOld": "Vinayakumar B",
+          "daysBetweenCommits": 41.73,
+          "commitsBetweenForRepo": 229,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,28 @@\n   public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n-      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n-      throws QuotaExceededException {\n+      final List\u003cINode\u003e removedINodes) {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n       return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, countDiffChange);\n+          collectedBlocks, removedINodes);\n     }\n     // there is no snapshot data\n     if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n         \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n       destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n-          collectedBlocks, removedINodes, null, countDiffChange);\n+          collectedBlocks, removedINodes, null);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes) {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, null);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "70cff9e2f0c8f78c1dc54a064182971bb2106795": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-5715. Use Snapshot ID to indicate the corresponding Snapshot for a FileDiff/DirectoryDiff. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1556353 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/01/14 12:52 PM",
+      "commitName": "70cff9e2f0c8f78c1dc54a064182971bb2106795",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-5715. Use Snapshot ID to indicate the corresponding Snapshot for a FileDiff/DirectoryDiff. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1556353 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "07/01/14 12:52 PM",
+          "commitName": "70cff9e2f0c8f78c1dc54a064182971bb2106795",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "14/12/13 2:13 AM",
+          "commitNameOld": "44a6560b5da3f79d2299579a36e7a2a60a91f823",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 24.44,
+          "commitsBetweenForRepo": 98,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n-  public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n+  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n       final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n       throws QuotaExceededException {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n-      return sf.cleanDirectory(this, snapshot, prior, collectedBlocks,\n-          removedINodes, countDiffChange);\n+      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n+          collectedBlocks, removedINodes, countDiffChange);\n     }\n     // there is no snapshot data\n-    if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n+    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n+        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n       destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n-      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n+      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n           collectedBlocks, removedINodes, null, countDiffChange);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n      throws QuotaExceededException {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, countDiffChange);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, null, countDiffChange);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[snapshot-Snapshot(modifiers-final), prior-Snapshot, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final), countDiffChange-boolean(modifiers-final)]",
+            "newValue": "[snapshotId-int(modifiers-final), priorSnapshotId-int, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final), countDiffChange-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-5715. Use Snapshot ID to indicate the corresponding Snapshot for a FileDiff/DirectoryDiff. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1556353 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "07/01/14 12:52 PM",
+          "commitName": "70cff9e2f0c8f78c1dc54a064182971bb2106795",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "14/12/13 2:13 AM",
+          "commitNameOld": "44a6560b5da3f79d2299579a36e7a2a60a91f823",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 24.44,
+          "commitsBetweenForRepo": 98,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n-  public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n+  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n       final BlocksMapUpdateInfo collectedBlocks,\n       final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n       throws QuotaExceededException {\n     DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n     // there is snapshot data\n     if (sf !\u003d null) {\n-      return sf.cleanDirectory(this, snapshot, prior, collectedBlocks,\n-          removedINodes, countDiffChange);\n+      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n+          collectedBlocks, removedINodes, countDiffChange);\n     }\n     // there is no snapshot data\n-    if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n+    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n+        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n       destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n-      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n+      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n           collectedBlocks, removedINodes, null, countDiffChange);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Quota.Counts cleanSubtree(final int snapshotId, int priorSnapshotId,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n      throws QuotaExceededException {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(this, snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, countDiffChange);\n    }\n    // there is no snapshot data\n    if (priorSnapshotId \u003d\u003d Snapshot.NO_SNAPSHOT_ID\n        \u0026\u0026 snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshotId, priorSnapshotId,\n          collectedBlocks, removedINodes, null, countDiffChange);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "44a6560b5da3f79d2299579a36e7a2a60a91f823": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-5632. Flatten INodeDirectory hierarchy: Replace INodeDirectoryWithSnapshot with DirectoryWithSnapshotFeature.  Contributed by jing9 \n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1550917 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "14/12/13 2:13 AM",
+      "commitName": "44a6560b5da3f79d2299579a36e7a2a60a91f823",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "12/12/13 10:26 AM",
+      "commitNameOld": "5fd7230671bb3d90081d4138c364c3f65b35cdbc",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 1.66,
+      "commitsBetweenForRepo": 12,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,28 @@\n   public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n       final BlocksMapUpdateInfo collectedBlocks,\n       final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n       throws QuotaExceededException {\n+    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n+    // there is snapshot data\n+    if (sf !\u003d null) {\n+      return sf.cleanDirectory(this, snapshot, prior, collectedBlocks,\n+          removedINodes, countDiffChange);\n+    }\n+    // there is no snapshot data\n     if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n       destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n           collectedBlocks, removedINodes, null, countDiffChange);\n       if (isQuotaSet()) {\n         getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n      throws QuotaExceededException {\n    DirectoryWithSnapshotFeature sf \u003d getDirectoryWithSnapshotFeature();\n    // there is snapshot data\n    if (sf !\u003d null) {\n      return sf.cleanDirectory(this, snapshot, prior, collectedBlocks,\n          removedINodes, countDiffChange);\n    }\n    // there is no snapshot data\n    if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n          collectedBlocks, removedINodes, null, countDiffChange);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+      "extendedDetails": {}
+    },
+    "82ff2d3f2e569879500d851f4d67dfa2d02b5c9b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-5286. Flatten INodeDirectory hierarchy: Replace INodeDirectoryWithQuota with DirectoryWithQuotaFeature.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1545768 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "26/11/13 10:33 AM",
+      "commitName": "82ff2d3f2e569879500d851f4d67dfa2d02b5c9b",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "21/11/13 5:39 PM",
+      "commitNameOld": "ce68f410b05a58ad05965f32ad7f5b246b363a75",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 4.7,
+      "commitsBetweenForRepo": 12,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,21 @@\n   public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n       final BlocksMapUpdateInfo collectedBlocks,\n       final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n       throws QuotaExceededException {\n     if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n       destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n           collectedBlocks, removedINodes, null, countDiffChange);\n       if (isQuotaSet()) {\n-        ((INodeDirectoryWithQuota) this).addSpaceConsumed2Cache(\n+        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n      throws QuotaExceededException {\n    if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n          collectedBlocks, removedINodes, null, countDiffChange);\n      if (isQuotaSet()) {\n        getDirectoryWithQuotaFeature().addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+      "extendedDetails": {}
+    },
+    "d46e1608626c64400d2b6c7693a4c035783c55b4": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-4877. Snapshot: fix the scenario where a directory is renamed under its prior descendant. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1490421 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/06/13 1:15 PM",
+      "commitName": "d46e1608626c64400d2b6c7693a4c035783c55b4",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-4877. Snapshot: fix the scenario where a directory is renamed under its prior descendant. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1490421 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "06/06/13 1:15 PM",
+          "commitName": "d46e1608626c64400d2b6c7693a4c035783c55b4",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "06/05/13 11:48 AM",
+          "commitNameOld": "424b270c94297b00a850e7a821163b9802edc7ae",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 31.06,
+          "commitsBetweenForRepo": 191,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,21 @@\n   public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n-      final BlocksMapUpdateInfo collectedBlocks, \n-      final List\u003cINode\u003e removedINodes) throws QuotaExceededException {\n+      final BlocksMapUpdateInfo collectedBlocks,\n+      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n+      throws QuotaExceededException {\n     if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n       destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n-          collectedBlocks, removedINodes);\n+          collectedBlocks, removedINodes, null, countDiffChange);\n       if (isQuotaSet()) {\n         ((INodeDirectoryWithQuota) this).addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n      throws QuotaExceededException {\n    if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n          collectedBlocks, removedINodes, null, countDiffChange);\n      if (isQuotaSet()) {\n        ((INodeDirectoryWithQuota) this).addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[snapshot-Snapshot(modifiers-final), prior-Snapshot, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final)]",
+            "newValue": "[snapshot-Snapshot(modifiers-final), prior-Snapshot, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final), countDiffChange-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-4877. Snapshot: fix the scenario where a directory is renamed under its prior descendant. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1490421 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "06/06/13 1:15 PM",
+          "commitName": "d46e1608626c64400d2b6c7693a4c035783c55b4",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "06/05/13 11:48 AM",
+          "commitNameOld": "424b270c94297b00a850e7a821163b9802edc7ae",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 31.06,
+          "commitsBetweenForRepo": 191,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,21 @@\n   public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n-      final BlocksMapUpdateInfo collectedBlocks, \n-      final List\u003cINode\u003e removedINodes) throws QuotaExceededException {\n+      final BlocksMapUpdateInfo collectedBlocks,\n+      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n+      throws QuotaExceededException {\n     if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n       destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n-          collectedBlocks, removedINodes);\n+          collectedBlocks, removedINodes, null, countDiffChange);\n       if (isQuotaSet()) {\n         ((INodeDirectoryWithQuota) this).addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n      final BlocksMapUpdateInfo collectedBlocks,\n      final List\u003cINode\u003e removedINodes, final boolean countDiffChange)\n      throws QuotaExceededException {\n    if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n          collectedBlocks, removedINodes, null, countDiffChange);\n      if (isQuotaSet()) {\n        ((INodeDirectoryWithQuota) this).addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "92e0416ced279a910616985bf11fa3f8b1b1de9b": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-4727. Update inodeMap after deleting files/directories/snapshots.  Contributed by Jing Zhao\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-2802@1470756 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "22/04/13 5:00 PM",
+      "commitName": "92e0416ced279a910616985bf11fa3f8b1b1de9b",
+      "commitAuthor": "Tsz-wo Sze",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-4727. Update inodeMap after deleting files/directories/snapshots.  Contributed by Jing Zhao\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-2802@1470756 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "22/04/13 5:00 PM",
+          "commitName": "92e0416ced279a910616985bf11fa3f8b1b1de9b",
+          "commitAuthor": "Tsz-wo Sze",
+          "commitDateOld": "22/04/13 3:13 PM",
+          "commitNameOld": "43bdc22e9207a74678665de5f109dd7e56fe979a",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 0.07,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,20 @@\n   public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n-      final BlocksMapUpdateInfo collectedBlocks)\n-      throws QuotaExceededException {\n+      final BlocksMapUpdateInfo collectedBlocks, \n+      final List\u003cINode\u003e removedINodes) throws QuotaExceededException {\n     if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n-      destroyAndCollectBlocks(collectedBlocks);\n+      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n-          collectedBlocks);\n+          collectedBlocks, removedINodes);\n       if (isQuotaSet()) {\n         ((INodeDirectoryWithQuota) this).addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n      final BlocksMapUpdateInfo collectedBlocks, \n      final List\u003cINode\u003e removedINodes) throws QuotaExceededException {\n    if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n          collectedBlocks, removedINodes);\n      if (isQuotaSet()) {\n        ((INodeDirectoryWithQuota) this).addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[snapshot-Snapshot(modifiers-final), prior-Snapshot, collectedBlocks-BlocksMapUpdateInfo(modifiers-final)]",
+            "newValue": "[snapshot-Snapshot(modifiers-final), prior-Snapshot, collectedBlocks-BlocksMapUpdateInfo(modifiers-final), removedINodes-List\u003cINode\u003e(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-4727. Update inodeMap after deleting files/directories/snapshots.  Contributed by Jing Zhao\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-2802@1470756 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "22/04/13 5:00 PM",
+          "commitName": "92e0416ced279a910616985bf11fa3f8b1b1de9b",
+          "commitAuthor": "Tsz-wo Sze",
+          "commitDateOld": "22/04/13 3:13 PM",
+          "commitNameOld": "43bdc22e9207a74678665de5f109dd7e56fe979a",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 0.07,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,20 @@\n   public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n-      final BlocksMapUpdateInfo collectedBlocks)\n-      throws QuotaExceededException {\n+      final BlocksMapUpdateInfo collectedBlocks, \n+      final List\u003cINode\u003e removedINodes) throws QuotaExceededException {\n     if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n       // destroy the whole subtree and collect blocks that should be deleted\n       Quota.Counts counts \u003d Quota.Counts.newInstance();\n       this.computeQuotaUsage(counts, true);\n-      destroyAndCollectBlocks(collectedBlocks);\n+      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n       return counts; \n     } else {\n       // process recursively down the subtree\n       Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n-          collectedBlocks);\n+          collectedBlocks, removedINodes);\n       if (isQuotaSet()) {\n         ((INodeDirectoryWithQuota) this).addSpaceConsumed2Cache(\n             -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n       }\n       return counts;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Quota.Counts cleanSubtree(final Snapshot snapshot, Snapshot prior,\n      final BlocksMapUpdateInfo collectedBlocks, \n      final List\u003cINode\u003e removedINodes) throws QuotaExceededException {\n    if (prior \u003d\u003d null \u0026\u0026 snapshot \u003d\u003d null) {\n      // destroy the whole subtree and collect blocks that should be deleted\n      Quota.Counts counts \u003d Quota.Counts.newInstance();\n      this.computeQuotaUsage(counts, true);\n      destroyAndCollectBlocks(collectedBlocks, removedINodes);\n      return counts; \n    } else {\n      // process recursively down the subtree\n      Quota.Counts counts \u003d cleanSubtreeRecursively(snapshot, prior,\n          collectedBlocks, removedINodes);\n      if (isQuotaSet()) {\n        ((INodeDirectoryWithQuota) this).addSpaceConsumed2Cache(\n            -counts.get(Quota.NAMESPACE), -counts.get(Quota.DISKSPACE));\n      }\n      return counts;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeDirectory.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

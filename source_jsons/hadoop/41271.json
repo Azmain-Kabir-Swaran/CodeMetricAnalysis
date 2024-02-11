@@ -1,0 +1,99 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSSchedulerNode.java",
+  "functionName": "cleanupPreemptionList",
+  "functionId": "cleanupPreemptionList",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSSchedulerNode.java",
+  "functionStartLine": 172,
+  "functionEndLine": 194,
+  "numCommitsSeen": 22,
+  "timeTaken": 2754,
+  "changeHistory": [
+    "45535f8afae4e5bf4f60597fc29ba94b4e7743f3",
+    "30fc5801966feb7f9bdd7d79db75acc595102913",
+    "c3375175d616e0380560f89d491b6b9753a8f3e1"
+  ],
+  "changeHistoryShort": {
+    "45535f8afae4e5bf4f60597fc29ba94b4e7743f3": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "30fc5801966feb7f9bdd7d79db75acc595102913": "Ybodychange",
+    "c3375175d616e0380560f89d491b6b9753a8f3e1": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "45535f8afae4e5bf4f60597fc29ba94b4e7743f3": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "YARN-6895. [FairScheduler] Preemption reservation may cause regular reservation leaks. (Miklos Szegedi via Yufei Gu)\n",
+      "commitDate": "02/08/17 9:25 AM",
+      "commitName": "45535f8afae4e5bf4f60597fc29ba94b4e7743f3",
+      "commitAuthor": "Yufei Gu",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "YARN-6895. [FairScheduler] Preemption reservation may cause regular reservation leaks. (Miklos Szegedi via Yufei Gu)\n",
+          "commitDate": "02/08/17 9:25 AM",
+          "commitName": "45535f8afae4e5bf4f60597fc29ba94b4e7743f3",
+          "commitAuthor": "Yufei Gu",
+          "commitDateOld": "01/05/17 7:45 AM",
+          "commitNameOld": "30fc5801966feb7f9bdd7d79db75acc595102913",
+          "commitAuthorOld": "Naganarasimha",
+          "daysBetweenCommits": 93.07,
+          "commitsBetweenForRepo": 524,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,23 @@\n-  private synchronized void cleanupPreemptionList() {\n-    Iterator\u003cMap.Entry\u003cFSAppAttempt, Resource\u003e\u003e iterator \u003d\n-        resourcesPreemptedForApp.entrySet().iterator();\n-    while(iterator.hasNext()) {\n-      FSAppAttempt app \u003d iterator.next().getKey();\n-      if (app.isStopped() || !app.isStarved()) {\n+  private void cleanupPreemptionList() {\n+    // Synchronize separately to avoid potential deadlocks\n+    // This may cause delayed deletion of reservations\n+    LinkedList\u003cFSAppAttempt\u003e candidates;\n+    synchronized (this) {\n+      candidates \u003d Lists.newLinkedList(resourcesPreemptedForApp.keySet());\n+    }\n+    for (FSAppAttempt app : candidates) {\n+      if (app.isStopped() || !app.isStarved() ||\n+          (Resources.isNone(app.getFairshareStarvation()) \u0026\u0026\n+           Resources.isNone(app.getMinshareStarvation()))) {\n         // App does not need more resources\n-        Resources.subtractFrom(totalResourcesPreempted,\n-            resourcesPreemptedForApp.get(app));\n-        appIdToAppMap.remove(app.getApplicationAttemptId());\n-        iterator.remove();\n+        synchronized (this) {\n+          Resource removed \u003d resourcesPreemptedForApp.remove(app);\n+          if (removed !\u003d null) {\n+            Resources.subtractFrom(totalResourcesPreempted,\n+                removed);\n+            appIdToAppMap.remove(app.getApplicationAttemptId());\n+          }\n+        }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void cleanupPreemptionList() {\n    // Synchronize separately to avoid potential deadlocks\n    // This may cause delayed deletion of reservations\n    LinkedList\u003cFSAppAttempt\u003e candidates;\n    synchronized (this) {\n      candidates \u003d Lists.newLinkedList(resourcesPreemptedForApp.keySet());\n    }\n    for (FSAppAttempt app : candidates) {\n      if (app.isStopped() || !app.isStarved() ||\n          (Resources.isNone(app.getFairshareStarvation()) \u0026\u0026\n           Resources.isNone(app.getMinshareStarvation()))) {\n        // App does not need more resources\n        synchronized (this) {\n          Resource removed \u003d resourcesPreemptedForApp.remove(app);\n          if (removed !\u003d null) {\n            Resources.subtractFrom(totalResourcesPreempted,\n                removed);\n            appIdToAppMap.remove(app.getApplicationAttemptId());\n          }\n        }\n      }\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSSchedulerNode.java",
+          "extendedDetails": {
+            "oldValue": "[private, synchronized]",
+            "newValue": "[private]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-6895. [FairScheduler] Preemption reservation may cause regular reservation leaks. (Miklos Szegedi via Yufei Gu)\n",
+          "commitDate": "02/08/17 9:25 AM",
+          "commitName": "45535f8afae4e5bf4f60597fc29ba94b4e7743f3",
+          "commitAuthor": "Yufei Gu",
+          "commitDateOld": "01/05/17 7:45 AM",
+          "commitNameOld": "30fc5801966feb7f9bdd7d79db75acc595102913",
+          "commitAuthorOld": "Naganarasimha",
+          "daysBetweenCommits": 93.07,
+          "commitsBetweenForRepo": 524,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,23 @@\n-  private synchronized void cleanupPreemptionList() {\n-    Iterator\u003cMap.Entry\u003cFSAppAttempt, Resource\u003e\u003e iterator \u003d\n-        resourcesPreemptedForApp.entrySet().iterator();\n-    while(iterator.hasNext()) {\n-      FSAppAttempt app \u003d iterator.next().getKey();\n-      if (app.isStopped() || !app.isStarved()) {\n+  private void cleanupPreemptionList() {\n+    // Synchronize separately to avoid potential deadlocks\n+    // This may cause delayed deletion of reservations\n+    LinkedList\u003cFSAppAttempt\u003e candidates;\n+    synchronized (this) {\n+      candidates \u003d Lists.newLinkedList(resourcesPreemptedForApp.keySet());\n+    }\n+    for (FSAppAttempt app : candidates) {\n+      if (app.isStopped() || !app.isStarved() ||\n+          (Resources.isNone(app.getFairshareStarvation()) \u0026\u0026\n+           Resources.isNone(app.getMinshareStarvation()))) {\n         // App does not need more resources\n-        Resources.subtractFrom(totalResourcesPreempted,\n-            resourcesPreemptedForApp.get(app));\n-        appIdToAppMap.remove(app.getApplicationAttemptId());\n-        iterator.remove();\n+        synchronized (this) {\n+          Resource removed \u003d resourcesPreemptedForApp.remove(app);\n+          if (removed !\u003d null) {\n+            Resources.subtractFrom(totalResourcesPreempted,\n+                removed);\n+            appIdToAppMap.remove(app.getApplicationAttemptId());\n+          }\n+        }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void cleanupPreemptionList() {\n    // Synchronize separately to avoid potential deadlocks\n    // This may cause delayed deletion of reservations\n    LinkedList\u003cFSAppAttempt\u003e candidates;\n    synchronized (this) {\n      candidates \u003d Lists.newLinkedList(resourcesPreemptedForApp.keySet());\n    }\n    for (FSAppAttempt app : candidates) {\n      if (app.isStopped() || !app.isStarved() ||\n          (Resources.isNone(app.getFairshareStarvation()) \u0026\u0026\n           Resources.isNone(app.getMinshareStarvation()))) {\n        // App does not need more resources\n        synchronized (this) {\n          Resource removed \u003d resourcesPreemptedForApp.remove(app);\n          if (removed !\u003d null) {\n            Resources.subtractFrom(totalResourcesPreempted,\n                removed);\n            appIdToAppMap.remove(app.getApplicationAttemptId());\n          }\n        }\n      }\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSSchedulerNode.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "30fc5801966feb7f9bdd7d79db75acc595102913": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6519. Fix warnings from Spotbugs in hadoop-yarn-server-resourcemanager. Contributed by Weiwei Yang.\n",
+      "commitDate": "01/05/17 7:45 AM",
+      "commitName": "30fc5801966feb7f9bdd7d79db75acc595102913",
+      "commitAuthor": "Naganarasimha",
+      "commitDateOld": "12/04/17 2:21 PM",
+      "commitNameOld": "c3375175d616e0380560f89d491b6b9753a8f3e1",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 18.73,
+      "commitsBetweenForRepo": 85,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,14 @@\n   private synchronized void cleanupPreemptionList() {\n-    Iterator\u003cFSAppAttempt\u003e iterator \u003d\n-        resourcesPreemptedForApp.keySet().iterator();\n-    while (iterator.hasNext()) {\n-      FSAppAttempt app \u003d iterator.next();\n+    Iterator\u003cMap.Entry\u003cFSAppAttempt, Resource\u003e\u003e iterator \u003d\n+        resourcesPreemptedForApp.entrySet().iterator();\n+    while(iterator.hasNext()) {\n+      FSAppAttempt app \u003d iterator.next().getKey();\n       if (app.isStopped() || !app.isStarved()) {\n         // App does not need more resources\n         Resources.subtractFrom(totalResourcesPreempted,\n             resourcesPreemptedForApp.get(app));\n         appIdToAppMap.remove(app.getApplicationAttemptId());\n         iterator.remove();\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void cleanupPreemptionList() {\n    Iterator\u003cMap.Entry\u003cFSAppAttempt, Resource\u003e\u003e iterator \u003d\n        resourcesPreemptedForApp.entrySet().iterator();\n    while(iterator.hasNext()) {\n      FSAppAttempt app \u003d iterator.next().getKey();\n      if (app.isStopped() || !app.isStarved()) {\n        // App does not need more resources\n        Resources.subtractFrom(totalResourcesPreempted,\n            resourcesPreemptedForApp.get(app));\n        appIdToAppMap.remove(app.getApplicationAttemptId());\n        iterator.remove();\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSSchedulerNode.java",
+      "extendedDetails": {}
+    },
+    "c3375175d616e0380560f89d491b6b9753a8f3e1": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6432. FairScheduler: Reserve preempted resources for corresponding applications. (Miklos Szegedi via kasha)\n",
+      "commitDate": "12/04/17 2:21 PM",
+      "commitName": "c3375175d616e0380560f89d491b6b9753a8f3e1",
+      "commitAuthor": "Karthik Kambatla",
+      "diff": "@@ -0,0 +1,14 @@\n+  private synchronized void cleanupPreemptionList() {\n+    Iterator\u003cFSAppAttempt\u003e iterator \u003d\n+        resourcesPreemptedForApp.keySet().iterator();\n+    while (iterator.hasNext()) {\n+      FSAppAttempt app \u003d iterator.next();\n+      if (app.isStopped() || !app.isStarved()) {\n+        // App does not need more resources\n+        Resources.subtractFrom(totalResourcesPreempted,\n+            resourcesPreemptedForApp.get(app));\n+        appIdToAppMap.remove(app.getApplicationAttemptId());\n+        iterator.remove();\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void cleanupPreemptionList() {\n    Iterator\u003cFSAppAttempt\u003e iterator \u003d\n        resourcesPreemptedForApp.keySet().iterator();\n    while (iterator.hasNext()) {\n      FSAppAttempt app \u003d iterator.next();\n      if (app.isStopped() || !app.isStarved()) {\n        // App does not need more resources\n        Resources.subtractFrom(totalResourcesPreempted,\n            resourcesPreemptedForApp.get(app));\n        appIdToAppMap.remove(app.getApplicationAttemptId());\n        iterator.remove();\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSSchedulerNode.java"
+    }
+  }
+}

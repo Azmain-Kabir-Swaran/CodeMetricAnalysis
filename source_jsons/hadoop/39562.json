@@ -1,0 +1,203 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ParentQueue.java",
+  "functionName": "submitApplication",
+  "functionId": "submitApplication___applicationId-ApplicationId__user-String__queue-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+  "functionStartLine": 431,
+  "functionEndLine": 454,
+  "numCommitsSeen": 136,
+  "timeTaken": 9946,
+  "changeHistory": [
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+    "563480dccd0136d82730f4228f1df44449ed5822",
+    "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+    "a45017a5f17ec11814db7e206d1e80aaa4dd8d8f",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1",
+    "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517"
+  ],
+  "changeHistoryShort": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": "Ybodychange",
+    "563480dccd0136d82730f4228f1df44449ed5822": "Ybodychange",
+    "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa": "Ybodychange",
+    "a45017a5f17ec11814db7e206d1e80aaa4dd8d8f": "Ymultichange(Yparameterchange,Ybodychange)",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": "Yfilerename",
+    "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76": "Yparameterchange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9341.  Fixed enentrant lock usage in YARN project.\n            Contributed by Prabhu Joseph\n",
+      "commitDate": "07/03/19 1:47 PM",
+      "commitName": "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "04/03/19 9:10 PM",
+      "commitNameOld": "e40e2d6ad5cbe782c3a067229270738b501ed27e",
+      "commitAuthorOld": "Prabhu Joseph",
+      "daysBetweenCommits": 2.69,
+      "commitsBetweenForRepo": 39,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,24 @@\n   public void submitApplication(ApplicationId applicationId, String user,\n       String queue) throws AccessControlException {\n-\n+    writeLock.lock();\n     try {\n-      writeLock.lock();\n       // Sanity check\n       validateSubmitApplication(applicationId, user, queue);\n \n       addApplication(applicationId, user);\n     } finally {\n       writeLock.unlock();\n     }\n     \n     // Inform the parent queue\n     if (parent !\u003d null) {\n       try {\n         parent.submitApplication(applicationId, user, queue);\n       } catch (AccessControlException ace) {\n         LOG.info(\"Failed to submit application to parent-queue: \" + \n             parent.getQueuePath(), ace);\n         removeApplication(applicationId, user);\n         throw ace;\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void submitApplication(ApplicationId applicationId, String user,\n      String queue) throws AccessControlException {\n    writeLock.lock();\n    try {\n      // Sanity check\n      validateSubmitApplication(applicationId, user, queue);\n\n      addApplication(applicationId, user);\n    } finally {\n      writeLock.unlock();\n    }\n    \n    // Inform the parent queue\n    if (parent !\u003d null) {\n      try {\n        parent.submitApplication(applicationId, user, queue);\n      } catch (AccessControlException ace) {\n        LOG.info(\"Failed to submit application to parent-queue: \" + \n            parent.getQueuePath(), ace);\n        removeApplication(applicationId, user);\n        throw ace;\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+      "extendedDetails": {}
+    },
+    "563480dccd0136d82730f4228f1df44449ed5822": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-5932. Retrospect moveApplicationToQueue in align with YARN-5611. Contributed by Sunil G.\n",
+      "commitDate": "06/12/16 9:09 PM",
+      "commitName": "563480dccd0136d82730f4228f1df44449ed5822",
+      "commitAuthor": "Rohith Sharma K S",
+      "commitDateOld": "07/11/16 10:14 AM",
+      "commitNameOld": "de3b4aac561258ad242a3c5ed1c919428893fd4c",
+      "commitAuthorOld": "Jian He",
+      "daysBetweenCommits": 29.45,
+      "commitsBetweenForRepo": 190,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,25 @@\n   public void submitApplication(ApplicationId applicationId, String user,\n       String queue) throws AccessControlException {\n \n     try {\n       writeLock.lock();\n       // Sanity check\n-      if (queue.equals(queueName)) {\n-        throw new AccessControlException(\n-            \"Cannot submit application \" + \"to non-leaf queue: \" + queueName);\n-      }\n-\n-      if (state !\u003d QueueState.RUNNING) {\n-        throw new AccessControlException(\"Queue \" + getQueuePath()\n-            + \" is STOPPED. Cannot accept submission of application: \"\n-            + applicationId);\n-      }\n+      validateSubmitApplication(applicationId, user, queue);\n \n       addApplication(applicationId, user);\n     } finally {\n       writeLock.unlock();\n     }\n     \n     // Inform the parent queue\n     if (parent !\u003d null) {\n       try {\n         parent.submitApplication(applicationId, user, queue);\n       } catch (AccessControlException ace) {\n         LOG.info(\"Failed to submit application to parent-queue: \" + \n             parent.getQueuePath(), ace);\n         removeApplication(applicationId, user);\n         throw ace;\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void submitApplication(ApplicationId applicationId, String user,\n      String queue) throws AccessControlException {\n\n    try {\n      writeLock.lock();\n      // Sanity check\n      validateSubmitApplication(applicationId, user, queue);\n\n      addApplication(applicationId, user);\n    } finally {\n      writeLock.unlock();\n    }\n    \n    // Inform the parent queue\n    if (parent !\u003d null) {\n      try {\n        parent.submitApplication(applicationId, user, queue);\n      } catch (AccessControlException ace) {\n        LOG.info(\"Failed to submit application to parent-queue: \" + \n            parent.getQueuePath(), ace);\n        removeApplication(applicationId, user);\n        throw ace;\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+      "extendedDetails": {}
+    },
+    "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3140. Improve locks in AbstractCSQueue/LeafQueue/ParentQueue. Contributed by Wangda Tan\n",
+      "commitDate": "20/09/16 12:03 AM",
+      "commitName": "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+      "commitAuthor": "Jian He",
+      "commitDateOld": "16/09/16 10:05 PM",
+      "commitNameOld": "4174b9756c8c7877797545c4356b1f40df603ec5",
+      "commitAuthorOld": "Naganarasimha",
+      "daysBetweenCommits": 3.08,
+      "commitsBetweenForRepo": 11,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,34 @@\n   public void submitApplication(ApplicationId applicationId, String user,\n       String queue) throws AccessControlException {\n-    \n-    synchronized (this) {\n+\n+    try {\n+      writeLock.lock();\n       // Sanity check\n       if (queue.equals(queueName)) {\n-        throw new AccessControlException(\"Cannot submit application \" +\n-            \"to non-leaf queue: \" + queueName);\n+        throw new AccessControlException(\n+            \"Cannot submit application \" + \"to non-leaf queue: \" + queueName);\n       }\n-      \n+\n       if (state !\u003d QueueState.RUNNING) {\n-        throw new AccessControlException(\"Queue \" + getQueuePath() +\n-            \" is STOPPED. Cannot accept submission of application: \" +\n-            applicationId);\n+        throw new AccessControlException(\"Queue \" + getQueuePath()\n+            + \" is STOPPED. Cannot accept submission of application: \"\n+            + applicationId);\n       }\n \n       addApplication(applicationId, user);\n+    } finally {\n+      writeLock.unlock();\n     }\n     \n     // Inform the parent queue\n     if (parent !\u003d null) {\n       try {\n         parent.submitApplication(applicationId, user, queue);\n       } catch (AccessControlException ace) {\n         LOG.info(\"Failed to submit application to parent-queue: \" + \n             parent.getQueuePath(), ace);\n         removeApplication(applicationId, user);\n         throw ace;\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void submitApplication(ApplicationId applicationId, String user,\n      String queue) throws AccessControlException {\n\n    try {\n      writeLock.lock();\n      // Sanity check\n      if (queue.equals(queueName)) {\n        throw new AccessControlException(\n            \"Cannot submit application \" + \"to non-leaf queue: \" + queueName);\n      }\n\n      if (state !\u003d QueueState.RUNNING) {\n        throw new AccessControlException(\"Queue \" + getQueuePath()\n            + \" is STOPPED. Cannot accept submission of application: \"\n            + applicationId);\n      }\n\n      addApplication(applicationId, user);\n    } finally {\n      writeLock.unlock();\n    }\n    \n    // Inform the parent queue\n    if (parent !\u003d null) {\n      try {\n        parent.submitApplication(applicationId, user, queue);\n      } catch (AccessControlException ace) {\n        LOG.info(\"Failed to submit application to parent-queue: \" + \n            parent.getQueuePath(), ace);\n        removeApplication(applicationId, user);\n        throw ace;\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+      "extendedDetails": {}
+    },
+    "a45017a5f17ec11814db7e206d1e80aaa4dd8d8f": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-1493. Changed ResourceManager and Scheduler interfacing to recognize app-attempts separately from apps. Contributed by Jian He.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1554896 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/01/14 12:19 PM",
+      "commitName": "a45017a5f17ec11814db7e206d1e80aaa4dd8d8f",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-1493. Changed ResourceManager and Scheduler interfacing to recognize app-attempts separately from apps. Contributed by Jian He.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1554896 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "02/01/14 12:19 PM",
+          "commitName": "a45017a5f17ec11814db7e206d1e80aaa4dd8d8f",
+          "commitAuthor": "Vinod Kumar Vavilapalli",
+          "commitDateOld": "07/12/13 7:09 PM",
+          "commitNameOld": "e1d3670f4c233696dc673c37b578ce46b44a6876",
+          "commitAuthorOld": "Sanford Ryza",
+          "daysBetweenCommits": 25.72,
+          "commitsBetweenForRepo": 114,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,31 @@\n-  public void submitApplication(FiCaSchedulerApp application, String user,\n+  public void submitApplication(ApplicationId applicationId, String user,\n       String queue) throws AccessControlException {\n     \n     synchronized (this) {\n       // Sanity check\n       if (queue.equals(queueName)) {\n         throw new AccessControlException(\"Cannot submit application \" +\n             \"to non-leaf queue: \" + queueName);\n       }\n       \n       if (state !\u003d QueueState.RUNNING) {\n         throw new AccessControlException(\"Queue \" + getQueuePath() +\n             \" is STOPPED. Cannot accept submission of application: \" +\n-            application.getApplicationId());\n+            applicationId);\n       }\n \n-      addApplication(application, user);\n+      addApplication(applicationId, user);\n     }\n     \n     // Inform the parent queue\n     if (parent !\u003d null) {\n       try {\n-        parent.submitApplication(application, user, queue);\n+        parent.submitApplication(applicationId, user, queue);\n       } catch (AccessControlException ace) {\n         LOG.info(\"Failed to submit application to parent-queue: \" + \n             parent.getQueuePath(), ace);\n-        removeApplication(application, user);\n+        removeApplication(applicationId, user);\n         throw ace;\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void submitApplication(ApplicationId applicationId, String user,\n      String queue) throws AccessControlException {\n    \n    synchronized (this) {\n      // Sanity check\n      if (queue.equals(queueName)) {\n        throw new AccessControlException(\"Cannot submit application \" +\n            \"to non-leaf queue: \" + queueName);\n      }\n      \n      if (state !\u003d QueueState.RUNNING) {\n        throw new AccessControlException(\"Queue \" + getQueuePath() +\n            \" is STOPPED. Cannot accept submission of application: \" +\n            applicationId);\n      }\n\n      addApplication(applicationId, user);\n    }\n    \n    // Inform the parent queue\n    if (parent !\u003d null) {\n      try {\n        parent.submitApplication(applicationId, user, queue);\n      } catch (AccessControlException ace) {\n        LOG.info(\"Failed to submit application to parent-queue: \" + \n            parent.getQueuePath(), ace);\n        removeApplication(applicationId, user);\n        throw ace;\n      }\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+          "extendedDetails": {
+            "oldValue": "[application-FiCaSchedulerApp, user-String, queue-String]",
+            "newValue": "[applicationId-ApplicationId, user-String, queue-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-1493. Changed ResourceManager and Scheduler interfacing to recognize app-attempts separately from apps. Contributed by Jian He.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1554896 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "02/01/14 12:19 PM",
+          "commitName": "a45017a5f17ec11814db7e206d1e80aaa4dd8d8f",
+          "commitAuthor": "Vinod Kumar Vavilapalli",
+          "commitDateOld": "07/12/13 7:09 PM",
+          "commitNameOld": "e1d3670f4c233696dc673c37b578ce46b44a6876",
+          "commitAuthorOld": "Sanford Ryza",
+          "daysBetweenCommits": 25.72,
+          "commitsBetweenForRepo": 114,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,31 @@\n-  public void submitApplication(FiCaSchedulerApp application, String user,\n+  public void submitApplication(ApplicationId applicationId, String user,\n       String queue) throws AccessControlException {\n     \n     synchronized (this) {\n       // Sanity check\n       if (queue.equals(queueName)) {\n         throw new AccessControlException(\"Cannot submit application \" +\n             \"to non-leaf queue: \" + queueName);\n       }\n       \n       if (state !\u003d QueueState.RUNNING) {\n         throw new AccessControlException(\"Queue \" + getQueuePath() +\n             \" is STOPPED. Cannot accept submission of application: \" +\n-            application.getApplicationId());\n+            applicationId);\n       }\n \n-      addApplication(application, user);\n+      addApplication(applicationId, user);\n     }\n     \n     // Inform the parent queue\n     if (parent !\u003d null) {\n       try {\n-        parent.submitApplication(application, user, queue);\n+        parent.submitApplication(applicationId, user, queue);\n       } catch (AccessControlException ace) {\n         LOG.info(\"Failed to submit application to parent-queue: \" + \n             parent.getQueuePath(), ace);\n-        removeApplication(application, user);\n+        removeApplication(applicationId, user);\n         throw ace;\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void submitApplication(ApplicationId applicationId, String user,\n      String queue) throws AccessControlException {\n    \n    synchronized (this) {\n      // Sanity check\n      if (queue.equals(queueName)) {\n        throw new AccessControlException(\"Cannot submit application \" +\n            \"to non-leaf queue: \" + queueName);\n      }\n      \n      if (state !\u003d QueueState.RUNNING) {\n        throw new AccessControlException(\"Queue \" + getQueuePath() +\n            \" is STOPPED. Cannot accept submission of application: \" +\n            applicationId);\n      }\n\n      addApplication(applicationId, user);\n    }\n    \n    // Inform the parent queue\n    if (parent !\u003d null) {\n      try {\n        parent.submitApplication(applicationId, user, queue);\n      } catch (AccessControlException ace) {\n        LOG.info(\"Failed to submit application to parent-queue: \" + \n            parent.getQueuePath(), ace);\n        removeApplication(applicationId, user);\n        throw ace;\n      }\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-1. Promote YARN to be a sub-project of Apache Hadoop.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1370666 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/12 10:22 PM",
+      "commitName": "e1fdf62123625e4ba399af02f8aad500637d29d1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "07/08/12 7:53 PM",
+      "commitNameOld": "34554d1e11ee1d5b564d7d9ed3e6d55931d72749",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 0.1,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void submitApplication(FiCaSchedulerApp application, String user,\n      String queue) throws AccessControlException {\n    \n    synchronized (this) {\n      // Sanity check\n      if (queue.equals(queueName)) {\n        throw new AccessControlException(\"Cannot submit application \" +\n            \"to non-leaf queue: \" + queueName);\n      }\n      \n      if (state !\u003d QueueState.RUNNING) {\n        throw new AccessControlException(\"Queue \" + getQueuePath() +\n            \" is STOPPED. Cannot accept submission of application: \" +\n            application.getApplicationId());\n      }\n\n      addApplication(application, user);\n    }\n    \n    // Inform the parent queue\n    if (parent !\u003d null) {\n      try {\n        parent.submitApplication(application, user, queue);\n      } catch (AccessControlException ace) {\n        LOG.info(\"Failed to submit application to parent-queue: \" + \n            parent.getQueuePath(), ace);\n        removeApplication(application, user);\n        throw ace;\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java"
+      }
+    },
+    "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76": {
+      "type": "Yparameterchange",
+      "commitMessage": "MAPREDUCE-4440. Changed SchedulerApp and SchedulerNode to be a minimal interface to allow schedulers to maintain their own.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1362332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/07/12 6:43 PM",
+      "commitName": "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "19/06/12 6:06 AM",
+      "commitNameOld": "01b61c76a85858a0bc0cba24cc00f961affa4922",
+      "commitAuthorOld": "Thomas Graves",
+      "daysBetweenCommits": 27.53,
+      "commitsBetweenForRepo": 163,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,31 @@\n-  public void submitApplication(SchedulerApp application, String user,\n+  public void submitApplication(FiCaSchedulerApp application, String user,\n       String queue) throws AccessControlException {\n     \n     synchronized (this) {\n       // Sanity check\n       if (queue.equals(queueName)) {\n         throw new AccessControlException(\"Cannot submit application \" +\n             \"to non-leaf queue: \" + queueName);\n       }\n       \n       if (state !\u003d QueueState.RUNNING) {\n         throw new AccessControlException(\"Queue \" + getQueuePath() +\n             \" is STOPPED. Cannot accept submission of application: \" +\n             application.getApplicationId());\n       }\n \n       addApplication(application, user);\n     }\n     \n     // Inform the parent queue\n     if (parent !\u003d null) {\n       try {\n         parent.submitApplication(application, user, queue);\n       } catch (AccessControlException ace) {\n         LOG.info(\"Failed to submit application to parent-queue: \" + \n             parent.getQueuePath(), ace);\n         removeApplication(application, user);\n         throw ace;\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void submitApplication(FiCaSchedulerApp application, String user,\n      String queue) throws AccessControlException {\n    \n    synchronized (this) {\n      // Sanity check\n      if (queue.equals(queueName)) {\n        throw new AccessControlException(\"Cannot submit application \" +\n            \"to non-leaf queue: \" + queueName);\n      }\n      \n      if (state !\u003d QueueState.RUNNING) {\n        throw new AccessControlException(\"Queue \" + getQueuePath() +\n            \" is STOPPED. Cannot accept submission of application: \" +\n            application.getApplicationId());\n      }\n\n      addApplication(application, user);\n    }\n    \n    // Inform the parent queue\n    if (parent !\u003d null) {\n      try {\n        parent.submitApplication(application, user, queue);\n      } catch (AccessControlException ace) {\n        LOG.info(\"Failed to submit application to parent-queue: \" + \n            parent.getQueuePath(), ace);\n        removeApplication(application, user);\n        throw ace;\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+      "extendedDetails": {
+        "oldValue": "[application-SchedulerApp, user-String, queue-String]",
+        "newValue": "[application-FiCaSchedulerApp, user-String, queue-String]"
+      }
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void submitApplication(SchedulerApp application, String user,\n      String queue) throws AccessControlException {\n    \n    synchronized (this) {\n      // Sanity check\n      if (queue.equals(queueName)) {\n        throw new AccessControlException(\"Cannot submit application \" +\n            \"to non-leaf queue: \" + queueName);\n      }\n      \n      if (state !\u003d QueueState.RUNNING) {\n        throw new AccessControlException(\"Queue \" + getQueuePath() +\n            \" is STOPPED. Cannot accept submission of application: \" +\n            application.getApplicationId());\n      }\n\n      addApplication(application, user);\n    }\n    \n    // Inform the parent queue\n    if (parent !\u003d null) {\n      try {\n        parent.submitApplication(application, user, queue);\n      } catch (AccessControlException ace) {\n        LOG.info(\"Failed to submit application to parent-queue: \" + \n            parent.getQueuePath(), ace);\n        removeApplication(application, user);\n        throw ace;\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,31 @@\n+  public void submitApplication(SchedulerApp application, String user,\n+      String queue) throws AccessControlException {\n+    \n+    synchronized (this) {\n+      // Sanity check\n+      if (queue.equals(queueName)) {\n+        throw new AccessControlException(\"Cannot submit application \" +\n+            \"to non-leaf queue: \" + queueName);\n+      }\n+      \n+      if (state !\u003d QueueState.RUNNING) {\n+        throw new AccessControlException(\"Queue \" + getQueuePath() +\n+            \" is STOPPED. Cannot accept submission of application: \" +\n+            application.getApplicationId());\n+      }\n+\n+      addApplication(application, user);\n+    }\n+    \n+    // Inform the parent queue\n+    if (parent !\u003d null) {\n+      try {\n+        parent.submitApplication(application, user, queue);\n+      } catch (AccessControlException ace) {\n+        LOG.info(\"Failed to submit application to parent-queue: \" + \n+            parent.getQueuePath(), ace);\n+        removeApplication(application, user);\n+        throw ace;\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void submitApplication(SchedulerApp application, String user,\n      String queue) throws AccessControlException {\n    \n    synchronized (this) {\n      // Sanity check\n      if (queue.equals(queueName)) {\n        throw new AccessControlException(\"Cannot submit application \" +\n            \"to non-leaf queue: \" + queueName);\n      }\n      \n      if (state !\u003d QueueState.RUNNING) {\n        throw new AccessControlException(\"Queue \" + getQueuePath() +\n            \" is STOPPED. Cannot accept submission of application: \" +\n            application.getApplicationId());\n      }\n\n      addApplication(application, user);\n    }\n    \n    // Inform the parent queue\n    if (parent !\u003d null) {\n      try {\n        parent.submitApplication(application, user, queue);\n      } catch (AccessControlException ace) {\n        LOG.info(\"Failed to submit application to parent-queue: \" + \n            parent.getQueuePath(), ace);\n        removeApplication(application, user);\n        throw ace;\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/ParentQueue.java"
+    }
+  }
+}

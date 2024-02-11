@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CryptoInputStream.java",
+  "functionName": "read",
+  "functionId": "read___buf-ByteBuffer",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java",
+  "functionStartLine": 585,
+  "functionEndLine": 635,
+  "numCommitsSeen": 19,
+  "timeTaken": 1271,
+  "changeHistory": [
+    "58c0bb9ed9f4a2491395b63c68046562a73526c9",
+    "47e5e19831a363aa4d675fd23ab0d06e86809094",
+    "2e5ae1aad74575cd35f47bd5f0f789d7056ef77d",
+    "b20180ffa6c89396d9fcfec8b029b9c600503c3d"
+  ],
+  "changeHistoryShort": {
+    "58c0bb9ed9f4a2491395b63c68046562a73526c9": "Ybodychange",
+    "47e5e19831a363aa4d675fd23ab0d06e86809094": "Ybodychange",
+    "2e5ae1aad74575cd35f47bd5f0f789d7056ef77d": "Ybodychange",
+    "b20180ffa6c89396d9fcfec8b029b9c600503c3d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "58c0bb9ed9f4a2491395b63c68046562a73526c9": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6606. Optimize HDFS Encrypted Transport performance. (yliu)\n",
+      "commitDate": "28/10/14 6:11 AM",
+      "commitName": "58c0bb9ed9f4a2491395b63c68046562a73526c9",
+      "commitAuthor": "yliu",
+      "commitDateOld": "17/09/14 5:58 PM",
+      "commitNameOld": "47e5e19831a363aa4d675fd23ab0d06e86809094",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 40.51,
+      "commitsBetweenForRepo": 395,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,38 +1,51 @@\n   public int read(ByteBuffer buf) throws IOException {\n     checkStream();\n-    if (in instanceof ByteBufferReadable) {\n+    if (isByteBufferReadable || isReadableByteChannel) {\n       final int unread \u003d outBuffer.remaining();\n       if (unread \u003e 0) { // Have unread decrypted data in buffer.\n         int toRead \u003d buf.remaining();\n         if (toRead \u003c\u003d unread) {\n           final int limit \u003d outBuffer.limit();\n           outBuffer.limit(outBuffer.position() + toRead);\n           buf.put(outBuffer);\n           outBuffer.limit(limit);\n           return toRead;\n         } else {\n           buf.put(outBuffer);\n         }\n       }\n       \n       final int pos \u003d buf.position();\n-      final int n \u003d ((ByteBufferReadable) in).read(buf);\n+      final int n \u003d isByteBufferReadable ? ((ByteBufferReadable) in).read(buf) : \n+            ((ReadableByteChannel) in).read(buf);\n       if (n \u003e 0) {\n         streamOffset +\u003d n; // Read n bytes\n         decrypt(buf, n, pos);\n       }\n       \n       if (n \u003e\u003d 0) {\n         return unread + n;\n       } else {\n         if (unread \u003d\u003d 0) {\n           return -1;\n         } else {\n           return unread;\n         }\n       }\n+    } else {\n+      int n \u003d 0;\n+      if (buf.hasArray()) {\n+        n \u003d read(buf.array(), buf.position(), buf.remaining());\n+        if (n \u003e 0) {\n+          buf.position(buf.position() + n);\n+        }\n+      } else {\n+        byte[] tmp \u003d new byte[buf.remaining()];\n+        n \u003d read(tmp);\n+        if (n \u003e 0) {\n+          buf.put(tmp, 0, n);\n+        }\n+      }\n+      return n;\n     }\n-\n-    throw new UnsupportedOperationException(\"ByteBuffer read unsupported \" +\n-        \"by input stream.\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public int read(ByteBuffer buf) throws IOException {\n    checkStream();\n    if (isByteBufferReadable || isReadableByteChannel) {\n      final int unread \u003d outBuffer.remaining();\n      if (unread \u003e 0) { // Have unread decrypted data in buffer.\n        int toRead \u003d buf.remaining();\n        if (toRead \u003c\u003d unread) {\n          final int limit \u003d outBuffer.limit();\n          outBuffer.limit(outBuffer.position() + toRead);\n          buf.put(outBuffer);\n          outBuffer.limit(limit);\n          return toRead;\n        } else {\n          buf.put(outBuffer);\n        }\n      }\n      \n      final int pos \u003d buf.position();\n      final int n \u003d isByteBufferReadable ? ((ByteBufferReadable) in).read(buf) : \n            ((ReadableByteChannel) in).read(buf);\n      if (n \u003e 0) {\n        streamOffset +\u003d n; // Read n bytes\n        decrypt(buf, n, pos);\n      }\n      \n      if (n \u003e\u003d 0) {\n        return unread + n;\n      } else {\n        if (unread \u003d\u003d 0) {\n          return -1;\n        } else {\n          return unread;\n        }\n      }\n    } else {\n      int n \u003d 0;\n      if (buf.hasArray()) {\n        n \u003d read(buf.array(), buf.position(), buf.remaining());\n        if (n \u003e 0) {\n          buf.position(buf.position() + n);\n        }\n      } else {\n        byte[] tmp \u003d new byte[buf.remaining()];\n        n \u003d read(tmp);\n        if (n \u003e 0) {\n          buf.put(tmp, 0, n);\n        }\n      }\n      return n;\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java",
+      "extendedDetails": {}
+    },
+    "47e5e19831a363aa4d675fd23ab0d06e86809094": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11040. Return value of read(ByteBuffer buf) in CryptoInputStream is incorrect in some cases. (Yi Liu via wang)\n",
+      "commitDate": "17/09/14 5:58 PM",
+      "commitName": "47e5e19831a363aa4d675fd23ab0d06e86809094",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "02/07/14 4:08 PM",
+      "commitNameOld": "51b97a1396a4cb32aaa08b451985a6af236c0c4b",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 77.08,
+      "commitsBetweenForRepo": 660,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,38 @@\n   public int read(ByteBuffer buf) throws IOException {\n     checkStream();\n     if (in instanceof ByteBufferReadable) {\n       final int unread \u003d outBuffer.remaining();\n       if (unread \u003e 0) { // Have unread decrypted data in buffer.\n         int toRead \u003d buf.remaining();\n         if (toRead \u003c\u003d unread) {\n           final int limit \u003d outBuffer.limit();\n           outBuffer.limit(outBuffer.position() + toRead);\n           buf.put(outBuffer);\n           outBuffer.limit(limit);\n           return toRead;\n         } else {\n           buf.put(outBuffer);\n         }\n       }\n       \n       final int pos \u003d buf.position();\n       final int n \u003d ((ByteBufferReadable) in).read(buf);\n       if (n \u003e 0) {\n         streamOffset +\u003d n; // Read n bytes\n         decrypt(buf, n, pos);\n       }\n-      return n;\n+      \n+      if (n \u003e\u003d 0) {\n+        return unread + n;\n+      } else {\n+        if (unread \u003d\u003d 0) {\n+          return -1;\n+        } else {\n+          return unread;\n+        }\n+      }\n     }\n \n     throw new UnsupportedOperationException(\"ByteBuffer read unsupported \" +\n         \"by input stream.\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public int read(ByteBuffer buf) throws IOException {\n    checkStream();\n    if (in instanceof ByteBufferReadable) {\n      final int unread \u003d outBuffer.remaining();\n      if (unread \u003e 0) { // Have unread decrypted data in buffer.\n        int toRead \u003d buf.remaining();\n        if (toRead \u003c\u003d unread) {\n          final int limit \u003d outBuffer.limit();\n          outBuffer.limit(outBuffer.position() + toRead);\n          buf.put(outBuffer);\n          outBuffer.limit(limit);\n          return toRead;\n        } else {\n          buf.put(outBuffer);\n        }\n      }\n      \n      final int pos \u003d buf.position();\n      final int n \u003d ((ByteBufferReadable) in).read(buf);\n      if (n \u003e 0) {\n        streamOffset +\u003d n; // Read n bytes\n        decrypt(buf, n, pos);\n      }\n      \n      if (n \u003e\u003d 0) {\n        return unread + n;\n      } else {\n        if (unread \u003d\u003d 0) {\n          return -1;\n        } else {\n          return unread;\n        }\n      }\n    }\n\n    throw new UnsupportedOperationException(\"ByteBuffer read unsupported \" +\n        \"by input stream.\");\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java",
+      "extendedDetails": {}
+    },
+    "2e5ae1aad74575cd35f47bd5f0f789d7056ef77d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10628. Javadoc and few code style improvement for Crypto input and output streams. (yliu via clamb)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/fs-encryption@1598429 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "29/05/14 3:09 PM",
+      "commitName": "2e5ae1aad74575cd35f47bd5f0f789d7056ef77d",
+      "commitAuthor": "Charles Lamb",
+      "commitDateOld": "23/05/14 6:19 PM",
+      "commitNameOld": "b20180ffa6c89396d9fcfec8b029b9c600503c3d",
+      "commitAuthorOld": "Yi Liu",
+      "daysBetweenCommits": 5.87,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,29 @@\n   public int read(ByteBuffer buf) throws IOException {\n     checkStream();\n     if (in instanceof ByteBufferReadable) {\n-      int unread \u003d outBuffer.remaining();\n+      final int unread \u003d outBuffer.remaining();\n       if (unread \u003e 0) { // Have unread decrypted data in buffer.\n         int toRead \u003d buf.remaining();\n         if (toRead \u003c\u003d unread) {\n-          int limit \u003d outBuffer.limit();\n+          final int limit \u003d outBuffer.limit();\n           outBuffer.limit(outBuffer.position() + toRead);\n           buf.put(outBuffer);\n           outBuffer.limit(limit);\n           return toRead;\n         } else {\n           buf.put(outBuffer);\n         }\n       }\n       \n-      int pos \u003d buf.position();\n-      int n \u003d ((ByteBufferReadable) in).read(buf);\n+      final int pos \u003d buf.position();\n+      final int n \u003d ((ByteBufferReadable) in).read(buf);\n       if (n \u003e 0) {\n         streamOffset +\u003d n; // Read n bytes\n         decrypt(buf, n, pos);\n       }\n       return n;\n     }\n \n     throw new UnsupportedOperationException(\"ByteBuffer read unsupported \" +\n         \"by input stream.\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public int read(ByteBuffer buf) throws IOException {\n    checkStream();\n    if (in instanceof ByteBufferReadable) {\n      final int unread \u003d outBuffer.remaining();\n      if (unread \u003e 0) { // Have unread decrypted data in buffer.\n        int toRead \u003d buf.remaining();\n        if (toRead \u003c\u003d unread) {\n          final int limit \u003d outBuffer.limit();\n          outBuffer.limit(outBuffer.position() + toRead);\n          buf.put(outBuffer);\n          outBuffer.limit(limit);\n          return toRead;\n        } else {\n          buf.put(outBuffer);\n        }\n      }\n      \n      final int pos \u003d buf.position();\n      final int n \u003d ((ByteBufferReadable) in).read(buf);\n      if (n \u003e 0) {\n        streamOffset +\u003d n; // Read n bytes\n        decrypt(buf, n, pos);\n      }\n      return n;\n    }\n\n    throw new UnsupportedOperationException(\"ByteBuffer read unsupported \" +\n        \"by input stream.\");\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java",
+      "extendedDetails": {}
+    },
+    "b20180ffa6c89396d9fcfec8b029b9c600503c3d": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10603. Crypto input and output streams implementing Hadoop stream interfaces. Contributed by Yi Liu and Charles Lamb.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/fs-encryption@1597230 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "23/05/14 6:19 PM",
+      "commitName": "b20180ffa6c89396d9fcfec8b029b9c600503c3d",
+      "commitAuthor": "Yi Liu",
+      "diff": "@@ -0,0 +1,29 @@\n+  public int read(ByteBuffer buf) throws IOException {\n+    checkStream();\n+    if (in instanceof ByteBufferReadable) {\n+      int unread \u003d outBuffer.remaining();\n+      if (unread \u003e 0) { // Have unread decrypted data in buffer.\n+        int toRead \u003d buf.remaining();\n+        if (toRead \u003c\u003d unread) {\n+          int limit \u003d outBuffer.limit();\n+          outBuffer.limit(outBuffer.position() + toRead);\n+          buf.put(outBuffer);\n+          outBuffer.limit(limit);\n+          return toRead;\n+        } else {\n+          buf.put(outBuffer);\n+        }\n+      }\n+      \n+      int pos \u003d buf.position();\n+      int n \u003d ((ByteBufferReadable) in).read(buf);\n+      if (n \u003e 0) {\n+        streamOffset +\u003d n; // Read n bytes\n+        decrypt(buf, n, pos);\n+      }\n+      return n;\n+    }\n+\n+    throw new UnsupportedOperationException(\"ByteBuffer read unsupported \" +\n+        \"by input stream.\");\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public int read(ByteBuffer buf) throws IOException {\n    checkStream();\n    if (in instanceof ByteBufferReadable) {\n      int unread \u003d outBuffer.remaining();\n      if (unread \u003e 0) { // Have unread decrypted data in buffer.\n        int toRead \u003d buf.remaining();\n        if (toRead \u003c\u003d unread) {\n          int limit \u003d outBuffer.limit();\n          outBuffer.limit(outBuffer.position() + toRead);\n          buf.put(outBuffer);\n          outBuffer.limit(limit);\n          return toRead;\n        } else {\n          buf.put(outBuffer);\n        }\n      }\n      \n      int pos \u003d buf.position();\n      int n \u003d ((ByteBufferReadable) in).read(buf);\n      if (n \u003e 0) {\n        streamOffset +\u003d n; // Read n bytes\n        decrypt(buf, n, pos);\n      }\n      return n;\n    }\n\n    throw new UnsupportedOperationException(\"ByteBuffer read unsupported \" +\n        \"by input stream.\");\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoInputStream.java"
+    }
+  }
+}

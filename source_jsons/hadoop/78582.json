@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ViewFileSystemUtil.java",
+  "functionName": "getStatus",
+  "functionId": "getStatus___fileSystem-FileSystem__path-Path",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFileSystemUtil.java",
+  "functionStartLine": 94,
+  "functionEndLine": 146,
+  "numCommitsSeen": 1,
+  "timeTaken": 687,
+  "changeHistory": [
+    "dd98a8005ad8939ffb6faba1ff0170387e91a8de"
+  ],
+  "changeHistoryShort": {
+    "dd98a8005ad8939ffb6faba1ff0170387e91a8de": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "dd98a8005ad8939ffb6faba1ff0170387e91a8de": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11058. Implement \u0027hadoop fs -df\u0027 command for ViewFileSystem. Contributed by Manoj Govindassamy.\n",
+      "commitDate": "23/11/16 4:40 PM",
+      "commitName": "dd98a8005ad8939ffb6faba1ff0170387e91a8de",
+      "commitAuthor": "Andrew Wang",
+      "diff": "@@ -0,0 +1,53 @@\n+  public static Map\u003cMountPoint, FsStatus\u003e getStatus(\n+      FileSystem fileSystem, Path path) throws IOException {\n+    if (!isViewFileSystem(fileSystem)) {\n+      throw new UnsupportedFileSystemException(\"FileSystem \u0027\"\n+          + fileSystem.getUri() + \"\u0027is not a ViewFileSystem.\");\n+    }\n+    ViewFileSystem viewFileSystem \u003d (ViewFileSystem) fileSystem;\n+    String viewFsUriPath \u003d viewFileSystem.getUriPath(path);\n+    boolean isPathOverMountPoint \u003d false;\n+    boolean isPathLeadingToMountPoint \u003d false;\n+    boolean isPathIncludesAllMountPoint \u003d false;\n+    Map\u003cMountPoint, FsStatus\u003e mountPointMap \u003d new HashMap\u003c\u003e();\n+    for (MountPoint mountPoint : viewFileSystem.getMountPoints()) {\n+      String[] mountPointPathComponents \u003d InodeTree.breakIntoPathComponents(\n+          mountPoint.getMountedOnPath().toString());\n+      String[] incomingPathComponents \u003d\n+          InodeTree.breakIntoPathComponents(viewFsUriPath);\n+\n+      int pathCompIndex;\n+      for (pathCompIndex \u003d 0; pathCompIndex \u003c mountPointPathComponents.length \u0026\u0026\n+          pathCompIndex \u003c incomingPathComponents.length; pathCompIndex++) {\n+        if (!mountPointPathComponents[pathCompIndex].equals(\n+            incomingPathComponents[pathCompIndex])) {\n+          break;\n+        }\n+      }\n+\n+      if (pathCompIndex \u003e\u003d mountPointPathComponents.length) {\n+        // Patch matches or over a valid mount point\n+        isPathOverMountPoint \u003d true;\n+        mountPointMap.clear();\n+        updateMountPointFsStatus(viewFileSystem, mountPointMap, mountPoint,\n+            new Path(viewFsUriPath));\n+        break;\n+      } else {\n+        if (pathCompIndex \u003e 1) {\n+          // Path is in the mount tree\n+          isPathLeadingToMountPoint \u003d true;\n+        } else if (incomingPathComponents.length \u003c\u003d 1) {\n+          // Special case of \"/\" path\n+          isPathIncludesAllMountPoint \u003d true;\n+        }\n+        updateMountPointFsStatus(viewFileSystem, mountPointMap, mountPoint,\n+            mountPoint.getMountedOnPath());\n+      }\n+    }\n+\n+    if (!isPathOverMountPoint \u0026\u0026 !isPathLeadingToMountPoint \u0026\u0026\n+        !isPathIncludesAllMountPoint) {\n+      throw new NotInMountpointException(path, \"getStatus\");\n+    }\n+    return mountPointMap;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Map\u003cMountPoint, FsStatus\u003e getStatus(\n      FileSystem fileSystem, Path path) throws IOException {\n    if (!isViewFileSystem(fileSystem)) {\n      throw new UnsupportedFileSystemException(\"FileSystem \u0027\"\n          + fileSystem.getUri() + \"\u0027is not a ViewFileSystem.\");\n    }\n    ViewFileSystem viewFileSystem \u003d (ViewFileSystem) fileSystem;\n    String viewFsUriPath \u003d viewFileSystem.getUriPath(path);\n    boolean isPathOverMountPoint \u003d false;\n    boolean isPathLeadingToMountPoint \u003d false;\n    boolean isPathIncludesAllMountPoint \u003d false;\n    Map\u003cMountPoint, FsStatus\u003e mountPointMap \u003d new HashMap\u003c\u003e();\n    for (MountPoint mountPoint : viewFileSystem.getMountPoints()) {\n      String[] mountPointPathComponents \u003d InodeTree.breakIntoPathComponents(\n          mountPoint.getMountedOnPath().toString());\n      String[] incomingPathComponents \u003d\n          InodeTree.breakIntoPathComponents(viewFsUriPath);\n\n      int pathCompIndex;\n      for (pathCompIndex \u003d 0; pathCompIndex \u003c mountPointPathComponents.length \u0026\u0026\n          pathCompIndex \u003c incomingPathComponents.length; pathCompIndex++) {\n        if (!mountPointPathComponents[pathCompIndex].equals(\n            incomingPathComponents[pathCompIndex])) {\n          break;\n        }\n      }\n\n      if (pathCompIndex \u003e\u003d mountPointPathComponents.length) {\n        // Patch matches or over a valid mount point\n        isPathOverMountPoint \u003d true;\n        mountPointMap.clear();\n        updateMountPointFsStatus(viewFileSystem, mountPointMap, mountPoint,\n            new Path(viewFsUriPath));\n        break;\n      } else {\n        if (pathCompIndex \u003e 1) {\n          // Path is in the mount tree\n          isPathLeadingToMountPoint \u003d true;\n        } else if (incomingPathComponents.length \u003c\u003d 1) {\n          // Special case of \"/\" path\n          isPathIncludesAllMountPoint \u003d true;\n        }\n        updateMountPointFsStatus(viewFileSystem, mountPointMap, mountPoint,\n            mountPoint.getMountedOnPath());\n      }\n    }\n\n    if (!isPathOverMountPoint \u0026\u0026 !isPathLeadingToMountPoint \u0026\u0026\n        !isPathIncludesAllMountPoint) {\n      throw new NotInMountpointException(path, \"getStatus\");\n    }\n    return mountPointMap;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFileSystemUtil.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "Journal.java",
+  "functionName": "getJournaledEdits",
+  "functionId": "getJournaledEdits___sinceTxId-long__maxTxns-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java",
+  "functionStartLine": 746,
+  "functionEndLine": 779,
+  "numCommitsSeen": 64,
+  "timeTaken": 1261,
+  "changeHistory": [
+    "151c8ddbe4c05fcb5f251fa4450edc452f6c735a"
+  ],
+  "changeHistoryShort": {
+    "151c8ddbe4c05fcb5f251fa4450edc452f6c735a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "151c8ddbe4c05fcb5f251fa4450edc452f6c735a": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13608. [SBN read] Edit Tail Fast Path Part 2: Add ability for JournalNode to serve edits via RPC. Contributed by Erik Krogen.\n",
+      "commitDate": "24/12/18 9:33 AM",
+      "commitName": "151c8ddbe4c05fcb5f251fa4450edc452f6c735a",
+      "commitAuthor": "Erik Krogen",
+      "diff": "@@ -0,0 +1,34 @@\n+  public GetJournaledEditsResponseProto getJournaledEdits(long sinceTxId,\n+      int maxTxns) throws IOException {\n+    if (cache \u003d\u003d null) {\n+      throw new IOException(\"The journal edits cache is not enabled, which \" +\n+          \"is a requirement to fetch journaled edits via RPC. Please enable \" +\n+          \"it via \" + DFSConfigKeys.DFS_HA_TAILEDITS_INPROGRESS_KEY);\n+    }\n+    if (sinceTxId \u003e getHighestWrittenTxId()) {\n+      // Requested edits that don\u0027t exist yet; short-circuit the cache here\n+      metrics.rpcEmptyResponses.incr();\n+      return GetJournaledEditsResponseProto.newBuilder().setTxnCount(0).build();\n+    }\n+    try {\n+      List\u003cByteBuffer\u003e buffers \u003d new ArrayList\u003c\u003e();\n+      int txnCount \u003d cache.retrieveEdits(sinceTxId, maxTxns, buffers);\n+      int totalSize \u003d 0;\n+      for (ByteBuffer buf : buffers) {\n+        totalSize +\u003d buf.remaining();\n+      }\n+      metrics.txnsServedViaRpc.incr(txnCount);\n+      metrics.bytesServedViaRpc.incr(totalSize);\n+      ByteString.Output output \u003d ByteString.newOutput(totalSize);\n+      for (ByteBuffer buf : buffers) {\n+        output.write(buf.array(), buf.position(), buf.remaining());\n+      }\n+      return GetJournaledEditsResponseProto.newBuilder()\n+          .setTxnCount(txnCount)\n+          .setEditLog(output.toByteString())\n+          .build();\n+    } catch (JournaledEditsCache.CacheMissException cme) {\n+      metrics.rpcRequestCacheMissAmount.add(cme.getCacheMissAmount());\n+      throw cme;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public GetJournaledEditsResponseProto getJournaledEdits(long sinceTxId,\n      int maxTxns) throws IOException {\n    if (cache \u003d\u003d null) {\n      throw new IOException(\"The journal edits cache is not enabled, which \" +\n          \"is a requirement to fetch journaled edits via RPC. Please enable \" +\n          \"it via \" + DFSConfigKeys.DFS_HA_TAILEDITS_INPROGRESS_KEY);\n    }\n    if (sinceTxId \u003e getHighestWrittenTxId()) {\n      // Requested edits that don\u0027t exist yet; short-circuit the cache here\n      metrics.rpcEmptyResponses.incr();\n      return GetJournaledEditsResponseProto.newBuilder().setTxnCount(0).build();\n    }\n    try {\n      List\u003cByteBuffer\u003e buffers \u003d new ArrayList\u003c\u003e();\n      int txnCount \u003d cache.retrieveEdits(sinceTxId, maxTxns, buffers);\n      int totalSize \u003d 0;\n      for (ByteBuffer buf : buffers) {\n        totalSize +\u003d buf.remaining();\n      }\n      metrics.txnsServedViaRpc.incr(txnCount);\n      metrics.bytesServedViaRpc.incr(totalSize);\n      ByteString.Output output \u003d ByteString.newOutput(totalSize);\n      for (ByteBuffer buf : buffers) {\n        output.write(buf.array(), buf.position(), buf.remaining());\n      }\n      return GetJournaledEditsResponseProto.newBuilder()\n          .setTxnCount(txnCount)\n          .setEditLog(output.toByteString())\n          .build();\n    } catch (JournaledEditsCache.CacheMissException cme) {\n      metrics.rpcRequestCacheMissAmount.add(cme.getCacheMissAmount());\n      throw cme;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/server/Journal.java"
+    }
+  }
+}

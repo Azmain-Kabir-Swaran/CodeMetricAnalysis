@@ -1,0 +1,39 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSStripedOutputStream.java",
+  "functionName": "flushAllInternals",
+  "functionId": "flushAllInternals",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+  "functionStartLine": 1293,
+  "functionEndLine": 1334,
+  "numCommitsSeen": 38,
+  "timeTaken": 1192,
+  "changeHistory": [
+    "e30ce01ddce1cfd1e9d49c4784eb4a6bc87e36ca"
+  ],
+  "changeHistoryShort": {
+    "e30ce01ddce1cfd1e9d49c4784eb4a6bc87e36ca": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "e30ce01ddce1cfd1e9d49c4784eb4a6bc87e36ca": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9494. Parallel optimization of DFSStripedOutputStream#flushAllInternals. Contributed by Gao Rui.\n",
+      "commitDate": "01/02/16 1:02 PM",
+      "commitName": "e30ce01ddce1cfd1e9d49c4784eb4a6bc87e36ca",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "18/12/15 3:57 PM",
+      "commitNameOld": "61ab0440f7eaff0f631cbae0378403912f88d7ad",
+      "commitAuthorOld": "Zhe Zhang",
+      "daysBetweenCommits": 44.88,
+      "commitsBetweenForRepo": 252,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,42 @@\n   void flushAllInternals() throws IOException {\n+    Map\u003cFuture\u003cVoid\u003e, Integer\u003e flushAllFuturesMap \u003d new HashMap\u003c\u003e();\n+    Future\u003cVoid\u003e future \u003d null;\n     int current \u003d getCurrentIndex();\n \n     for (int i \u003d 0; i \u003c numAllBlocks; i++) {\n       final StripedDataStreamer s \u003d setCurrentStreamer(i);\n       if (s.isHealthy()) {\n         try {\n           // flush all data to Datanode\n-          flushInternal();\n-        } catch(Exception e) {\n-          handleStreamerFailure(\"flushInternal \" + s, e);\n+          final long toWaitFor \u003d flushInternalWithoutWaitingAck();\n+          future \u003d flushAllExecutorCompletionService.submit(\n+              new Callable\u003cVoid\u003e() {\n+                @Override\n+                public Void call() throws Exception {\n+                  s.waitForAckedSeqno(toWaitFor);\n+                  return null;\n+                }\n+              });\n+          flushAllFuturesMap.put(future, i);\n+        } catch (Exception e) {\n+          handleCurrentStreamerFailure(\"flushInternal \" + s, e);\n         }\n       }\n     }\n     setCurrentStreamer(current);\n+    for (int i \u003d 0; i \u003c flushAllFuturesMap.size(); i++) {\n+      try {\n+        future \u003d flushAllExecutorCompletionService.take();\n+        future.get();\n+      } catch (InterruptedException ie) {\n+        throw DFSUtilClient.toInterruptedIOException(\n+            \"Interrupted during waiting all streamer flush, \", ie);\n+      } catch (ExecutionException ee) {\n+        LOG.warn(\n+            \"Caught ExecutionException while waiting all streamer flush, \", ee);\n+        StripedDataStreamer s \u003d streamers.get(flushAllFuturesMap.get(future));\n+        handleStreamerFailure(\"flushInternal \" + s,\n+            (Exception) ee.getCause(), s);\n+      }\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void flushAllInternals() throws IOException {\n    Map\u003cFuture\u003cVoid\u003e, Integer\u003e flushAllFuturesMap \u003d new HashMap\u003c\u003e();\n    Future\u003cVoid\u003e future \u003d null;\n    int current \u003d getCurrentIndex();\n\n    for (int i \u003d 0; i \u003c numAllBlocks; i++) {\n      final StripedDataStreamer s \u003d setCurrentStreamer(i);\n      if (s.isHealthy()) {\n        try {\n          // flush all data to Datanode\n          final long toWaitFor \u003d flushInternalWithoutWaitingAck();\n          future \u003d flushAllExecutorCompletionService.submit(\n              new Callable\u003cVoid\u003e() {\n                @Override\n                public Void call() throws Exception {\n                  s.waitForAckedSeqno(toWaitFor);\n                  return null;\n                }\n              });\n          flushAllFuturesMap.put(future, i);\n        } catch (Exception e) {\n          handleCurrentStreamerFailure(\"flushInternal \" + s, e);\n        }\n      }\n    }\n    setCurrentStreamer(current);\n    for (int i \u003d 0; i \u003c flushAllFuturesMap.size(); i++) {\n      try {\n        future \u003d flushAllExecutorCompletionService.take();\n        future.get();\n      } catch (InterruptedException ie) {\n        throw DFSUtilClient.toInterruptedIOException(\n            \"Interrupted during waiting all streamer flush, \", ie);\n      } catch (ExecutionException ee) {\n        LOG.warn(\n            \"Caught ExecutionException while waiting all streamer flush, \", ee);\n        StripedDataStreamer s \u003d streamers.get(flushAllFuturesMap.get(future));\n        handleStreamerFailure(\"flushInternal \" + s,\n            (Exception) ee.getCause(), s);\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+      "extendedDetails": {}
+    }
+  }
+}

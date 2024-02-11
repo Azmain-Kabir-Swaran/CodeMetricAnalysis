@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DatanodeHttpServer.java",
+  "functionName": "getFilterHandlers",
+  "functionId": "getFilterHandlers___configuration-Configuration",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/DatanodeHttpServer.java",
+  "functionStartLine": 256,
+  "functionEndLine": 297,
+  "numCommitsSeen": 18,
+  "timeTaken": 1448,
+  "changeHistory": [
+    "101d5b5f865f94e4772051ea8ce4ee0f92ddedca"
+  ],
+  "changeHistoryShort": {
+    "101d5b5f865f94e4772051ea8ce4ee0f92ddedca": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "101d5b5f865f94e4772051ea8ce4ee0f92ddedca": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-14234. Limit WebHDFS to specifc user, host, directory triples.\nContributed by Clay B.\n",
+      "commitDate": "10/06/19 5:55 PM",
+      "commitName": "101d5b5f865f94e4772051ea8ce4ee0f92ddedca",
+      "commitAuthor": "Anu Engineer",
+      "diff": "@@ -0,0 +1,42 @@\n+  private ChannelHandler[] getFilterHandlers(Configuration configuration) {\n+    if (configuration \u003d\u003d null) {\n+      return null;\n+    }\n+    // If the hdfs-site.xml has the proper configs for filter classes, use them.\n+    Class\u003c?\u003e[] classes \u003d\n+        configuration.getClasses(\n+            DFSConfigKeys.DFS_DATANODE_HTTPSERVER_FILTER_HANDLERS);\n+\n+    // else use the hard coded class from the default configuration.\n+    if (classes \u003d\u003d null) {\n+      classes \u003d\n+          configuration.getClasses(\n+              DFSConfigKeys.DFS_DATANODE_HTTPSERVER_FILTER_HANDLERS_DEFAULT);\n+    }\n+\n+    // if we are not able to find any handlers, let us fail since running\n+    // with Csrf will is a security hole. Let us abort the startup.\n+    if(classes \u003d\u003d null)  {\n+      return null;\n+    }\n+\n+    ChannelHandler[] handlers \u003d new ChannelHandler[classes.length];\n+    for (int i \u003d 0; i \u003c classes.length; i++) {\n+      LOG.debug(\"Loading filter handler {}\", classes[i].getName());\n+      try {\n+        Method initializeState \u003d classes[i].getDeclaredMethod(\"initializeState\",\n+            Configuration.class);\n+        Constructor constructor \u003d\n+            classes[i].getDeclaredConstructor(initializeState.getReturnType());\n+        handlers[i] \u003d (ChannelHandler) constructor.newInstance(\n+            HANDLER_STATE.getOrDefault(classes[i],\n+            initializeState.invoke(null, configuration)));\n+      } catch (NoSuchMethodException | InvocationTargetException\n+          | IllegalAccessException | InstantiationException\n+          | IllegalArgumentException e) {\n+        LOG.error(\"Failed to initialize handler {}\", classes[i].toString());\n+        throw new RuntimeException(e);\n+      }\n+    }\n+    return (handlers);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private ChannelHandler[] getFilterHandlers(Configuration configuration) {\n    if (configuration \u003d\u003d null) {\n      return null;\n    }\n    // If the hdfs-site.xml has the proper configs for filter classes, use them.\n    Class\u003c?\u003e[] classes \u003d\n        configuration.getClasses(\n            DFSConfigKeys.DFS_DATANODE_HTTPSERVER_FILTER_HANDLERS);\n\n    // else use the hard coded class from the default configuration.\n    if (classes \u003d\u003d null) {\n      classes \u003d\n          configuration.getClasses(\n              DFSConfigKeys.DFS_DATANODE_HTTPSERVER_FILTER_HANDLERS_DEFAULT);\n    }\n\n    // if we are not able to find any handlers, let us fail since running\n    // with Csrf will is a security hole. Let us abort the startup.\n    if(classes \u003d\u003d null)  {\n      return null;\n    }\n\n    ChannelHandler[] handlers \u003d new ChannelHandler[classes.length];\n    for (int i \u003d 0; i \u003c classes.length; i++) {\n      LOG.debug(\"Loading filter handler {}\", classes[i].getName());\n      try {\n        Method initializeState \u003d classes[i].getDeclaredMethod(\"initializeState\",\n            Configuration.class);\n        Constructor constructor \u003d\n            classes[i].getDeclaredConstructor(initializeState.getReturnType());\n        handlers[i] \u003d (ChannelHandler) constructor.newInstance(\n            HANDLER_STATE.getOrDefault(classes[i],\n            initializeState.invoke(null, configuration)));\n      } catch (NoSuchMethodException | InvocationTargetException\n          | IllegalAccessException | InstantiationException\n          | IllegalArgumentException e) {\n        LOG.error(\"Failed to initialize handler {}\", classes[i].toString());\n        throw new RuntimeException(e);\n      }\n    }\n    return (handlers);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/DatanodeHttpServer.java"
+    }
+  }
+}

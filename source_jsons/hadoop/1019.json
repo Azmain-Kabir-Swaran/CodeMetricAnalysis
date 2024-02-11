@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileChecksumHelper.java",
+  "functionName": "checksumBlock",
+  "functionId": "checksumBlock___locatedBlock-LocatedBlock",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+  "functionStartLine": 516,
+  "functionEndLine": 564,
+  "numCommitsSeen": 9,
+  "timeTaken": 1660,
+  "changeHistory": [
+    "3ba985997d1dc37e5ba017dd0ab1d36083b5f77b",
+    "307ec80acae3b4a41d21b2d4b3a55032e55fcdc6"
+  ],
+  "changeHistoryShort": {
+    "3ba985997d1dc37e5ba017dd0ab1d36083b5f77b": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "307ec80acae3b4a41d21b2d4b3a55032e55fcdc6": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "3ba985997d1dc37e5ba017dd0ab1d36083b5f77b": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-12931. Handle InvalidEncryptionKeyException during DistributedFileSystem#getFileChecksum. Contributed by Mukul Kumar Singh.\n",
+      "commitDate": "03/01/18 2:54 PM",
+      "commitName": "3ba985997d1dc37e5ba017dd0ab1d36083b5f77b",
+      "commitAuthor": "Xiaoyu Yao",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-12931. Handle InvalidEncryptionKeyException during DistributedFileSystem#getFileChecksum. Contributed by Mukul Kumar Singh.\n",
+          "commitDate": "03/01/18 2:54 PM",
+          "commitName": "3ba985997d1dc37e5ba017dd0ab1d36083b5f77b",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "14/03/17 4:41 PM",
+          "commitNameOld": "cc1292e73acd39c1f1023ad4841ffe30176f7daf",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 294.97,
+          "commitsBetweenForRepo": 1980,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,49 @@\n-    private boolean checksumBlock(\n-        LocatedBlock locatedBlock) throws IOException {\n+    private boolean checksumBlock(LocatedBlock locatedBlock) {\n       ExtendedBlock block \u003d locatedBlock.getBlock();\n       if (getRemaining() \u003c block.getNumBytes()) {\n         block.setNumBytes(getRemaining());\n       }\n       setRemaining(getRemaining() - block.getNumBytes());\n \n       DatanodeInfo[] datanodes \u003d locatedBlock.getLocations();\n \n       int tmpTimeout \u003d 3000 * datanodes.length +\n           getClient().getConf().getSocketTimeout();\n       setTimeout(tmpTimeout);\n \n       //try each datanode location of the block\n       boolean done \u003d false;\n       for (int j \u003d 0; !done \u0026\u0026 j \u003c datanodes.length; j++) {\n         try {\n           tryDatanode(locatedBlock, datanodes[j]);\n           done \u003d true;\n         } catch (InvalidBlockTokenException ibte) {\n           if (blockIdx \u003e getLastRetriedIndex()) {\n             LOG.debug(\"Got access token error in response to OP_BLOCK_CHECKSUM \"\n                     + \"for file {} for block {} from datanode {}. Will retry \"\n                     + \"the block once.\",\n                 getSrc(), block, datanodes[j]);\n             setLastRetriedIndex(blockIdx);\n             done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n             blockIdx--; // repeat at blockIdx-th block\n             setRefetchBlocks(true);\n           }\n+        } catch (InvalidEncryptionKeyException iee) {\n+          if (blockIdx \u003e getLastRetriedIndex()) {\n+            LOG.debug(\"Got invalid encryption key error in response to \"\n+                    + \"OP_BLOCK_CHECKSUM for file {} for block {} from \"\n+                    + \"datanode {}. Will retry \" + \"the block once.\",\n+                  getSrc(), block, datanodes[j]);\n+            setLastRetriedIndex(blockIdx);\n+            done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n+            blockIdx--; // repeat at i-th block\n+            getClient().clearDataEncryptionKey();\n+          }\n         } catch (IOException ie) {\n           LOG.warn(\"src\u003d{}\" + \", datanodes[{}]\u003d{}\",\n               getSrc(), j, datanodes[j], ie);\n         }\n       }\n \n       return done;\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private boolean checksumBlock(LocatedBlock locatedBlock) {\n      ExtendedBlock block \u003d locatedBlock.getBlock();\n      if (getRemaining() \u003c block.getNumBytes()) {\n        block.setNumBytes(getRemaining());\n      }\n      setRemaining(getRemaining() - block.getNumBytes());\n\n      DatanodeInfo[] datanodes \u003d locatedBlock.getLocations();\n\n      int tmpTimeout \u003d 3000 * datanodes.length +\n          getClient().getConf().getSocketTimeout();\n      setTimeout(tmpTimeout);\n\n      //try each datanode location of the block\n      boolean done \u003d false;\n      for (int j \u003d 0; !done \u0026\u0026 j \u003c datanodes.length; j++) {\n        try {\n          tryDatanode(locatedBlock, datanodes[j]);\n          done \u003d true;\n        } catch (InvalidBlockTokenException ibte) {\n          if (blockIdx \u003e getLastRetriedIndex()) {\n            LOG.debug(\"Got access token error in response to OP_BLOCK_CHECKSUM \"\n                    + \"for file {} for block {} from datanode {}. Will retry \"\n                    + \"the block once.\",\n                getSrc(), block, datanodes[j]);\n            setLastRetriedIndex(blockIdx);\n            done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n            blockIdx--; // repeat at blockIdx-th block\n            setRefetchBlocks(true);\n          }\n        } catch (InvalidEncryptionKeyException iee) {\n          if (blockIdx \u003e getLastRetriedIndex()) {\n            LOG.debug(\"Got invalid encryption key error in response to \"\n                    + \"OP_BLOCK_CHECKSUM for file {} for block {} from \"\n                    + \"datanode {}. Will retry \" + \"the block once.\",\n                  getSrc(), block, datanodes[j]);\n            setLastRetriedIndex(blockIdx);\n            done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n            blockIdx--; // repeat at i-th block\n            getClient().clearDataEncryptionKey();\n          }\n        } catch (IOException ie) {\n          LOG.warn(\"src\u003d{}\" + \", datanodes[{}]\u003d{}\",\n              getSrc(), j, datanodes[j], ie);\n        }\n      }\n\n      return done;\n    }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+          "extendedDetails": {
+            "oldValue": "[IOException]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-12931. Handle InvalidEncryptionKeyException during DistributedFileSystem#getFileChecksum. Contributed by Mukul Kumar Singh.\n",
+          "commitDate": "03/01/18 2:54 PM",
+          "commitName": "3ba985997d1dc37e5ba017dd0ab1d36083b5f77b",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "14/03/17 4:41 PM",
+          "commitNameOld": "cc1292e73acd39c1f1023ad4841ffe30176f7daf",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 294.97,
+          "commitsBetweenForRepo": 1980,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,49 @@\n-    private boolean checksumBlock(\n-        LocatedBlock locatedBlock) throws IOException {\n+    private boolean checksumBlock(LocatedBlock locatedBlock) {\n       ExtendedBlock block \u003d locatedBlock.getBlock();\n       if (getRemaining() \u003c block.getNumBytes()) {\n         block.setNumBytes(getRemaining());\n       }\n       setRemaining(getRemaining() - block.getNumBytes());\n \n       DatanodeInfo[] datanodes \u003d locatedBlock.getLocations();\n \n       int tmpTimeout \u003d 3000 * datanodes.length +\n           getClient().getConf().getSocketTimeout();\n       setTimeout(tmpTimeout);\n \n       //try each datanode location of the block\n       boolean done \u003d false;\n       for (int j \u003d 0; !done \u0026\u0026 j \u003c datanodes.length; j++) {\n         try {\n           tryDatanode(locatedBlock, datanodes[j]);\n           done \u003d true;\n         } catch (InvalidBlockTokenException ibte) {\n           if (blockIdx \u003e getLastRetriedIndex()) {\n             LOG.debug(\"Got access token error in response to OP_BLOCK_CHECKSUM \"\n                     + \"for file {} for block {} from datanode {}. Will retry \"\n                     + \"the block once.\",\n                 getSrc(), block, datanodes[j]);\n             setLastRetriedIndex(blockIdx);\n             done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n             blockIdx--; // repeat at blockIdx-th block\n             setRefetchBlocks(true);\n           }\n+        } catch (InvalidEncryptionKeyException iee) {\n+          if (blockIdx \u003e getLastRetriedIndex()) {\n+            LOG.debug(\"Got invalid encryption key error in response to \"\n+                    + \"OP_BLOCK_CHECKSUM for file {} for block {} from \"\n+                    + \"datanode {}. Will retry \" + \"the block once.\",\n+                  getSrc(), block, datanodes[j]);\n+            setLastRetriedIndex(blockIdx);\n+            done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n+            blockIdx--; // repeat at i-th block\n+            getClient().clearDataEncryptionKey();\n+          }\n         } catch (IOException ie) {\n           LOG.warn(\"src\u003d{}\" + \", datanodes[{}]\u003d{}\",\n               getSrc(), j, datanodes[j], ie);\n         }\n       }\n \n       return done;\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private boolean checksumBlock(LocatedBlock locatedBlock) {\n      ExtendedBlock block \u003d locatedBlock.getBlock();\n      if (getRemaining() \u003c block.getNumBytes()) {\n        block.setNumBytes(getRemaining());\n      }\n      setRemaining(getRemaining() - block.getNumBytes());\n\n      DatanodeInfo[] datanodes \u003d locatedBlock.getLocations();\n\n      int tmpTimeout \u003d 3000 * datanodes.length +\n          getClient().getConf().getSocketTimeout();\n      setTimeout(tmpTimeout);\n\n      //try each datanode location of the block\n      boolean done \u003d false;\n      for (int j \u003d 0; !done \u0026\u0026 j \u003c datanodes.length; j++) {\n        try {\n          tryDatanode(locatedBlock, datanodes[j]);\n          done \u003d true;\n        } catch (InvalidBlockTokenException ibte) {\n          if (blockIdx \u003e getLastRetriedIndex()) {\n            LOG.debug(\"Got access token error in response to OP_BLOCK_CHECKSUM \"\n                    + \"for file {} for block {} from datanode {}. Will retry \"\n                    + \"the block once.\",\n                getSrc(), block, datanodes[j]);\n            setLastRetriedIndex(blockIdx);\n            done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n            blockIdx--; // repeat at blockIdx-th block\n            setRefetchBlocks(true);\n          }\n        } catch (InvalidEncryptionKeyException iee) {\n          if (blockIdx \u003e getLastRetriedIndex()) {\n            LOG.debug(\"Got invalid encryption key error in response to \"\n                    + \"OP_BLOCK_CHECKSUM for file {} for block {} from \"\n                    + \"datanode {}. Will retry \" + \"the block once.\",\n                  getSrc(), block, datanodes[j]);\n            setLastRetriedIndex(blockIdx);\n            done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n            blockIdx--; // repeat at i-th block\n            getClient().clearDataEncryptionKey();\n          }\n        } catch (IOException ie) {\n          LOG.warn(\"src\u003d{}\" + \", datanodes[{}]\u003d{}\",\n              getSrc(), j, datanodes[j], ie);\n        }\n      }\n\n      return done;\n    }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "307ec80acae3b4a41d21b2d4b3a55032e55fcdc6": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9733. Refactor DFSClient#getFileChecksum and DataXceiver#blockChecksum. Contributed by Kai Zheng\n",
+      "commitDate": "29/02/16 9:52 PM",
+      "commitName": "307ec80acae3b4a41d21b2d4b3a55032e55fcdc6",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "diff": "@@ -0,0 +1,39 @@\n+    private boolean checksumBlock(\n+        LocatedBlock locatedBlock) throws IOException {\n+      ExtendedBlock block \u003d locatedBlock.getBlock();\n+      if (getRemaining() \u003c block.getNumBytes()) {\n+        block.setNumBytes(getRemaining());\n+      }\n+      setRemaining(getRemaining() - block.getNumBytes());\n+\n+      DatanodeInfo[] datanodes \u003d locatedBlock.getLocations();\n+\n+      int tmpTimeout \u003d 3000 * datanodes.length +\n+          getClient().getConf().getSocketTimeout();\n+      setTimeout(tmpTimeout);\n+\n+      //try each datanode location of the block\n+      boolean done \u003d false;\n+      for (int j \u003d 0; !done \u0026\u0026 j \u003c datanodes.length; j++) {\n+        try {\n+          tryDatanode(locatedBlock, datanodes[j]);\n+          done \u003d true;\n+        } catch (InvalidBlockTokenException ibte) {\n+          if (blockIdx \u003e getLastRetriedIndex()) {\n+            LOG.debug(\"Got access token error in response to OP_BLOCK_CHECKSUM \"\n+                    + \"for file {} for block {} from datanode {}. Will retry \"\n+                    + \"the block once.\",\n+                getSrc(), block, datanodes[j]);\n+            setLastRetriedIndex(blockIdx);\n+            done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n+            blockIdx--; // repeat at blockIdx-th block\n+            setRefetchBlocks(true);\n+          }\n+        } catch (IOException ie) {\n+          LOG.warn(\"src\u003d{}\" + \", datanodes[{}]\u003d{}\",\n+              getSrc(), j, datanodes[j], ie);\n+        }\n+      }\n+\n+      return done;\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private boolean checksumBlock(\n        LocatedBlock locatedBlock) throws IOException {\n      ExtendedBlock block \u003d locatedBlock.getBlock();\n      if (getRemaining() \u003c block.getNumBytes()) {\n        block.setNumBytes(getRemaining());\n      }\n      setRemaining(getRemaining() - block.getNumBytes());\n\n      DatanodeInfo[] datanodes \u003d locatedBlock.getLocations();\n\n      int tmpTimeout \u003d 3000 * datanodes.length +\n          getClient().getConf().getSocketTimeout();\n      setTimeout(tmpTimeout);\n\n      //try each datanode location of the block\n      boolean done \u003d false;\n      for (int j \u003d 0; !done \u0026\u0026 j \u003c datanodes.length; j++) {\n        try {\n          tryDatanode(locatedBlock, datanodes[j]);\n          done \u003d true;\n        } catch (InvalidBlockTokenException ibte) {\n          if (blockIdx \u003e getLastRetriedIndex()) {\n            LOG.debug(\"Got access token error in response to OP_BLOCK_CHECKSUM \"\n                    + \"for file {} for block {} from datanode {}. Will retry \"\n                    + \"the block once.\",\n                getSrc(), block, datanodes[j]);\n            setLastRetriedIndex(blockIdx);\n            done \u003d true; // actually it\u0027s not done; but we\u0027ll retry\n            blockIdx--; // repeat at blockIdx-th block\n            setRefetchBlocks(true);\n          }\n        } catch (IOException ie) {\n          LOG.warn(\"src\u003d{}\" + \", datanodes[{}]\u003d{}\",\n              getSrc(), j, datanodes[j], ie);\n        }\n      }\n\n      return done;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java"
+    }
+  }
+}

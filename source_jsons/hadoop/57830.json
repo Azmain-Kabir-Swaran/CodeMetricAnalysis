@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "YarnWebServiceUtils.java",
+  "functionName": "getNodeInfoFromRMWebService",
+  "functionId": "getNodeInfoFromRMWebService___conf-Configuration__nodeId-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/webapp/util/YarnWebServiceUtils.java",
+  "functionStartLine": 53,
+  "functionEndLine": 68,
+  "numCommitsSeen": 4,
+  "timeTaken": 1758,
+  "changeHistory": [
+    "cb9bc6e64c590622ae04aea2c81962be59037f7a",
+    "e30938af1270e079587e7bc06b755f9e93e660a5",
+    "9dbfab1284015af6983b4a55b79c9e65bc0194e5"
+  ],
+  "changeHistoryShort": {
+    "cb9bc6e64c590622ae04aea2c81962be59037f7a": "Ybodychange",
+    "e30938af1270e079587e7bc06b755f9e93e660a5": "Ybodychange",
+    "9dbfab1284015af6983b4a55b79c9e65bc0194e5": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "cb9bc6e64c590622ae04aea2c81962be59037f7a": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9581.  Fixed yarn logs cli to access RM2.\n            Contributed by Prabhu Joseph\n",
+      "commitDate": "06/06/19 1:41 PM",
+      "commitName": "cb9bc6e64c590622ae04aea2c81962be59037f7a",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "23/05/18 11:55 AM",
+      "commitNameOld": "e30938af1270e079587e7bc06b755f9e93e660a5",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 379.07,
+      "commitsBetweenForRepo": 2838,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,16 @@\n   public static JSONObject getNodeInfoFromRMWebService(Configuration conf,\n       String nodeId) throws ClientHandlerException,\n       UniformInterfaceException {\n-    Client webServiceClient \u003d Client.create();\n-    String webAppAddress \u003d WebAppUtils.getRMWebAppURLWithScheme(conf);\n-\n-    WebResource webResource \u003d webServiceClient.resource(webAppAddress);\n-\n-    ClientResponse response \u003d null;\n     try {\n-      response \u003d webResource.path(\"ws\").path(\"v1\").path(\"cluster\")\n-          .path(\"nodes\").path(nodeId).accept(MediaType.APPLICATION_JSON)\n-          .get(ClientResponse.class);\n-      return response.getEntity(JSONObject.class);\n-    } finally {\n-      if (response !\u003d null) {\n-        response.close();\n+      return WebAppUtils.execOnActiveRM(conf,\n+          YarnWebServiceUtils::getNodeInfoFromRM, nodeId);\n+    } catch (Exception e) {\n+      if (e instanceof ClientHandlerException) {\n+        throw ((ClientHandlerException) e);\n+      } else if (e instanceof UniformInterfaceException) {\n+        throw ((UniformInterfaceException) e);\n+      } else {\n+        throw new RuntimeException(e);\n       }\n-      webServiceClient.destroy();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static JSONObject getNodeInfoFromRMWebService(Configuration conf,\n      String nodeId) throws ClientHandlerException,\n      UniformInterfaceException {\n    try {\n      return WebAppUtils.execOnActiveRM(conf,\n          YarnWebServiceUtils::getNodeInfoFromRM, nodeId);\n    } catch (Exception e) {\n      if (e instanceof ClientHandlerException) {\n        throw ((ClientHandlerException) e);\n      } else if (e instanceof UniformInterfaceException) {\n        throw ((UniformInterfaceException) e);\n      } else {\n        throw new RuntimeException(e);\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/webapp/util/YarnWebServiceUtils.java",
+      "extendedDetails": {}
+    },
+    "e30938af1270e079587e7bc06b755f9e93e660a5": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8336. Fix potential connection leak in SchedConfCLI and YarnWebServiceUtils. Contributed by Giovanni Matteo Fumarola.\n",
+      "commitDate": "23/05/18 11:55 AM",
+      "commitName": "e30938af1270e079587e7bc06b755f9e93e660a5",
+      "commitAuthor": "Inigo Goiri",
+      "commitDateOld": "09/10/17 11:11 AM",
+      "commitNameOld": "916bdbd6bedbc75000bb74e16c1e2ee692a4912c",
+      "commitAuthorOld": "Xuan",
+      "daysBetweenCommits": 226.03,
+      "commitsBetweenForRepo": 2176,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,21 @@\n   public static JSONObject getNodeInfoFromRMWebService(Configuration conf,\n       String nodeId) throws ClientHandlerException,\n       UniformInterfaceException {\n     Client webServiceClient \u003d Client.create();\n     String webAppAddress \u003d WebAppUtils.getRMWebAppURLWithScheme(conf);\n \n     WebResource webResource \u003d webServiceClient.resource(webAppAddress);\n \n-    ClientResponse response \u003d webResource.path(\"ws\").path(\"v1\")\n-        .path(\"cluster\").path(\"nodes\")\n-        .path(nodeId).accept(MediaType.APPLICATION_JSON)\n-        .get(ClientResponse.class);\n-    return response.getEntity(JSONObject.class);\n+    ClientResponse response \u003d null;\n+    try {\n+      response \u003d webResource.path(\"ws\").path(\"v1\").path(\"cluster\")\n+          .path(\"nodes\").path(nodeId).accept(MediaType.APPLICATION_JSON)\n+          .get(ClientResponse.class);\n+      return response.getEntity(JSONObject.class);\n+    } finally {\n+      if (response !\u003d null) {\n+        response.close();\n+      }\n+      webServiceClient.destroy();\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static JSONObject getNodeInfoFromRMWebService(Configuration conf,\n      String nodeId) throws ClientHandlerException,\n      UniformInterfaceException {\n    Client webServiceClient \u003d Client.create();\n    String webAppAddress \u003d WebAppUtils.getRMWebAppURLWithScheme(conf);\n\n    WebResource webResource \u003d webServiceClient.resource(webAppAddress);\n\n    ClientResponse response \u003d null;\n    try {\n      response \u003d webResource.path(\"ws\").path(\"v1\").path(\"cluster\")\n          .path(\"nodes\").path(nodeId).accept(MediaType.APPLICATION_JSON)\n          .get(ClientResponse.class);\n      return response.getEntity(JSONObject.class);\n    } finally {\n      if (response !\u003d null) {\n        response.close();\n      }\n      webServiceClient.destroy();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/webapp/util/YarnWebServiceUtils.java",
+      "extendedDetails": {}
+    },
+    "9dbfab1284015af6983b4a55b79c9e65bc0194e5": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6108. Improve AHS webservice to accept NM address as a parameter to get container logs. Contributed by Xuan Gong.\n",
+      "commitDate": "07/02/17 2:13 AM",
+      "commitName": "9dbfab1284015af6983b4a55b79c9e65bc0194e5",
+      "commitAuthor": "Junping Du",
+      "diff": "@@ -0,0 +1,14 @@\n+  public static JSONObject getNodeInfoFromRMWebService(Configuration conf,\n+      String nodeId) throws ClientHandlerException,\n+      UniformInterfaceException {\n+    Client webServiceClient \u003d Client.create();\n+    String webAppAddress \u003d WebAppUtils.getRMWebAppURLWithScheme(conf);\n+\n+    WebResource webResource \u003d webServiceClient.resource(webAppAddress);\n+\n+    ClientResponse response \u003d webResource.path(\"ws\").path(\"v1\")\n+        .path(\"cluster\").path(\"nodes\")\n+        .path(nodeId).accept(MediaType.APPLICATION_JSON)\n+        .get(ClientResponse.class);\n+    return response.getEntity(JSONObject.class);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static JSONObject getNodeInfoFromRMWebService(Configuration conf,\n      String nodeId) throws ClientHandlerException,\n      UniformInterfaceException {\n    Client webServiceClient \u003d Client.create();\n    String webAppAddress \u003d WebAppUtils.getRMWebAppURLWithScheme(conf);\n\n    WebResource webResource \u003d webServiceClient.resource(webAppAddress);\n\n    ClientResponse response \u003d webResource.path(\"ws\").path(\"v1\")\n        .path(\"cluster\").path(\"nodes\")\n        .path(nodeId).accept(MediaType.APPLICATION_JSON)\n        .get(ClientResponse.class);\n    return response.getEntity(JSONObject.class);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/webapp/util/YarnWebServiceUtils.java"
+    }
+  }
+}

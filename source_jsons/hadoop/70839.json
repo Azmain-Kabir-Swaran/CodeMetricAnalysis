@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PageBlobOutputStream.java",
+  "functionName": "conditionalExtendFile",
+  "functionId": "conditionalExtendFile",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobOutputStream.java",
+  "functionStartLine": 413,
+  "functionEndLine": 458,
+  "numCommitsSeen": 8,
+  "timeTaken": 713,
+  "changeHistory": [
+    "f4b7e99f4ebac5b0295b7f7f42eb5705af41f079"
+  ],
+  "changeHistoryShort": {
+    "f4b7e99f4ebac5b0295b7f7f42eb5705af41f079": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f4b7e99f4ebac5b0295b7f7f42eb5705af41f079": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-11188. hadoop-azure: automatically expand page blobs when they become full. Contributed by Eric Hanson.\n",
+      "commitDate": "10/10/14 3:05 PM",
+      "commitName": "f4b7e99f4ebac5b0295b7f7f42eb5705af41f079",
+      "commitAuthor": "cnauroth",
+      "diff": "@@ -0,0 +1,46 @@\n+  private void conditionalExtendFile() {\n+\n+    // maximum allowed size of an Azure page blob (1 terabyte)\n+    final long MAX_PAGE_BLOB_SIZE \u003d 1024L * 1024L * 1024L * 1024L;\n+\n+    // If blob is already at the maximum size, then don\u0027t try to extend it.\n+    if (currentBlobSize \u003d\u003d MAX_PAGE_BLOB_SIZE) {\n+      return;\n+    }\n+\n+    // If we are within the maximum write size of the end of the file,\n+    if (currentBlobSize - currentBlobOffset \u003c\u003d MAX_RAW_BYTES_PER_REQUEST) {\n+\n+      // Extend the file. Retry up to 3 times with back-off.\n+      CloudPageBlob cloudPageBlob \u003d (CloudPageBlob) blob.getBlob();\n+      long newSize \u003d currentBlobSize + configuredPageBlobExtensionSize;\n+\n+      // Make sure we don\u0027t exceed maximum blob size.\n+      if (newSize \u003e MAX_PAGE_BLOB_SIZE) {\n+        newSize \u003d MAX_PAGE_BLOB_SIZE;\n+      }\n+      final int MAX_RETRIES \u003d 3;\n+      int retries \u003d 1;\n+      boolean resizeDone \u003d false;\n+      while(!resizeDone \u0026\u0026 retries \u003c\u003d MAX_RETRIES) {\n+        try {\n+          cloudPageBlob.resize(newSize);\n+          resizeDone \u003d true;\n+          currentBlobSize \u003d newSize;\n+        } catch (StorageException e) {\n+          LOG.warn(\"Failed to extend size of \" + cloudPageBlob.getUri());\n+          try {\n+\n+            // sleep 2, 8, 18 seconds for up to 3 retries\n+            Thread.sleep(2000 * retries * retries);\n+          } catch (InterruptedException e1) {\n+\n+            // Restore the interrupted status\n+            Thread.currentThread().interrupt();\n+          }\n+        } finally {\n+          retries++;\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void conditionalExtendFile() {\n\n    // maximum allowed size of an Azure page blob (1 terabyte)\n    final long MAX_PAGE_BLOB_SIZE \u003d 1024L * 1024L * 1024L * 1024L;\n\n    // If blob is already at the maximum size, then don\u0027t try to extend it.\n    if (currentBlobSize \u003d\u003d MAX_PAGE_BLOB_SIZE) {\n      return;\n    }\n\n    // If we are within the maximum write size of the end of the file,\n    if (currentBlobSize - currentBlobOffset \u003c\u003d MAX_RAW_BYTES_PER_REQUEST) {\n\n      // Extend the file. Retry up to 3 times with back-off.\n      CloudPageBlob cloudPageBlob \u003d (CloudPageBlob) blob.getBlob();\n      long newSize \u003d currentBlobSize + configuredPageBlobExtensionSize;\n\n      // Make sure we don\u0027t exceed maximum blob size.\n      if (newSize \u003e MAX_PAGE_BLOB_SIZE) {\n        newSize \u003d MAX_PAGE_BLOB_SIZE;\n      }\n      final int MAX_RETRIES \u003d 3;\n      int retries \u003d 1;\n      boolean resizeDone \u003d false;\n      while(!resizeDone \u0026\u0026 retries \u003c\u003d MAX_RETRIES) {\n        try {\n          cloudPageBlob.resize(newSize);\n          resizeDone \u003d true;\n          currentBlobSize \u003d newSize;\n        } catch (StorageException e) {\n          LOG.warn(\"Failed to extend size of \" + cloudPageBlob.getUri());\n          try {\n\n            // sleep 2, 8, 18 seconds for up to 3 retries\n            Thread.sleep(2000 * retries * retries);\n          } catch (InterruptedException e1) {\n\n            // Restore the interrupted status\n            Thread.currentThread().interrupt();\n          }\n        } finally {\n          retries++;\n        }\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobOutputStream.java"
+    }
+  }
+}

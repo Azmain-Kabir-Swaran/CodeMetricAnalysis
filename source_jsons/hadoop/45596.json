@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AggregatedLogDeletionService.java",
+  "functionName": "deleteOldLogDirsFrom",
+  "functionId": "deleteOldLogDirsFrom___dir-Path__cutoffMillis-long__fs-FileSystem__rmClient-ApplicationClientProtocol",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/AggregatedLogDeletionService.java",
+  "functionStartLine": 110,
+  "functionEndLine": 122,
+  "numCommitsSeen": 20,
+  "timeTaken": 2649,
+  "changeHistory": [
+    "5cfaee2e6db8b2ac55708de0968ff5539ee3bd76",
+    "c77a1095dc556e8bea87df6d8ddf36e898f27e86",
+    "cb81bac0029fce3a9726df3523f0b692cd3375b8",
+    "7fc6ad661d4723cc2ea1df1ff0c4611d5f534f9e"
+  ],
+  "changeHistoryShort": {
+    "5cfaee2e6db8b2ac55708de0968ff5539ee3bd76": "Ybodychange",
+    "c77a1095dc556e8bea87df6d8ddf36e898f27e86": "Ybodychange",
+    "cb81bac0029fce3a9726df3523f0b692cd3375b8": "Ymultichange(Yparameterchange,Ybodychange)",
+    "7fc6ad661d4723cc2ea1df1ff0c4611d5f534f9e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5cfaee2e6db8b2ac55708de0968ff5539ee3bd76": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7495. Improve robustness of the AggregatedLogDeletionService. Contributed by Jonathan Eagles\n",
+      "commitDate": "30/11/17 10:39 AM",
+      "commitName": "5cfaee2e6db8b2ac55708de0968ff5539ee3bd76",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "14/06/16 3:06 PM",
+      "commitNameOld": "c77a1095dc556e8bea87df6d8ddf36e898f27e86",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 533.86,
+      "commitsBetweenForRepo": 3650,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,38 +1,13 @@\n     private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n         FileSystem fs, ApplicationClientProtocol rmClient) {\n+      FileStatus[] appDirs;\n       try {\n-        for(FileStatus appDir : fs.listStatus(dir)) {\n-          if(appDir.isDirectory() \u0026\u0026 \n-              appDir.getModificationTime() \u003c cutoffMillis) {\n-            boolean appTerminated \u003d\n-                isApplicationTerminated(ApplicationId.fromString(appDir\n-                  .getPath().getName()), rmClient);\n-            if(appTerminated \u0026\u0026 shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n-              try {\n-                LOG.info(\"Deleting aggregated logs in \"+appDir.getPath());\n-                fs.delete(appDir.getPath(), true);\n-              } catch (IOException e) {\n-                logIOException(\"Could not delete \"+appDir.getPath(), e);\n-              }\n-            } else if (!appTerminated){\n-              try {\n-                for(FileStatus node: fs.listStatus(appDir.getPath())) {\n-                  if(node.getModificationTime() \u003c cutoffMillis) {\n-                    try {\n-                      fs.delete(node.getPath(), true);\n-                    } catch (IOException ex) {\n-                      logIOException(\"Could not delete \"+appDir.getPath(), ex);\n-                    }\n-                  }\n-                }\n-              } catch(IOException e) {\n-                logIOException(\n-                  \"Error reading the contents of \" + appDir.getPath(), e);\n-              }\n-            }\n-          }\n-        }\n+        appDirs \u003d fs.listStatus(dir);\n       } catch (IOException e) {\n-        logIOException(\"Could not read the contents of \" + dir, e);\n+        logException(\"Could not read the contents of \" + dir, e);\n+        return;\n+      }\n+      for (FileStatus appDir : appDirs) {\n+        deleteAppDirLogs(cutoffMillis, fs, rmClient, appDir);\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n        FileSystem fs, ApplicationClientProtocol rmClient) {\n      FileStatus[] appDirs;\n      try {\n        appDirs \u003d fs.listStatus(dir);\n      } catch (IOException e) {\n        logException(\"Could not read the contents of \" + dir, e);\n        return;\n      }\n      for (FileStatus appDir : appDirs) {\n        deleteAppDirLogs(cutoffMillis, fs, rmClient, appDir);\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/AggregatedLogDeletionService.java",
+      "extendedDetails": {}
+    },
+    "c77a1095dc556e8bea87df6d8ddf36e898f27e86": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-1942. Deprecate toString/fromString methods from ConverterUtils and move them to records classes like ContainerId/ApplicationId, etc. (wangda)\n",
+      "commitDate": "14/06/16 3:06 PM",
+      "commitName": "c77a1095dc556e8bea87df6d8ddf36e898f27e86",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "10/10/14 12:11 AM",
+      "commitNameOld": "cb81bac0029fce3a9726df3523f0b692cd3375b8",
+      "commitAuthorOld": "Zhijie Shen",
+      "daysBetweenCommits": 613.62,
+      "commitsBetweenForRepo": 4643,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,38 +1,38 @@\n     private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n         FileSystem fs, ApplicationClientProtocol rmClient) {\n       try {\n         for(FileStatus appDir : fs.listStatus(dir)) {\n           if(appDir.isDirectory() \u0026\u0026 \n               appDir.getModificationTime() \u003c cutoffMillis) {\n             boolean appTerminated \u003d\n-                isApplicationTerminated(ConverterUtils.toApplicationId(appDir\n+                isApplicationTerminated(ApplicationId.fromString(appDir\n                   .getPath().getName()), rmClient);\n             if(appTerminated \u0026\u0026 shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n               try {\n                 LOG.info(\"Deleting aggregated logs in \"+appDir.getPath());\n                 fs.delete(appDir.getPath(), true);\n               } catch (IOException e) {\n                 logIOException(\"Could not delete \"+appDir.getPath(), e);\n               }\n             } else if (!appTerminated){\n               try {\n                 for(FileStatus node: fs.listStatus(appDir.getPath())) {\n                   if(node.getModificationTime() \u003c cutoffMillis) {\n                     try {\n                       fs.delete(node.getPath(), true);\n                     } catch (IOException ex) {\n                       logIOException(\"Could not delete \"+appDir.getPath(), ex);\n                     }\n                   }\n                 }\n               } catch(IOException e) {\n                 logIOException(\n                   \"Error reading the contents of \" + appDir.getPath(), e);\n               }\n             }\n           }\n         }\n       } catch (IOException e) {\n         logIOException(\"Could not read the contents of \" + dir, e);\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n        FileSystem fs, ApplicationClientProtocol rmClient) {\n      try {\n        for(FileStatus appDir : fs.listStatus(dir)) {\n          if(appDir.isDirectory() \u0026\u0026 \n              appDir.getModificationTime() \u003c cutoffMillis) {\n            boolean appTerminated \u003d\n                isApplicationTerminated(ApplicationId.fromString(appDir\n                  .getPath().getName()), rmClient);\n            if(appTerminated \u0026\u0026 shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n              try {\n                LOG.info(\"Deleting aggregated logs in \"+appDir.getPath());\n                fs.delete(appDir.getPath(), true);\n              } catch (IOException e) {\n                logIOException(\"Could not delete \"+appDir.getPath(), e);\n              }\n            } else if (!appTerminated){\n              try {\n                for(FileStatus node: fs.listStatus(appDir.getPath())) {\n                  if(node.getModificationTime() \u003c cutoffMillis) {\n                    try {\n                      fs.delete(node.getPath(), true);\n                    } catch (IOException ex) {\n                      logIOException(\"Could not delete \"+appDir.getPath(), ex);\n                    }\n                  }\n                }\n              } catch(IOException e) {\n                logIOException(\n                  \"Error reading the contents of \" + appDir.getPath(), e);\n              }\n            }\n          }\n        }\n      } catch (IOException e) {\n        logIOException(\"Could not read the contents of \" + dir, e);\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/AggregatedLogDeletionService.java",
+      "extendedDetails": {}
+    },
+    "cb81bac0029fce3a9726df3523f0b692cd3375b8": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-2583. Modified AggregatedLogDeletionService to be able to delete rolling aggregated logs. Contributed by Xuan Gong.\n",
+      "commitDate": "10/10/14 12:11 AM",
+      "commitName": "cb81bac0029fce3a9726df3523f0b692cd3375b8",
+      "commitAuthor": "Zhijie Shen",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-2583. Modified AggregatedLogDeletionService to be able to delete rolling aggregated logs. Contributed by Xuan Gong.\n",
+          "commitDate": "10/10/14 12:11 AM",
+          "commitName": "cb81bac0029fce3a9726df3523f0b692cd3375b8",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "23/07/13 12:20 PM",
+          "commitNameOld": "a42e459b9eba8c79652036e44dceb34d717b665e",
+          "commitAuthorOld": "Jason Darrell Lowe",
+          "daysBetweenCommits": 443.49,
+          "commitsBetweenForRepo": 3290,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,38 @@\n     private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n-        FileSystem fs) {\n+        FileSystem fs, ApplicationClientProtocol rmClient) {\n       try {\n         for(FileStatus appDir : fs.listStatus(dir)) {\n           if(appDir.isDirectory() \u0026\u0026 \n               appDir.getModificationTime() \u003c cutoffMillis) {\n-            if(shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n+            boolean appTerminated \u003d\n+                isApplicationTerminated(ConverterUtils.toApplicationId(appDir\n+                  .getPath().getName()), rmClient);\n+            if(appTerminated \u0026\u0026 shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n               try {\n                 LOG.info(\"Deleting aggregated logs in \"+appDir.getPath());\n                 fs.delete(appDir.getPath(), true);\n               } catch (IOException e) {\n                 logIOException(\"Could not delete \"+appDir.getPath(), e);\n               }\n+            } else if (!appTerminated){\n+              try {\n+                for(FileStatus node: fs.listStatus(appDir.getPath())) {\n+                  if(node.getModificationTime() \u003c cutoffMillis) {\n+                    try {\n+                      fs.delete(node.getPath(), true);\n+                    } catch (IOException ex) {\n+                      logIOException(\"Could not delete \"+appDir.getPath(), ex);\n+                    }\n+                  }\n+                }\n+              } catch(IOException e) {\n+                logIOException(\n+                  \"Error reading the contents of \" + appDir.getPath(), e);\n+              }\n             }\n           }\n         }\n       } catch (IOException e) {\n         logIOException(\"Could not read the contents of \" + dir, e);\n       }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n        FileSystem fs, ApplicationClientProtocol rmClient) {\n      try {\n        for(FileStatus appDir : fs.listStatus(dir)) {\n          if(appDir.isDirectory() \u0026\u0026 \n              appDir.getModificationTime() \u003c cutoffMillis) {\n            boolean appTerminated \u003d\n                isApplicationTerminated(ConverterUtils.toApplicationId(appDir\n                  .getPath().getName()), rmClient);\n            if(appTerminated \u0026\u0026 shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n              try {\n                LOG.info(\"Deleting aggregated logs in \"+appDir.getPath());\n                fs.delete(appDir.getPath(), true);\n              } catch (IOException e) {\n                logIOException(\"Could not delete \"+appDir.getPath(), e);\n              }\n            } else if (!appTerminated){\n              try {\n                for(FileStatus node: fs.listStatus(appDir.getPath())) {\n                  if(node.getModificationTime() \u003c cutoffMillis) {\n                    try {\n                      fs.delete(node.getPath(), true);\n                    } catch (IOException ex) {\n                      logIOException(\"Could not delete \"+appDir.getPath(), ex);\n                    }\n                  }\n                }\n              } catch(IOException e) {\n                logIOException(\n                  \"Error reading the contents of \" + appDir.getPath(), e);\n              }\n            }\n          }\n        }\n      } catch (IOException e) {\n        logIOException(\"Could not read the contents of \" + dir, e);\n      }\n    }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/AggregatedLogDeletionService.java",
+          "extendedDetails": {
+            "oldValue": "[dir-Path, cutoffMillis-long, fs-FileSystem]",
+            "newValue": "[dir-Path, cutoffMillis-long, fs-FileSystem, rmClient-ApplicationClientProtocol]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-2583. Modified AggregatedLogDeletionService to be able to delete rolling aggregated logs. Contributed by Xuan Gong.\n",
+          "commitDate": "10/10/14 12:11 AM",
+          "commitName": "cb81bac0029fce3a9726df3523f0b692cd3375b8",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "23/07/13 12:20 PM",
+          "commitNameOld": "a42e459b9eba8c79652036e44dceb34d717b665e",
+          "commitAuthorOld": "Jason Darrell Lowe",
+          "daysBetweenCommits": 443.49,
+          "commitsBetweenForRepo": 3290,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,38 @@\n     private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n-        FileSystem fs) {\n+        FileSystem fs, ApplicationClientProtocol rmClient) {\n       try {\n         for(FileStatus appDir : fs.listStatus(dir)) {\n           if(appDir.isDirectory() \u0026\u0026 \n               appDir.getModificationTime() \u003c cutoffMillis) {\n-            if(shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n+            boolean appTerminated \u003d\n+                isApplicationTerminated(ConverterUtils.toApplicationId(appDir\n+                  .getPath().getName()), rmClient);\n+            if(appTerminated \u0026\u0026 shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n               try {\n                 LOG.info(\"Deleting aggregated logs in \"+appDir.getPath());\n                 fs.delete(appDir.getPath(), true);\n               } catch (IOException e) {\n                 logIOException(\"Could not delete \"+appDir.getPath(), e);\n               }\n+            } else if (!appTerminated){\n+              try {\n+                for(FileStatus node: fs.listStatus(appDir.getPath())) {\n+                  if(node.getModificationTime() \u003c cutoffMillis) {\n+                    try {\n+                      fs.delete(node.getPath(), true);\n+                    } catch (IOException ex) {\n+                      logIOException(\"Could not delete \"+appDir.getPath(), ex);\n+                    }\n+                  }\n+                }\n+              } catch(IOException e) {\n+                logIOException(\n+                  \"Error reading the contents of \" + appDir.getPath(), e);\n+              }\n             }\n           }\n         }\n       } catch (IOException e) {\n         logIOException(\"Could not read the contents of \" + dir, e);\n       }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n        FileSystem fs, ApplicationClientProtocol rmClient) {\n      try {\n        for(FileStatus appDir : fs.listStatus(dir)) {\n          if(appDir.isDirectory() \u0026\u0026 \n              appDir.getModificationTime() \u003c cutoffMillis) {\n            boolean appTerminated \u003d\n                isApplicationTerminated(ConverterUtils.toApplicationId(appDir\n                  .getPath().getName()), rmClient);\n            if(appTerminated \u0026\u0026 shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n              try {\n                LOG.info(\"Deleting aggregated logs in \"+appDir.getPath());\n                fs.delete(appDir.getPath(), true);\n              } catch (IOException e) {\n                logIOException(\"Could not delete \"+appDir.getPath(), e);\n              }\n            } else if (!appTerminated){\n              try {\n                for(FileStatus node: fs.listStatus(appDir.getPath())) {\n                  if(node.getModificationTime() \u003c cutoffMillis) {\n                    try {\n                      fs.delete(node.getPath(), true);\n                    } catch (IOException ex) {\n                      logIOException(\"Could not delete \"+appDir.getPath(), ex);\n                    }\n                  }\n                }\n              } catch(IOException e) {\n                logIOException(\n                  \"Error reading the contents of \" + appDir.getPath(), e);\n              }\n            }\n          }\n        }\n      } catch (IOException e) {\n        logIOException(\"Could not read the contents of \" + dir, e);\n      }\n    }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/AggregatedLogDeletionService.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "7fc6ad661d4723cc2ea1df1ff0c4611d5f534f9e": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-25. remove old aggregated logs  (Robert Evans via tgraves)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1374424 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/08/12 1:29 PM",
+      "commitName": "7fc6ad661d4723cc2ea1df1ff0c4611d5f534f9e",
+      "commitAuthor": "Thomas Graves",
+      "diff": "@@ -0,0 +1,20 @@\n+    private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n+        FileSystem fs) {\n+      try {\n+        for(FileStatus appDir : fs.listStatus(dir)) {\n+          if(appDir.isDirectory() \u0026\u0026 \n+              appDir.getModificationTime() \u003c cutoffMillis) {\n+            if(shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n+              try {\n+                LOG.info(\"Deleting aggregated logs in \"+appDir.getPath());\n+                fs.delete(appDir.getPath(), true);\n+              } catch (IOException e) {\n+                logIOException(\"Could not delete \"+appDir.getPath(), e);\n+              }\n+            }\n+          }\n+        }\n+      } catch (IOException e) {\n+        logIOException(\"Could not read the contents of \" + dir, e);\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private static void deleteOldLogDirsFrom(Path dir, long cutoffMillis, \n        FileSystem fs) {\n      try {\n        for(FileStatus appDir : fs.listStatus(dir)) {\n          if(appDir.isDirectory() \u0026\u0026 \n              appDir.getModificationTime() \u003c cutoffMillis) {\n            if(shouldDeleteLogDir(appDir, cutoffMillis, fs)) {\n              try {\n                LOG.info(\"Deleting aggregated logs in \"+appDir.getPath());\n                fs.delete(appDir.getPath(), true);\n              } catch (IOException e) {\n                logIOException(\"Could not delete \"+appDir.getPath(), e);\n              }\n            }\n          }\n        }\n      } catch (IOException e) {\n        logIOException(\"Could not read the contents of \" + dir, e);\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/AggregatedLogDeletionService.java"
+    }
+  }
+}

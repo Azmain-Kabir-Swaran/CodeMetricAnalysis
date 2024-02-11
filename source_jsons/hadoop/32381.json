@@ -1,0 +1,121 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LocalDirsHandlerService.java",
+  "functionName": "getDisksHealthReport",
+  "functionId": "getDisksHealthReport___listGoodDirs-boolean",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/LocalDirsHandlerService.java",
+  "functionStartLine": 381,
+  "functionEndLine": 429,
+  "numCommitsSeen": 39,
+  "timeTaken": 3063,
+  "changeHistory": [
+    "f9a0e2338150f1bd3ba2c29f76979183fd3ed80c",
+    "6f2028bd1514d90b831f889fd0ee7f2ba5c15000",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1",
+    "ea17da82f7fc4b7fcc05bba82d141e27289fd7cb"
+  ],
+  "changeHistoryShort": {
+    "f9a0e2338150f1bd3ba2c29f76979183fd3ed80c": "Ybodychange",
+    "6f2028bd1514d90b831f889fd0ee7f2ba5c15000": "Ymultichange(Yparameterchange,Ybodychange)",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": "Yfilerename",
+    "ea17da82f7fc4b7fcc05bba82d141e27289fd7cb": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f9a0e2338150f1bd3ba2c29f76979183fd3ed80c": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3254. HealthReport should include disk full information. Contributed by Suma Shivaprasad.\n",
+      "commitDate": "17/08/17 2:37 AM",
+      "commitName": "f9a0e2338150f1bd3ba2c29f76979183fd3ed80c",
+      "commitAuthor": "Sunil G",
+      "commitDateOld": "29/04/16 3:39 AM",
+      "commitNameOld": "0f25a1bb52bc56661fd020a6ba82df99f8c6ef1f",
+      "commitAuthorOld": "Varun Vasudev",
+      "daysBetweenCommits": 474.96,
+      "commitsBetweenForRepo": 3069,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,49 @@\n   public String getDisksHealthReport(boolean listGoodDirs) {\n     if (!isDiskHealthCheckerEnabled) {\n       return \"\";\n     }\n \n     StringBuilder report \u003d new StringBuilder();\n-    List\u003cString\u003e failedLocalDirsList \u003d localDirs.getFailedDirs();\n-    List\u003cString\u003e failedLogDirsList \u003d logDirs.getFailedDirs();\n+    List\u003cString\u003e erroredLocalDirsList \u003d localDirs.getErroredDirs();\n+    List\u003cString\u003e erroredLogDirsList \u003d logDirs.getErroredDirs();\n+    List\u003cString\u003e diskFullLocalDirsList \u003d localDirs.getFullDirs();\n+    List\u003cString\u003e diskFullLogDirsList \u003d logDirs.getFullDirs();\n     List\u003cString\u003e goodLocalDirsList \u003d localDirs.getGoodDirs();\n     List\u003cString\u003e goodLogDirsList \u003d logDirs.getGoodDirs();\n-    int numLocalDirs \u003d goodLocalDirsList.size() + failedLocalDirsList.size();\n-    int numLogDirs \u003d goodLogDirsList.size() + failedLogDirsList.size();\n+\n+    int numLocalDirs \u003d goodLocalDirsList.size() + erroredLocalDirsList.size() + diskFullLocalDirsList.size();\n+    int numLogDirs \u003d goodLogDirsList.size() + erroredLogDirsList.size() + diskFullLogDirsList.size();\n     if (!listGoodDirs) {\n-      if (!failedLocalDirsList.isEmpty()) {\n-        report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n-            + \" local-dirs are bad: \"\n-            + StringUtils.join(\",\", failedLocalDirsList) + \"; \");\n+      if (!erroredLocalDirsList.isEmpty()) {\n+        report.append(erroredLocalDirsList.size() + \"/\" + numLocalDirs\n+            + \" local-dirs have errors: \"\n+            + buildDiskErrorReport(erroredLocalDirsList, localDirs));\n       }\n-      if (!failedLogDirsList.isEmpty()) {\n-        report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n-            + \" log-dirs are bad: \" + StringUtils.join(\",\", failedLogDirsList));\n+      if (!diskFullLocalDirsList.isEmpty()) {\n+        report.append(diskFullLocalDirsList.size() + \"/\" + numLocalDirs\n+            + \" local-dirs \" + diskCapacityExceededErrorMsg\n+            + buildDiskErrorReport(diskFullLocalDirsList, localDirs) + \"; \");\n+      }\n+\n+      if (!erroredLogDirsList.isEmpty()) {\n+        report.append(erroredLogDirsList.size() + \"/\" + numLogDirs\n+            + \" log-dirs have errors: \"\n+            + buildDiskErrorReport(erroredLogDirsList, logDirs));\n+      }\n+      if (!diskFullLogDirsList.isEmpty()) {\n+        report.append(diskFullLogDirsList.size() + \"/\" + numLogDirs\n+            + \" log-dirs \" + diskCapacityExceededErrorMsg\n+            + buildDiskErrorReport(diskFullLogDirsList, logDirs));\n       }\n     } else {\n       report.append(goodLocalDirsList.size() + \"/\" + numLocalDirs\n           + \" local-dirs are good: \" + StringUtils.join(\",\", goodLocalDirsList)\n           + \"; \");\n       report.append(goodLogDirsList.size() + \"/\" + numLogDirs\n           + \" log-dirs are good: \" + StringUtils.join(\",\", goodLogDirsList));\n \n     }\n \n     return report.toString();\n \n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public String getDisksHealthReport(boolean listGoodDirs) {\n    if (!isDiskHealthCheckerEnabled) {\n      return \"\";\n    }\n\n    StringBuilder report \u003d new StringBuilder();\n    List\u003cString\u003e erroredLocalDirsList \u003d localDirs.getErroredDirs();\n    List\u003cString\u003e erroredLogDirsList \u003d logDirs.getErroredDirs();\n    List\u003cString\u003e diskFullLocalDirsList \u003d localDirs.getFullDirs();\n    List\u003cString\u003e diskFullLogDirsList \u003d logDirs.getFullDirs();\n    List\u003cString\u003e goodLocalDirsList \u003d localDirs.getGoodDirs();\n    List\u003cString\u003e goodLogDirsList \u003d logDirs.getGoodDirs();\n\n    int numLocalDirs \u003d goodLocalDirsList.size() + erroredLocalDirsList.size() + diskFullLocalDirsList.size();\n    int numLogDirs \u003d goodLogDirsList.size() + erroredLogDirsList.size() + diskFullLogDirsList.size();\n    if (!listGoodDirs) {\n      if (!erroredLocalDirsList.isEmpty()) {\n        report.append(erroredLocalDirsList.size() + \"/\" + numLocalDirs\n            + \" local-dirs have errors: \"\n            + buildDiskErrorReport(erroredLocalDirsList, localDirs));\n      }\n      if (!diskFullLocalDirsList.isEmpty()) {\n        report.append(diskFullLocalDirsList.size() + \"/\" + numLocalDirs\n            + \" local-dirs \" + diskCapacityExceededErrorMsg\n            + buildDiskErrorReport(diskFullLocalDirsList, localDirs) + \"; \");\n      }\n\n      if (!erroredLogDirsList.isEmpty()) {\n        report.append(erroredLogDirsList.size() + \"/\" + numLogDirs\n            + \" log-dirs have errors: \"\n            + buildDiskErrorReport(erroredLogDirsList, logDirs));\n      }\n      if (!diskFullLogDirsList.isEmpty()) {\n        report.append(diskFullLogDirsList.size() + \"/\" + numLogDirs\n            + \" log-dirs \" + diskCapacityExceededErrorMsg\n            + buildDiskErrorReport(diskFullLogDirsList, logDirs));\n      }\n    } else {\n      report.append(goodLocalDirsList.size() + \"/\" + numLocalDirs\n          + \" local-dirs are good: \" + StringUtils.join(\",\", goodLocalDirsList)\n          + \"; \");\n      report.append(goodLogDirsList.size() + \"/\" + numLogDirs\n          + \" log-dirs are good: \" + StringUtils.join(\",\", goodLogDirsList));\n\n    }\n\n    return report.toString();\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/LocalDirsHandlerService.java",
+      "extendedDetails": {}
+    },
+    "6f2028bd1514d90b831f889fd0ee7f2ba5c15000": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-90. NodeManager should identify failed disks becoming good again. Contributed by Varun Vasudev\n",
+      "commitDate": "21/10/14 10:31 AM",
+      "commitName": "6f2028bd1514d90b831f889fd0ee7f2ba5c15000",
+      "commitAuthor": "Jason Lowe",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-90. NodeManager should identify failed disks becoming good again. Contributed by Varun Vasudev\n",
+          "commitDate": "21/10/14 10:31 AM",
+          "commitName": "6f2028bd1514d90b831f889fd0ee7f2ba5c15000",
+          "commitAuthor": "Jason Lowe",
+          "commitDateOld": "07/03/14 4:52 PM",
+          "commitNameOld": "0b1304d098169bda3c7eadf9a07dd0b9e87ab150",
+          "commitAuthorOld": "Vinod Kumar Vavilapalli",
+          "daysBetweenCommits": 227.69,
+          "commitsBetweenForRepo": 1802,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,34 @@\n-  public String getDisksHealthReport() {\n+  public String getDisksHealthReport(boolean listGoodDirs) {\n     if (!isDiskHealthCheckerEnabled) {\n       return \"\";\n     }\n \n     StringBuilder report \u003d new StringBuilder();\n     List\u003cString\u003e failedLocalDirsList \u003d localDirs.getFailedDirs();\n     List\u003cString\u003e failedLogDirsList \u003d logDirs.getFailedDirs();\n-    int numLocalDirs \u003d localDirs.getGoodDirs().size()\n-        + failedLocalDirsList.size();\n-    int numLogDirs \u003d logDirs.getGoodDirs().size() + failedLogDirsList.size();\n-    if (!failedLocalDirsList.isEmpty()) {\n-      report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n-          + \" local-dirs turned bad: \"\n-          + StringUtils.join(\",\", failedLocalDirsList) + \";\");\n+    List\u003cString\u003e goodLocalDirsList \u003d localDirs.getGoodDirs();\n+    List\u003cString\u003e goodLogDirsList \u003d logDirs.getGoodDirs();\n+    int numLocalDirs \u003d goodLocalDirsList.size() + failedLocalDirsList.size();\n+    int numLogDirs \u003d goodLogDirsList.size() + failedLogDirsList.size();\n+    if (!listGoodDirs) {\n+      if (!failedLocalDirsList.isEmpty()) {\n+        report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n+            + \" local-dirs are bad: \"\n+            + StringUtils.join(\",\", failedLocalDirsList) + \"; \");\n+      }\n+      if (!failedLogDirsList.isEmpty()) {\n+        report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n+            + \" log-dirs are bad: \" + StringUtils.join(\",\", failedLogDirsList));\n+      }\n+    } else {\n+      report.append(goodLocalDirsList.size() + \"/\" + numLocalDirs\n+          + \" local-dirs are good: \" + StringUtils.join(\",\", goodLocalDirsList)\n+          + \"; \");\n+      report.append(goodLogDirsList.size() + \"/\" + numLogDirs\n+          + \" log-dirs are good: \" + StringUtils.join(\",\", goodLogDirsList));\n+\n     }\n-    if (!failedLogDirsList.isEmpty()) {\n-      report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n-          + \" log-dirs turned bad: \"\n-          + StringUtils.join(\",\", failedLogDirsList));\n-    }\n+\n     return report.toString();\n+\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public String getDisksHealthReport(boolean listGoodDirs) {\n    if (!isDiskHealthCheckerEnabled) {\n      return \"\";\n    }\n\n    StringBuilder report \u003d new StringBuilder();\n    List\u003cString\u003e failedLocalDirsList \u003d localDirs.getFailedDirs();\n    List\u003cString\u003e failedLogDirsList \u003d logDirs.getFailedDirs();\n    List\u003cString\u003e goodLocalDirsList \u003d localDirs.getGoodDirs();\n    List\u003cString\u003e goodLogDirsList \u003d logDirs.getGoodDirs();\n    int numLocalDirs \u003d goodLocalDirsList.size() + failedLocalDirsList.size();\n    int numLogDirs \u003d goodLogDirsList.size() + failedLogDirsList.size();\n    if (!listGoodDirs) {\n      if (!failedLocalDirsList.isEmpty()) {\n        report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n            + \" local-dirs are bad: \"\n            + StringUtils.join(\",\", failedLocalDirsList) + \"; \");\n      }\n      if (!failedLogDirsList.isEmpty()) {\n        report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n            + \" log-dirs are bad: \" + StringUtils.join(\",\", failedLogDirsList));\n      }\n    } else {\n      report.append(goodLocalDirsList.size() + \"/\" + numLocalDirs\n          + \" local-dirs are good: \" + StringUtils.join(\",\", goodLocalDirsList)\n          + \"; \");\n      report.append(goodLogDirsList.size() + \"/\" + numLogDirs\n          + \" log-dirs are good: \" + StringUtils.join(\",\", goodLogDirsList));\n\n    }\n\n    return report.toString();\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/LocalDirsHandlerService.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[listGoodDirs-boolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-90. NodeManager should identify failed disks becoming good again. Contributed by Varun Vasudev\n",
+          "commitDate": "21/10/14 10:31 AM",
+          "commitName": "6f2028bd1514d90b831f889fd0ee7f2ba5c15000",
+          "commitAuthor": "Jason Lowe",
+          "commitDateOld": "07/03/14 4:52 PM",
+          "commitNameOld": "0b1304d098169bda3c7eadf9a07dd0b9e87ab150",
+          "commitAuthorOld": "Vinod Kumar Vavilapalli",
+          "daysBetweenCommits": 227.69,
+          "commitsBetweenForRepo": 1802,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,34 @@\n-  public String getDisksHealthReport() {\n+  public String getDisksHealthReport(boolean listGoodDirs) {\n     if (!isDiskHealthCheckerEnabled) {\n       return \"\";\n     }\n \n     StringBuilder report \u003d new StringBuilder();\n     List\u003cString\u003e failedLocalDirsList \u003d localDirs.getFailedDirs();\n     List\u003cString\u003e failedLogDirsList \u003d logDirs.getFailedDirs();\n-    int numLocalDirs \u003d localDirs.getGoodDirs().size()\n-        + failedLocalDirsList.size();\n-    int numLogDirs \u003d logDirs.getGoodDirs().size() + failedLogDirsList.size();\n-    if (!failedLocalDirsList.isEmpty()) {\n-      report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n-          + \" local-dirs turned bad: \"\n-          + StringUtils.join(\",\", failedLocalDirsList) + \";\");\n+    List\u003cString\u003e goodLocalDirsList \u003d localDirs.getGoodDirs();\n+    List\u003cString\u003e goodLogDirsList \u003d logDirs.getGoodDirs();\n+    int numLocalDirs \u003d goodLocalDirsList.size() + failedLocalDirsList.size();\n+    int numLogDirs \u003d goodLogDirsList.size() + failedLogDirsList.size();\n+    if (!listGoodDirs) {\n+      if (!failedLocalDirsList.isEmpty()) {\n+        report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n+            + \" local-dirs are bad: \"\n+            + StringUtils.join(\",\", failedLocalDirsList) + \"; \");\n+      }\n+      if (!failedLogDirsList.isEmpty()) {\n+        report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n+            + \" log-dirs are bad: \" + StringUtils.join(\",\", failedLogDirsList));\n+      }\n+    } else {\n+      report.append(goodLocalDirsList.size() + \"/\" + numLocalDirs\n+          + \" local-dirs are good: \" + StringUtils.join(\",\", goodLocalDirsList)\n+          + \"; \");\n+      report.append(goodLogDirsList.size() + \"/\" + numLogDirs\n+          + \" log-dirs are good: \" + StringUtils.join(\",\", goodLogDirsList));\n+\n     }\n-    if (!failedLogDirsList.isEmpty()) {\n-      report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n-          + \" log-dirs turned bad: \"\n-          + StringUtils.join(\",\", failedLogDirsList));\n-    }\n+\n     return report.toString();\n+\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public String getDisksHealthReport(boolean listGoodDirs) {\n    if (!isDiskHealthCheckerEnabled) {\n      return \"\";\n    }\n\n    StringBuilder report \u003d new StringBuilder();\n    List\u003cString\u003e failedLocalDirsList \u003d localDirs.getFailedDirs();\n    List\u003cString\u003e failedLogDirsList \u003d logDirs.getFailedDirs();\n    List\u003cString\u003e goodLocalDirsList \u003d localDirs.getGoodDirs();\n    List\u003cString\u003e goodLogDirsList \u003d logDirs.getGoodDirs();\n    int numLocalDirs \u003d goodLocalDirsList.size() + failedLocalDirsList.size();\n    int numLogDirs \u003d goodLogDirsList.size() + failedLogDirsList.size();\n    if (!listGoodDirs) {\n      if (!failedLocalDirsList.isEmpty()) {\n        report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n            + \" local-dirs are bad: \"\n            + StringUtils.join(\",\", failedLocalDirsList) + \"; \");\n      }\n      if (!failedLogDirsList.isEmpty()) {\n        report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n            + \" log-dirs are bad: \" + StringUtils.join(\",\", failedLogDirsList));\n      }\n    } else {\n      report.append(goodLocalDirsList.size() + \"/\" + numLocalDirs\n          + \" local-dirs are good: \" + StringUtils.join(\",\", goodLocalDirsList)\n          + \"; \");\n      report.append(goodLogDirsList.size() + \"/\" + numLogDirs\n          + \" log-dirs are good: \" + StringUtils.join(\",\", goodLogDirsList));\n\n    }\n\n    return report.toString();\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/LocalDirsHandlerService.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-1. Promote YARN to be a sub-project of Apache Hadoop.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1370666 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/12 10:22 PM",
+      "commitName": "e1fdf62123625e4ba399af02f8aad500637d29d1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "07/08/12 7:53 PM",
+      "commitNameOld": "34554d1e11ee1d5b564d7d9ed3e6d55931d72749",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 0.1,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public String getDisksHealthReport() {\n    if (!isDiskHealthCheckerEnabled) {\n      return \"\";\n    }\n\n    StringBuilder report \u003d new StringBuilder();\n    List\u003cString\u003e failedLocalDirsList \u003d localDirs.getFailedDirs();\n    List\u003cString\u003e failedLogDirsList \u003d logDirs.getFailedDirs();\n    int numLocalDirs \u003d localDirs.getGoodDirs().size()\n        + failedLocalDirsList.size();\n    int numLogDirs \u003d logDirs.getGoodDirs().size() + failedLogDirsList.size();\n    if (!failedLocalDirsList.isEmpty()) {\n      report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n          + \" local-dirs turned bad: \"\n          + StringUtils.join(\",\", failedLocalDirsList) + \";\");\n    }\n    if (!failedLogDirsList.isEmpty()) {\n      report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n          + \" log-dirs turned bad: \"\n          + StringUtils.join(\",\", failedLogDirsList));\n    }\n    return report.toString();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/LocalDirsHandlerService.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/LocalDirsHandlerService.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/LocalDirsHandlerService.java"
+      }
+    },
+    "ea17da82f7fc4b7fcc05bba82d141e27289fd7cb": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-3121. NodeManager should handle disk-failures (Ravi Gummadi via mahadev)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1208131 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "29/11/11 3:17 PM",
+      "commitName": "ea17da82f7fc4b7fcc05bba82d141e27289fd7cb",
+      "commitAuthor": "Mahadev Konar",
+      "diff": "@@ -0,0 +1,23 @@\n+  public String getDisksHealthReport() {\n+    if (!isDiskHealthCheckerEnabled) {\n+      return \"\";\n+    }\n+\n+    StringBuilder report \u003d new StringBuilder();\n+    List\u003cString\u003e failedLocalDirsList \u003d localDirs.getFailedDirs();\n+    List\u003cString\u003e failedLogDirsList \u003d logDirs.getFailedDirs();\n+    int numLocalDirs \u003d localDirs.getGoodDirs().size()\n+        + failedLocalDirsList.size();\n+    int numLogDirs \u003d logDirs.getGoodDirs().size() + failedLogDirsList.size();\n+    if (!failedLocalDirsList.isEmpty()) {\n+      report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n+          + \" local-dirs turned bad: \"\n+          + StringUtils.join(\",\", failedLocalDirsList) + \";\");\n+    }\n+    if (!failedLogDirsList.isEmpty()) {\n+      report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n+          + \" log-dirs turned bad: \"\n+          + StringUtils.join(\",\", failedLogDirsList));\n+    }\n+    return report.toString();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public String getDisksHealthReport() {\n    if (!isDiskHealthCheckerEnabled) {\n      return \"\";\n    }\n\n    StringBuilder report \u003d new StringBuilder();\n    List\u003cString\u003e failedLocalDirsList \u003d localDirs.getFailedDirs();\n    List\u003cString\u003e failedLogDirsList \u003d logDirs.getFailedDirs();\n    int numLocalDirs \u003d localDirs.getGoodDirs().size()\n        + failedLocalDirsList.size();\n    int numLogDirs \u003d logDirs.getGoodDirs().size() + failedLogDirsList.size();\n    if (!failedLocalDirsList.isEmpty()) {\n      report.append(failedLocalDirsList.size() + \"/\" + numLocalDirs\n          + \" local-dirs turned bad: \"\n          + StringUtils.join(\",\", failedLocalDirsList) + \";\");\n    }\n    if (!failedLogDirsList.isEmpty()) {\n      report.append(failedLogDirsList.size() + \"/\" + numLogDirs\n          + \" log-dirs turned bad: \"\n          + StringUtils.join(\",\", failedLogDirsList));\n    }\n    return report.toString();\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/LocalDirsHandlerService.java"
+    }
+  }
+}

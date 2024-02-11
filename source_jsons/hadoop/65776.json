@@ -1,0 +1,147 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PathMetadataDynamoDBTranslation.java",
+  "functionName": "itemToPathMetadata",
+  "functionId": "itemToPathMetadata___item-Item__username-String",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/PathMetadataDynamoDBTranslation.java",
+  "functionStartLine": 120,
+  "functionEndLine": 167,
+  "numCommitsSeen": 9,
+  "timeTaken": 3068,
+  "changeHistory": [
+    "a36274d69947648dbe82721220cc5240ec5d396d",
+    "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3",
+    "d7232857d8d1e10cdac171acdc931187e45fd6be",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "a36274d69947648dbe82721220cc5240ec5d396d": "Ybodychange",
+    "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "d7232857d8d1e10cdac171acdc931187e45fd6be": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a36274d69947648dbe82721220cc5240ec5d396d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16085. S3Guard: use object version or etags to protect against inconsistent read after replace/overwrite.\n\nContributed by Ben Roling.\n\nS3Guard will now track the etag of uploaded files and, if an S3\nbucket is versioned, the object version.\n\nYou can then control how to react to a mismatch between the data\nin the DynamoDB table and that in the store: warn, fail, or, when\nusing versions, return the original value.\n\nThis adds two new columns to the table: etag and version.\nThis is transparent to older S3A clients -but when such clients\nadd/update data to the S3Guard table, they will not add these values.\nAs a result, the etag/version checks will not work with files uploaded by older clients.\n\nFor a consistent experience, upgrade all clients to use the latest hadoop version.\n",
+      "commitDate": "19/05/19 2:29 PM",
+      "commitName": "a36274d69947648dbe82721220cc5240ec5d396d",
+      "commitAuthor": "Ben Roling",
+      "commitDateOld": "02/10/18 9:22 PM",
+      "commitNameOld": "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3",
+      "commitAuthorOld": "Aaron Fabbri",
+      "daysBetweenCommits": 228.71,
+      "commitsBetweenForRepo": 1662,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,46 +1,48 @@\n   static DDBPathMetadata itemToPathMetadata(Item item, String username) {\n     if (item \u003d\u003d null) {\n       return null;\n     }\n \n     String parentStr \u003d item.getString(PARENT);\n     Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n     String childStr \u003d item.getString(CHILD);\n     Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n \n     // Skip table version markers, which are only non-absolute paths stored.\n     Path rawPath \u003d new Path(parentStr, childStr);\n     if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n       return null;\n     }\n \n     Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n     Path path \u003d new Path(parent, childStr);\n \n     boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n     boolean isAuthoritativeDir \u003d false;\n-    final FileStatus fileStatus;\n+    final S3AFileStatus fileStatus;\n     long lastUpdated \u003d 0;\n     if (isDir) {\n       isAuthoritativeDir \u003d !IGNORED_FIELDS.contains(IS_AUTHORITATIVE)\n           \u0026\u0026 item.hasAttribute(IS_AUTHORITATIVE)\n           \u0026\u0026 item.getBoolean(IS_AUTHORITATIVE);\n       fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n     } else {\n       long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n       long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n       long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n-      fileStatus \u003d new FileStatus(len, false, 1, block, modTime, 0, null,\n-          username, username, path);\n+      String eTag \u003d item.getString(ETAG);\n+      String versionId \u003d item.getString(VERSION_ID);\n+      fileStatus \u003d new S3AFileStatus(\n+          len, modTime, path, block, username, eTag, versionId);\n     }\n     lastUpdated \u003d\n         !IGNORED_FIELDS.contains(LAST_UPDATED)\n             \u0026\u0026 item.hasAttribute(LAST_UPDATED)\n             ? item.getLong(LAST_UPDATED) : 0;\n \n     boolean isDeleted \u003d\n         item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n \n     return new DDBPathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted,\n         isAuthoritativeDir, lastUpdated);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static DDBPathMetadata itemToPathMetadata(Item item, String username) {\n    if (item \u003d\u003d null) {\n      return null;\n    }\n\n    String parentStr \u003d item.getString(PARENT);\n    Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n    String childStr \u003d item.getString(CHILD);\n    Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n\n    // Skip table version markers, which are only non-absolute paths stored.\n    Path rawPath \u003d new Path(parentStr, childStr);\n    if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n      return null;\n    }\n\n    Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n    Path path \u003d new Path(parent, childStr);\n\n    boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n    boolean isAuthoritativeDir \u003d false;\n    final S3AFileStatus fileStatus;\n    long lastUpdated \u003d 0;\n    if (isDir) {\n      isAuthoritativeDir \u003d !IGNORED_FIELDS.contains(IS_AUTHORITATIVE)\n          \u0026\u0026 item.hasAttribute(IS_AUTHORITATIVE)\n          \u0026\u0026 item.getBoolean(IS_AUTHORITATIVE);\n      fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n    } else {\n      long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n      long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n      long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n      String eTag \u003d item.getString(ETAG);\n      String versionId \u003d item.getString(VERSION_ID);\n      fileStatus \u003d new S3AFileStatus(\n          len, modTime, path, block, username, eTag, versionId);\n    }\n    lastUpdated \u003d\n        !IGNORED_FIELDS.contains(LAST_UPDATED)\n            \u0026\u0026 item.hasAttribute(LAST_UPDATED)\n            ? item.getLong(LAST_UPDATED) : 0;\n\n    boolean isDeleted \u003d\n        item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n\n    return new DDBPathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted,\n        isAuthoritativeDir, lastUpdated);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/PathMetadataDynamoDBTranslation.java",
+      "extendedDetails": {}
+    },
+    "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-15621 S3Guard: Implement time-based (TTL) expiry for Authoritative Directory Listing. Contributed by Gabor Bota\n",
+      "commitDate": "02/10/18 9:22 PM",
+      "commitName": "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3",
+      "commitAuthor": "Aaron Fabbri",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-15621 S3Guard: Implement time-based (TTL) expiry for Authoritative Directory Listing. Contributed by Gabor Bota\n",
+          "commitDate": "02/10/18 9:22 PM",
+          "commitName": "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "17/08/18 10:15 AM",
+          "commitNameOld": "d7232857d8d1e10cdac171acdc931187e45fd6be",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 46.46,
+          "commitsBetweenForRepo": 388,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,4 +1,46 @@\n-  static DDBPathMetadata itemToPathMetadata(Item item, String username)\n-      throws IOException {\n-    return itemToPathMetadata(item, username, false);\n+  static DDBPathMetadata itemToPathMetadata(Item item, String username) {\n+    if (item \u003d\u003d null) {\n+      return null;\n+    }\n+\n+    String parentStr \u003d item.getString(PARENT);\n+    Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n+    String childStr \u003d item.getString(CHILD);\n+    Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n+\n+    // Skip table version markers, which are only non-absolute paths stored.\n+    Path rawPath \u003d new Path(parentStr, childStr);\n+    if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n+      return null;\n+    }\n+\n+    Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n+    Path path \u003d new Path(parent, childStr);\n+\n+    boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n+    boolean isAuthoritativeDir \u003d false;\n+    final FileStatus fileStatus;\n+    long lastUpdated \u003d 0;\n+    if (isDir) {\n+      isAuthoritativeDir \u003d !IGNORED_FIELDS.contains(IS_AUTHORITATIVE)\n+          \u0026\u0026 item.hasAttribute(IS_AUTHORITATIVE)\n+          \u0026\u0026 item.getBoolean(IS_AUTHORITATIVE);\n+      fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n+    } else {\n+      long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n+      long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n+      long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n+      fileStatus \u003d new FileStatus(len, false, 1, block, modTime, 0, null,\n+          username, username, path);\n+    }\n+    lastUpdated \u003d\n+        !IGNORED_FIELDS.contains(LAST_UPDATED)\n+            \u0026\u0026 item.hasAttribute(LAST_UPDATED)\n+            ? item.getLong(LAST_UPDATED) : 0;\n+\n+    boolean isDeleted \u003d\n+        item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n+\n+    return new DDBPathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted,\n+        isAuthoritativeDir, lastUpdated);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static DDBPathMetadata itemToPathMetadata(Item item, String username) {\n    if (item \u003d\u003d null) {\n      return null;\n    }\n\n    String parentStr \u003d item.getString(PARENT);\n    Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n    String childStr \u003d item.getString(CHILD);\n    Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n\n    // Skip table version markers, which are only non-absolute paths stored.\n    Path rawPath \u003d new Path(parentStr, childStr);\n    if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n      return null;\n    }\n\n    Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n    Path path \u003d new Path(parent, childStr);\n\n    boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n    boolean isAuthoritativeDir \u003d false;\n    final FileStatus fileStatus;\n    long lastUpdated \u003d 0;\n    if (isDir) {\n      isAuthoritativeDir \u003d !IGNORED_FIELDS.contains(IS_AUTHORITATIVE)\n          \u0026\u0026 item.hasAttribute(IS_AUTHORITATIVE)\n          \u0026\u0026 item.getBoolean(IS_AUTHORITATIVE);\n      fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n    } else {\n      long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n      long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n      long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n      fileStatus \u003d new FileStatus(len, false, 1, block, modTime, 0, null,\n          username, username, path);\n    }\n    lastUpdated \u003d\n        !IGNORED_FIELDS.contains(LAST_UPDATED)\n            \u0026\u0026 item.hasAttribute(LAST_UPDATED)\n            ? item.getLong(LAST_UPDATED) : 0;\n\n    boolean isDeleted \u003d\n        item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n\n    return new DDBPathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted,\n        isAuthoritativeDir, lastUpdated);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/PathMetadataDynamoDBTranslation.java",
+          "extendedDetails": {
+            "oldValue": "[IOException]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15621 S3Guard: Implement time-based (TTL) expiry for Authoritative Directory Listing. Contributed by Gabor Bota\n",
+          "commitDate": "02/10/18 9:22 PM",
+          "commitName": "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "17/08/18 10:15 AM",
+          "commitNameOld": "d7232857d8d1e10cdac171acdc931187e45fd6be",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 46.46,
+          "commitsBetweenForRepo": 388,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,4 +1,46 @@\n-  static DDBPathMetadata itemToPathMetadata(Item item, String username)\n-      throws IOException {\n-    return itemToPathMetadata(item, username, false);\n+  static DDBPathMetadata itemToPathMetadata(Item item, String username) {\n+    if (item \u003d\u003d null) {\n+      return null;\n+    }\n+\n+    String parentStr \u003d item.getString(PARENT);\n+    Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n+    String childStr \u003d item.getString(CHILD);\n+    Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n+\n+    // Skip table version markers, which are only non-absolute paths stored.\n+    Path rawPath \u003d new Path(parentStr, childStr);\n+    if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n+      return null;\n+    }\n+\n+    Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n+    Path path \u003d new Path(parent, childStr);\n+\n+    boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n+    boolean isAuthoritativeDir \u003d false;\n+    final FileStatus fileStatus;\n+    long lastUpdated \u003d 0;\n+    if (isDir) {\n+      isAuthoritativeDir \u003d !IGNORED_FIELDS.contains(IS_AUTHORITATIVE)\n+          \u0026\u0026 item.hasAttribute(IS_AUTHORITATIVE)\n+          \u0026\u0026 item.getBoolean(IS_AUTHORITATIVE);\n+      fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n+    } else {\n+      long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n+      long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n+      long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n+      fileStatus \u003d new FileStatus(len, false, 1, block, modTime, 0, null,\n+          username, username, path);\n+    }\n+    lastUpdated \u003d\n+        !IGNORED_FIELDS.contains(LAST_UPDATED)\n+            \u0026\u0026 item.hasAttribute(LAST_UPDATED)\n+            ? item.getLong(LAST_UPDATED) : 0;\n+\n+    boolean isDeleted \u003d\n+        item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n+\n+    return new DDBPathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted,\n+        isAuthoritativeDir, lastUpdated);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static DDBPathMetadata itemToPathMetadata(Item item, String username) {\n    if (item \u003d\u003d null) {\n      return null;\n    }\n\n    String parentStr \u003d item.getString(PARENT);\n    Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n    String childStr \u003d item.getString(CHILD);\n    Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n\n    // Skip table version markers, which are only non-absolute paths stored.\n    Path rawPath \u003d new Path(parentStr, childStr);\n    if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n      return null;\n    }\n\n    Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n    Path path \u003d new Path(parent, childStr);\n\n    boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n    boolean isAuthoritativeDir \u003d false;\n    final FileStatus fileStatus;\n    long lastUpdated \u003d 0;\n    if (isDir) {\n      isAuthoritativeDir \u003d !IGNORED_FIELDS.contains(IS_AUTHORITATIVE)\n          \u0026\u0026 item.hasAttribute(IS_AUTHORITATIVE)\n          \u0026\u0026 item.getBoolean(IS_AUTHORITATIVE);\n      fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n    } else {\n      long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n      long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n      long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n      fileStatus \u003d new FileStatus(len, false, 1, block, modTime, 0, null,\n          username, username, path);\n    }\n    lastUpdated \u003d\n        !IGNORED_FIELDS.contains(LAST_UPDATED)\n            \u0026\u0026 item.hasAttribute(LAST_UPDATED)\n            ? item.getLong(LAST_UPDATED) : 0;\n\n    boolean isDeleted \u003d\n        item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n\n    return new DDBPathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted,\n        isAuthoritativeDir, lastUpdated);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/PathMetadataDynamoDBTranslation.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "d7232857d8d1e10cdac171acdc931187e45fd6be": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HADOOP-14154 Persist isAuthoritative bit in DynamoDBMetaStore (Contributed by Gabor Bota)\n",
+      "commitDate": "17/08/18 10:15 AM",
+      "commitName": "d7232857d8d1e10cdac171acdc931187e45fd6be",
+      "commitAuthor": "Aaron Fabbri",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-14154 Persist isAuthoritative bit in DynamoDBMetaStore (Contributed by Gabor Bota)\n",
+          "commitDate": "17/08/18 10:15 AM",
+          "commitName": "d7232857d8d1e10cdac171acdc931187e45fd6be",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "01/09/17 6:13 AM",
+          "commitNameOld": "621b43e254afaff708cd6fc4698b29628f6abc33",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 350.17,
+          "commitsBetweenForRepo": 3161,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,4 @@\n-  static PathMetadata itemToPathMetadata(Item item, String username)\n+  static DDBPathMetadata itemToPathMetadata(Item item, String username)\n       throws IOException {\n-    if (item \u003d\u003d null) {\n-      return null;\n-    }\n-\n-    String parentStr \u003d item.getString(PARENT);\n-    Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n-    String childStr \u003d item.getString(CHILD);\n-    Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n-\n-    // Skip table version markers, which are only non-absolute paths stored.\n-    Path rawPath \u003d new Path(parentStr, childStr);\n-    if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n-      return null;\n-    }\n-\n-    Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n-    Path path \u003d new Path(parent, childStr);\n-\n-    boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n-    final FileStatus fileStatus;\n-    if (isDir) {\n-      fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n-    } else {\n-      long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n-      long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n-      long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n-      fileStatus \u003d new FileStatus(len, false, 1, block, modTime, 0, null,\n-          username, username, path);\n-    }\n-    boolean isDeleted \u003d\n-        item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n-\n-    return new PathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted);\n+    return itemToPathMetadata(item, username, false);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static DDBPathMetadata itemToPathMetadata(Item item, String username)\n      throws IOException {\n    return itemToPathMetadata(item, username, false);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/PathMetadataDynamoDBTranslation.java",
+          "extendedDetails": {
+            "oldValue": "PathMetadata",
+            "newValue": "DDBPathMetadata"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14154 Persist isAuthoritative bit in DynamoDBMetaStore (Contributed by Gabor Bota)\n",
+          "commitDate": "17/08/18 10:15 AM",
+          "commitName": "d7232857d8d1e10cdac171acdc931187e45fd6be",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "01/09/17 6:13 AM",
+          "commitNameOld": "621b43e254afaff708cd6fc4698b29628f6abc33",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 350.17,
+          "commitsBetweenForRepo": 3161,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,4 @@\n-  static PathMetadata itemToPathMetadata(Item item, String username)\n+  static DDBPathMetadata itemToPathMetadata(Item item, String username)\n       throws IOException {\n-    if (item \u003d\u003d null) {\n-      return null;\n-    }\n-\n-    String parentStr \u003d item.getString(PARENT);\n-    Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n-    String childStr \u003d item.getString(CHILD);\n-    Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n-\n-    // Skip table version markers, which are only non-absolute paths stored.\n-    Path rawPath \u003d new Path(parentStr, childStr);\n-    if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n-      return null;\n-    }\n-\n-    Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n-    Path path \u003d new Path(parent, childStr);\n-\n-    boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n-    final FileStatus fileStatus;\n-    if (isDir) {\n-      fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n-    } else {\n-      long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n-      long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n-      long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n-      fileStatus \u003d new FileStatus(len, false, 1, block, modTime, 0, null,\n-          username, username, path);\n-    }\n-    boolean isDeleted \u003d\n-        item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n-\n-    return new PathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted);\n+    return itemToPathMetadata(item, username, false);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static DDBPathMetadata itemToPathMetadata(Item item, String username)\n      throws IOException {\n    return itemToPathMetadata(item, username, false);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/PathMetadataDynamoDBTranslation.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,36 @@\n+  static PathMetadata itemToPathMetadata(Item item, String username)\n+      throws IOException {\n+    if (item \u003d\u003d null) {\n+      return null;\n+    }\n+\n+    String parentStr \u003d item.getString(PARENT);\n+    Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n+    String childStr \u003d item.getString(CHILD);\n+    Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n+\n+    // Skip table version markers, which are only non-absolute paths stored.\n+    Path rawPath \u003d new Path(parentStr, childStr);\n+    if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n+      return null;\n+    }\n+\n+    Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n+    Path path \u003d new Path(parent, childStr);\n+\n+    boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n+    final FileStatus fileStatus;\n+    if (isDir) {\n+      fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n+    } else {\n+      long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n+      long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n+      long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n+      fileStatus \u003d new FileStatus(len, false, 1, block, modTime, 0, null,\n+          username, username, path);\n+    }\n+    boolean isDeleted \u003d\n+        item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n+\n+    return new PathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static PathMetadata itemToPathMetadata(Item item, String username)\n      throws IOException {\n    if (item \u003d\u003d null) {\n      return null;\n    }\n\n    String parentStr \u003d item.getString(PARENT);\n    Preconditions.checkNotNull(parentStr, \"No parent entry in item %s\", item);\n    String childStr \u003d item.getString(CHILD);\n    Preconditions.checkNotNull(childStr, \"No child entry in item %s\", item);\n\n    // Skip table version markers, which are only non-absolute paths stored.\n    Path rawPath \u003d new Path(parentStr, childStr);\n    if (!rawPath.isAbsoluteAndSchemeAuthorityNull()) {\n      return null;\n    }\n\n    Path parent \u003d new Path(Constants.FS_S3A + \":/\" + parentStr + \"/\");\n    Path path \u003d new Path(parent, childStr);\n\n    boolean isDir \u003d item.hasAttribute(IS_DIR) \u0026\u0026 item.getBoolean(IS_DIR);\n    final FileStatus fileStatus;\n    if (isDir) {\n      fileStatus \u003d DynamoDBMetadataStore.makeDirStatus(path, username);\n    } else {\n      long len \u003d item.hasAttribute(FILE_LENGTH) ? item.getLong(FILE_LENGTH) : 0;\n      long modTime \u003d item.hasAttribute(MOD_TIME) ? item.getLong(MOD_TIME) : 0;\n      long block \u003d item.hasAttribute(BLOCK_SIZE) ? item.getLong(BLOCK_SIZE) : 0;\n      fileStatus \u003d new FileStatus(len, false, 1, block, modTime, 0, null,\n          username, username, path);\n    }\n    boolean isDeleted \u003d\n        item.hasAttribute(IS_DELETED) \u0026\u0026 item.getBoolean(IS_DELETED);\n\n    return new PathMetadata(fileStatus, Tristate.UNKNOWN, isDeleted);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/PathMetadataDynamoDBTranslation.java"
+    }
+  }
+}

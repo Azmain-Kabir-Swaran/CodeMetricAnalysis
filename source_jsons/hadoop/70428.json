@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockBlobInputStream.java",
+  "functionName": "read",
+  "functionId": "read___b-byte[]__offset-int__len-int",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java",
+  "functionStartLine": 276,
+  "functionEndLine": 313,
+  "numCommitsSeen": 3,
+  "timeTaken": 872,
+  "changeHistory": [
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0"
+  ],
+  "changeHistoryShort": {
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14535 wasb: implement high-performance random access and seek of block blobs.\nContributed by Thomas Marquardt\n",
+      "commitDate": "11/07/17 1:34 PM",
+      "commitName": "d670c3a4da7dd80dccf6c6308603bb3bb013b3b0",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,38 @@\n+  public synchronized int read(byte[] b, int offset, int len)\n+      throws IOException {\n+    checkState();\n+    NativeAzureFileSystemHelper.validateReadArgs(b, offset, len);\n+    if (blobInputStream !\u003d null) {\n+      int numberOfBytesRead \u003d blobInputStream.read(b, offset, len);\n+      streamPosition +\u003d numberOfBytesRead;\n+      return numberOfBytesRead;\n+    } else {\n+      if (offset \u003c 0 || len \u003c 0 || len \u003e b.length - offset) {\n+        throw new IndexOutOfBoundsException(\"read arguments out of range\");\n+      }\n+      if (len \u003d\u003d 0) {\n+        return 0;\n+      }\n+\n+      int bytesRead \u003d 0;\n+      int available \u003d available();\n+      if (available \u003e 0) {\n+        bytesRead \u003d Math.min(available, len);\n+        System.arraycopy(streamBuffer, streamBufferPosition, b, offset,\n+            bytesRead);\n+        streamBufferPosition +\u003d bytesRead;\n+      }\n+\n+      if (len \u003d\u003d bytesRead) {\n+        return len;\n+      }\n+      if (streamPosition \u003e\u003d streamLength) {\n+        return (bytesRead \u003e 0) ? bytesRead : -1;\n+      }\n+\n+      offset +\u003d bytesRead;\n+      len -\u003d bytesRead;\n+\n+      return bytesRead + doNetworkRead(b, offset, len);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized int read(byte[] b, int offset, int len)\n      throws IOException {\n    checkState();\n    NativeAzureFileSystemHelper.validateReadArgs(b, offset, len);\n    if (blobInputStream !\u003d null) {\n      int numberOfBytesRead \u003d blobInputStream.read(b, offset, len);\n      streamPosition +\u003d numberOfBytesRead;\n      return numberOfBytesRead;\n    } else {\n      if (offset \u003c 0 || len \u003c 0 || len \u003e b.length - offset) {\n        throw new IndexOutOfBoundsException(\"read arguments out of range\");\n      }\n      if (len \u003d\u003d 0) {\n        return 0;\n      }\n\n      int bytesRead \u003d 0;\n      int available \u003d available();\n      if (available \u003e 0) {\n        bytesRead \u003d Math.min(available, len);\n        System.arraycopy(streamBuffer, streamBufferPosition, b, offset,\n            bytesRead);\n        streamBufferPosition +\u003d bytesRead;\n      }\n\n      if (len \u003d\u003d bytesRead) {\n        return len;\n      }\n      if (streamPosition \u003e\u003d streamLength) {\n        return (bytesRead \u003e 0) ? bytesRead : -1;\n      }\n\n      offset +\u003d bytesRead;\n      len -\u003d bytesRead;\n\n      return bytesRead + doNetworkRead(b, offset, len);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobInputStream.java"
+    }
+  }
+}

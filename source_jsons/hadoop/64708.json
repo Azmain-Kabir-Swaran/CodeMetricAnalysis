@@ -1,0 +1,119 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AFileSystem.java",
+  "functionName": "toLocatedFileStatus",
+  "functionId": "toLocatedFileStatus___status-S3AFileStatus",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+  "functionStartLine": 4359,
+  "functionEndLine": 4365,
+  "numCommitsSeen": 247,
+  "timeTaken": 5844,
+  "changeHistory": [
+    "511df1e837b19ccb9271520589452d82d50ac69d",
+    "a36274d69947648dbe82721220cc5240ec5d396d",
+    "822d661b8fcc42bec6eea958d9fd02ef1aaa4b6c"
+  ],
+  "changeHistoryShort": {
+    "511df1e837b19ccb9271520589452d82d50ac69d": "Ybodychange",
+    "a36274d69947648dbe82721220cc5240ec5d396d": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+    "822d661b8fcc42bec6eea958d9fd02ef1aaa4b6c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "511df1e837b19ccb9271520589452d82d50ac69d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16430. S3AFilesystem.delete to incrementally update s3guard with deletions\n\nContributed by Steve Loughran.\n\nThis overlaps the scanning for directory entries with batched calls to S3 DELETE and updates of the S3Guard tables.\nIt also uses S3Guard to list the files to delete, so find newly created files even when S3 listings are not use consistent.\n\nFor path which the client considers S3Guard to be authoritative, we also do a recursive LIST of the store and delete files; this is to find unindexed files and do guarantee that the delete(path, true) call really does delete everything underneath.\n\nChange-Id: Ice2f6e940c506e0b3a78fa534a99721b1698708e\n",
+      "commitDate": "05/09/19 6:25 AM",
+      "commitName": "511df1e837b19ccb9271520589452d82d50ac69d",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "23/07/19 6:52 AM",
+      "commitNameOld": "4317d332321778269a583e2223d433107fab82eb",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 43.98,
+      "commitsBetweenForRepo": 415,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,7 +1,7 @@\n   S3ALocatedFileStatus toLocatedFileStatus(S3AFileStatus status)\n       throws IOException {\n     return new S3ALocatedFileStatus(status,\n         status.isFile() ?\n           getFileBlockLocations(status, 0, status.getLen())\n-          : null, status.getETag(), status.getVersionId());\n+          : null);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  S3ALocatedFileStatus toLocatedFileStatus(S3AFileStatus status)\n      throws IOException {\n    return new S3ALocatedFileStatus(status,\n        status.isFile() ?\n          getFileBlockLocations(status, 0, status.getLen())\n          : null);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "a36274d69947648dbe82721220cc5240ec5d396d": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+      "commitMessage": "HADOOP-16085. S3Guard: use object version or etags to protect against inconsistent read after replace/overwrite.\n\nContributed by Ben Roling.\n\nS3Guard will now track the etag of uploaded files and, if an S3\nbucket is versioned, the object version.\n\nYou can then control how to react to a mismatch between the data\nin the DynamoDB table and that in the store: warn, fail, or, when\nusing versions, return the original value.\n\nThis adds two new columns to the table: etag and version.\nThis is transparent to older S3A clients -but when such clients\nadd/update data to the S3Guard table, they will not add these values.\nAs a result, the etag/version checks will not work with files uploaded by older clients.\n\nFor a consistent experience, upgrade all clients to use the latest hadoop version.\n",
+      "commitDate": "19/05/19 2:29 PM",
+      "commitName": "a36274d69947648dbe82721220cc5240ec5d396d",
+      "commitAuthor": "Ben Roling",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16085. S3Guard: use object version or etags to protect against inconsistent read after replace/overwrite.\n\nContributed by Ben Roling.\n\nS3Guard will now track the etag of uploaded files and, if an S3\nbucket is versioned, the object version.\n\nYou can then control how to react to a mismatch between the data\nin the DynamoDB table and that in the store: warn, fail, or, when\nusing versions, return the original value.\n\nThis adds two new columns to the table: etag and version.\nThis is transparent to older S3A clients -but when such clients\nadd/update data to the S3Guard table, they will not add these values.\nAs a result, the etag/version checks will not work with files uploaded by older clients.\n\nFor a consistent experience, upgrade all clients to use the latest hadoop version.\n",
+          "commitDate": "19/05/19 2:29 PM",
+          "commitName": "a36274d69947648dbe82721220cc5240ec5d396d",
+          "commitAuthor": "Ben Roling",
+          "commitDateOld": "30/04/19 3:53 AM",
+          "commitNameOld": "0af4011580878566213016af0c32633eabd15100",
+          "commitAuthorOld": "Ben Roling",
+          "daysBetweenCommits": 19.44,
+          "commitsBetweenForRepo": 90,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,7 @@\n-  LocatedFileStatus toLocatedFileStatus(FileStatus status)\n+  S3ALocatedFileStatus toLocatedFileStatus(S3AFileStatus status)\n       throws IOException {\n-    return new LocatedFileStatus(status,\n+    return new S3ALocatedFileStatus(status,\n         status.isFile() ?\n           getFileBlockLocations(status, 0, status.getLen())\n-          : null);\n+          : null, status.getETag(), status.getVersionId());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  S3ALocatedFileStatus toLocatedFileStatus(S3AFileStatus status)\n      throws IOException {\n    return new S3ALocatedFileStatus(status,\n        status.isFile() ?\n          getFileBlockLocations(status, 0, status.getLen())\n          : null, status.getETag(), status.getVersionId());\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[status-FileStatus]",
+            "newValue": "[status-S3AFileStatus]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-16085. S3Guard: use object version or etags to protect against inconsistent read after replace/overwrite.\n\nContributed by Ben Roling.\n\nS3Guard will now track the etag of uploaded files and, if an S3\nbucket is versioned, the object version.\n\nYou can then control how to react to a mismatch between the data\nin the DynamoDB table and that in the store: warn, fail, or, when\nusing versions, return the original value.\n\nThis adds two new columns to the table: etag and version.\nThis is transparent to older S3A clients -but when such clients\nadd/update data to the S3Guard table, they will not add these values.\nAs a result, the etag/version checks will not work with files uploaded by older clients.\n\nFor a consistent experience, upgrade all clients to use the latest hadoop version.\n",
+          "commitDate": "19/05/19 2:29 PM",
+          "commitName": "a36274d69947648dbe82721220cc5240ec5d396d",
+          "commitAuthor": "Ben Roling",
+          "commitDateOld": "30/04/19 3:53 AM",
+          "commitNameOld": "0af4011580878566213016af0c32633eabd15100",
+          "commitAuthorOld": "Ben Roling",
+          "daysBetweenCommits": 19.44,
+          "commitsBetweenForRepo": 90,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,7 @@\n-  LocatedFileStatus toLocatedFileStatus(FileStatus status)\n+  S3ALocatedFileStatus toLocatedFileStatus(S3AFileStatus status)\n       throws IOException {\n-    return new LocatedFileStatus(status,\n+    return new S3ALocatedFileStatus(status,\n         status.isFile() ?\n           getFileBlockLocations(status, 0, status.getLen())\n-          : null);\n+          : null, status.getETag(), status.getVersionId());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  S3ALocatedFileStatus toLocatedFileStatus(S3AFileStatus status)\n      throws IOException {\n    return new S3ALocatedFileStatus(status,\n        status.isFile() ?\n          getFileBlockLocations(status, 0, status.getLen())\n          : null, status.getETag(), status.getVersionId());\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "LocatedFileStatus",
+            "newValue": "S3ALocatedFileStatus"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16085. S3Guard: use object version or etags to protect against inconsistent read after replace/overwrite.\n\nContributed by Ben Roling.\n\nS3Guard will now track the etag of uploaded files and, if an S3\nbucket is versioned, the object version.\n\nYou can then control how to react to a mismatch between the data\nin the DynamoDB table and that in the store: warn, fail, or, when\nusing versions, return the original value.\n\nThis adds two new columns to the table: etag and version.\nThis is transparent to older S3A clients -but when such clients\nadd/update data to the S3Guard table, they will not add these values.\nAs a result, the etag/version checks will not work with files uploaded by older clients.\n\nFor a consistent experience, upgrade all clients to use the latest hadoop version.\n",
+          "commitDate": "19/05/19 2:29 PM",
+          "commitName": "a36274d69947648dbe82721220cc5240ec5d396d",
+          "commitAuthor": "Ben Roling",
+          "commitDateOld": "30/04/19 3:53 AM",
+          "commitNameOld": "0af4011580878566213016af0c32633eabd15100",
+          "commitAuthorOld": "Ben Roling",
+          "daysBetweenCommits": 19.44,
+          "commitsBetweenForRepo": 90,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,7 @@\n-  LocatedFileStatus toLocatedFileStatus(FileStatus status)\n+  S3ALocatedFileStatus toLocatedFileStatus(S3AFileStatus status)\n       throws IOException {\n-    return new LocatedFileStatus(status,\n+    return new S3ALocatedFileStatus(status,\n         status.isFile() ?\n           getFileBlockLocations(status, 0, status.getLen())\n-          : null);\n+          : null, status.getETag(), status.getVersionId());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  S3ALocatedFileStatus toLocatedFileStatus(S3AFileStatus status)\n      throws IOException {\n    return new S3ALocatedFileStatus(status,\n        status.isFile() ?\n          getFileBlockLocations(status, 0, status.getLen())\n          : null, status.getETag(), status.getVersionId());\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "822d661b8fcc42bec6eea958d9fd02ef1aaa4b6c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13208. S3A listFiles(recursive\u003dtrue) to do a bulk listObjects instead of walking the pseudo-tree of directories. Contributed by Steve Loughran.\n",
+      "commitDate": "17/08/16 2:54 PM",
+      "commitName": "822d661b8fcc42bec6eea958d9fd02ef1aaa4b6c",
+      "commitAuthor": "Chris Nauroth",
+      "diff": "@@ -0,0 +1,7 @@\n+  LocatedFileStatus toLocatedFileStatus(FileStatus status)\n+      throws IOException {\n+    return new LocatedFileStatus(status,\n+        status.isFile() ?\n+          getFileBlockLocations(status, 0, status.getLen())\n+          : null);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  LocatedFileStatus toLocatedFileStatus(FileStatus status)\n      throws IOException {\n    return new LocatedFileStatus(status,\n        status.isFile() ?\n          getFileBlockLocations(status, 0, status.getLen())\n          : null);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java"
+    }
+  }
+}

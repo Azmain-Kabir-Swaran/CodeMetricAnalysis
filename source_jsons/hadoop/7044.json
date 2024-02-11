@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSPermissionChecker.java",
+  "functionName": "checkPermission",
+  "functionId": "checkPermission___inode-INode__snapshotId-int__access-FsAction",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+  "functionStartLine": 257,
+  "functionEndLine": 309,
+  "numCommitsSeen": 51,
+  "timeTaken": 2344,
+  "changeHistory": [
+    "4b95c242eca540455a4d5d0899aaf73b6064b5ea",
+    "ec7507162c7e23c0cd251e09b6be0030a500f1ca",
+    "f413ee33df301659c4ca9024380c2354983dcc84"
+  ],
+  "changeHistoryShort": {
+    "4b95c242eca540455a4d5d0899aaf73b6064b5ea": "Ybodychange",
+    "ec7507162c7e23c0cd251e09b6be0030a500f1ca": "Ybodychange",
+    "f413ee33df301659c4ca9024380c2354983dcc84": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4b95c242eca540455a4d5d0899aaf73b6064b5ea": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14743. Enhance INodeAttributeProvider/ AccessControlEnforcer Interface in HDFS to support Authorization of mkdir, rm, rmdir, copy, move etc... (#1829)\n\nReviewed-by: Xiaoyu Yao \u003cxyao@apache.org\u003e",
+      "commitDate": "13/03/20 11:29 AM",
+      "commitName": "4b95c242eca540455a4d5d0899aaf73b6064b5ea",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "19/02/20 11:33 AM",
+      "commitNameOld": "ec7507162c7e23c0cd251e09b6be0030a500f1ca",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 22.96,
+      "commitsBetweenForRepo": 85,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,53 @@\n   void checkPermission(INode inode, int snapshotId, FsAction access)\n       throws AccessControlException {\n     byte[][] pathComponents \u003d inode.getPathComponents();\n     INodeAttributes nodeAttributes \u003d getINodeAttrs(pathComponents,\n         pathComponents.length - 1, inode, snapshotId);\n     try {\n       INodeAttributes[] iNodeAttr \u003d {nodeAttributes};\n       AccessControlEnforcer enforcer \u003d getAccessControlEnforcer();\n-      enforcer.checkPermission(\n-          fsOwner, supergroup, callerUgi,\n-          iNodeAttr, // single inode attr in the array\n-          new INode[]{inode}, // single inode in the array\n-          pathComponents, snapshotId,\n-          null, -1, // this will skip checkTraverse() because\n-          // not checking ancestor here\n-          false, null, null,\n-          access, // the target access to be checked against the inode\n-          null, // passing null sub access avoids checking children\n-          false);\n+      String opType \u003d operationType.get();\n+      if (this.authorizeWithContext \u0026\u0026 opType !\u003d null) {\n+        INodeAttributeProvider.AuthorizationContext.Builder builder \u003d\n+            new INodeAttributeProvider.AuthorizationContext.Builder();\n+        builder.fsOwner(fsOwner)\n+            .supergroup(supergroup)\n+            .callerUgi(callerUgi)\n+            .inodeAttrs(iNodeAttr) // single inode attr in the array\n+            .inodes(new INode[] { inode }) // single inode attr in the array\n+            .pathByNameArr(pathComponents)\n+            .snapshotId(snapshotId)\n+            .path(null)\n+            .ancestorIndex(-1)     // this will skip checkTraverse()\n+                                   // because not checking ancestor here\n+            .doCheckOwner(false)\n+            .ancestorAccess(null)\n+            .parentAccess(null)\n+            .access(access)        // the target access to be checked against\n+                                   // the inode\n+            .subAccess(null)       // passing null sub access avoids checking\n+                                   // children\n+            .ignoreEmptyDir(false)\n+            .operationName(opType)\n+            .callerContext(CallerContext.getCurrent());\n+\n+        enforcer.checkPermissionWithContext(builder.build());\n+      } else {\n+        enforcer.checkPermission(\n+            fsOwner, supergroup, callerUgi,\n+            iNodeAttr, // single inode attr in the array\n+            new INode[]{inode}, // single inode in the array\n+            pathComponents, snapshotId,\n+            null, -1, // this will skip checkTraverse() because\n+            // not checking ancestor here\n+            false, null, null,\n+            access, // the target access to be checked against the inode\n+            null, // passing null sub access avoids checking children\n+            false);\n+      }\n     } catch (AccessControlException ace) {\n       throw new AccessControlException(\n           toAccessControlString(nodeAttributes, inode.getFullPathName(),\n               access));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void checkPermission(INode inode, int snapshotId, FsAction access)\n      throws AccessControlException {\n    byte[][] pathComponents \u003d inode.getPathComponents();\n    INodeAttributes nodeAttributes \u003d getINodeAttrs(pathComponents,\n        pathComponents.length - 1, inode, snapshotId);\n    try {\n      INodeAttributes[] iNodeAttr \u003d {nodeAttributes};\n      AccessControlEnforcer enforcer \u003d getAccessControlEnforcer();\n      String opType \u003d operationType.get();\n      if (this.authorizeWithContext \u0026\u0026 opType !\u003d null) {\n        INodeAttributeProvider.AuthorizationContext.Builder builder \u003d\n            new INodeAttributeProvider.AuthorizationContext.Builder();\n        builder.fsOwner(fsOwner)\n            .supergroup(supergroup)\n            .callerUgi(callerUgi)\n            .inodeAttrs(iNodeAttr) // single inode attr in the array\n            .inodes(new INode[] { inode }) // single inode attr in the array\n            .pathByNameArr(pathComponents)\n            .snapshotId(snapshotId)\n            .path(null)\n            .ancestorIndex(-1)     // this will skip checkTraverse()\n                                   // because not checking ancestor here\n            .doCheckOwner(false)\n            .ancestorAccess(null)\n            .parentAccess(null)\n            .access(access)        // the target access to be checked against\n                                   // the inode\n            .subAccess(null)       // passing null sub access avoids checking\n                                   // children\n            .ignoreEmptyDir(false)\n            .operationName(opType)\n            .callerContext(CallerContext.getCurrent());\n\n        enforcer.checkPermissionWithContext(builder.build());\n      } else {\n        enforcer.checkPermission(\n            fsOwner, supergroup, callerUgi,\n            iNodeAttr, // single inode attr in the array\n            new INode[]{inode}, // single inode in the array\n            pathComponents, snapshotId,\n            null, -1, // this will skip checkTraverse() because\n            // not checking ancestor here\n            false, null, null,\n            access, // the target access to be checked against the inode\n            null, // passing null sub access avoids checking children\n            false);\n      }\n    } catch (AccessControlException ace) {\n      throw new AccessControlException(\n          toAccessControlString(nodeAttributes, inode.getFullPathName(),\n              access));\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+      "extendedDetails": {}
+    },
+    "ec7507162c7e23c0cd251e09b6be0030a500f1ca": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-15165. In Du missed calling getAttributesProvider. Contributed by Bharat Viswanadham.\n",
+      "commitDate": "19/02/20 11:33 AM",
+      "commitName": "ec7507162c7e23c0cd251e09b6be0030a500f1ca",
+      "commitAuthor": "Inigo Goiri",
+      "commitDateOld": "06/09/18 2:48 PM",
+      "commitNameOld": "eca1a4bfe952fc184fe90dde50bac9b0e5293568",
+      "commitAuthorOld": "Giovanni Matteo Fumarola",
+      "daysBetweenCommits": 530.91,
+      "commitsBetweenForRepo": 3629,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,25 @@\n   void checkPermission(INode inode, int snapshotId, FsAction access)\n       throws AccessControlException {\n+    byte[][] pathComponents \u003d inode.getPathComponents();\n+    INodeAttributes nodeAttributes \u003d getINodeAttrs(pathComponents,\n+        pathComponents.length - 1, inode, snapshotId);\n     try {\n-      byte[][] localComponents \u003d {inode.getLocalNameBytes()};\n-      INodeAttributes[] iNodeAttr \u003d {inode.getSnapshotINode(snapshotId)};\n+      INodeAttributes[] iNodeAttr \u003d {nodeAttributes};\n       AccessControlEnforcer enforcer \u003d getAccessControlEnforcer();\n       enforcer.checkPermission(\n           fsOwner, supergroup, callerUgi,\n           iNodeAttr, // single inode attr in the array\n           new INode[]{inode}, // single inode in the array\n-          localComponents, snapshotId,\n+          pathComponents, snapshotId,\n           null, -1, // this will skip checkTraverse() because\n           // not checking ancestor here\n           false, null, null,\n           access, // the target access to be checked against the inode\n           null, // passing null sub access avoids checking children\n           false);\n     } catch (AccessControlException ace) {\n       throw new AccessControlException(\n-          toAccessControlString(inode, inode.getFullPathName(), access));\n+          toAccessControlString(nodeAttributes, inode.getFullPathName(),\n+              access));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void checkPermission(INode inode, int snapshotId, FsAction access)\n      throws AccessControlException {\n    byte[][] pathComponents \u003d inode.getPathComponents();\n    INodeAttributes nodeAttributes \u003d getINodeAttrs(pathComponents,\n        pathComponents.length - 1, inode, snapshotId);\n    try {\n      INodeAttributes[] iNodeAttr \u003d {nodeAttributes};\n      AccessControlEnforcer enforcer \u003d getAccessControlEnforcer();\n      enforcer.checkPermission(\n          fsOwner, supergroup, callerUgi,\n          iNodeAttr, // single inode attr in the array\n          new INode[]{inode}, // single inode in the array\n          pathComponents, snapshotId,\n          null, -1, // this will skip checkTraverse() because\n          // not checking ancestor here\n          false, null, null,\n          access, // the target access to be checked against the inode\n          null, // passing null sub access avoids checking children\n          false);\n    } catch (AccessControlException ace) {\n      throw new AccessControlException(\n          toAccessControlString(nodeAttributes, inode.getFullPathName(),\n              access));\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+      "extendedDetails": {}
+    },
+    "f413ee33df301659c4ca9024380c2354983dcc84": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-12130. Optimizing permission check for getContentSummary.  Contributed by  Chen Liang\n",
+      "commitDate": "14/07/17 2:35 PM",
+      "commitName": "f413ee33df301659c4ca9024380c2354983dcc84",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "diff": "@@ -0,0 +1,22 @@\n+  void checkPermission(INode inode, int snapshotId, FsAction access)\n+      throws AccessControlException {\n+    try {\n+      byte[][] localComponents \u003d {inode.getLocalNameBytes()};\n+      INodeAttributes[] iNodeAttr \u003d {inode.getSnapshotINode(snapshotId)};\n+      AccessControlEnforcer enforcer \u003d getAccessControlEnforcer();\n+      enforcer.checkPermission(\n+          fsOwner, supergroup, callerUgi,\n+          iNodeAttr, // single inode attr in the array\n+          new INode[]{inode}, // single inode in the array\n+          localComponents, snapshotId,\n+          null, -1, // this will skip checkTraverse() because\n+          // not checking ancestor here\n+          false, null, null,\n+          access, // the target access to be checked against the inode\n+          null, // passing null sub access avoids checking children\n+          false);\n+    } catch (AccessControlException ace) {\n+      throw new AccessControlException(\n+          toAccessControlString(inode, inode.getFullPathName(), access));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void checkPermission(INode inode, int snapshotId, FsAction access)\n      throws AccessControlException {\n    try {\n      byte[][] localComponents \u003d {inode.getLocalNameBytes()};\n      INodeAttributes[] iNodeAttr \u003d {inode.getSnapshotINode(snapshotId)};\n      AccessControlEnforcer enforcer \u003d getAccessControlEnforcer();\n      enforcer.checkPermission(\n          fsOwner, supergroup, callerUgi,\n          iNodeAttr, // single inode attr in the array\n          new INode[]{inode}, // single inode in the array\n          localComponents, snapshotId,\n          null, -1, // this will skip checkTraverse() because\n          // not checking ancestor here\n          false, null, null,\n          access, // the target access to be checked against the inode\n          null, // passing null sub access avoids checking children\n          false);\n    } catch (AccessControlException ace) {\n      throw new AccessControlException(\n          toAccessControlString(inode, inode.getFullPathName(), access));\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java"
+    }
+  }
+}

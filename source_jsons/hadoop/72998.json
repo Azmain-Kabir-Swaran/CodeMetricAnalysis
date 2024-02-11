@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CryptoCodec.java",
+  "functionName": "getInstance",
+  "functionId": "getInstance___conf-Configuration",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoCodec.java",
+  "functionStartLine": 99,
+  "functionEndLine": 103,
+  "numCommitsSeen": 15,
+  "timeTaken": 1003,
+  "changeHistory": [
+    "b52b80d7bdcad00b95619544fa869af56746ebf0",
+    "beb0c19cde5db554c4a665cce0a16188070c6a7b",
+    "bfef9807a08435822546dd66dc72531465f34743",
+    "b20180ffa6c89396d9fcfec8b029b9c600503c3d"
+  ],
+  "changeHistoryShort": {
+    "b52b80d7bdcad00b95619544fa869af56746ebf0": "Ybodychange",
+    "beb0c19cde5db554c4a665cce0a16188070c6a7b": "Ybodychange",
+    "bfef9807a08435822546dd66dc72531465f34743": "Ybodychange",
+    "b20180ffa6c89396d9fcfec8b029b9c600503c3d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b52b80d7bdcad00b95619544fa869af56746ebf0": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10853. Refactor get instance of CryptoCodec and support create via algorithm/mode/padding. (yliu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/fs-encryption@1612513 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "22/07/14 1:38 AM",
+      "commitName": "b52b80d7bdcad00b95619544fa869af56746ebf0",
+      "commitAuthor": "Yi Liu",
+      "commitDateOld": "15/07/14 5:36 PM",
+      "commitNameOld": "beb0c19cde5db554c4a665cce0a16188070c6a7b",
+      "commitAuthorOld": "Yi Liu",
+      "daysBetweenCommits": 6.33,
+      "commitsBetweenForRepo": 52,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,5 @@\n   public static CryptoCodec getInstance(Configuration conf) {\n-    List\u003cClass\u003c? extends CryptoCodec\u003e\u003e klasses \u003d getCodecClasses(conf);\n     String name \u003d conf.get(HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_KEY, \n         HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_DEFAULT);\n-    CipherSuite.checkName(name);\n-    CryptoCodec codec \u003d null;\n-    for (Class\u003c? extends CryptoCodec\u003e klass : klasses) {\n-      try {\n-        CryptoCodec c \u003d ReflectionUtils.newInstance(klass, conf);\n-        if (c.getCipherSuite().getName().equalsIgnoreCase(name)) {\n-          if (codec \u003d\u003d null) {\n-            LOG.debug(\"Using crypto codec {}.\", klass.getName());\n-            codec \u003d c;\n-          }\n-        } else {\n-          LOG.warn(\"Crypto codec {} doesn\u0027t meet the cipher suite {}.\", \n-              klass.getName(), name);\n-        }\n-      } catch (Exception e) {\n-        LOG.warn(\"Crypto codec {} is not available.\", klass.getName());\n-      }\n-    }\n-    \n-    if (codec !\u003d null) {\n-      return codec;\n-    }\n-    \n-    throw new RuntimeException(\"No available crypto codec which meets \" + \n-        \"the cipher suite \" + name + \".\");\n+    return getInstance(conf, CipherSuite.convert(name));\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static CryptoCodec getInstance(Configuration conf) {\n    String name \u003d conf.get(HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_KEY, \n        HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_DEFAULT);\n    return getInstance(conf, CipherSuite.convert(name));\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoCodec.java",
+      "extendedDetails": {}
+    },
+    "beb0c19cde5db554c4a665cce0a16188070c6a7b": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10735. Fall back AesCtrCryptoCodec implementation from OpenSSL to JCE if non native support. (yliu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/fs-encryption@1610887 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "15/07/14 5:36 PM",
+      "commitName": "beb0c19cde5db554c4a665cce0a16188070c6a7b",
+      "commitAuthor": "Yi Liu",
+      "commitDateOld": "03/07/14 4:40 PM",
+      "commitNameOld": "bfef9807a08435822546dd66dc72531465f34743",
+      "commitAuthorOld": "Colin McCabe",
+      "daysBetweenCommits": 12.04,
+      "commitsBetweenForRepo": 74,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,6 +1,30 @@\n   public static CryptoCodec getInstance(Configuration conf) {\n-    final Class\u003c? extends CryptoCodec\u003e klass \u003d conf.getClass(\n-        HADOOP_SECURITY_CRYPTO_CODEC_CLASS_KEY, JceAesCtrCryptoCodec.class, \n-        CryptoCodec.class);\n-    return ReflectionUtils.newInstance(klass, conf);\n+    List\u003cClass\u003c? extends CryptoCodec\u003e\u003e klasses \u003d getCodecClasses(conf);\n+    String name \u003d conf.get(HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_KEY, \n+        HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_DEFAULT);\n+    CipherSuite.checkName(name);\n+    CryptoCodec codec \u003d null;\n+    for (Class\u003c? extends CryptoCodec\u003e klass : klasses) {\n+      try {\n+        CryptoCodec c \u003d ReflectionUtils.newInstance(klass, conf);\n+        if (c.getCipherSuite().getName().equalsIgnoreCase(name)) {\n+          if (codec \u003d\u003d null) {\n+            LOG.debug(\"Using crypto codec {}.\", klass.getName());\n+            codec \u003d c;\n+          }\n+        } else {\n+          LOG.warn(\"Crypto codec {} doesn\u0027t meet the cipher suite {}.\", \n+              klass.getName(), name);\n+        }\n+      } catch (Exception e) {\n+        LOG.warn(\"Crypto codec {} is not available.\", klass.getName());\n+      }\n+    }\n+    \n+    if (codec !\u003d null) {\n+      return codec;\n+    }\n+    \n+    throw new RuntimeException(\"No available crypto codec which meets \" + \n+        \"the cipher suite \" + name + \".\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static CryptoCodec getInstance(Configuration conf) {\n    List\u003cClass\u003c? extends CryptoCodec\u003e\u003e klasses \u003d getCodecClasses(conf);\n    String name \u003d conf.get(HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_KEY, \n        HADOOP_SECURITY_CRYPTO_CIPHER_SUITE_DEFAULT);\n    CipherSuite.checkName(name);\n    CryptoCodec codec \u003d null;\n    for (Class\u003c? extends CryptoCodec\u003e klass : klasses) {\n      try {\n        CryptoCodec c \u003d ReflectionUtils.newInstance(klass, conf);\n        if (c.getCipherSuite().getName().equalsIgnoreCase(name)) {\n          if (codec \u003d\u003d null) {\n            LOG.debug(\"Using crypto codec {}.\", klass.getName());\n            codec \u003d c;\n          }\n        } else {\n          LOG.warn(\"Crypto codec {} doesn\u0027t meet the cipher suite {}.\", \n              klass.getName(), name);\n        }\n      } catch (Exception e) {\n        LOG.warn(\"Crypto codec {} is not available.\", klass.getName());\n      }\n    }\n    \n    if (codec !\u003d null) {\n      return codec;\n    }\n    \n    throw new RuntimeException(\"No available crypto codec which meets \" + \n        \"the cipher suite \" + name + \".\");\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoCodec.java",
+      "extendedDetails": {}
+    },
+    "bfef9807a08435822546dd66dc72531465f34743": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10693. Implementation of AES-CTR CryptoCodec using JNI to OpenSSL (hitliuyi via cmccabe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/fs-encryption@1607768 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "03/07/14 4:40 PM",
+      "commitName": "bfef9807a08435822546dd66dc72531465f34743",
+      "commitAuthor": "Colin McCabe",
+      "commitDateOld": "02/07/14 4:08 PM",
+      "commitNameOld": "51b97a1396a4cb32aaa08b451985a6af236c0c4b",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 1.02,
+      "commitsBetweenForRepo": 2,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,6 +1,6 @@\n   public static CryptoCodec getInstance(Configuration conf) {\n     final Class\u003c? extends CryptoCodec\u003e klass \u003d conf.getClass(\n-        HADOOP_SECURITY_CRYPTO_CODEC_CLASS_KEY, JCEAESCTRCryptoCodec.class, \n+        HADOOP_SECURITY_CRYPTO_CODEC_CLASS_KEY, JceAesCtrCryptoCodec.class, \n         CryptoCodec.class);\n     return ReflectionUtils.newInstance(klass, conf);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static CryptoCodec getInstance(Configuration conf) {\n    final Class\u003c? extends CryptoCodec\u003e klass \u003d conf.getClass(\n        HADOOP_SECURITY_CRYPTO_CODEC_CLASS_KEY, JceAesCtrCryptoCodec.class, \n        CryptoCodec.class);\n    return ReflectionUtils.newInstance(klass, conf);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoCodec.java",
+      "extendedDetails": {}
+    },
+    "b20180ffa6c89396d9fcfec8b029b9c600503c3d": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10603. Crypto input and output streams implementing Hadoop stream interfaces. Contributed by Yi Liu and Charles Lamb.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/fs-encryption@1597230 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "23/05/14 6:19 PM",
+      "commitName": "b20180ffa6c89396d9fcfec8b029b9c600503c3d",
+      "commitAuthor": "Yi Liu",
+      "diff": "@@ -0,0 +1,6 @@\n+  public static CryptoCodec getInstance(Configuration conf) {\n+    final Class\u003c? extends CryptoCodec\u003e klass \u003d conf.getClass(\n+        HADOOP_SECURITY_CRYPTO_CODEC_CLASS_KEY, JCEAESCTRCryptoCodec.class, \n+        CryptoCodec.class);\n+    return ReflectionUtils.newInstance(klass, conf);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static CryptoCodec getInstance(Configuration conf) {\n    final Class\u003c? extends CryptoCodec\u003e klass \u003d conf.getClass(\n        HADOOP_SECURITY_CRYPTO_CODEC_CLASS_KEY, JCEAESCTRCryptoCodec.class, \n        CryptoCodec.class);\n    return ReflectionUtils.newInstance(klass, conf);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/CryptoCodec.java"
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DelegationTokenRenewer.java",
+  "functionName": "run",
+  "functionId": "run",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java",
+  "functionStartLine": 894,
+  "functionEndLine": 919,
+  "numCommitsSeen": 41,
+  "timeTaken": 1862,
+  "changeHistory": [
+    "d3a34a4f388155f6a7ef040e244ce7be788cd28b",
+    "512475e56f0a27bf3c3ff596184f96993bb4bef4",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1",
+    "50fa9b89f42bd3fe6aad5086b0df14a00dadb24b",
+    "29c6c3ed328965a73fe7b68eb29cb30794beef38"
+  ],
+  "changeHistoryShort": {
+    "d3a34a4f388155f6a7ef040e244ce7be788cd28b": "Ybodychange",
+    "512475e56f0a27bf3c3ff596184f96993bb4bef4": "Ybodychange",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": "Yfilerename",
+    "50fa9b89f42bd3fe6aad5086b0df14a00dadb24b": "Ybodychange",
+    "29c6c3ed328965a73fe7b68eb29cb30794beef38": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d3a34a4f388155f6a7ef040e244ce7be788cd28b": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4041. Slow delegation token renewal can severely prolong RM recovery. Contributed by Sunil G\n",
+      "commitDate": "23/10/15 1:57 PM",
+      "commitName": "d3a34a4f388155f6a7ef040e244ce7be788cd28b",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "15/10/15 5:12 PM",
+      "commitNameOld": "cf23f2c2b5b4eb9e51de1a66b7aa57dee7ff30b5",
+      "commitAuthorOld": "Jian He",
+      "daysBetweenCommits": 7.86,
+      "commitsBetweenForRepo": 61,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,10 +1,14 @@\n     public void run() {\n       if (evt instanceof DelegationTokenRenewerAppSubmitEvent) {\n         DelegationTokenRenewerAppSubmitEvent appSubmitEvt \u003d\n             (DelegationTokenRenewerAppSubmitEvent) evt;\n         handleDTRenewerAppSubmitEvent(appSubmitEvt);\n+      } else if (evt instanceof DelegationTokenRenewerAppRecoverEvent) {\n+        DelegationTokenRenewerAppRecoverEvent appRecoverEvt \u003d\n+            (DelegationTokenRenewerAppRecoverEvent) evt;\n+        handleDTRenewerAppRecoverEvent(appRecoverEvt);\n       } else if (evt.getType().equals(\n           DelegationTokenRenewerEventType.FINISH_APPLICATION)) {\n         DelegationTokenRenewer.this.handleAppFinishEvent(evt);\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void run() {\n      if (evt instanceof DelegationTokenRenewerAppSubmitEvent) {\n        DelegationTokenRenewerAppSubmitEvent appSubmitEvt \u003d\n            (DelegationTokenRenewerAppSubmitEvent) evt;\n        handleDTRenewerAppSubmitEvent(appSubmitEvt);\n      } else if (evt instanceof DelegationTokenRenewerAppRecoverEvent) {\n        DelegationTokenRenewerAppRecoverEvent appRecoverEvt \u003d\n            (DelegationTokenRenewerAppRecoverEvent) evt;\n        handleDTRenewerAppRecoverEvent(appRecoverEvt);\n      } else if (evt.getType().equals(\n          DelegationTokenRenewerEventType.FINISH_APPLICATION)) {\n        DelegationTokenRenewer.this.handleAppFinishEvent(evt);\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java",
+      "extendedDetails": {}
+    },
+    "512475e56f0a27bf3c3ff596184f96993bb4bef4": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-674. Fixed ResourceManager to renew DelegationTokens on submission asynchronously to work around potential slowness in state-store. Contributed by Omkar Vinit Joshi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1543312 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/11/13 9:20 PM",
+      "commitName": "512475e56f0a27bf3c3ff596184f96993bb4bef4",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "06/09/13 10:43 PM",
+      "commitNameOld": "f35983b8056b7bd9ac4685acabef53f4dd0e355e",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 72.98,
+      "commitsBetweenForRepo": 462,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,10 @@\n     public void run() {\n-      List\u003cApplicationId\u003e toCancel \u003d new ArrayList\u003cApplicationId\u003e();\n-      while (!Thread.currentThread().isInterrupted()) {\n-        Iterator\u003cEntry\u003cApplicationId, Long\u003e\u003e it \u003d\n-            delayedRemovalMap.entrySet().iterator();\n-        toCancel.clear();\n-        while (it.hasNext()) {\n-          Entry\u003cApplicationId, Long\u003e e \u003d it.next();\n-          if (e.getValue() \u003c System.currentTimeMillis()) {\n-            toCancel.add(e.getKey());\n-          }\n-        }\n-        for (ApplicationId appId : toCancel) {\n-          removeApplicationFromRenewal(appId);\n-          delayedRemovalMap.remove(appId);\n-        }\n-        synchronized (this) {\n-          try {\n-            wait(waitTimeMs);\n-          } catch (InterruptedException e) {\n-            LOG.info(\"Delayed Deletion Thread Interrupted. Shutting it down\");\n-            return;\n-          }\n-        }\n+      if (evt instanceof DelegationTokenRenewerAppSubmitEvent) {\n+        DelegationTokenRenewerAppSubmitEvent appSubmitEvt \u003d\n+            (DelegationTokenRenewerAppSubmitEvent) evt;\n+        handleDTRenewerAppSubmitEvent(appSubmitEvt);\n+      } else if (evt.getType().equals(\n+          DelegationTokenRenewerEventType.FINISH_APPLICATION)) {\n+        DelegationTokenRenewer.this.handleAppFinishEvent(evt);\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void run() {\n      if (evt instanceof DelegationTokenRenewerAppSubmitEvent) {\n        DelegationTokenRenewerAppSubmitEvent appSubmitEvt \u003d\n            (DelegationTokenRenewerAppSubmitEvent) evt;\n        handleDTRenewerAppSubmitEvent(appSubmitEvt);\n      } else if (evt.getType().equals(\n          DelegationTokenRenewerEventType.FINISH_APPLICATION)) {\n        DelegationTokenRenewer.this.handleAppFinishEvent(evt);\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java",
+      "extendedDetails": {}
+    },
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-1. Promote YARN to be a sub-project of Apache Hadoop.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1370666 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/12 10:22 PM",
+      "commitName": "e1fdf62123625e4ba399af02f8aad500637d29d1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "07/08/12 7:53 PM",
+      "commitNameOld": "34554d1e11ee1d5b564d7d9ed3e6d55931d72749",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 0.1,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    public void run() {\n      List\u003cApplicationId\u003e toCancel \u003d new ArrayList\u003cApplicationId\u003e();\n      while (!Thread.currentThread().isInterrupted()) {\n        Iterator\u003cEntry\u003cApplicationId, Long\u003e\u003e it \u003d\n            delayedRemovalMap.entrySet().iterator();\n        toCancel.clear();\n        while (it.hasNext()) {\n          Entry\u003cApplicationId, Long\u003e e \u003d it.next();\n          if (e.getValue() \u003c System.currentTimeMillis()) {\n            toCancel.add(e.getKey());\n          }\n        }\n        for (ApplicationId appId : toCancel) {\n          removeApplicationFromRenewal(appId);\n          delayedRemovalMap.remove(appId);\n        }\n        synchronized (this) {\n          try {\n            wait(waitTimeMs);\n          } catch (InterruptedException e) {\n            LOG.info(\"Delayed Deletion Thread Interrupted. Shutting it down\");\n            return;\n          }\n        }\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java"
+      }
+    },
+    "50fa9b89f42bd3fe6aad5086b0df14a00dadb24b": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-3398. Fixed log aggregation to work correctly in secure mode. Contributed by Siddharth Seth.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1214429 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "14/12/11 11:55 AM",
+      "commitName": "50fa9b89f42bd3fe6aad5086b0df14a00dadb24b",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "06/11/11 2:58 PM",
+      "commitNameOld": "6733a1ca5ef741d3bdf886f301954e9a9e7a875f",
+      "commitAuthorOld": "Mahadev Konar",
+      "daysBetweenCommits": 37.87,
+      "commitsBetweenForRepo": 214,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,26 @@\n     public void run() {\n-      Token\u003c?\u003e token \u003d dttr.token;\n-      try {\n-        // need to use doAs so that http can find the kerberos tgt\n-        dttr.expirationDate \u003d UserGroupInformation.getLoginUser()\n-          .doAs(new PrivilegedExceptionAction\u003cLong\u003e(){\n-\n-          @Override\n-          public Long run() throws Exception {\n-            return dttr.token.renew(dttr.conf);\n+      List\u003cApplicationId\u003e toCancel \u003d new ArrayList\u003cApplicationId\u003e();\n+      while (!Thread.currentThread().isInterrupted()) {\n+        Iterator\u003cEntry\u003cApplicationId, Long\u003e\u003e it \u003d\n+            delayedRemovalMap.entrySet().iterator();\n+        toCancel.clear();\n+        while (it.hasNext()) {\n+          Entry\u003cApplicationId, Long\u003e e \u003d it.next();\n+          if (e.getValue() \u003c System.currentTimeMillis()) {\n+            toCancel.add(e.getKey());\n           }\n-        });\n-\n-        if (LOG.isDebugEnabled()) {\n-          LOG.debug(\"Renewing delegation-token for:\" + token.getService() + \n-              \"; new expiration;\" + dttr.expirationDate);\n         }\n-        \n-        setTimerForTokenRenewal(dttr, false);// set the next one\n-      } catch (Exception e) {\n-        LOG.error(\"Exception renewing token\" + token + \". Not rescheduled\", e);\n-        removeFailedDelegationToken(dttr);\n+        for (ApplicationId appId : toCancel) {\n+          removeApplicationFromRenewal(appId);\n+          delayedRemovalMap.remove(appId);\n+        }\n+        synchronized (this) {\n+          try {\n+            wait(waitTimeMs);\n+          } catch (InterruptedException e) {\n+            LOG.info(\"Delayed Deletion Thread Interrupted. Shutting it down\");\n+            return;\n+          }\n+        }\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void run() {\n      List\u003cApplicationId\u003e toCancel \u003d new ArrayList\u003cApplicationId\u003e();\n      while (!Thread.currentThread().isInterrupted()) {\n        Iterator\u003cEntry\u003cApplicationId, Long\u003e\u003e it \u003d\n            delayedRemovalMap.entrySet().iterator();\n        toCancel.clear();\n        while (it.hasNext()) {\n          Entry\u003cApplicationId, Long\u003e e \u003d it.next();\n          if (e.getValue() \u003c System.currentTimeMillis()) {\n            toCancel.add(e.getKey());\n          }\n        }\n        for (ApplicationId appId : toCancel) {\n          removeApplicationFromRenewal(appId);\n          delayedRemovalMap.remove(appId);\n        }\n        synchronized (this) {\n          try {\n            wait(waitTimeMs);\n          } catch (InterruptedException e) {\n            LOG.info(\"Delayed Deletion Thread Interrupted. Shutting it down\");\n            return;\n          }\n        }\n      }\n    }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java",
+      "extendedDetails": {}
+    },
+    "29c6c3ed328965a73fe7b68eb29cb30794beef38": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-2977. Fix ResourceManager to renew HDFS delegation tokens for applications. \n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1189012 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "25/10/11 7:53 PM",
+      "commitName": "29c6c3ed328965a73fe7b68eb29cb30794beef38",
+      "commitAuthor": "Arun Murthy",
+      "diff": "@@ -0,0 +1,24 @@\n+    public void run() {\n+      Token\u003c?\u003e token \u003d dttr.token;\n+      try {\n+        // need to use doAs so that http can find the kerberos tgt\n+        dttr.expirationDate \u003d UserGroupInformation.getLoginUser()\n+          .doAs(new PrivilegedExceptionAction\u003cLong\u003e(){\n+\n+          @Override\n+          public Long run() throws Exception {\n+            return dttr.token.renew(dttr.conf);\n+          }\n+        });\n+\n+        if (LOG.isDebugEnabled()) {\n+          LOG.debug(\"Renewing delegation-token for:\" + token.getService() + \n+              \"; new expiration;\" + dttr.expirationDate);\n+        }\n+        \n+        setTimerForTokenRenewal(dttr, false);// set the next one\n+      } catch (Exception e) {\n+        LOG.error(\"Exception renewing token\" + token + \". Not rescheduled\", e);\n+        removeFailedDelegationToken(dttr);\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void run() {\n      Token\u003c?\u003e token \u003d dttr.token;\n      try {\n        // need to use doAs so that http can find the kerberos tgt\n        dttr.expirationDate \u003d UserGroupInformation.getLoginUser()\n          .doAs(new PrivilegedExceptionAction\u003cLong\u003e(){\n\n          @Override\n          public Long run() throws Exception {\n            return dttr.token.renew(dttr.conf);\n          }\n        });\n\n        if (LOG.isDebugEnabled()) {\n          LOG.debug(\"Renewing delegation-token for:\" + token.getService() + \n              \"; new expiration;\" + dttr.expirationDate);\n        }\n        \n        setTimerForTokenRenewal(dttr, false);// set the next one\n      } catch (Exception e) {\n        LOG.error(\"Exception renewing token\" + token + \". Not rescheduled\", e);\n        removeFailedDelegationToken(dttr);\n      }\n    }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/security/DelegationTokenRenewer.java"
+    }
+  }
+}

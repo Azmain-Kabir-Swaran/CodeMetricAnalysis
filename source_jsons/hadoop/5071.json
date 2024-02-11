@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSImageFormatPBSnapshot.java",
+  "functionName": "loadSnapshotSection",
+  "functionId": "loadSnapshotSection___in-InputStream",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+  "functionStartLine": 147,
+  "functionEndLine": 165,
+  "numCommitsSeen": 34,
+  "timeTaken": 2695,
+  "changeHistory": [
+    "4d1bf33d0fa7689a6f83a9c6e5adaac665c0d5d5",
+    "76a621ffd2d66bf012a554f4400091a92a5b473e",
+    "a2edb11b68ae01a44092cb14ac2717a6aad93305"
+  ],
+  "changeHistoryShort": {
+    "4d1bf33d0fa7689a6f83a9c6e5adaac665c0d5d5": "Ybodychange",
+    "76a621ffd2d66bf012a554f4400091a92a5b473e": "Ybodychange",
+    "a2edb11b68ae01a44092cb14ac2717a6aad93305": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4d1bf33d0fa7689a6f83a9c6e5adaac665c0d5d5": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12947. Limit the number of Snapshots allowed to be created for a Snapshottable Directory.  Contributed by Shashikant Banerjee\n",
+      "commitDate": "06/02/18 2:46 PM",
+      "commitName": "4d1bf33d0fa7689a6f83a9c6e5adaac665c0d5d5",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "27/02/17 5:07 PM",
+      "commitNameOld": "55c07bbed2f475f7b584a86112ee1b6fe0221e98",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 343.9,
+      "commitsBetweenForRepo": 2293,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,19 @@\n     public void loadSnapshotSection(InputStream in) throws IOException {\n       SnapshotManager sm \u003d fsn.getSnapshotManager();\n       SnapshotSection section \u003d SnapshotSection.parseDelimitedFrom(in);\n       int snum \u003d section.getNumSnapshots();\n       sm.setNumSnapshots(snum);\n       sm.setSnapshotCounter(section.getSnapshotCounter());\n       for (long sdirId : section.getSnapshottableDirList()) {\n         INodeDirectory dir \u003d fsDir.getInode(sdirId).asDirectory();\n         if (!dir.isSnapshottable()) {\n           dir.addSnapshottableFeature();\n         } else {\n           // dir is root, and admin set root to snapshottable before\n-          dir.setSnapshotQuota(DirectorySnapshottableFeature.SNAPSHOT_LIMIT);\n+          dir.setSnapshotQuota(\n+              DirectorySnapshottableFeature.SNAPSHOT_QUOTA_DEFAULT);\n         }\n         sm.addSnapshottable(dir);\n       }\n       loadSnapshots(in, snum);\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void loadSnapshotSection(InputStream in) throws IOException {\n      SnapshotManager sm \u003d fsn.getSnapshotManager();\n      SnapshotSection section \u003d SnapshotSection.parseDelimitedFrom(in);\n      int snum \u003d section.getNumSnapshots();\n      sm.setNumSnapshots(snum);\n      sm.setSnapshotCounter(section.getSnapshotCounter());\n      for (long sdirId : section.getSnapshottableDirList()) {\n        INodeDirectory dir \u003d fsDir.getInode(sdirId).asDirectory();\n        if (!dir.isSnapshottable()) {\n          dir.addSnapshottableFeature();\n        } else {\n          // dir is root, and admin set root to snapshottable before\n          dir.setSnapshotQuota(\n              DirectorySnapshottableFeature.SNAPSHOT_QUOTA_DEFAULT);\n        }\n        sm.addSnapshottable(dir);\n      }\n      loadSnapshots(in, snum);\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+      "extendedDetails": {}
+    },
+    "76a621ffd2d66bf012a554f4400091a92a5b473e": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6609. Use DirectorySnapshottableFeature to represent a snapshottable directory. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1608631 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/07/14 5:08 PM",
+      "commitName": "76a621ffd2d66bf012a554f4400091a92a5b473e",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "21/05/14 6:57 AM",
+      "commitNameOld": "ac23a55547716df29b3e25c98a113399e184d9d1",
+      "commitAuthorOld": "Uma Maheswara Rao G",
+      "daysBetweenCommits": 47.42,
+      "commitsBetweenForRepo": 284,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,18 @@\n     public void loadSnapshotSection(InputStream in) throws IOException {\n       SnapshotManager sm \u003d fsn.getSnapshotManager();\n       SnapshotSection section \u003d SnapshotSection.parseDelimitedFrom(in);\n       int snum \u003d section.getNumSnapshots();\n       sm.setNumSnapshots(snum);\n       sm.setSnapshotCounter(section.getSnapshotCounter());\n       for (long sdirId : section.getSnapshottableDirList()) {\n         INodeDirectory dir \u003d fsDir.getInode(sdirId).asDirectory();\n-        final INodeDirectorySnapshottable sdir;\n         if (!dir.isSnapshottable()) {\n-          sdir \u003d new INodeDirectorySnapshottable(dir);\n-          fsDir.addToInodeMap(sdir);\n+          dir.addSnapshottableFeature();\n         } else {\n           // dir is root, and admin set root to snapshottable before\n-          sdir \u003d (INodeDirectorySnapshottable) dir;\n-          sdir.setSnapshotQuota(INodeDirectorySnapshottable.SNAPSHOT_LIMIT);\n+          dir.setSnapshotQuota(DirectorySnapshottableFeature.SNAPSHOT_LIMIT);\n         }\n-        sm.addSnapshottable(sdir);\n+        sm.addSnapshottable(dir);\n       }\n       loadSnapshots(in, snum);\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void loadSnapshotSection(InputStream in) throws IOException {\n      SnapshotManager sm \u003d fsn.getSnapshotManager();\n      SnapshotSection section \u003d SnapshotSection.parseDelimitedFrom(in);\n      int snum \u003d section.getNumSnapshots();\n      sm.setNumSnapshots(snum);\n      sm.setSnapshotCounter(section.getSnapshotCounter());\n      for (long sdirId : section.getSnapshottableDirList()) {\n        INodeDirectory dir \u003d fsDir.getInode(sdirId).asDirectory();\n        if (!dir.isSnapshottable()) {\n          dir.addSnapshottableFeature();\n        } else {\n          // dir is root, and admin set root to snapshottable before\n          dir.setSnapshotQuota(DirectorySnapshottableFeature.SNAPSHOT_LIMIT);\n        }\n        sm.addSnapshottable(dir);\n      }\n      loadSnapshots(in, snum);\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java",
+      "extendedDetails": {}
+    },
+    "a2edb11b68ae01a44092cb14ac2717a6aad93305": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-5698. Use protobuf to serialize / deserialize FSImage. Contributed by Haohui Mai.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1566359 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "09/02/14 11:18 AM",
+      "commitName": "a2edb11b68ae01a44092cb14ac2717a6aad93305",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,21 @@\n+    public void loadSnapshotSection(InputStream in) throws IOException {\n+      SnapshotManager sm \u003d fsn.getSnapshotManager();\n+      SnapshotSection section \u003d SnapshotSection.parseDelimitedFrom(in);\n+      int snum \u003d section.getNumSnapshots();\n+      sm.setNumSnapshots(snum);\n+      sm.setSnapshotCounter(section.getSnapshotCounter());\n+      for (long sdirId : section.getSnapshottableDirList()) {\n+        INodeDirectory dir \u003d fsDir.getInode(sdirId).asDirectory();\n+        final INodeDirectorySnapshottable sdir;\n+        if (!dir.isSnapshottable()) {\n+          sdir \u003d new INodeDirectorySnapshottable(dir);\n+          fsDir.addToInodeMap(sdir);\n+        } else {\n+          // dir is root, and admin set root to snapshottable before\n+          sdir \u003d (INodeDirectorySnapshottable) dir;\n+          sdir.setSnapshotQuota(INodeDirectorySnapshottable.SNAPSHOT_LIMIT);\n+        }\n+        sm.addSnapshottable(sdir);\n+      }\n+      loadSnapshots(in, snum);\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void loadSnapshotSection(InputStream in) throws IOException {\n      SnapshotManager sm \u003d fsn.getSnapshotManager();\n      SnapshotSection section \u003d SnapshotSection.parseDelimitedFrom(in);\n      int snum \u003d section.getNumSnapshots();\n      sm.setNumSnapshots(snum);\n      sm.setSnapshotCounter(section.getSnapshotCounter());\n      for (long sdirId : section.getSnapshottableDirList()) {\n        INodeDirectory dir \u003d fsDir.getInode(sdirId).asDirectory();\n        final INodeDirectorySnapshottable sdir;\n        if (!dir.isSnapshottable()) {\n          sdir \u003d new INodeDirectorySnapshottable(dir);\n          fsDir.addToInodeMap(sdir);\n        } else {\n          // dir is root, and admin set root to snapshottable before\n          sdir \u003d (INodeDirectorySnapshottable) dir;\n          sdir.setSnapshotQuota(INodeDirectorySnapshottable.SNAPSHOT_LIMIT);\n        }\n        sm.addSnapshottable(sdir);\n      }\n      loadSnapshots(in, snum);\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/FSImageFormatPBSnapshot.java"
+    }
+  }
+}

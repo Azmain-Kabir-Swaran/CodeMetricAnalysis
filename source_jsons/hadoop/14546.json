@@ -1,0 +1,271 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSUtil.java",
+  "functionName": "byteArray2PathString",
+  "functionId": "byteArray2PathString___components-byte[][](modifiers-final)__offset-int(modifiers-final)__length-int(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+  "functionStartLine": 279,
+  "functionEndLine": 313,
+  "numCommitsSeen": 431,
+  "timeTaken": 8963,
+  "changeHistory": [
+    "bebf10d2455cad1aa8985553417d4d74a61150ee",
+    "9f473cf903e586c556154abd56b3a3d820c6b028",
+    "5776a41da08af653206bb94d7c76c9c4dcce059a",
+    "6449f524552f8c24d20b314ad21f6c579fa08e85",
+    "cbbaa93ae09bf5cf643263faf78f99315c4f3a8d",
+    "9047eb516261b8c9c380d140a43dfdd5d701dee5",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "d86f3183d93714ba078416af4f609d26376eadb0",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "bebf10d2455cad1aa8985553417d4d74a61150ee": "Ymultichange(Yparameterchange,Ybodychange,Yparametermetachange)",
+    "9f473cf903e586c556154abd56b3a3d820c6b028": "Ybodychange",
+    "5776a41da08af653206bb94d7c76c9c4dcce059a": "Ymultichange(Yparameterchange,Ybodychange)",
+    "6449f524552f8c24d20b314ad21f6c579fa08e85": "Ybodychange",
+    "cbbaa93ae09bf5cf643263faf78f99315c4f3a8d": "Ybodychange",
+    "9047eb516261b8c9c380d140a43dfdd5d701dee5": "Yrename",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "d86f3183d93714ba078416af4f609d26376eadb0": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "bebf10d2455cad1aa8985553417d4d74a61150ee": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange,Yparametermetachange)",
+      "commitMessage": "HDFS-10656. Optimize conversion of byte arrays back to path string. Contributed by Daryn Sharp.\n",
+      "commitDate": "03/08/16 9:53 AM",
+      "commitName": "bebf10d2455cad1aa8985553417d4d74a61150ee",
+      "commitAuthor": "Kihwal Lee",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10656. Optimize conversion of byte arrays back to path string. Contributed by Daryn Sharp.\n",
+          "commitDate": "03/08/16 9:53 AM",
+          "commitName": "bebf10d2455cad1aa8985553417d4d74a61150ee",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "01/08/16 8:14 AM",
+          "commitNameOld": "9f473cf903e586c556154abd56b3a3d820c6b028",
+          "commitAuthorOld": "Daryn Sharp",
+          "daysBetweenCommits": 2.07,
+          "commitsBetweenForRepo": 16,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,35 @@\n-  public static String byteArray2PathString(byte[][] pathComponents,\n-      int offset, int length) {\n-    if (pathComponents.length \u003d\u003d 0) {\n+  public static String byteArray2PathString(final byte[][] components,\n+      final int offset, final int length) {\n+    // specifically not using StringBuilder to more efficiently build\n+    // string w/o excessive byte[] copies and charset conversions.\n+    final int range \u003d offset + length;\n+    Preconditions.checkPositionIndexes(offset, range, components.length);\n+    if (length \u003d\u003d 0) {\n       return \"\";\n     }\n-    Preconditions.checkArgument(offset \u003e\u003d 0 \u0026\u0026 offset \u003c pathComponents.length);\n-    Preconditions.checkArgument(length \u003e\u003d 0 \u0026\u0026 offset + length \u003c\u003d\n-        pathComponents.length);\n-    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1\n-        \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n-      return Path.SEPARATOR;\n+    // absolute paths start with either null or empty byte[]\n+    byte[] firstComponent \u003d components[offset];\n+    boolean isAbsolute \u003d (offset \u003d\u003d 0 \u0026\u0026\n+        (firstComponent \u003d\u003d null || firstComponent.length \u003d\u003d 0));\n+    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1) {\n+      return isAbsolute ? Path.SEPARATOR : bytes2String(firstComponent);\n     }\n-    StringBuilder result \u003d new StringBuilder();\n-    int lastIndex \u003d offset + length - 1;\n-    for (int i \u003d offset; i \u003c\u003d lastIndex; i++) {\n-      result.append(new String(pathComponents[i], Charsets.UTF_8));\n-      if (i \u003c lastIndex) {\n-        result.append(Path.SEPARATOR_CHAR);\n-      }\n+    // compute length of full byte[], seed with 1st component and delimiters\n+    int pos \u003d isAbsolute ? 0 : firstComponent.length;\n+    int size \u003d pos + length - 1;\n+    for (int i\u003doffset + 1; i \u003c range; i++) {\n+      size +\u003d components[i].length;\n     }\n-    return result.toString();\n+    final byte[] result \u003d new byte[size];\n+    if (!isAbsolute) {\n+      System.arraycopy(firstComponent, 0, result, 0, firstComponent.length);\n+    }\n+    // append remaining components as \"/component\".\n+    for (int i\u003doffset + 1; i \u003c range; i++) {\n+      result[pos++] \u003d (byte)Path.SEPARATOR_CHAR;\n+      int len \u003d components[i].length;\n+      System.arraycopy(components[i], 0, result, pos, len);\n+      pos +\u003d len;\n+    }\n+    return bytes2String(result);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static String byteArray2PathString(final byte[][] components,\n      final int offset, final int length) {\n    // specifically not using StringBuilder to more efficiently build\n    // string w/o excessive byte[] copies and charset conversions.\n    final int range \u003d offset + length;\n    Preconditions.checkPositionIndexes(offset, range, components.length);\n    if (length \u003d\u003d 0) {\n      return \"\";\n    }\n    // absolute paths start with either null or empty byte[]\n    byte[] firstComponent \u003d components[offset];\n    boolean isAbsolute \u003d (offset \u003d\u003d 0 \u0026\u0026\n        (firstComponent \u003d\u003d null || firstComponent.length \u003d\u003d 0));\n    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1) {\n      return isAbsolute ? Path.SEPARATOR : bytes2String(firstComponent);\n    }\n    // compute length of full byte[], seed with 1st component and delimiters\n    int pos \u003d isAbsolute ? 0 : firstComponent.length;\n    int size \u003d pos + length - 1;\n    for (int i\u003doffset + 1; i \u003c range; i++) {\n      size +\u003d components[i].length;\n    }\n    final byte[] result \u003d new byte[size];\n    if (!isAbsolute) {\n      System.arraycopy(firstComponent, 0, result, 0, firstComponent.length);\n    }\n    // append remaining components as \"/component\".\n    for (int i\u003doffset + 1; i \u003c range; i++) {\n      result[pos++] \u003d (byte)Path.SEPARATOR_CHAR;\n      int len \u003d components[i].length;\n      System.arraycopy(components[i], 0, result, pos, len);\n      pos +\u003d len;\n    }\n    return bytes2String(result);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {
+            "oldValue": "[pathComponents-byte[][], offset-int, length-int]",
+            "newValue": "[components-byte[][](modifiers-final), offset-int(modifiers-final), length-int(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10656. Optimize conversion of byte arrays back to path string. Contributed by Daryn Sharp.\n",
+          "commitDate": "03/08/16 9:53 AM",
+          "commitName": "bebf10d2455cad1aa8985553417d4d74a61150ee",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "01/08/16 8:14 AM",
+          "commitNameOld": "9f473cf903e586c556154abd56b3a3d820c6b028",
+          "commitAuthorOld": "Daryn Sharp",
+          "daysBetweenCommits": 2.07,
+          "commitsBetweenForRepo": 16,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,35 @@\n-  public static String byteArray2PathString(byte[][] pathComponents,\n-      int offset, int length) {\n-    if (pathComponents.length \u003d\u003d 0) {\n+  public static String byteArray2PathString(final byte[][] components,\n+      final int offset, final int length) {\n+    // specifically not using StringBuilder to more efficiently build\n+    // string w/o excessive byte[] copies and charset conversions.\n+    final int range \u003d offset + length;\n+    Preconditions.checkPositionIndexes(offset, range, components.length);\n+    if (length \u003d\u003d 0) {\n       return \"\";\n     }\n-    Preconditions.checkArgument(offset \u003e\u003d 0 \u0026\u0026 offset \u003c pathComponents.length);\n-    Preconditions.checkArgument(length \u003e\u003d 0 \u0026\u0026 offset + length \u003c\u003d\n-        pathComponents.length);\n-    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1\n-        \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n-      return Path.SEPARATOR;\n+    // absolute paths start with either null or empty byte[]\n+    byte[] firstComponent \u003d components[offset];\n+    boolean isAbsolute \u003d (offset \u003d\u003d 0 \u0026\u0026\n+        (firstComponent \u003d\u003d null || firstComponent.length \u003d\u003d 0));\n+    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1) {\n+      return isAbsolute ? Path.SEPARATOR : bytes2String(firstComponent);\n     }\n-    StringBuilder result \u003d new StringBuilder();\n-    int lastIndex \u003d offset + length - 1;\n-    for (int i \u003d offset; i \u003c\u003d lastIndex; i++) {\n-      result.append(new String(pathComponents[i], Charsets.UTF_8));\n-      if (i \u003c lastIndex) {\n-        result.append(Path.SEPARATOR_CHAR);\n-      }\n+    // compute length of full byte[], seed with 1st component and delimiters\n+    int pos \u003d isAbsolute ? 0 : firstComponent.length;\n+    int size \u003d pos + length - 1;\n+    for (int i\u003doffset + 1; i \u003c range; i++) {\n+      size +\u003d components[i].length;\n     }\n-    return result.toString();\n+    final byte[] result \u003d new byte[size];\n+    if (!isAbsolute) {\n+      System.arraycopy(firstComponent, 0, result, 0, firstComponent.length);\n+    }\n+    // append remaining components as \"/component\".\n+    for (int i\u003doffset + 1; i \u003c range; i++) {\n+      result[pos++] \u003d (byte)Path.SEPARATOR_CHAR;\n+      int len \u003d components[i].length;\n+      System.arraycopy(components[i], 0, result, pos, len);\n+      pos +\u003d len;\n+    }\n+    return bytes2String(result);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static String byteArray2PathString(final byte[][] components,\n      final int offset, final int length) {\n    // specifically not using StringBuilder to more efficiently build\n    // string w/o excessive byte[] copies and charset conversions.\n    final int range \u003d offset + length;\n    Preconditions.checkPositionIndexes(offset, range, components.length);\n    if (length \u003d\u003d 0) {\n      return \"\";\n    }\n    // absolute paths start with either null or empty byte[]\n    byte[] firstComponent \u003d components[offset];\n    boolean isAbsolute \u003d (offset \u003d\u003d 0 \u0026\u0026\n        (firstComponent \u003d\u003d null || firstComponent.length \u003d\u003d 0));\n    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1) {\n      return isAbsolute ? Path.SEPARATOR : bytes2String(firstComponent);\n    }\n    // compute length of full byte[], seed with 1st component and delimiters\n    int pos \u003d isAbsolute ? 0 : firstComponent.length;\n    int size \u003d pos + length - 1;\n    for (int i\u003doffset + 1; i \u003c range; i++) {\n      size +\u003d components[i].length;\n    }\n    final byte[] result \u003d new byte[size];\n    if (!isAbsolute) {\n      System.arraycopy(firstComponent, 0, result, 0, firstComponent.length);\n    }\n    // append remaining components as \"/component\".\n    for (int i\u003doffset + 1; i \u003c range; i++) {\n      result[pos++] \u003d (byte)Path.SEPARATOR_CHAR;\n      int len \u003d components[i].length;\n      System.arraycopy(components[i], 0, result, pos, len);\n      pos +\u003d len;\n    }\n    return bytes2String(result);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HDFS-10656. Optimize conversion of byte arrays back to path string. Contributed by Daryn Sharp.\n",
+          "commitDate": "03/08/16 9:53 AM",
+          "commitName": "bebf10d2455cad1aa8985553417d4d74a61150ee",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "01/08/16 8:14 AM",
+          "commitNameOld": "9f473cf903e586c556154abd56b3a3d820c6b028",
+          "commitAuthorOld": "Daryn Sharp",
+          "daysBetweenCommits": 2.07,
+          "commitsBetweenForRepo": 16,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,35 @@\n-  public static String byteArray2PathString(byte[][] pathComponents,\n-      int offset, int length) {\n-    if (pathComponents.length \u003d\u003d 0) {\n+  public static String byteArray2PathString(final byte[][] components,\n+      final int offset, final int length) {\n+    // specifically not using StringBuilder to more efficiently build\n+    // string w/o excessive byte[] copies and charset conversions.\n+    final int range \u003d offset + length;\n+    Preconditions.checkPositionIndexes(offset, range, components.length);\n+    if (length \u003d\u003d 0) {\n       return \"\";\n     }\n-    Preconditions.checkArgument(offset \u003e\u003d 0 \u0026\u0026 offset \u003c pathComponents.length);\n-    Preconditions.checkArgument(length \u003e\u003d 0 \u0026\u0026 offset + length \u003c\u003d\n-        pathComponents.length);\n-    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1\n-        \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n-      return Path.SEPARATOR;\n+    // absolute paths start with either null or empty byte[]\n+    byte[] firstComponent \u003d components[offset];\n+    boolean isAbsolute \u003d (offset \u003d\u003d 0 \u0026\u0026\n+        (firstComponent \u003d\u003d null || firstComponent.length \u003d\u003d 0));\n+    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1) {\n+      return isAbsolute ? Path.SEPARATOR : bytes2String(firstComponent);\n     }\n-    StringBuilder result \u003d new StringBuilder();\n-    int lastIndex \u003d offset + length - 1;\n-    for (int i \u003d offset; i \u003c\u003d lastIndex; i++) {\n-      result.append(new String(pathComponents[i], Charsets.UTF_8));\n-      if (i \u003c lastIndex) {\n-        result.append(Path.SEPARATOR_CHAR);\n-      }\n+    // compute length of full byte[], seed with 1st component and delimiters\n+    int pos \u003d isAbsolute ? 0 : firstComponent.length;\n+    int size \u003d pos + length - 1;\n+    for (int i\u003doffset + 1; i \u003c range; i++) {\n+      size +\u003d components[i].length;\n     }\n-    return result.toString();\n+    final byte[] result \u003d new byte[size];\n+    if (!isAbsolute) {\n+      System.arraycopy(firstComponent, 0, result, 0, firstComponent.length);\n+    }\n+    // append remaining components as \"/component\".\n+    for (int i\u003doffset + 1; i \u003c range; i++) {\n+      result[pos++] \u003d (byte)Path.SEPARATOR_CHAR;\n+      int len \u003d components[i].length;\n+      System.arraycopy(components[i], 0, result, pos, len);\n+      pos +\u003d len;\n+    }\n+    return bytes2String(result);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static String byteArray2PathString(final byte[][] components,\n      final int offset, final int length) {\n    // specifically not using StringBuilder to more efficiently build\n    // string w/o excessive byte[] copies and charset conversions.\n    final int range \u003d offset + length;\n    Preconditions.checkPositionIndexes(offset, range, components.length);\n    if (length \u003d\u003d 0) {\n      return \"\";\n    }\n    // absolute paths start with either null or empty byte[]\n    byte[] firstComponent \u003d components[offset];\n    boolean isAbsolute \u003d (offset \u003d\u003d 0 \u0026\u0026\n        (firstComponent \u003d\u003d null || firstComponent.length \u003d\u003d 0));\n    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1) {\n      return isAbsolute ? Path.SEPARATOR : bytes2String(firstComponent);\n    }\n    // compute length of full byte[], seed with 1st component and delimiters\n    int pos \u003d isAbsolute ? 0 : firstComponent.length;\n    int size \u003d pos + length - 1;\n    for (int i\u003doffset + 1; i \u003c range; i++) {\n      size +\u003d components[i].length;\n    }\n    final byte[] result \u003d new byte[size];\n    if (!isAbsolute) {\n      System.arraycopy(firstComponent, 0, result, 0, firstComponent.length);\n    }\n    // append remaining components as \"/component\".\n    for (int i\u003doffset + 1; i \u003c range; i++) {\n      result[pos++] \u003d (byte)Path.SEPARATOR_CHAR;\n      int len \u003d components[i].length;\n      System.arraycopy(components[i], 0, result, pos, len);\n      pos +\u003d len;\n    }\n    return bytes2String(result);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {
+            "oldValue": "[pathComponents-byte[][], offset-int, length-int]",
+            "newValue": "[components-byte[][](modifiers-final), offset-int(modifiers-final), length-int(modifiers-final)]"
+          }
+        }
+      ]
+    },
+    "9f473cf903e586c556154abd56b3a3d820c6b028": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10655. Fix path related byte array conversion bugs. (daryn)\n",
+      "commitDate": "01/08/16 8:14 AM",
+      "commitName": "9f473cf903e586c556154abd56b3a3d820c6b028",
+      "commitAuthor": "Daryn Sharp",
+      "commitDateOld": "21/07/16 11:14 AM",
+      "commitNameOld": "bd3dcf46e263b6e6aa3fca6a5d9936cc49e3280f",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 10.87,
+      "commitsBetweenForRepo": 64,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,22 @@\n   public static String byteArray2PathString(byte[][] pathComponents,\n       int offset, int length) {\n     if (pathComponents.length \u003d\u003d 0) {\n       return \"\";\n     }\n     Preconditions.checkArgument(offset \u003e\u003d 0 \u0026\u0026 offset \u003c pathComponents.length);\n     Preconditions.checkArgument(length \u003e\u003d 0 \u0026\u0026 offset + length \u003c\u003d\n         pathComponents.length);\n-    if (pathComponents.length \u003d\u003d 1\n+    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1\n         \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n       return Path.SEPARATOR;\n     }\n     StringBuilder result \u003d new StringBuilder();\n-    for (int i \u003d offset; i \u003c offset + length; i++) {\n+    int lastIndex \u003d offset + length - 1;\n+    for (int i \u003d offset; i \u003c\u003d lastIndex; i++) {\n       result.append(new String(pathComponents[i], Charsets.UTF_8));\n-      if (i \u003c pathComponents.length - 1) {\n+      if (i \u003c lastIndex) {\n         result.append(Path.SEPARATOR_CHAR);\n       }\n     }\n     return result.toString();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static String byteArray2PathString(byte[][] pathComponents,\n      int offset, int length) {\n    if (pathComponents.length \u003d\u003d 0) {\n      return \"\";\n    }\n    Preconditions.checkArgument(offset \u003e\u003d 0 \u0026\u0026 offset \u003c pathComponents.length);\n    Preconditions.checkArgument(length \u003e\u003d 0 \u0026\u0026 offset + length \u003c\u003d\n        pathComponents.length);\n    if (offset \u003d\u003d 0 \u0026\u0026 length \u003d\u003d 1\n        \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n      return Path.SEPARATOR;\n    }\n    StringBuilder result \u003d new StringBuilder();\n    int lastIndex \u003d offset + length - 1;\n    for (int i \u003d offset; i \u003c\u003d lastIndex; i++) {\n      result.append(new String(pathComponents[i], Charsets.UTF_8));\n      if (i \u003c lastIndex) {\n        result.append(Path.SEPARATOR_CHAR);\n      }\n    }\n    return result.toString();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+      "extendedDetails": {}
+    },
+    "5776a41da08af653206bb94d7c76c9c4dcce059a": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-7498. Simplify the logic in INodesInPath. Contributed by Jing Zhao.\n",
+      "commitDate": "09/12/14 11:37 AM",
+      "commitName": "5776a41da08af653206bb94d7c76c9c4dcce059a",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-7498. Simplify the logic in INodesInPath. Contributed by Jing Zhao.\n",
+          "commitDate": "09/12/14 11:37 AM",
+          "commitName": "5776a41da08af653206bb94d7c76c9c4dcce059a",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "02/10/14 1:50 PM",
+          "commitNameOld": "d2d5a0ea03b0d461a4d376c7b9de8cd5c147effa",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 67.95,
+          "commitsBetweenForRepo": 562,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,21 @@\n-  public static String byteArray2PathString(byte[][] pathComponents) {\n+  public static String byteArray2PathString(byte[][] pathComponents,\n+      int offset, int length) {\n     if (pathComponents.length \u003d\u003d 0) {\n       return \"\";\n-    } else if (pathComponents.length \u003d\u003d 1\n+    }\n+    Preconditions.checkArgument(offset \u003e\u003d 0 \u0026\u0026 offset \u003c pathComponents.length);\n+    Preconditions.checkArgument(length \u003e\u003d 0 \u0026\u0026 offset + length \u003c\u003d\n+        pathComponents.length);\n+    if (pathComponents.length \u003d\u003d 1\n         \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n       return Path.SEPARATOR;\n     }\n     StringBuilder result \u003d new StringBuilder();\n-    for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n+    for (int i \u003d offset; i \u003c offset + length; i++) {\n       result.append(new String(pathComponents[i], Charsets.UTF_8));\n       if (i \u003c pathComponents.length - 1) {\n         result.append(Path.SEPARATOR_CHAR);\n       }\n     }\n     return result.toString();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static String byteArray2PathString(byte[][] pathComponents,\n      int offset, int length) {\n    if (pathComponents.length \u003d\u003d 0) {\n      return \"\";\n    }\n    Preconditions.checkArgument(offset \u003e\u003d 0 \u0026\u0026 offset \u003c pathComponents.length);\n    Preconditions.checkArgument(length \u003e\u003d 0 \u0026\u0026 offset + length \u003c\u003d\n        pathComponents.length);\n    if (pathComponents.length \u003d\u003d 1\n        \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n      return Path.SEPARATOR;\n    }\n    StringBuilder result \u003d new StringBuilder();\n    for (int i \u003d offset; i \u003c offset + length; i++) {\n      result.append(new String(pathComponents[i], Charsets.UTF_8));\n      if (i \u003c pathComponents.length - 1) {\n        result.append(Path.SEPARATOR_CHAR);\n      }\n    }\n    return result.toString();\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {
+            "oldValue": "[pathComponents-byte[][]]",
+            "newValue": "[pathComponents-byte[][], offset-int, length-int]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7498. Simplify the logic in INodesInPath. Contributed by Jing Zhao.\n",
+          "commitDate": "09/12/14 11:37 AM",
+          "commitName": "5776a41da08af653206bb94d7c76c9c4dcce059a",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "02/10/14 1:50 PM",
+          "commitNameOld": "d2d5a0ea03b0d461a4d376c7b9de8cd5c147effa",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 67.95,
+          "commitsBetweenForRepo": 562,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,21 @@\n-  public static String byteArray2PathString(byte[][] pathComponents) {\n+  public static String byteArray2PathString(byte[][] pathComponents,\n+      int offset, int length) {\n     if (pathComponents.length \u003d\u003d 0) {\n       return \"\";\n-    } else if (pathComponents.length \u003d\u003d 1\n+    }\n+    Preconditions.checkArgument(offset \u003e\u003d 0 \u0026\u0026 offset \u003c pathComponents.length);\n+    Preconditions.checkArgument(length \u003e\u003d 0 \u0026\u0026 offset + length \u003c\u003d\n+        pathComponents.length);\n+    if (pathComponents.length \u003d\u003d 1\n         \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n       return Path.SEPARATOR;\n     }\n     StringBuilder result \u003d new StringBuilder();\n-    for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n+    for (int i \u003d offset; i \u003c offset + length; i++) {\n       result.append(new String(pathComponents[i], Charsets.UTF_8));\n       if (i \u003c pathComponents.length - 1) {\n         result.append(Path.SEPARATOR_CHAR);\n       }\n     }\n     return result.toString();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static String byteArray2PathString(byte[][] pathComponents,\n      int offset, int length) {\n    if (pathComponents.length \u003d\u003d 0) {\n      return \"\";\n    }\n    Preconditions.checkArgument(offset \u003e\u003d 0 \u0026\u0026 offset \u003c pathComponents.length);\n    Preconditions.checkArgument(length \u003e\u003d 0 \u0026\u0026 offset + length \u003c\u003d\n        pathComponents.length);\n    if (pathComponents.length \u003d\u003d 1\n        \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n      return Path.SEPARATOR;\n    }\n    StringBuilder result \u003d new StringBuilder();\n    for (int i \u003d offset; i \u003c offset + length; i++) {\n      result.append(new String(pathComponents[i], Charsets.UTF_8));\n      if (i \u003c pathComponents.length - 1) {\n        result.append(Path.SEPARATOR_CHAR);\n      }\n    }\n    return result.toString();\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "6449f524552f8c24d20b314ad21f6c579fa08e85": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-4032. Specify the charset explicitly rather than rely on the default. Contributed by Eli Collins\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1431179 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "09/01/13 6:30 PM",
+      "commitName": "6449f524552f8c24d20b314ad21f6c579fa08e85",
+      "commitAuthor": "Eli Collins",
+      "commitDateOld": "27/11/12 2:36 PM",
+      "commitNameOld": "9047eb516261b8c9c380d140a43dfdd5d701dee5",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 43.16,
+      "commitsBetweenForRepo": 173,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,15 @@\n   public static String byteArray2PathString(byte[][] pathComponents) {\n     if (pathComponents.length \u003d\u003d 0)\n       return \"\";\n     if (pathComponents.length \u003d\u003d 1 \u0026\u0026 pathComponents[0].length \u003d\u003d 0) {\n       return Path.SEPARATOR;\n     }\n-    try {\n-      StringBuilder result \u003d new StringBuilder();\n-      for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n-        result.append(new String(pathComponents[i], \"UTF-8\"));\n-        if (i \u003c pathComponents.length - 1) {\n-          result.append(Path.SEPARATOR_CHAR);\n-        }\n+    StringBuilder result \u003d new StringBuilder();\n+    for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n+      result.append(new String(pathComponents[i], Charsets.UTF_8));\n+      if (i \u003c pathComponents.length - 1) {\n+        result.append(Path.SEPARATOR_CHAR);\n       }\n-      return result.toString();\n-    } catch (UnsupportedEncodingException ex) {\n-      assert false : \"UTF8 encoding is not supported \";\n     }\n-    return null;\n+    return result.toString();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static String byteArray2PathString(byte[][] pathComponents) {\n    if (pathComponents.length \u003d\u003d 0)\n      return \"\";\n    if (pathComponents.length \u003d\u003d 1 \u0026\u0026 pathComponents[0].length \u003d\u003d 0) {\n      return Path.SEPARATOR;\n    }\n    StringBuilder result \u003d new StringBuilder();\n    for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n      result.append(new String(pathComponents[i], Charsets.UTF_8));\n      if (i \u003c pathComponents.length - 1) {\n        result.append(Path.SEPARATOR_CHAR);\n      }\n    }\n    return result.toString();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+      "extendedDetails": {}
+    },
+    "cbbaa93ae09bf5cf643263faf78f99315c4f3a8d": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-4317. Change INode and its subclasses to support HDFS-4103.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-2802@1422748 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/12/12 7:40 PM",
+      "commitName": "cbbaa93ae09bf5cf643263faf78f99315c4f3a8d",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "27/11/12 2:36 PM",
+      "commitNameOld": "9047eb516261b8c9c380d140a43dfdd5d701dee5",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 19.21,
+      "commitsBetweenForRepo": 45,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,20 @@\n   public static String byteArray2PathString(byte[][] pathComponents) {\n-    if (pathComponents.length \u003d\u003d 0)\n+    if (pathComponents.length \u003d\u003d 0) {\n       return \"\";\n-    if (pathComponents.length \u003d\u003d 1 \u0026\u0026 pathComponents[0].length \u003d\u003d 0) {\n+    } else if (pathComponents.length \u003d\u003d 1\n+        \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n       return Path.SEPARATOR;\n     }\n     try {\n       StringBuilder result \u003d new StringBuilder();\n       for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n         result.append(new String(pathComponents[i], \"UTF-8\"));\n         if (i \u003c pathComponents.length - 1) {\n           result.append(Path.SEPARATOR_CHAR);\n         }\n       }\n       return result.toString();\n     } catch (UnsupportedEncodingException ex) {\n-      assert false : \"UTF8 encoding is not supported \";\n+      throw new AssertionError(\"UTF-8 encoding is not supported.\");\n     }\n-    return null;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static String byteArray2PathString(byte[][] pathComponents) {\n    if (pathComponents.length \u003d\u003d 0) {\n      return \"\";\n    } else if (pathComponents.length \u003d\u003d 1\n        \u0026\u0026 (pathComponents[0] \u003d\u003d null || pathComponents[0].length \u003d\u003d 0)) {\n      return Path.SEPARATOR;\n    }\n    try {\n      StringBuilder result \u003d new StringBuilder();\n      for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n        result.append(new String(pathComponents[i], \"UTF-8\"));\n        if (i \u003c pathComponents.length - 1) {\n          result.append(Path.SEPARATOR_CHAR);\n        }\n      }\n      return result.toString();\n    } catch (UnsupportedEncodingException ex) {\n      throw new AssertionError(\"UTF-8 encoding is not supported.\");\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+      "extendedDetails": {}
+    },
+    "9047eb516261b8c9c380d140a43dfdd5d701dee5": {
+      "type": "Yrename",
+      "commitMessage": "HDFS-4209. Clean up the addNode/addChild/addChildNoQuotaCheck methods in FSDirectory and INodeDirectory.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1414447 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "27/11/12 2:36 PM",
+      "commitName": "9047eb516261b8c9c380d140a43dfdd5d701dee5",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "18/09/12 9:34 PM",
+      "commitNameOld": "e9f4de5ced3a031e100b7cbd3de7727b09935187",
+      "commitAuthorOld": "",
+      "daysBetweenCommits": 69.75,
+      "commitsBetweenForRepo": 376,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,20 @@\n-  public static String byteArray2String(byte[][] pathComponents) {\n+  public static String byteArray2PathString(byte[][] pathComponents) {\n     if (pathComponents.length \u003d\u003d 0)\n       return \"\";\n     if (pathComponents.length \u003d\u003d 1 \u0026\u0026 pathComponents[0].length \u003d\u003d 0) {\n       return Path.SEPARATOR;\n     }\n     try {\n       StringBuilder result \u003d new StringBuilder();\n       for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n         result.append(new String(pathComponents[i], \"UTF-8\"));\n         if (i \u003c pathComponents.length - 1) {\n           result.append(Path.SEPARATOR_CHAR);\n         }\n       }\n       return result.toString();\n     } catch (UnsupportedEncodingException ex) {\n       assert false : \"UTF8 encoding is not supported \";\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static String byteArray2PathString(byte[][] pathComponents) {\n    if (pathComponents.length \u003d\u003d 0)\n      return \"\";\n    if (pathComponents.length \u003d\u003d 1 \u0026\u0026 pathComponents[0].length \u003d\u003d 0) {\n      return Path.SEPARATOR;\n    }\n    try {\n      StringBuilder result \u003d new StringBuilder();\n      for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n        result.append(new String(pathComponents[i], \"UTF-8\"));\n        if (i \u003c pathComponents.length - 1) {\n          result.append(Path.SEPARATOR_CHAR);\n        }\n      }\n      return result.toString();\n    } catch (UnsupportedEncodingException ex) {\n      assert false : \"UTF8 encoding is not supported \";\n    }\n    return null;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+      "extendedDetails": {
+        "oldValue": "byteArray2String",
+        "newValue": "byteArray2PathString"
+      }
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static String byteArray2String(byte[][] pathComponents) {\n    if (pathComponents.length \u003d\u003d 0)\n      return \"\";\n    if (pathComponents.length \u003d\u003d 1 \u0026\u0026 pathComponents[0].length \u003d\u003d 0) {\n      return Path.SEPARATOR;\n    }\n    try {\n      StringBuilder result \u003d new StringBuilder();\n      for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n        result.append(new String(pathComponents[i], \"UTF-8\"));\n        if (i \u003c pathComponents.length - 1) {\n          result.append(Path.SEPARATOR_CHAR);\n        }\n      }\n      return result.toString();\n    } catch (UnsupportedEncodingException ex) {\n      assert false : \"UTF8 encoding is not supported \";\n    }\n    return null;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java"
+      }
+    },
+    "d86f3183d93714ba078416af4f609d26376eadb0": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-2096. Mavenization of hadoop-hdfs. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159702 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "19/08/11 10:36 AM",
+      "commitName": "d86f3183d93714ba078416af4f609d26376eadb0",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "19/08/11 10:26 AM",
+      "commitNameOld": "6ee5a73e0e91a2ef27753a32c576835e951d8119",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static String byteArray2String(byte[][] pathComponents) {\n    if (pathComponents.length \u003d\u003d 0)\n      return \"\";\n    if (pathComponents.length \u003d\u003d 1 \u0026\u0026 pathComponents[0].length \u003d\u003d 0) {\n      return Path.SEPARATOR;\n    }\n    try {\n      StringBuilder result \u003d new StringBuilder();\n      for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n        result.append(new String(pathComponents[i], \"UTF-8\"));\n        if (i \u003c pathComponents.length - 1) {\n          result.append(Path.SEPARATOR_CHAR);\n        }\n      }\n      return result.toString();\n    } catch (UnsupportedEncodingException ex) {\n      assert false : \"UTF8 encoding is not supported \";\n    }\n    return null;\n  }",
+      "path": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+      "extendedDetails": {
+        "oldPath": "hdfs/src/java/org/apache/hadoop/hdfs/DFSUtil.java",
+        "newPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,20 @@\n+  public static String byteArray2String(byte[][] pathComponents) {\n+    if (pathComponents.length \u003d\u003d 0)\n+      return \"\";\n+    if (pathComponents.length \u003d\u003d 1 \u0026\u0026 pathComponents[0].length \u003d\u003d 0) {\n+      return Path.SEPARATOR;\n+    }\n+    try {\n+      StringBuilder result \u003d new StringBuilder();\n+      for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n+        result.append(new String(pathComponents[i], \"UTF-8\"));\n+        if (i \u003c pathComponents.length - 1) {\n+          result.append(Path.SEPARATOR_CHAR);\n+        }\n+      }\n+      return result.toString();\n+    } catch (UnsupportedEncodingException ex) {\n+      assert false : \"UTF8 encoding is not supported \";\n+    }\n+    return null;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static String byteArray2String(byte[][] pathComponents) {\n    if (pathComponents.length \u003d\u003d 0)\n      return \"\";\n    if (pathComponents.length \u003d\u003d 1 \u0026\u0026 pathComponents[0].length \u003d\u003d 0) {\n      return Path.SEPARATOR;\n    }\n    try {\n      StringBuilder result \u003d new StringBuilder();\n      for (int i \u003d 0; i \u003c pathComponents.length; i++) {\n        result.append(new String(pathComponents[i], \"UTF-8\"));\n        if (i \u003c pathComponents.length - 1) {\n          result.append(Path.SEPARATOR_CHAR);\n        }\n      }\n      return result.toString();\n    } catch (UnsupportedEncodingException ex) {\n      assert false : \"UTF8 encoding is not supported \";\n    }\n    return null;\n  }",
+      "path": "hdfs/src/java/org/apache/hadoop/hdfs/DFSUtil.java"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ReadBufferManager.java",
+  "functionName": "getBlockFromCompletedQueue",
+  "functionId": "getBlockFromCompletedQueue___stream-AbfsInputStream(modifiers-final)__position-long(modifiers-final)__length-int(modifiers-final)__buffer-byte[](modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferManager.java",
+  "functionStartLine": 332,
+  "functionEndLine": 367,
+  "numCommitsSeen": 3,
+  "timeTaken": 1387,
+  "changeHistory": [
+    "53b993e6048ffaaf98e460690211fc08efb20cf2",
+    "f044deedbbfee0812316d587139cb828f27172e9"
+  ],
+  "changeHistoryShort": {
+    "53b993e6048ffaaf98e460690211fc08efb20cf2": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "f044deedbbfee0812316d587139cb828f27172e9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "53b993e6048ffaaf98e460690211fc08efb20cf2": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-16852: Report read-ahead error back\n\nContributed by Sneha Vijayarajan",
+      "commitDate": "27/05/20 1:51 PM",
+      "commitName": "53b993e6048ffaaf98e460690211fc08efb20cf2",
+      "commitAuthor": "Sneha Vijayarajan",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-16852: Report read-ahead error back\n\nContributed by Sneha Vijayarajan",
+          "commitDate": "27/05/20 1:51 PM",
+          "commitName": "53b993e6048ffaaf98e460690211fc08efb20cf2",
+          "commitAuthor": "Sneha Vijayarajan",
+          "commitDateOld": "17/09/18 12:54 PM",
+          "commitNameOld": "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+          "commitAuthorOld": "Thomas Marquardt",
+          "daysBetweenCommits": 618.04,
+          "commitsBetweenForRepo": 3845,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,36 @@\n   private int getBlockFromCompletedQueue(final AbfsInputStream stream, final long position, final int length,\n-                                         final byte[] buffer) {\n-    ReadBuffer buf \u003d getFromList(completedReadList, stream, position);\n-    if (buf \u003d\u003d null || position \u003e\u003d buf.getOffset() + buf.getLength()) {\n+                                         final byte[] buffer) throws IOException {\n+    ReadBuffer buf \u003d getBufferFromCompletedQueue(stream, position);\n+\n+    if (buf \u003d\u003d null) {\n       return 0;\n     }\n+\n+    if (buf.getStatus() \u003d\u003d ReadBufferStatus.READ_FAILED) {\n+      // To prevent new read requests to fail due to old read-ahead attempts,\n+      // return exception only from buffers that failed within last thresholdAgeMilliseconds\n+      if ((currentTimeMillis() - (buf.getTimeStamp()) \u003c thresholdAgeMilliseconds)) {\n+        throw buf.getErrException();\n+      } else {\n+        return 0;\n+      }\n+    }\n+\n+    if ((buf.getStatus() !\u003d ReadBufferStatus.AVAILABLE)\n+        || (position \u003e\u003d buf.getOffset() + buf.getLength())) {\n+      return 0;\n+    }\n+\n     int cursor \u003d (int) (position - buf.getOffset());\n     int availableLengthInBuffer \u003d buf.getLength() - cursor;\n     int lengthToCopy \u003d Math.min(length, availableLengthInBuffer);\n     System.arraycopy(buf.getBuffer(), cursor, buffer, 0, lengthToCopy);\n     if (cursor \u003d\u003d 0) {\n       buf.setFirstByteConsumed(true);\n     }\n     if (cursor + lengthToCopy \u003d\u003d buf.getLength()) {\n       buf.setLastByteConsumed(true);\n     }\n     buf.setAnyByteConsumed(true);\n     return lengthToCopy;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private int getBlockFromCompletedQueue(final AbfsInputStream stream, final long position, final int length,\n                                         final byte[] buffer) throws IOException {\n    ReadBuffer buf \u003d getBufferFromCompletedQueue(stream, position);\n\n    if (buf \u003d\u003d null) {\n      return 0;\n    }\n\n    if (buf.getStatus() \u003d\u003d ReadBufferStatus.READ_FAILED) {\n      // To prevent new read requests to fail due to old read-ahead attempts,\n      // return exception only from buffers that failed within last thresholdAgeMilliseconds\n      if ((currentTimeMillis() - (buf.getTimeStamp()) \u003c thresholdAgeMilliseconds)) {\n        throw buf.getErrException();\n      } else {\n        return 0;\n      }\n    }\n\n    if ((buf.getStatus() !\u003d ReadBufferStatus.AVAILABLE)\n        || (position \u003e\u003d buf.getOffset() + buf.getLength())) {\n      return 0;\n    }\n\n    int cursor \u003d (int) (position - buf.getOffset());\n    int availableLengthInBuffer \u003d buf.getLength() - cursor;\n    int lengthToCopy \u003d Math.min(length, availableLengthInBuffer);\n    System.arraycopy(buf.getBuffer(), cursor, buffer, 0, lengthToCopy);\n    if (cursor \u003d\u003d 0) {\n      buf.setFirstByteConsumed(true);\n    }\n    if (cursor + lengthToCopy \u003d\u003d buf.getLength()) {\n      buf.setLastByteConsumed(true);\n    }\n    buf.setAnyByteConsumed(true);\n    return lengthToCopy;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferManager.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16852: Report read-ahead error back\n\nContributed by Sneha Vijayarajan",
+          "commitDate": "27/05/20 1:51 PM",
+          "commitName": "53b993e6048ffaaf98e460690211fc08efb20cf2",
+          "commitAuthor": "Sneha Vijayarajan",
+          "commitDateOld": "17/09/18 12:54 PM",
+          "commitNameOld": "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+          "commitAuthorOld": "Thomas Marquardt",
+          "daysBetweenCommits": 618.04,
+          "commitsBetweenForRepo": 3845,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,36 @@\n   private int getBlockFromCompletedQueue(final AbfsInputStream stream, final long position, final int length,\n-                                         final byte[] buffer) {\n-    ReadBuffer buf \u003d getFromList(completedReadList, stream, position);\n-    if (buf \u003d\u003d null || position \u003e\u003d buf.getOffset() + buf.getLength()) {\n+                                         final byte[] buffer) throws IOException {\n+    ReadBuffer buf \u003d getBufferFromCompletedQueue(stream, position);\n+\n+    if (buf \u003d\u003d null) {\n       return 0;\n     }\n+\n+    if (buf.getStatus() \u003d\u003d ReadBufferStatus.READ_FAILED) {\n+      // To prevent new read requests to fail due to old read-ahead attempts,\n+      // return exception only from buffers that failed within last thresholdAgeMilliseconds\n+      if ((currentTimeMillis() - (buf.getTimeStamp()) \u003c thresholdAgeMilliseconds)) {\n+        throw buf.getErrException();\n+      } else {\n+        return 0;\n+      }\n+    }\n+\n+    if ((buf.getStatus() !\u003d ReadBufferStatus.AVAILABLE)\n+        || (position \u003e\u003d buf.getOffset() + buf.getLength())) {\n+      return 0;\n+    }\n+\n     int cursor \u003d (int) (position - buf.getOffset());\n     int availableLengthInBuffer \u003d buf.getLength() - cursor;\n     int lengthToCopy \u003d Math.min(length, availableLengthInBuffer);\n     System.arraycopy(buf.getBuffer(), cursor, buffer, 0, lengthToCopy);\n     if (cursor \u003d\u003d 0) {\n       buf.setFirstByteConsumed(true);\n     }\n     if (cursor + lengthToCopy \u003d\u003d buf.getLength()) {\n       buf.setLastByteConsumed(true);\n     }\n     buf.setAnyByteConsumed(true);\n     return lengthToCopy;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private int getBlockFromCompletedQueue(final AbfsInputStream stream, final long position, final int length,\n                                         final byte[] buffer) throws IOException {\n    ReadBuffer buf \u003d getBufferFromCompletedQueue(stream, position);\n\n    if (buf \u003d\u003d null) {\n      return 0;\n    }\n\n    if (buf.getStatus() \u003d\u003d ReadBufferStatus.READ_FAILED) {\n      // To prevent new read requests to fail due to old read-ahead attempts,\n      // return exception only from buffers that failed within last thresholdAgeMilliseconds\n      if ((currentTimeMillis() - (buf.getTimeStamp()) \u003c thresholdAgeMilliseconds)) {\n        throw buf.getErrException();\n      } else {\n        return 0;\n      }\n    }\n\n    if ((buf.getStatus() !\u003d ReadBufferStatus.AVAILABLE)\n        || (position \u003e\u003d buf.getOffset() + buf.getLength())) {\n      return 0;\n    }\n\n    int cursor \u003d (int) (position - buf.getOffset());\n    int availableLengthInBuffer \u003d buf.getLength() - cursor;\n    int lengthToCopy \u003d Math.min(length, availableLengthInBuffer);\n    System.arraycopy(buf.getBuffer(), cursor, buffer, 0, lengthToCopy);\n    if (cursor \u003d\u003d 0) {\n      buf.setFirstByteConsumed(true);\n    }\n    if (cursor + lengthToCopy \u003d\u003d buf.getLength()) {\n      buf.setLastByteConsumed(true);\n    }\n    buf.setAnyByteConsumed(true);\n    return lengthToCopy;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferManager.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "f044deedbbfee0812316d587139cb828f27172e9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15407. HADOOP-15540. Support Windows Azure Storage - Blob file system \"ABFS\" in Hadoop: Core Commit.\n\nContributed by Shane Mainali, Thomas Marquardt, Zichen Sun, Georgi Chalakov, Esfandiar Manii, Amit Singh, Dana Kaban, Da Zhou, Junhua Gu, Saher Ahwal, Saurabh Pant, James Baker, Shaoyu Zhang, Lawrence Chen, Kevin Chen and Steve Loughran\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "f044deedbbfee0812316d587139cb828f27172e9",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,19 @@\n+  private int getBlockFromCompletedQueue(final AbfsInputStream stream, final long position, final int length,\n+                                         final byte[] buffer) {\n+    ReadBuffer buf \u003d getFromList(completedReadList, stream, position);\n+    if (buf \u003d\u003d null || position \u003e\u003d buf.getOffset() + buf.getLength()) {\n+      return 0;\n+    }\n+    int cursor \u003d (int) (position - buf.getOffset());\n+    int availableLengthInBuffer \u003d buf.getLength() - cursor;\n+    int lengthToCopy \u003d Math.min(length, availableLengthInBuffer);\n+    System.arraycopy(buf.getBuffer(), cursor, buffer, 0, lengthToCopy);\n+    if (cursor \u003d\u003d 0) {\n+      buf.setFirstByteConsumed(true);\n+    }\n+    if (cursor + lengthToCopy \u003d\u003d buf.getLength()) {\n+      buf.setLastByteConsumed(true);\n+    }\n+    buf.setAnyByteConsumed(true);\n+    return lengthToCopy;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private int getBlockFromCompletedQueue(final AbfsInputStream stream, final long position, final int length,\n                                         final byte[] buffer) {\n    ReadBuffer buf \u003d getFromList(completedReadList, stream, position);\n    if (buf \u003d\u003d null || position \u003e\u003d buf.getOffset() + buf.getLength()) {\n      return 0;\n    }\n    int cursor \u003d (int) (position - buf.getOffset());\n    int availableLengthInBuffer \u003d buf.getLength() - cursor;\n    int lengthToCopy \u003d Math.min(length, availableLengthInBuffer);\n    System.arraycopy(buf.getBuffer(), cursor, buffer, 0, lengthToCopy);\n    if (cursor \u003d\u003d 0) {\n      buf.setFirstByteConsumed(true);\n    }\n    if (cursor + lengthToCopy \u003d\u003d buf.getLength()) {\n      buf.setLastByteConsumed(true);\n    }\n    buf.setAnyByteConsumed(true);\n    return lengthToCopy;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferManager.java"
+    }
+  }
+}

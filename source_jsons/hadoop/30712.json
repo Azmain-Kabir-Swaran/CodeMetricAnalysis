@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RollingLevelDBTimelineStore.java",
+  "functionName": "getEntityEvent",
+  "functionId": "getEntityEvent___eventTypes-Set__String____key-byte[]__offset-int__value-byte[]",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/RollingLevelDBTimelineStore.java",
+  "functionStartLine": 1361,
+  "functionEndLine": 1393,
+  "numCommitsSeen": 12,
+  "timeTaken": 1846,
+  "changeHistory": [
+    "5f1ee72b0ebf0330417b7c0115083bc851923be4",
+    "4369690ce63566131aee28696bf2683a3cb20205",
+    "daf3e4ef8bf73cbe4a799d51b4765809cd81089f"
+  ],
+  "changeHistoryShort": {
+    "5f1ee72b0ebf0330417b7c0115083bc851923be4": "Ybodychange",
+    "4369690ce63566131aee28696bf2683a3cb20205": "Ybodychange",
+    "daf3e4ef8bf73cbe4a799d51b4765809cd81089f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5f1ee72b0ebf0330417b7c0115083bc851923be4": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6654. RollingLevelDBTimelineStore backwards incompatible after fst upgrade. Contributed by Jonathan Eagles\n",
+      "commitDate": "13/07/17 3:27 PM",
+      "commitName": "5f1ee72b0ebf0330417b7c0115083bc851923be4",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "31/05/17 9:32 AM",
+      "commitNameOld": "4369690ce63566131aee28696bf2683a3cb20205",
+      "commitAuthorOld": "Nathan Roberts",
+      "daysBetweenCommits": 43.25,
+      "commitsBetweenForRepo": 198,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,33 @@\n   private static TimelineEvent getEntityEvent(Set\u003cString\u003e eventTypes,\n       byte[] key, int offset, byte[] value) throws IOException {\n     KeyParser kp \u003d new KeyParser(key, offset);\n     long ts \u003d kp.getNextLong();\n     String tstype \u003d kp.getNextString();\n     if (eventTypes \u003d\u003d null || eventTypes.contains(tstype)) {\n       TimelineEvent event \u003d new TimelineEvent();\n       event.setTimestamp(ts);\n       event.setEventType(tstype);\n       Object o \u003d null;\n       try {\n         o \u003d fstConf.asObject(value);\n-      } catch (Exception e) {\n-        LOG.warn(\"Error while decoding \" + tstype, e);\n+      } catch (Exception ignore) {\n+        try {\n+          // Fall back to 2.24 parser\n+          o \u003d fstConf224.asObject(value);\n+        } catch (Exception e) {\n+          LOG.warn(\"Error while decoding \" + tstype, e);\n+        }\n       }\n       if (o \u003d\u003d null) {\n         event.setEventInfo(null);\n       } else if (o instanceof Map) {\n         @SuppressWarnings(\"unchecked\")\n         Map\u003cString, Object\u003e m \u003d (Map\u003cString, Object\u003e) o;\n         event.setEventInfo(m);\n       } else {\n         throw new IOException(\"Couldn\u0027t deserialize event info map\");\n       }\n       return event;\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static TimelineEvent getEntityEvent(Set\u003cString\u003e eventTypes,\n      byte[] key, int offset, byte[] value) throws IOException {\n    KeyParser kp \u003d new KeyParser(key, offset);\n    long ts \u003d kp.getNextLong();\n    String tstype \u003d kp.getNextString();\n    if (eventTypes \u003d\u003d null || eventTypes.contains(tstype)) {\n      TimelineEvent event \u003d new TimelineEvent();\n      event.setTimestamp(ts);\n      event.setEventType(tstype);\n      Object o \u003d null;\n      try {\n        o \u003d fstConf.asObject(value);\n      } catch (Exception ignore) {\n        try {\n          // Fall back to 2.24 parser\n          o \u003d fstConf224.asObject(value);\n        } catch (Exception e) {\n          LOG.warn(\"Error while decoding \" + tstype, e);\n        }\n      }\n      if (o \u003d\u003d null) {\n        event.setEventInfo(null);\n      } else if (o instanceof Map) {\n        @SuppressWarnings(\"unchecked\")\n        Map\u003cString, Object\u003e m \u003d (Map\u003cString, Object\u003e) o;\n        event.setEventInfo(m);\n      } else {\n        throw new IOException(\"Couldn\u0027t deserialize event info map\");\n      }\n      return event;\n    }\n    return null;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/RollingLevelDBTimelineStore.java",
+      "extendedDetails": {}
+    },
+    "4369690ce63566131aee28696bf2683a3cb20205": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6649. RollingLevelDBTimelineServer throws RuntimeException if object decoding ever fails runtime exception. Contributed by Jon Eagles.\n",
+      "commitDate": "31/05/17 9:32 AM",
+      "commitName": "4369690ce63566131aee28696bf2683a3cb20205",
+      "commitAuthor": "Nathan Roberts",
+      "commitDateOld": "28/03/17 1:23 PM",
+      "commitNameOld": "01aca54a22c8586d232a8f79fe9977aeb8d09b83",
+      "commitAuthorOld": "Varun Saxena",
+      "daysBetweenCommits": 63.84,
+      "commitsBetweenForRepo": 353,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,28 @@\n   private static TimelineEvent getEntityEvent(Set\u003cString\u003e eventTypes,\n       byte[] key, int offset, byte[] value) throws IOException {\n     KeyParser kp \u003d new KeyParser(key, offset);\n     long ts \u003d kp.getNextLong();\n     String tstype \u003d kp.getNextString();\n     if (eventTypes \u003d\u003d null || eventTypes.contains(tstype)) {\n       TimelineEvent event \u003d new TimelineEvent();\n       event.setTimestamp(ts);\n       event.setEventType(tstype);\n-      Object o \u003d fstConf.asObject(value);\n+      Object o \u003d null;\n+      try {\n+        o \u003d fstConf.asObject(value);\n+      } catch (Exception e) {\n+        LOG.warn(\"Error while decoding \" + tstype, e);\n+      }\n       if (o \u003d\u003d null) {\n         event.setEventInfo(null);\n       } else if (o instanceof Map) {\n         @SuppressWarnings(\"unchecked\")\n         Map\u003cString, Object\u003e m \u003d (Map\u003cString, Object\u003e) o;\n         event.setEventInfo(m);\n       } else {\n         throw new IOException(\"Couldn\u0027t deserialize event info map\");\n       }\n       return event;\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static TimelineEvent getEntityEvent(Set\u003cString\u003e eventTypes,\n      byte[] key, int offset, byte[] value) throws IOException {\n    KeyParser kp \u003d new KeyParser(key, offset);\n    long ts \u003d kp.getNextLong();\n    String tstype \u003d kp.getNextString();\n    if (eventTypes \u003d\u003d null || eventTypes.contains(tstype)) {\n      TimelineEvent event \u003d new TimelineEvent();\n      event.setTimestamp(ts);\n      event.setEventType(tstype);\n      Object o \u003d null;\n      try {\n        o \u003d fstConf.asObject(value);\n      } catch (Exception e) {\n        LOG.warn(\"Error while decoding \" + tstype, e);\n      }\n      if (o \u003d\u003d null) {\n        event.setEventInfo(null);\n      } else if (o instanceof Map) {\n        @SuppressWarnings(\"unchecked\")\n        Map\u003cString, Object\u003e m \u003d (Map\u003cString, Object\u003e) o;\n        event.setEventInfo(m);\n      } else {\n        throw new IOException(\"Couldn\u0027t deserialize event info map\");\n      }\n      return event;\n    }\n    return null;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/RollingLevelDBTimelineStore.java",
+      "extendedDetails": {}
+    },
+    "daf3e4ef8bf73cbe4a799d51b4765809cd81089f": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3448. Added a rolling time-to-live LevelDB timeline store implementation. Contributed by Jonathan Eagles.\n",
+      "commitDate": "07/05/15 10:01 AM",
+      "commitName": "daf3e4ef8bf73cbe4a799d51b4765809cd81089f",
+      "commitAuthor": "Zhijie Shen",
+      "diff": "@@ -0,0 +1,23 @@\n+  private static TimelineEvent getEntityEvent(Set\u003cString\u003e eventTypes,\n+      byte[] key, int offset, byte[] value) throws IOException {\n+    KeyParser kp \u003d new KeyParser(key, offset);\n+    long ts \u003d kp.getNextLong();\n+    String tstype \u003d kp.getNextString();\n+    if (eventTypes \u003d\u003d null || eventTypes.contains(tstype)) {\n+      TimelineEvent event \u003d new TimelineEvent();\n+      event.setTimestamp(ts);\n+      event.setEventType(tstype);\n+      Object o \u003d fstConf.asObject(value);\n+      if (o \u003d\u003d null) {\n+        event.setEventInfo(null);\n+      } else if (o instanceof Map) {\n+        @SuppressWarnings(\"unchecked\")\n+        Map\u003cString, Object\u003e m \u003d (Map\u003cString, Object\u003e) o;\n+        event.setEventInfo(m);\n+      } else {\n+        throw new IOException(\"Couldn\u0027t deserialize event info map\");\n+      }\n+      return event;\n+    }\n+    return null;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static TimelineEvent getEntityEvent(Set\u003cString\u003e eventTypes,\n      byte[] key, int offset, byte[] value) throws IOException {\n    KeyParser kp \u003d new KeyParser(key, offset);\n    long ts \u003d kp.getNextLong();\n    String tstype \u003d kp.getNextString();\n    if (eventTypes \u003d\u003d null || eventTypes.contains(tstype)) {\n      TimelineEvent event \u003d new TimelineEvent();\n      event.setTimestamp(ts);\n      event.setEventType(tstype);\n      Object o \u003d fstConf.asObject(value);\n      if (o \u003d\u003d null) {\n        event.setEventInfo(null);\n      } else if (o instanceof Map) {\n        @SuppressWarnings(\"unchecked\")\n        Map\u003cString, Object\u003e m \u003d (Map\u003cString, Object\u003e) o;\n        event.setEventInfo(m);\n      } else {\n        throw new IOException(\"Couldn\u0027t deserialize event info map\");\n      }\n      return event;\n    }\n    return null;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/RollingLevelDBTimelineStore.java"
+    }
+  }
+}

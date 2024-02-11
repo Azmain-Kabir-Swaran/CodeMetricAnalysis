@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DynamoDBMetadataStore.java",
+  "functionName": "initDataAccessRetries",
+  "functionId": "initDataAccessRetries___config-Configuration",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+  "functionStartLine": 533,
+  "functionEndLine": 547,
+  "numCommitsSeen": 44,
+  "timeTaken": 3771,
+  "changeHistory": [
+    "56dee667707926f3796c7757be1a133a362f05c9",
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "56dee667707926f3796c7757be1a133a362f05c9": "Ybodychange",
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Ymultichange(Yrename,Ybodychange)",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "56dee667707926f3796c7757be1a133a362f05c9": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16823. Large DeleteObject requests are their own Thundering Herd.\n\nContributed by Steve Loughran.\n\nDuring S3A rename() and delete() calls, the list of objects delete is\nbuilt up into batches of a thousand and then POSTed in a single large\nDeleteObjects request.\n\nBut as the IO capacity allowed on an S3 partition may only be 3500 writes\nper second *and* each entry in that POST counts as a single write, then\none of those posts alone can trigger throttling on an already loaded\nS3 directory tree. Which can trigger backoff and retry, with the same\nthousand entry post, and so recreate the exact same problem.\n\nFixes\n\n* Page size for delete object requests is set in\n  fs.s3a.bulk.delete.page.size; the default is 250.\n* The property fs.s3a.experimental.aws.s3.throttling (default\u003dtrue)\n  can be set to false to disable throttle retry logic in the AWS\n  client SDK -it is all handled in the S3A client. This\n  gives more visibility in to when operations are being throttled\n* Bulk delete throttling events are logged to the log\n  org.apache.hadoop.fs.s3a.throttled log at INFO; if this appears\n  often then choose a smaller page size.\n* The metric \"store_io_throttled\" adds the entire count of delete\n  requests when a single DeleteObjects request is throttled.\n* A new quantile, \"store_io_throttle_rate\" can track throttling\n  load over time.\n* DynamoDB metastore throttle resilience issues have also been\n  identified and fixed. Note: the fs.s3a.experimental.aws.s3.throttling\n  flag does not apply to DDB IO precisely because there may still be\n  lurking issues there and it safest to rely on the DynamoDB client\n  SDK.\n\nChange-Id: I00f85cdd94fc008864d060533f6bd4870263fd84\n",
+      "commitDate": "13/02/20 11:09 AM",
+      "commitName": "56dee667707926f3796c7757be1a133a362f05c9",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "25/01/20 10:35 AM",
+      "commitNameOld": "7f40e6688a5716fca53e1090d8347a43064d6d43",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 19.02,
+      "commitsBetweenForRepo": 56,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,15 @@\n   private void initDataAccessRetries(Configuration config) {\n     batchWriteRetryPolicy \u003d RetryPolicies\n         .exponentialBackoffRetry(\n             config.getInt(S3GUARD_DDB_MAX_RETRIES,\n                 S3GUARD_DDB_MAX_RETRIES_DEFAULT),\n             conf.getTimeDuration(S3GUARD_DDB_THROTTLE_RETRY_INTERVAL,\n                 S3GUARD_DDB_THROTTLE_RETRY_INTERVAL_DEFAULT,\n                 TimeUnit.MILLISECONDS),\n             TimeUnit.MILLISECONDS);\n     final RetryPolicy throttledRetryRetryPolicy\n         \u003d new S3GuardDataAccessRetryPolicy(config);\n     readOp \u003d new Invoker(throttledRetryRetryPolicy, this::readRetryEvent);\n     writeOp \u003d new Invoker(throttledRetryRetryPolicy, this::writeRetryEvent);\n+    scanOp \u003d new Invoker(throttledRetryRetryPolicy, this::scanRetryEvent);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void initDataAccessRetries(Configuration config) {\n    batchWriteRetryPolicy \u003d RetryPolicies\n        .exponentialBackoffRetry(\n            config.getInt(S3GUARD_DDB_MAX_RETRIES,\n                S3GUARD_DDB_MAX_RETRIES_DEFAULT),\n            conf.getTimeDuration(S3GUARD_DDB_THROTTLE_RETRY_INTERVAL,\n                S3GUARD_DDB_THROTTLE_RETRY_INTERVAL_DEFAULT,\n                TimeUnit.MILLISECONDS),\n            TimeUnit.MILLISECONDS);\n    final RetryPolicy throttledRetryRetryPolicy\n        \u003d new S3GuardDataAccessRetryPolicy(config);\n    readOp \u003d new Invoker(throttledRetryRetryPolicy, this::readRetryEvent);\n    writeOp \u003d new Invoker(throttledRetryRetryPolicy, this::writeRetryEvent);\n    scanOp \u003d new Invoker(throttledRetryRetryPolicy, this::scanRetryEvent);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+      "commitDate": "12/09/18 9:04 PM",
+      "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "12/09/18 4:36 PM",
+      "commitNameOld": "d32a8d5d582725eb724b78f27310ad1efd33ed2a",
+      "commitAuthorOld": "Aaron Fabbri",
+      "daysBetweenCommits": 0.19,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,8 +1,14 @@\n   private void initDataAccessRetries(Configuration config) {\n-    int maxRetries \u003d config.getInt(S3GUARD_DDB_MAX_RETRIES,\n-        S3GUARD_DDB_MAX_RETRIES_DEFAULT);\n-    dataAccessRetryPolicy \u003d RetryPolicies\n-        .exponentialBackoffRetry(maxRetries, MIN_RETRY_SLEEP_MSEC,\n+    batchWriteRetryPolicy \u003d RetryPolicies\n+        .exponentialBackoffRetry(\n+            config.getInt(S3GUARD_DDB_MAX_RETRIES,\n+                S3GUARD_DDB_MAX_RETRIES_DEFAULT),\n+            conf.getTimeDuration(S3GUARD_DDB_THROTTLE_RETRY_INTERVAL,\n+                S3GUARD_DDB_THROTTLE_RETRY_INTERVAL_DEFAULT,\n+                TimeUnit.MILLISECONDS),\n             TimeUnit.MILLISECONDS);\n-    dataAccess \u003d new Invoker(dataAccessRetryPolicy, this::retryEvent);\n+    final RetryPolicy throttledRetryRetryPolicy\n+        \u003d new S3GuardDataAccessRetryPolicy(config);\n+    readOp \u003d new Invoker(throttledRetryRetryPolicy, this::readRetryEvent);\n+    writeOp \u003d new Invoker(throttledRetryRetryPolicy, this::writeRetryEvent);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void initDataAccessRetries(Configuration config) {\n    batchWriteRetryPolicy \u003d RetryPolicies\n        .exponentialBackoffRetry(\n            config.getInt(S3GUARD_DDB_MAX_RETRIES,\n                S3GUARD_DDB_MAX_RETRIES_DEFAULT),\n            conf.getTimeDuration(S3GUARD_DDB_THROTTLE_RETRY_INTERVAL,\n                S3GUARD_DDB_THROTTLE_RETRY_INTERVAL_DEFAULT,\n                TimeUnit.MILLISECONDS),\n            TimeUnit.MILLISECONDS);\n    final RetryPolicy throttledRetryRetryPolicy\n        \u003d new S3GuardDataAccessRetryPolicy(config);\n    readOp \u003d new Invoker(throttledRetryRetryPolicy, this::readRetryEvent);\n    writeOp \u003d new Invoker(throttledRetryRetryPolicy, this::writeRetryEvent);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Ymultichange(Yrename,Ybodychange)",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "25/09/17 3:59 PM",
+          "commitNameOld": "47011d7dd300b0c74bb6cfe25b918c479d718f4f",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 57.69,
+          "commitsBetweenForRepo": 477,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,8 @@\n-  private void setMaxRetries(Configuration config) {\n+  private void initDataAccessRetries(Configuration config) {\n     int maxRetries \u003d config.getInt(S3GUARD_DDB_MAX_RETRIES,\n         S3GUARD_DDB_MAX_RETRIES_DEFAULT);\n     dataAccessRetryPolicy \u003d RetryPolicies\n         .exponentialBackoffRetry(maxRetries, MIN_RETRY_SLEEP_MSEC,\n             TimeUnit.MILLISECONDS);\n+    dataAccess \u003d new Invoker(dataAccessRetryPolicy, this::retryEvent);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void initDataAccessRetries(Configuration config) {\n    int maxRetries \u003d config.getInt(S3GUARD_DDB_MAX_RETRIES,\n        S3GUARD_DDB_MAX_RETRIES_DEFAULT);\n    dataAccessRetryPolicy \u003d RetryPolicies\n        .exponentialBackoffRetry(maxRetries, MIN_RETRY_SLEEP_MSEC,\n            TimeUnit.MILLISECONDS);\n    dataAccess \u003d new Invoker(dataAccessRetryPolicy, this::retryEvent);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "setMaxRetries",
+            "newValue": "initDataAccessRetries"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "25/09/17 3:59 PM",
+          "commitNameOld": "47011d7dd300b0c74bb6cfe25b918c479d718f4f",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 57.69,
+          "commitsBetweenForRepo": 477,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,8 @@\n-  private void setMaxRetries(Configuration config) {\n+  private void initDataAccessRetries(Configuration config) {\n     int maxRetries \u003d config.getInt(S3GUARD_DDB_MAX_RETRIES,\n         S3GUARD_DDB_MAX_RETRIES_DEFAULT);\n     dataAccessRetryPolicy \u003d RetryPolicies\n         .exponentialBackoffRetry(maxRetries, MIN_RETRY_SLEEP_MSEC,\n             TimeUnit.MILLISECONDS);\n+    dataAccess \u003d new Invoker(dataAccessRetryPolicy, this::retryEvent);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void initDataAccessRetries(Configuration config) {\n    int maxRetries \u003d config.getInt(S3GUARD_DDB_MAX_RETRIES,\n        S3GUARD_DDB_MAX_RETRIES_DEFAULT);\n    dataAccessRetryPolicy \u003d RetryPolicies\n        .exponentialBackoffRetry(maxRetries, MIN_RETRY_SLEEP_MSEC,\n            TimeUnit.MILLISECONDS);\n    dataAccess \u003d new Invoker(dataAccessRetryPolicy, this::retryEvent);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,7 @@\n+  private void setMaxRetries(Configuration config) {\n+    int maxRetries \u003d config.getInt(S3GUARD_DDB_MAX_RETRIES,\n+        S3GUARD_DDB_MAX_RETRIES_DEFAULT);\n+    dataAccessRetryPolicy \u003d RetryPolicies\n+        .exponentialBackoffRetry(maxRetries, MIN_RETRY_SLEEP_MSEC,\n+            TimeUnit.MILLISECONDS);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void setMaxRetries(Configuration config) {\n    int maxRetries \u003d config.getInt(S3GUARD_DDB_MAX_RETRIES,\n        S3GUARD_DDB_MAX_RETRIES_DEFAULT);\n    dataAccessRetryPolicy \u003d RetryPolicies\n        .exponentialBackoffRetry(maxRetries, MIN_RETRY_SLEEP_MSEC,\n            TimeUnit.MILLISECONDS);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "JobImpl.java",
+  "functionName": "actOnUnusableNode",
+  "functionId": "actOnUnusableNode___nodeId-NodeId__nodeState-NodeState",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/job/impl/JobImpl.java",
+  "functionStartLine": 1347,
+  "functionEndLine": 1371,
+  "numCommitsSeen": 94,
+  "timeTaken": 2949,
+  "changeHistory": [
+    "8b2880c0b62102fc5c8b6962752f72cb2c416a01",
+    "27d24f96ab8d17e839a1ef0d7076efc78d28724a",
+    "eff9fa1aad7e22d445a11e4ba732b4d49cdaca65"
+  ],
+  "changeHistoryShort": {
+    "8b2880c0b62102fc5c8b6962752f72cb2c416a01": "Ybodychange",
+    "27d24f96ab8d17e839a1ef0d7076efc78d28724a": "Ybodychange",
+    "eff9fa1aad7e22d445a11e4ba732b4d49cdaca65": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8b2880c0b62102fc5c8b6962752f72cb2c416a01": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6513. MR job got hanged forever when one NM unstable for some time. (Varun Saxena via wangda)\n",
+      "commitDate": "14/04/16 11:00 AM",
+      "commitName": "8b2880c0b62102fc5c8b6962752f72cb2c416a01",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "18/02/16 12:48 AM",
+      "commitNameOld": "2440671a117f165dcda5056404bc898df3c50803",
+      "commitAuthorOld": "Varun Vasudev",
+      "daysBetweenCommits": 56.38,
+      "commitsBetweenForRepo": 351,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,25 @@\n   private void actOnUnusableNode(NodeId nodeId, NodeState nodeState) {\n     // rerun previously successful map tasks\n     // do this only if the job is still in the running state and there are\n     // running reducers\n     if (getInternalState() \u003d\u003d JobStateInternal.RUNNING \u0026\u0026\n         !allReducersComplete()) {\n       List\u003cTaskAttemptId\u003e taskAttemptIdList \u003d\n           nodesToSucceededTaskAttempts.get(nodeId);\n       if (taskAttemptIdList !\u003d null) {\n         String mesg \u003d \"TaskAttempt killed because it ran on unusable node \"\n             + nodeId;\n         for (TaskAttemptId id : taskAttemptIdList) {\n           if (TaskType.MAP \u003d\u003d id.getTaskId().getTaskType()) {\n             // reschedule only map tasks because their outputs maybe unusable\n             LOG.info(mesg + \". AttemptId:\" + id);\n-            eventHandler.handle(new TaskAttemptKillEvent(id, mesg));\n+            // Kill the attempt and indicate that next map attempt should be\n+            // rescheduled (i.e. considered as a fast fail map).\n+            eventHandler.handle(new TaskAttemptKillEvent(id, mesg, true));\n           }\n         }\n       }\n     }\n     // currently running task attempts on unusable nodes are handled in\n     // RMContainerAllocator\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void actOnUnusableNode(NodeId nodeId, NodeState nodeState) {\n    // rerun previously successful map tasks\n    // do this only if the job is still in the running state and there are\n    // running reducers\n    if (getInternalState() \u003d\u003d JobStateInternal.RUNNING \u0026\u0026\n        !allReducersComplete()) {\n      List\u003cTaskAttemptId\u003e taskAttemptIdList \u003d\n          nodesToSucceededTaskAttempts.get(nodeId);\n      if (taskAttemptIdList !\u003d null) {\n        String mesg \u003d \"TaskAttempt killed because it ran on unusable node \"\n            + nodeId;\n        for (TaskAttemptId id : taskAttemptIdList) {\n          if (TaskType.MAP \u003d\u003d id.getTaskId().getTaskType()) {\n            // reschedule only map tasks because their outputs maybe unusable\n            LOG.info(mesg + \". AttemptId:\" + id);\n            // Kill the attempt and indicate that next map attempt should be\n            // rescheduled (i.e. considered as a fast fail map).\n            eventHandler.handle(new TaskAttemptKillEvent(id, mesg, true));\n          }\n        }\n      }\n    }\n    // currently running task attempts on unusable nodes are handled in\n    // RMContainerAllocator\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/job/impl/JobImpl.java",
+      "extendedDetails": {}
+    },
+    "27d24f96ab8d17e839a1ef0d7076efc78d28724a": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-5817. Mappers get rescheduled on node transition even after all reducers are completed. (Sangjin Lee via kasha)\n",
+      "commitDate": "14/08/15 12:29 PM",
+      "commitName": "27d24f96ab8d17e839a1ef0d7076efc78d28724a",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "30/07/15 11:07 PM",
+      "commitNameOld": "93d50b782494af7eef980c4d596a59ff4e11646e",
+      "commitAuthorOld": "Zhihai Xu",
+      "daysBetweenCommits": 14.56,
+      "commitsBetweenForRepo": 68,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,23 @@\n   private void actOnUnusableNode(NodeId nodeId, NodeState nodeState) {\n     // rerun previously successful map tasks\n-    List\u003cTaskAttemptId\u003e taskAttemptIdList \u003d nodesToSucceededTaskAttempts.get(nodeId);\n-    if(taskAttemptIdList !\u003d null) {\n-      String mesg \u003d \"TaskAttempt killed because it ran on unusable node \"\n-          + nodeId;\n-      for(TaskAttemptId id : taskAttemptIdList) {\n-        if(TaskType.MAP \u003d\u003d id.getTaskId().getTaskType()) {\n-          // reschedule only map tasks because their outputs maybe unusable\n-          LOG.info(mesg + \". AttemptId:\" + id);\n-          eventHandler.handle(new TaskAttemptKillEvent(id, mesg));\n+    // do this only if the job is still in the running state and there are\n+    // running reducers\n+    if (getInternalState() \u003d\u003d JobStateInternal.RUNNING \u0026\u0026\n+        !allReducersComplete()) {\n+      List\u003cTaskAttemptId\u003e taskAttemptIdList \u003d\n+          nodesToSucceededTaskAttempts.get(nodeId);\n+      if (taskAttemptIdList !\u003d null) {\n+        String mesg \u003d \"TaskAttempt killed because it ran on unusable node \"\n+            + nodeId;\n+        for (TaskAttemptId id : taskAttemptIdList) {\n+          if (TaskType.MAP \u003d\u003d id.getTaskId().getTaskType()) {\n+            // reschedule only map tasks because their outputs maybe unusable\n+            LOG.info(mesg + \". AttemptId:\" + id);\n+            eventHandler.handle(new TaskAttemptKillEvent(id, mesg));\n+          }\n         }\n       }\n     }\n     // currently running task attempts on unusable nodes are handled in\n     // RMContainerAllocator\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void actOnUnusableNode(NodeId nodeId, NodeState nodeState) {\n    // rerun previously successful map tasks\n    // do this only if the job is still in the running state and there are\n    // running reducers\n    if (getInternalState() \u003d\u003d JobStateInternal.RUNNING \u0026\u0026\n        !allReducersComplete()) {\n      List\u003cTaskAttemptId\u003e taskAttemptIdList \u003d\n          nodesToSucceededTaskAttempts.get(nodeId);\n      if (taskAttemptIdList !\u003d null) {\n        String mesg \u003d \"TaskAttempt killed because it ran on unusable node \"\n            + nodeId;\n        for (TaskAttemptId id : taskAttemptIdList) {\n          if (TaskType.MAP \u003d\u003d id.getTaskId().getTaskType()) {\n            // reschedule only map tasks because their outputs maybe unusable\n            LOG.info(mesg + \". AttemptId:\" + id);\n            eventHandler.handle(new TaskAttemptKillEvent(id, mesg));\n          }\n        }\n      }\n    }\n    // currently running task attempts on unusable nodes are handled in\n    // RMContainerAllocator\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/job/impl/JobImpl.java",
+      "extendedDetails": {}
+    },
+    "eff9fa1aad7e22d445a11e4ba732b4d49cdaca65": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-3921. MR AM should act on node health status changes. Contributed by Bikas Saha.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1349065 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "11/06/12 4:14 PM",
+      "commitName": "eff9fa1aad7e22d445a11e4ba732b4d49cdaca65",
+      "commitAuthor": "Siddharth Seth",
+      "diff": "@@ -0,0 +1,17 @@\n+  private void actOnUnusableNode(NodeId nodeId, NodeState nodeState) {\n+    // rerun previously successful map tasks\n+    List\u003cTaskAttemptId\u003e taskAttemptIdList \u003d nodesToSucceededTaskAttempts.get(nodeId);\n+    if(taskAttemptIdList !\u003d null) {\n+      String mesg \u003d \"TaskAttempt killed because it ran on unusable node \"\n+          + nodeId;\n+      for(TaskAttemptId id : taskAttemptIdList) {\n+        if(TaskType.MAP \u003d\u003d id.getTaskId().getTaskType()) {\n+          // reschedule only map tasks because their outputs maybe unusable\n+          LOG.info(mesg + \". AttemptId:\" + id);\n+          eventHandler.handle(new TaskAttemptKillEvent(id, mesg));\n+        }\n+      }\n+    }\n+    // currently running task attempts on unusable nodes are handled in\n+    // RMContainerAllocator\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void actOnUnusableNode(NodeId nodeId, NodeState nodeState) {\n    // rerun previously successful map tasks\n    List\u003cTaskAttemptId\u003e taskAttemptIdList \u003d nodesToSucceededTaskAttempts.get(nodeId);\n    if(taskAttemptIdList !\u003d null) {\n      String mesg \u003d \"TaskAttempt killed because it ran on unusable node \"\n          + nodeId;\n      for(TaskAttemptId id : taskAttemptIdList) {\n        if(TaskType.MAP \u003d\u003d id.getTaskId().getTaskType()) {\n          // reschedule only map tasks because their outputs maybe unusable\n          LOG.info(mesg + \". AttemptId:\" + id);\n          eventHandler.handle(new TaskAttemptKillEvent(id, mesg));\n        }\n      }\n    }\n    // currently running task attempts on unusable nodes are handled in\n    // RMContainerAllocator\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/job/impl/JobImpl.java"
+    }
+  }
+}

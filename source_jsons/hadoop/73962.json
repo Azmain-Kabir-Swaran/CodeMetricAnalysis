@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FairCallQueue.java",
+  "functionName": "put",
+  "functionId": "put___e-E",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/FairCallQueue.java",
+  "functionStartLine": 202,
+  "functionEndLine": 208,
+  "numCommitsSeen": 14,
+  "timeTaken": 1294,
+  "changeHistory": [
+    "855e0477b1706a2d5b0df6a2b0e461aeec8839c2",
+    "d95c6eb32cec7768ac418fb467b1198ccf3cf0dc",
+    "4b3a6b87221076a6b5df2bf4243575018e5f1793"
+  ],
+  "changeHistoryShort": {
+    "855e0477b1706a2d5b0df6a2b0e461aeec8839c2": "Ybodychange",
+    "d95c6eb32cec7768ac418fb467b1198ccf3cf0dc": "Ybodychange",
+    "4b3a6b87221076a6b5df2bf4243575018e5f1793": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "855e0477b1706a2d5b0df6a2b0e461aeec8839c2": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14035. Reduce fair call queue backoff\u0027s impact on clients. Contributed by Daryn Sharp.\n",
+      "commitDate": "06/06/17 6:35 AM",
+      "commitName": "855e0477b1706a2d5b0df6a2b0e461aeec8839c2",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "09/02/17 2:17 PM",
+      "commitNameOld": "0c01cf57987bcc7a17154a3538960b67f625a9e5",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 116.64,
+      "commitsBetweenForRepo": 658,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,7 @@\n   public void put(E e) throws InterruptedException {\n-    int priorityLevel \u003d e.getPriorityLevel();\n-\n-    final int numLevels \u003d this.queues.size();\n-    while (true) {\n-      BlockingQueue\u003cE\u003e q \u003d this.queues.get(priorityLevel);\n-      boolean res \u003d q.offer(e);\n-      if (!res) {\n-        // Update stats\n-        this.overflowedCalls.get(priorityLevel).getAndIncrement();\n-\n-        // If we failed to insert, try again on the next level\n-        priorityLevel++;\n-\n-        if (priorityLevel \u003d\u003d numLevels) {\n-          // That was the last one, we will block on put in the last queue\n-          // Delete this line to drop the call\n-          this.queues.get(priorityLevel-1).put(e);\n-          break;\n-        }\n-      } else {\n-        break;\n-      }\n+    final int priorityLevel \u003d e.getPriorityLevel();\n+    // try offering to all but last queue, put on last.\n+    if (!offerQueues(priorityLevel, e, false)) {\n+      putQueue(queues.size() - 1, e);\n     }\n-\n-\n-    signalNotEmpty();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void put(E e) throws InterruptedException {\n    final int priorityLevel \u003d e.getPriorityLevel();\n    // try offering to all but last queue, put on last.\n    if (!offerQueues(priorityLevel, e, false)) {\n      putQueue(queues.size() - 1, e);\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/FairCallQueue.java",
+      "extendedDetails": {}
+    },
+    "d95c6eb32cec7768ac418fb467b1198ccf3cf0dc": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-12916. Allow RPC scheduler/callqueue backoff using response times. Contributed by Xiaoyu Yao.\n",
+      "commitDate": "31/03/16 8:42 AM",
+      "commitName": "d95c6eb32cec7768ac418fb467b1198ccf3cf0dc",
+      "commitAuthor": "Xiaoyu Yao",
+      "commitDateOld": "22/08/14 3:16 PM",
+      "commitNameOld": "4b3a6b87221076a6b5df2bf4243575018e5f1793",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 586.73,
+      "commitsBetweenForRepo": 4669,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,28 @@\n   public void put(E e) throws InterruptedException {\n-    int priorityLevel \u003d scheduler.getPriorityLevel(e);\n+    int priorityLevel \u003d e.getPriorityLevel();\n \n     final int numLevels \u003d this.queues.size();\n     while (true) {\n       BlockingQueue\u003cE\u003e q \u003d this.queues.get(priorityLevel);\n       boolean res \u003d q.offer(e);\n       if (!res) {\n         // Update stats\n         this.overflowedCalls.get(priorityLevel).getAndIncrement();\n \n         // If we failed to insert, try again on the next level\n         priorityLevel++;\n \n         if (priorityLevel \u003d\u003d numLevels) {\n           // That was the last one, we will block on put in the last queue\n           // Delete this line to drop the call\n           this.queues.get(priorityLevel-1).put(e);\n           break;\n         }\n       } else {\n         break;\n       }\n     }\n \n \n     signalNotEmpty();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void put(E e) throws InterruptedException {\n    int priorityLevel \u003d e.getPriorityLevel();\n\n    final int numLevels \u003d this.queues.size();\n    while (true) {\n      BlockingQueue\u003cE\u003e q \u003d this.queues.get(priorityLevel);\n      boolean res \u003d q.offer(e);\n      if (!res) {\n        // Update stats\n        this.overflowedCalls.get(priorityLevel).getAndIncrement();\n\n        // If we failed to insert, try again on the next level\n        priorityLevel++;\n\n        if (priorityLevel \u003d\u003d numLevels) {\n          // That was the last one, we will block on put in the last queue\n          // Delete this line to drop the call\n          this.queues.get(priorityLevel-1).put(e);\n          break;\n        }\n      } else {\n        break;\n      }\n    }\n\n\n    signalNotEmpty();\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/FairCallQueue.java",
+      "extendedDetails": {}
+    },
+    "4b3a6b87221076a6b5df2bf4243575018e5f1793": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10282. Create a FairCallQueue: a multi-level call queue which schedules incoming calls and multiplexes outgoing calls. (Contributed by Chris Li)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1619938 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "22/08/14 3:16 PM",
+      "commitName": "4b3a6b87221076a6b5df2bf4243575018e5f1793",
+      "commitAuthor": "Arpit Agarwal",
+      "diff": "@@ -0,0 +1,28 @@\n+  public void put(E e) throws InterruptedException {\n+    int priorityLevel \u003d scheduler.getPriorityLevel(e);\n+\n+    final int numLevels \u003d this.queues.size();\n+    while (true) {\n+      BlockingQueue\u003cE\u003e q \u003d this.queues.get(priorityLevel);\n+      boolean res \u003d q.offer(e);\n+      if (!res) {\n+        // Update stats\n+        this.overflowedCalls.get(priorityLevel).getAndIncrement();\n+\n+        // If we failed to insert, try again on the next level\n+        priorityLevel++;\n+\n+        if (priorityLevel \u003d\u003d numLevels) {\n+          // That was the last one, we will block on put in the last queue\n+          // Delete this line to drop the call\n+          this.queues.get(priorityLevel-1).put(e);\n+          break;\n+        }\n+      } else {\n+        break;\n+      }\n+    }\n+\n+\n+    signalNotEmpty();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void put(E e) throws InterruptedException {\n    int priorityLevel \u003d scheduler.getPriorityLevel(e);\n\n    final int numLevels \u003d this.queues.size();\n    while (true) {\n      BlockingQueue\u003cE\u003e q \u003d this.queues.get(priorityLevel);\n      boolean res \u003d q.offer(e);\n      if (!res) {\n        // Update stats\n        this.overflowedCalls.get(priorityLevel).getAndIncrement();\n\n        // If we failed to insert, try again on the next level\n        priorityLevel++;\n\n        if (priorityLevel \u003d\u003d numLevels) {\n          // That was the last one, we will block on put in the last queue\n          // Delete this line to drop the call\n          this.queues.get(priorityLevel-1).put(e);\n          break;\n        }\n      } else {\n        break;\n      }\n    }\n\n\n    signalNotEmpty();\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/FairCallQueue.java"
+    }
+  }
+}

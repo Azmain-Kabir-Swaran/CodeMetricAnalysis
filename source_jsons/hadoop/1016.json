@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileChecksumHelper.java",
+  "functionName": "extractChecksumProperties",
+  "functionId": "extractChecksumProperties___checksumData-OpBlockChecksumResponseProto__locatedBlock-LocatedBlock__datanode-DatanodeInfo__blockIdx-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java",
+  "functionStartLine": 377,
+  "functionEndLine": 433,
+  "numCommitsSeen": 9,
+  "timeTaken": 1442,
+  "changeHistory": [
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf"
+  ],
+  "changeHistoryShort": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13056. Expose file-level composite CRCs in HDFS which are comparable across different instances/layouts. Contributed by Dennis Huo.\n",
+      "commitDate": "10/04/18 9:31 PM",
+      "commitName": "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+      "commitAuthor": "Xiao Chen",
+      "diff": "@@ -0,0 +1,57 @@\n+    void extractChecksumProperties(\n+        OpBlockChecksumResponseProto checksumData,\n+        LocatedBlock locatedBlock,\n+        DatanodeInfo datanode,\n+        int blockIdx)\n+        throws IOException {\n+      //read byte-per-checksum\n+      final int bpc \u003d checksumData.getBytesPerCrc();\n+      if (blockIdx \u003d\u003d 0) { //first block\n+        setBytesPerCRC(bpc);\n+      } else if (bpc !\u003d getBytesPerCRC()) {\n+        if (getBlockChecksumType() \u003d\u003d BlockChecksumType.COMPOSITE_CRC) {\n+          LOG.warn(\n+              \"Current bytesPerCRC\u003d{} doesn\u0027t match next bpc\u003d{}, but \"\n+              + \"continuing anyway because we\u0027re using COMPOSITE_CRC. \"\n+              + \"If trying to preserve CHECKSUMTYPE, only the current \"\n+              + \"bytesPerCRC will be preserved.\", getBytesPerCRC(), bpc);\n+        } else {\n+          throw new IOException(\"Byte-per-checksum not matched: bpc\u003d\" + bpc\n+              + \" but bytesPerCRC\u003d\" + getBytesPerCRC());\n+        }\n+      }\n+\n+      //read crc-per-block\n+      final long cpb \u003d checksumData.getCrcPerBlock();\n+      if (getLocatedBlocks().size() \u003e 1 \u0026\u0026 blockIdx \u003d\u003d 0) {\n+        setCrcPerBlock(cpb);\n+      }\n+\n+      // read crc-type\n+      final DataChecksum.Type ct;\n+      if (checksumData.hasCrcType()) {\n+        ct \u003d PBHelperClient.convert(checksumData.getCrcType());\n+      } else {\n+        LOG.debug(\"Retrieving checksum from an earlier-version DataNode: \" +\n+            \"inferring checksum by reading first byte\");\n+        ct \u003d getClient().inferChecksumTypeByReading(locatedBlock, datanode);\n+      }\n+\n+      if (blockIdx \u003d\u003d 0) {\n+        setCrcType(ct);\n+      } else if (getCrcType() !\u003d DataChecksum.Type.MIXED \u0026\u0026\n+          getCrcType() !\u003d ct) {\n+        if (getBlockChecksumType() \u003d\u003d BlockChecksumType.COMPOSITE_CRC) {\n+          throw new IOException(\n+              \"DataChecksum.Type.MIXED is not supported for COMPOSITE_CRC\");\n+        } else {\n+          // if crc types are mixed in a file\n+          setCrcType(DataChecksum.Type.MIXED);\n+        }\n+      }\n+\n+      if (blockIdx \u003d\u003d 0) {\n+        LOG.debug(\"set bytesPerCRC\u003d{}, crcPerBlock\u003d{}\",\n+            getBytesPerCRC(), getCrcPerBlock());\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    void extractChecksumProperties(\n        OpBlockChecksumResponseProto checksumData,\n        LocatedBlock locatedBlock,\n        DatanodeInfo datanode,\n        int blockIdx)\n        throws IOException {\n      //read byte-per-checksum\n      final int bpc \u003d checksumData.getBytesPerCrc();\n      if (blockIdx \u003d\u003d 0) { //first block\n        setBytesPerCRC(bpc);\n      } else if (bpc !\u003d getBytesPerCRC()) {\n        if (getBlockChecksumType() \u003d\u003d BlockChecksumType.COMPOSITE_CRC) {\n          LOG.warn(\n              \"Current bytesPerCRC\u003d{} doesn\u0027t match next bpc\u003d{}, but \"\n              + \"continuing anyway because we\u0027re using COMPOSITE_CRC. \"\n              + \"If trying to preserve CHECKSUMTYPE, only the current \"\n              + \"bytesPerCRC will be preserved.\", getBytesPerCRC(), bpc);\n        } else {\n          throw new IOException(\"Byte-per-checksum not matched: bpc\u003d\" + bpc\n              + \" but bytesPerCRC\u003d\" + getBytesPerCRC());\n        }\n      }\n\n      //read crc-per-block\n      final long cpb \u003d checksumData.getCrcPerBlock();\n      if (getLocatedBlocks().size() \u003e 1 \u0026\u0026 blockIdx \u003d\u003d 0) {\n        setCrcPerBlock(cpb);\n      }\n\n      // read crc-type\n      final DataChecksum.Type ct;\n      if (checksumData.hasCrcType()) {\n        ct \u003d PBHelperClient.convert(checksumData.getCrcType());\n      } else {\n        LOG.debug(\"Retrieving checksum from an earlier-version DataNode: \" +\n            \"inferring checksum by reading first byte\");\n        ct \u003d getClient().inferChecksumTypeByReading(locatedBlock, datanode);\n      }\n\n      if (blockIdx \u003d\u003d 0) {\n        setCrcType(ct);\n      } else if (getCrcType() !\u003d DataChecksum.Type.MIXED \u0026\u0026\n          getCrcType() !\u003d ct) {\n        if (getBlockChecksumType() \u003d\u003d BlockChecksumType.COMPOSITE_CRC) {\n          throw new IOException(\n              \"DataChecksum.Type.MIXED is not supported for COMPOSITE_CRC\");\n        } else {\n          // if crc types are mixed in a file\n          setCrcType(DataChecksum.Type.MIXED);\n        }\n      }\n\n      if (blockIdx \u003d\u003d 0) {\n        LOG.debug(\"set bytesPerCRC\u003d{}, crcPerBlock\u003d{}\",\n            getBytesPerCRC(), getCrcPerBlock());\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/FileChecksumHelper.java"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ReadBufferWorker.java",
+  "functionName": "run",
+  "functionId": "run",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferWorker.java",
+  "functionStartLine": 47,
+  "functionEndLine": 81,
+  "numCommitsSeen": 3,
+  "timeTaken": 935,
+  "changeHistory": [
+    "53b993e6048ffaaf98e460690211fc08efb20cf2",
+    "f044deedbbfee0812316d587139cb828f27172e9"
+  ],
+  "changeHistoryShort": {
+    "53b993e6048ffaaf98e460690211fc08efb20cf2": "Ybodychange",
+    "f044deedbbfee0812316d587139cb828f27172e9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "53b993e6048ffaaf98e460690211fc08efb20cf2": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16852: Report read-ahead error back\n\nContributed by Sneha Vijayarajan",
+      "commitDate": "27/05/20 1:51 PM",
+      "commitName": "53b993e6048ffaaf98e460690211fc08efb20cf2",
+      "commitAuthor": "Sneha Vijayarajan",
+      "commitDateOld": "17/09/18 12:54 PM",
+      "commitNameOld": "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+      "commitAuthorOld": "Thomas Marquardt",
+      "daysBetweenCommits": 618.04,
+      "commitsBetweenForRepo": 3845,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,35 @@\n   public void run() {\n     try {\n       UNLEASH_WORKERS.await();\n     } catch (InterruptedException ex) {\n       Thread.currentThread().interrupt();\n     }\n     ReadBufferManager bufferManager \u003d ReadBufferManager.getBufferManager();\n     ReadBuffer buffer;\n     while (true) {\n       try {\n         buffer \u003d bufferManager.getNextBlockToRead();   // blocks, until a buffer is available for this thread\n       } catch (InterruptedException ex) {\n         Thread.currentThread().interrupt();\n         return;\n       }\n       if (buffer !\u003d null) {\n         try {\n           // do the actual read, from the file.\n-          int bytesRead \u003d buffer.getStream().readRemote(buffer.getOffset(), buffer.getBuffer(), 0, buffer.getRequestedLength());\n+          int bytesRead \u003d buffer.getStream().readRemote(\n+              buffer.getOffset(),\n+              buffer.getBuffer(),\n+              0,\n+              // If AbfsInputStream was created with bigger buffer size than\n+              // read-ahead buffer size, make sure a valid length is passed\n+              // for remote read\n+              Math.min(buffer.getRequestedLength(), buffer.getBuffer().length));\n+\n           bufferManager.doneReading(buffer, ReadBufferStatus.AVAILABLE, bytesRead);  // post result back to ReadBufferManager\n         } catch (Exception ex) {\n+          buffer.setErrException(new IOException(ex));\n           bufferManager.doneReading(buffer, ReadBufferStatus.READ_FAILED, 0);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void run() {\n    try {\n      UNLEASH_WORKERS.await();\n    } catch (InterruptedException ex) {\n      Thread.currentThread().interrupt();\n    }\n    ReadBufferManager bufferManager \u003d ReadBufferManager.getBufferManager();\n    ReadBuffer buffer;\n    while (true) {\n      try {\n        buffer \u003d bufferManager.getNextBlockToRead();   // blocks, until a buffer is available for this thread\n      } catch (InterruptedException ex) {\n        Thread.currentThread().interrupt();\n        return;\n      }\n      if (buffer !\u003d null) {\n        try {\n          // do the actual read, from the file.\n          int bytesRead \u003d buffer.getStream().readRemote(\n              buffer.getOffset(),\n              buffer.getBuffer(),\n              0,\n              // If AbfsInputStream was created with bigger buffer size than\n              // read-ahead buffer size, make sure a valid length is passed\n              // for remote read\n              Math.min(buffer.getRequestedLength(), buffer.getBuffer().length));\n\n          bufferManager.doneReading(buffer, ReadBufferStatus.AVAILABLE, bytesRead);  // post result back to ReadBufferManager\n        } catch (Exception ex) {\n          buffer.setErrException(new IOException(ex));\n          bufferManager.doneReading(buffer, ReadBufferStatus.READ_FAILED, 0);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferWorker.java",
+      "extendedDetails": {}
+    },
+    "f044deedbbfee0812316d587139cb828f27172e9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15407. HADOOP-15540. Support Windows Azure Storage - Blob file system \"ABFS\" in Hadoop: Core Commit.\n\nContributed by Shane Mainali, Thomas Marquardt, Zichen Sun, Georgi Chalakov, Esfandiar Manii, Amit Singh, Dana Kaban, Da Zhou, Junhua Gu, Saher Ahwal, Saurabh Pant, James Baker, Shaoyu Zhang, Lawrence Chen, Kevin Chen and Steve Loughran\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "f044deedbbfee0812316d587139cb828f27172e9",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,26 @@\n+  public void run() {\n+    try {\n+      UNLEASH_WORKERS.await();\n+    } catch (InterruptedException ex) {\n+      Thread.currentThread().interrupt();\n+    }\n+    ReadBufferManager bufferManager \u003d ReadBufferManager.getBufferManager();\n+    ReadBuffer buffer;\n+    while (true) {\n+      try {\n+        buffer \u003d bufferManager.getNextBlockToRead();   // blocks, until a buffer is available for this thread\n+      } catch (InterruptedException ex) {\n+        Thread.currentThread().interrupt();\n+        return;\n+      }\n+      if (buffer !\u003d null) {\n+        try {\n+          // do the actual read, from the file.\n+          int bytesRead \u003d buffer.getStream().readRemote(buffer.getOffset(), buffer.getBuffer(), 0, buffer.getRequestedLength());\n+          bufferManager.doneReading(buffer, ReadBufferStatus.AVAILABLE, bytesRead);  // post result back to ReadBufferManager\n+        } catch (Exception ex) {\n+          bufferManager.doneReading(buffer, ReadBufferStatus.READ_FAILED, 0);\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void run() {\n    try {\n      UNLEASH_WORKERS.await();\n    } catch (InterruptedException ex) {\n      Thread.currentThread().interrupt();\n    }\n    ReadBufferManager bufferManager \u003d ReadBufferManager.getBufferManager();\n    ReadBuffer buffer;\n    while (true) {\n      try {\n        buffer \u003d bufferManager.getNextBlockToRead();   // blocks, until a buffer is available for this thread\n      } catch (InterruptedException ex) {\n        Thread.currentThread().interrupt();\n        return;\n      }\n      if (buffer !\u003d null) {\n        try {\n          // do the actual read, from the file.\n          int bytesRead \u003d buffer.getStream().readRemote(buffer.getOffset(), buffer.getBuffer(), 0, buffer.getRequestedLength());\n          bufferManager.doneReading(buffer, ReadBufferStatus.AVAILABLE, bytesRead);  // post result back to ReadBufferManager\n        } catch (Exception ex) {\n          bufferManager.doneReading(buffer, ReadBufferStatus.READ_FAILED, 0);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferWorker.java"
+    }
+  }
+}

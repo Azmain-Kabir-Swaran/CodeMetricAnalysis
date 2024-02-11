@@ -1,0 +1,143 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FairScheduler.java",
+  "functionName": "executeMove",
+  "functionId": "executeMove___app-SchedulerApplication__FSAppAttempt____attempt-FSAppAttempt__oldQueue-FSLeafQueue__newQueue-FSLeafQueue",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java",
+  "functionStartLine": 1865,
+  "functionEndLine": 1900,
+  "numCommitsSeen": 383,
+  "timeTaken": 5810,
+  "changeHistory": [
+    "9f5d2c4fff6d31acc8b422b52462ef4927c4eea1",
+    "59ee8b7a88603e94b5661a8d5d088f7aa99fe049",
+    "486e718fc1f5befd231494e2ec06bb360484f191",
+    "82f3454f5ac1f1c457e668e2cee12b4dcc800ee1",
+    "e6eccf20defcaf84a9566482371c7be196779c0d"
+  ],
+  "changeHistoryShort": {
+    "9f5d2c4fff6d31acc8b422b52462ef4927c4eea1": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "59ee8b7a88603e94b5661a8d5d088f7aa99fe049": "Ybodychange",
+    "486e718fc1f5befd231494e2ec06bb360484f191": "Yparameterchange",
+    "82f3454f5ac1f1c457e668e2cee12b4dcc800ee1": "Yparameterchange",
+    "e6eccf20defcaf84a9566482371c7be196779c0d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9f5d2c4fff6d31acc8b422b52462ef4927c4eea1": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "YARN-5136. Error in handling event type APP_ATTEMPT_REMOVED to the scheduler\n(Contributed by Wilfred Spiegelenburg via Daniel Templeton)\n",
+      "commitDate": "07/12/16 11:12 AM",
+      "commitName": "9f5d2c4fff6d31acc8b422b52462ef4927c4eea1",
+      "commitAuthor": "Daniel Templeton",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "YARN-5136. Error in handling event type APP_ATTEMPT_REMOVED to the scheduler\n(Contributed by Wilfred Spiegelenburg via Daniel Templeton)\n",
+          "commitDate": "07/12/16 11:12 AM",
+          "commitName": "9f5d2c4fff6d31acc8b422b52462ef4927c4eea1",
+          "commitAuthor": "Daniel Templeton",
+          "commitDateOld": "06/12/16 9:09 PM",
+          "commitNameOld": "563480dccd0136d82730f4228f1df44449ed5822",
+          "commitAuthorOld": "Rohith Sharma K S",
+          "daysBetweenCommits": 0.59,
+          "commitsBetweenForRepo": 3,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,36 @@\n   private void executeMove(SchedulerApplication\u003cFSAppAttempt\u003e app,\n-      FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n-    boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n+      FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue)\n+      throws YarnException {\n+    // Check current runs state. Do not remove the attempt from the queue until\n+    // after the check has been performed otherwise it could remove the app\n+    // from a queue without moving it to a new queue.\n+    boolean wasRunnable \u003d oldQueue.isRunnableApp(attempt);\n     // if app was not runnable before, it may be runnable now\n     boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n         attempt);\n     if (wasRunnable \u0026\u0026 !nowRunnable) {\n-      throw new IllegalStateException(\"Should have already verified that app \"\n+      throw new YarnException(\"Should have already verified that app \"\n           + attempt.getApplicationId() + \" would be runnable in new queue\");\n     }\n-    \n+\n+    // Now it is safe to remove from the queue.\n+    oldQueue.removeApp(attempt);\n+\n     if (wasRunnable) {\n       maxRunningEnforcer.untrackRunnableApp(attempt);\n     } else if (nowRunnable) {\n       // App has changed from non-runnable to runnable\n       maxRunningEnforcer.untrackNonRunnableApp(attempt);\n     }\n     \n     attempt.move(newQueue); // This updates all the metrics\n     app.setQueue(newQueue);\n     newQueue.addApp(attempt, nowRunnable);\n     \n     if (nowRunnable) {\n       maxRunningEnforcer.trackRunnableApp(attempt);\n     }\n     if (wasRunnable) {\n       maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void executeMove(SchedulerApplication\u003cFSAppAttempt\u003e app,\n      FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue)\n      throws YarnException {\n    // Check current runs state. Do not remove the attempt from the queue until\n    // after the check has been performed otherwise it could remove the app\n    // from a queue without moving it to a new queue.\n    boolean wasRunnable \u003d oldQueue.isRunnableApp(attempt);\n    // if app was not runnable before, it may be runnable now\n    boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n        attempt);\n    if (wasRunnable \u0026\u0026 !nowRunnable) {\n      throw new YarnException(\"Should have already verified that app \"\n          + attempt.getApplicationId() + \" would be runnable in new queue\");\n    }\n\n    // Now it is safe to remove from the queue.\n    oldQueue.removeApp(attempt);\n\n    if (wasRunnable) {\n      maxRunningEnforcer.untrackRunnableApp(attempt);\n    } else if (nowRunnable) {\n      // App has changed from non-runnable to runnable\n      maxRunningEnforcer.untrackNonRunnableApp(attempt);\n    }\n    \n    attempt.move(newQueue); // This updates all the metrics\n    app.setQueue(newQueue);\n    newQueue.addApp(attempt, nowRunnable);\n    \n    if (nowRunnable) {\n      maxRunningEnforcer.trackRunnableApp(attempt);\n    }\n    if (wasRunnable) {\n      maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[YarnException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-5136. Error in handling event type APP_ATTEMPT_REMOVED to the scheduler\n(Contributed by Wilfred Spiegelenburg via Daniel Templeton)\n",
+          "commitDate": "07/12/16 11:12 AM",
+          "commitName": "9f5d2c4fff6d31acc8b422b52462ef4927c4eea1",
+          "commitAuthor": "Daniel Templeton",
+          "commitDateOld": "06/12/16 9:09 PM",
+          "commitNameOld": "563480dccd0136d82730f4228f1df44449ed5822",
+          "commitAuthorOld": "Rohith Sharma K S",
+          "daysBetweenCommits": 0.59,
+          "commitsBetweenForRepo": 3,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,36 @@\n   private void executeMove(SchedulerApplication\u003cFSAppAttempt\u003e app,\n-      FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n-    boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n+      FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue)\n+      throws YarnException {\n+    // Check current runs state. Do not remove the attempt from the queue until\n+    // after the check has been performed otherwise it could remove the app\n+    // from a queue without moving it to a new queue.\n+    boolean wasRunnable \u003d oldQueue.isRunnableApp(attempt);\n     // if app was not runnable before, it may be runnable now\n     boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n         attempt);\n     if (wasRunnable \u0026\u0026 !nowRunnable) {\n-      throw new IllegalStateException(\"Should have already verified that app \"\n+      throw new YarnException(\"Should have already verified that app \"\n           + attempt.getApplicationId() + \" would be runnable in new queue\");\n     }\n-    \n+\n+    // Now it is safe to remove from the queue.\n+    oldQueue.removeApp(attempt);\n+\n     if (wasRunnable) {\n       maxRunningEnforcer.untrackRunnableApp(attempt);\n     } else if (nowRunnable) {\n       // App has changed from non-runnable to runnable\n       maxRunningEnforcer.untrackNonRunnableApp(attempt);\n     }\n     \n     attempt.move(newQueue); // This updates all the metrics\n     app.setQueue(newQueue);\n     newQueue.addApp(attempt, nowRunnable);\n     \n     if (nowRunnable) {\n       maxRunningEnforcer.trackRunnableApp(attempt);\n     }\n     if (wasRunnable) {\n       maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void executeMove(SchedulerApplication\u003cFSAppAttempt\u003e app,\n      FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue)\n      throws YarnException {\n    // Check current runs state. Do not remove the attempt from the queue until\n    // after the check has been performed otherwise it could remove the app\n    // from a queue without moving it to a new queue.\n    boolean wasRunnable \u003d oldQueue.isRunnableApp(attempt);\n    // if app was not runnable before, it may be runnable now\n    boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n        attempt);\n    if (wasRunnable \u0026\u0026 !nowRunnable) {\n      throw new YarnException(\"Should have already verified that app \"\n          + attempt.getApplicationId() + \" would be runnable in new queue\");\n    }\n\n    // Now it is safe to remove from the queue.\n    oldQueue.removeApp(attempt);\n\n    if (wasRunnable) {\n      maxRunningEnforcer.untrackRunnableApp(attempt);\n    } else if (nowRunnable) {\n      // App has changed from non-runnable to runnable\n      maxRunningEnforcer.untrackNonRunnableApp(attempt);\n    }\n    \n    attempt.move(newQueue); // This updates all the metrics\n    app.setQueue(newQueue);\n    newQueue.addApp(attempt, nowRunnable);\n    \n    if (nowRunnable) {\n      maxRunningEnforcer.trackRunnableApp(attempt);\n    }\n    if (wasRunnable) {\n      maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "59ee8b7a88603e94b5661a8d5d088f7aa99fe049": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4329. [YARN-5437] Allow fetching exact reason as to why a submitted app\nis in ACCEPTED state in Fair Scheduler (Contributed by Yufei Gu)\n",
+      "commitDate": "09/11/16 1:11 PM",
+      "commitName": "59ee8b7a88603e94b5661a8d5d088f7aa99fe049",
+      "commitAuthor": "Daniel Templeton",
+      "commitDateOld": "20/10/16 9:17 PM",
+      "commitNameOld": "754cb4e30fac1c5fe8d44626968c0ddbfe459335",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 19.7,
+      "commitsBetweenForRepo": 216,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,29 @@\n   private void executeMove(SchedulerApplication\u003cFSAppAttempt\u003e app,\n       FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n     boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n     // if app was not runnable before, it may be runnable now\n     boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n-        attempt.getUser());\n+        attempt);\n     if (wasRunnable \u0026\u0026 !nowRunnable) {\n       throw new IllegalStateException(\"Should have already verified that app \"\n           + attempt.getApplicationId() + \" would be runnable in new queue\");\n     }\n     \n     if (wasRunnable) {\n       maxRunningEnforcer.untrackRunnableApp(attempt);\n     } else if (nowRunnable) {\n       // App has changed from non-runnable to runnable\n       maxRunningEnforcer.untrackNonRunnableApp(attempt);\n     }\n     \n     attempt.move(newQueue); // This updates all the metrics\n     app.setQueue(newQueue);\n     newQueue.addApp(attempt, nowRunnable);\n     \n     if (nowRunnable) {\n       maxRunningEnforcer.trackRunnableApp(attempt);\n     }\n     if (wasRunnable) {\n       maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void executeMove(SchedulerApplication\u003cFSAppAttempt\u003e app,\n      FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n    boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n    // if app was not runnable before, it may be runnable now\n    boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n        attempt);\n    if (wasRunnable \u0026\u0026 !nowRunnable) {\n      throw new IllegalStateException(\"Should have already verified that app \"\n          + attempt.getApplicationId() + \" would be runnable in new queue\");\n    }\n    \n    if (wasRunnable) {\n      maxRunningEnforcer.untrackRunnableApp(attempt);\n    } else if (nowRunnable) {\n      // App has changed from non-runnable to runnable\n      maxRunningEnforcer.untrackNonRunnableApp(attempt);\n    }\n    \n    attempt.move(newQueue); // This updates all the metrics\n    app.setQueue(newQueue);\n    newQueue.addApp(attempt, nowRunnable);\n    \n    if (nowRunnable) {\n      maxRunningEnforcer.trackRunnableApp(attempt);\n    }\n    if (wasRunnable) {\n      maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java",
+      "extendedDetails": {}
+    },
+    "486e718fc1f5befd231494e2ec06bb360484f191": {
+      "type": "Yparameterchange",
+      "commitMessage": "YARN-2399. FairScheduler: Merge AppSchedulable and FSSchedulerApp into FSAppAttempt. (kasha)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1617600 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/08/14 2:43 PM",
+      "commitName": "486e718fc1f5befd231494e2ec06bb360484f191",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "08/08/14 7:17 AM",
+      "commitNameOld": "14864e9c7c879c15b5fa2d1776614ec83152918f",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 4.31,
+      "commitsBetweenForRepo": 29,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,29 @@\n-  private void executeMove(SchedulerApplication\u003cFSSchedulerApp\u003e app,\n-      FSSchedulerApp attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n+  private void executeMove(SchedulerApplication\u003cFSAppAttempt\u003e app,\n+      FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n     boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n     // if app was not runnable before, it may be runnable now\n     boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n         attempt.getUser());\n     if (wasRunnable \u0026\u0026 !nowRunnable) {\n       throw new IllegalStateException(\"Should have already verified that app \"\n           + attempt.getApplicationId() + \" would be runnable in new queue\");\n     }\n     \n     if (wasRunnable) {\n       maxRunningEnforcer.untrackRunnableApp(attempt);\n     } else if (nowRunnable) {\n       // App has changed from non-runnable to runnable\n       maxRunningEnforcer.untrackNonRunnableApp(attempt);\n     }\n     \n     attempt.move(newQueue); // This updates all the metrics\n     app.setQueue(newQueue);\n     newQueue.addApp(attempt, nowRunnable);\n     \n     if (nowRunnable) {\n       maxRunningEnforcer.trackRunnableApp(attempt);\n     }\n     if (wasRunnable) {\n       maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void executeMove(SchedulerApplication\u003cFSAppAttempt\u003e app,\n      FSAppAttempt attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n    boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n    // if app was not runnable before, it may be runnable now\n    boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n        attempt.getUser());\n    if (wasRunnable \u0026\u0026 !nowRunnable) {\n      throw new IllegalStateException(\"Should have already verified that app \"\n          + attempt.getApplicationId() + \" would be runnable in new queue\");\n    }\n    \n    if (wasRunnable) {\n      maxRunningEnforcer.untrackRunnableApp(attempt);\n    } else if (nowRunnable) {\n      // App has changed from non-runnable to runnable\n      maxRunningEnforcer.untrackNonRunnableApp(attempt);\n    }\n    \n    attempt.move(newQueue); // This updates all the metrics\n    app.setQueue(newQueue);\n    newQueue.addApp(attempt, nowRunnable);\n    \n    if (nowRunnable) {\n      maxRunningEnforcer.trackRunnableApp(attempt);\n    }\n    if (wasRunnable) {\n      maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java",
+      "extendedDetails": {
+        "oldValue": "[app-SchedulerApplication\u003cFSSchedulerApp\u003e, attempt-FSSchedulerApp, oldQueue-FSLeafQueue, newQueue-FSLeafQueue]",
+        "newValue": "[app-SchedulerApplication\u003cFSAppAttempt\u003e, attempt-FSAppAttempt, oldQueue-FSLeafQueue, newQueue-FSLeafQueue]"
+      }
+    },
+    "82f3454f5ac1f1c457e668e2cee12b4dcc800ee1": {
+      "type": "Yparameterchange",
+      "commitMessage": "YARN-2017. Merged some of the common scheduler code. Contributed by Jian He.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1596753 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "21/05/14 10:32 PM",
+      "commitName": "82f3454f5ac1f1c457e668e2cee12b4dcc800ee1",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "31/03/14 4:40 PM",
+      "commitNameOld": "7bd62b8da03642612fae8349e967b9c0aa290843",
+      "commitAuthorOld": "Sanford Ryza",
+      "daysBetweenCommits": 51.24,
+      "commitsBetweenForRepo": 299,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,29 @@\n-  private void executeMove(SchedulerApplication app, FSSchedulerApp attempt,\n-      FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n+  private void executeMove(SchedulerApplication\u003cFSSchedulerApp\u003e app,\n+      FSSchedulerApp attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n     boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n     // if app was not runnable before, it may be runnable now\n     boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n         attempt.getUser());\n     if (wasRunnable \u0026\u0026 !nowRunnable) {\n       throw new IllegalStateException(\"Should have already verified that app \"\n           + attempt.getApplicationId() + \" would be runnable in new queue\");\n     }\n     \n     if (wasRunnable) {\n       maxRunningEnforcer.untrackRunnableApp(attempt);\n     } else if (nowRunnable) {\n       // App has changed from non-runnable to runnable\n       maxRunningEnforcer.untrackNonRunnableApp(attempt);\n     }\n     \n     attempt.move(newQueue); // This updates all the metrics\n     app.setQueue(newQueue);\n     newQueue.addApp(attempt, nowRunnable);\n     \n     if (nowRunnable) {\n       maxRunningEnforcer.trackRunnableApp(attempt);\n     }\n     if (wasRunnable) {\n       maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void executeMove(SchedulerApplication\u003cFSSchedulerApp\u003e app,\n      FSSchedulerApp attempt, FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n    boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n    // if app was not runnable before, it may be runnable now\n    boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n        attempt.getUser());\n    if (wasRunnable \u0026\u0026 !nowRunnable) {\n      throw new IllegalStateException(\"Should have already verified that app \"\n          + attempt.getApplicationId() + \" would be runnable in new queue\");\n    }\n    \n    if (wasRunnable) {\n      maxRunningEnforcer.untrackRunnableApp(attempt);\n    } else if (nowRunnable) {\n      // App has changed from non-runnable to runnable\n      maxRunningEnforcer.untrackNonRunnableApp(attempt);\n    }\n    \n    attempt.move(newQueue); // This updates all the metrics\n    app.setQueue(newQueue);\n    newQueue.addApp(attempt, nowRunnable);\n    \n    if (nowRunnable) {\n      maxRunningEnforcer.trackRunnableApp(attempt);\n    }\n    if (wasRunnable) {\n      maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java",
+      "extendedDetails": {
+        "oldValue": "[app-SchedulerApplication, attempt-FSSchedulerApp, oldQueue-FSLeafQueue, newQueue-FSLeafQueue]",
+        "newValue": "[app-SchedulerApplication\u003cFSSchedulerApp\u003e, attempt-FSSchedulerApp, oldQueue-FSLeafQueue, newQueue-FSLeafQueue]"
+      }
+    },
+    "e6eccf20defcaf84a9566482371c7be196779c0d": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-1499. Fair Scheduler changes for moving apps between queues (Sandy Ryza)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1564856 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "05/02/14 10:09 AM",
+      "commitName": "e6eccf20defcaf84a9566482371c7be196779c0d",
+      "commitAuthor": "Sanford Ryza",
+      "diff": "@@ -0,0 +1,29 @@\n+  private void executeMove(SchedulerApplication app, FSSchedulerApp attempt,\n+      FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n+    boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n+    // if app was not runnable before, it may be runnable now\n+    boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n+        attempt.getUser());\n+    if (wasRunnable \u0026\u0026 !nowRunnable) {\n+      throw new IllegalStateException(\"Should have already verified that app \"\n+          + attempt.getApplicationId() + \" would be runnable in new queue\");\n+    }\n+    \n+    if (wasRunnable) {\n+      maxRunningEnforcer.untrackRunnableApp(attempt);\n+    } else if (nowRunnable) {\n+      // App has changed from non-runnable to runnable\n+      maxRunningEnforcer.untrackNonRunnableApp(attempt);\n+    }\n+    \n+    attempt.move(newQueue); // This updates all the metrics\n+    app.setQueue(newQueue);\n+    newQueue.addApp(attempt, nowRunnable);\n+    \n+    if (nowRunnable) {\n+      maxRunningEnforcer.trackRunnableApp(attempt);\n+    }\n+    if (wasRunnable) {\n+      maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void executeMove(SchedulerApplication app, FSSchedulerApp attempt,\n      FSLeafQueue oldQueue, FSLeafQueue newQueue) {\n    boolean wasRunnable \u003d oldQueue.removeApp(attempt);\n    // if app was not runnable before, it may be runnable now\n    boolean nowRunnable \u003d maxRunningEnforcer.canAppBeRunnable(newQueue,\n        attempt.getUser());\n    if (wasRunnable \u0026\u0026 !nowRunnable) {\n      throw new IllegalStateException(\"Should have already verified that app \"\n          + attempt.getApplicationId() + \" would be runnable in new queue\");\n    }\n    \n    if (wasRunnable) {\n      maxRunningEnforcer.untrackRunnableApp(attempt);\n    } else if (nowRunnable) {\n      // App has changed from non-runnable to runnable\n      maxRunningEnforcer.untrackNonRunnableApp(attempt);\n    }\n    \n    attempt.move(newQueue); // This updates all the metrics\n    app.setQueue(newQueue);\n    newQueue.addApp(attempt, nowRunnable);\n    \n    if (nowRunnable) {\n      maxRunningEnforcer.trackRunnableApp(attempt);\n    }\n    if (wasRunnable) {\n      maxRunningEnforcer.updateRunnabilityOnAppRemoval(attempt, oldQueue);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java"
+    }
+  }
+}

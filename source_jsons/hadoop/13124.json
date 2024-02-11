@@ -1,0 +1,140 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CacheReplicationMonitor.java",
+  "functionName": "close",
+  "functionId": "close",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+  "functionStartLine": 265,
+  "functionEndLine": 282,
+  "numCommitsSeen": 31,
+  "timeTaken": 3193,
+  "changeHistory": [
+    "d85c017d0488930d806f267141057fc73e68c728",
+    "991c453ca3ac141a3f286f74af8401f83c38b230",
+    "3cc7a38a53c8ae27ef6b2397cddc5d14a378203a",
+    "40eb94ade3161d93e7a762a839004748f6d0ae89"
+  ],
+  "changeHistoryShort": {
+    "d85c017d0488930d806f267141057fc73e68c728": "Ybodychange",
+    "991c453ca3ac141a3f286f74af8401f83c38b230": "Ybodychange",
+    "3cc7a38a53c8ae27ef6b2397cddc5d14a378203a": "Ymultichange(Ymovefromfile,Yexceptionschange,Ybodychange)",
+    "40eb94ade3161d93e7a762a839004748f6d0ae89": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d85c017d0488930d806f267141057fc73e68c728": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-5651. Remove dfs.namenode.caching.enabled and improve CRM locking. Contributed by Colin Patrick McCabe.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1555002 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/01/14 6:45 PM",
+      "commitName": "d85c017d0488930d806f267141057fc73e68c728",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "31/12/13 4:01 PM",
+      "commitNameOld": "07e4fb1455abc33584fc666ef745abe256ebd7d1",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 2.11,
+      "commitsBetweenForRepo": 8,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,18 @@\n   public void close() throws IOException {\n+    Preconditions.checkArgument(namesystem.hasWriteLock());\n     lock.lock();\n     try {\n       if (shutdown) return;\n+      // Since we hold both the FSN write lock and the CRM lock here,\n+      // we know that the CRM thread cannot be currently modifying\n+      // the cache manager state while we\u0027re closing it.\n+      // Since the CRM thread checks the value of \u0027shutdown\u0027 after waiting\n+      // for a lock, we know that the thread will not modify the cache\n+      // manager state after this point.\n       shutdown \u003d true;\n       doRescan.signalAll();\n       scanFinished.signalAll();\n     } finally {\n       lock.unlock();\n     }\n-    try {\n-      if (this.isAlive()) {\n-        this.join(60000);\n-      }\n-    } catch (InterruptedException e) {\n-      Thread.currentThread().interrupt();\n-    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void close() throws IOException {\n    Preconditions.checkArgument(namesystem.hasWriteLock());\n    lock.lock();\n    try {\n      if (shutdown) return;\n      // Since we hold both the FSN write lock and the CRM lock here,\n      // we know that the CRM thread cannot be currently modifying\n      // the cache manager state while we\u0027re closing it.\n      // Since the CRM thread checks the value of \u0027shutdown\u0027 after waiting\n      // for a lock, we know that the thread will not modify the cache\n      // manager state after this point.\n      shutdown \u003d true;\n      doRescan.signalAll();\n      scanFinished.signalAll();\n    } finally {\n      lock.unlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+      "extendedDetails": {}
+    },
+    "991c453ca3ac141a3f286f74af8401f83c38b230": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-5431. Support cachepool-based limit management in path-based caching. (awang via cmccabe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1551651 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/12/13 10:47 AM",
+      "commitName": "991c453ca3ac141a3f286f74af8401f83c38b230",
+      "commitAuthor": "Colin McCabe",
+      "commitDateOld": "05/12/13 1:09 PM",
+      "commitNameOld": "55e5b0653c34a5f4146ce5a97a5b4a88a976d88a",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 11.9,
+      "commitsBetweenForRepo": 67,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,18 @@\n   public void close() throws IOException {\n-    synchronized(this) {\n+    lock.lock();\n+    try {\n       if (shutdown) return;\n       shutdown \u003d true;\n-      this.notifyAll();\n+      doRescan.signalAll();\n+      scanFinished.signalAll();\n+    } finally {\n+      lock.unlock();\n     }\n     try {\n       if (this.isAlive()) {\n         this.join(60000);\n       }\n     } catch (InterruptedException e) {\n       Thread.currentThread().interrupt();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void close() throws IOException {\n    lock.lock();\n    try {\n      if (shutdown) return;\n      shutdown \u003d true;\n      doRescan.signalAll();\n      scanFinished.signalAll();\n    } finally {\n      lock.unlock();\n    }\n    try {\n      if (this.isAlive()) {\n        this.join(60000);\n      }\n    } catch (InterruptedException e) {\n      Thread.currentThread().interrupt();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+      "extendedDetails": {}
+    },
+    "3cc7a38a53c8ae27ef6b2397cddc5d14a378203a": {
+      "type": "Ymultichange(Ymovefromfile,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-5096. Automatically cache new data added to a cached path (contributed by Colin Patrick McCabe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-4949@1532924 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/10/13 3:15 PM",
+      "commitName": "3cc7a38a53c8ae27ef6b2397cddc5d14a378203a",
+      "commitAuthor": "Colin McCabe",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-5096. Automatically cache new data added to a cached path (contributed by Colin Patrick McCabe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-4949@1532924 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "16/10/13 3:15 PM",
+          "commitName": "3cc7a38a53c8ae27ef6b2397cddc5d14a378203a",
+          "commitAuthor": "Colin McCabe",
+          "commitDateOld": "16/10/13 1:23 PM",
+          "commitNameOld": "8da82eba1c84f828617a13a6f785a9b6cfc057a5",
+          "commitAuthorOld": "Chris Nauroth",
+          "daysBetweenCommits": 0.08,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,14 @@\n-  public void close() {\n-    if (isCachingEnabled) {\n-      monitor.shutdownNow();\n-      try {\n-        monitor.awaitTermination(3000, TimeUnit.MILLISECONDS);\n-      } catch (InterruptedException e) {\n+  public void close() throws IOException {\n+    synchronized(this) {\n+      if (shutdown) return;\n+      shutdown \u003d true;\n+      this.notifyAll();\n+    }\n+    try {\n+      if (this.isAlive()) {\n+        this.join(60000);\n       }\n-      pendingCacheBlocks.stop();\n-      cachedBlocksMap.close();\n+    } catch (InterruptedException e) {\n+      Thread.currentThread().interrupt();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void close() throws IOException {\n    synchronized(this) {\n      if (shutdown) return;\n      shutdown \u003d true;\n      this.notifyAll();\n    }\n    try {\n      if (this.isAlive()) {\n        this.join(60000);\n      }\n    } catch (InterruptedException e) {\n      Thread.currentThread().interrupt();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationManager.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+            "oldMethodName": "close",
+            "newMethodName": "close"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-5096. Automatically cache new data added to a cached path (contributed by Colin Patrick McCabe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-4949@1532924 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "16/10/13 3:15 PM",
+          "commitName": "3cc7a38a53c8ae27ef6b2397cddc5d14a378203a",
+          "commitAuthor": "Colin McCabe",
+          "commitDateOld": "16/10/13 1:23 PM",
+          "commitNameOld": "8da82eba1c84f828617a13a6f785a9b6cfc057a5",
+          "commitAuthorOld": "Chris Nauroth",
+          "daysBetweenCommits": 0.08,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,14 @@\n-  public void close() {\n-    if (isCachingEnabled) {\n-      monitor.shutdownNow();\n-      try {\n-        monitor.awaitTermination(3000, TimeUnit.MILLISECONDS);\n-      } catch (InterruptedException e) {\n+  public void close() throws IOException {\n+    synchronized(this) {\n+      if (shutdown) return;\n+      shutdown \u003d true;\n+      this.notifyAll();\n+    }\n+    try {\n+      if (this.isAlive()) {\n+        this.join(60000);\n       }\n-      pendingCacheBlocks.stop();\n-      cachedBlocksMap.close();\n+    } catch (InterruptedException e) {\n+      Thread.currentThread().interrupt();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void close() throws IOException {\n    synchronized(this) {\n      if (shutdown) return;\n      shutdown \u003d true;\n      this.notifyAll();\n    }\n    try {\n      if (this.isAlive()) {\n        this.join(60000);\n      }\n    } catch (InterruptedException e) {\n      Thread.currentThread().interrupt();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-5096. Automatically cache new data added to a cached path (contributed by Colin Patrick McCabe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-4949@1532924 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "16/10/13 3:15 PM",
+          "commitName": "3cc7a38a53c8ae27ef6b2397cddc5d14a378203a",
+          "commitAuthor": "Colin McCabe",
+          "commitDateOld": "16/10/13 1:23 PM",
+          "commitNameOld": "8da82eba1c84f828617a13a6f785a9b6cfc057a5",
+          "commitAuthorOld": "Chris Nauroth",
+          "daysBetweenCommits": 0.08,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,14 @@\n-  public void close() {\n-    if (isCachingEnabled) {\n-      monitor.shutdownNow();\n-      try {\n-        monitor.awaitTermination(3000, TimeUnit.MILLISECONDS);\n-      } catch (InterruptedException e) {\n+  public void close() throws IOException {\n+    synchronized(this) {\n+      if (shutdown) return;\n+      shutdown \u003d true;\n+      this.notifyAll();\n+    }\n+    try {\n+      if (this.isAlive()) {\n+        this.join(60000);\n       }\n-      pendingCacheBlocks.stop();\n-      cachedBlocksMap.close();\n+    } catch (InterruptedException e) {\n+      Thread.currentThread().interrupt();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void close() throws IOException {\n    synchronized(this) {\n      if (shutdown) return;\n      shutdown \u003d true;\n      this.notifyAll();\n    }\n    try {\n      if (this.isAlive()) {\n        this.join(60000);\n      }\n    } catch (InterruptedException e) {\n      Thread.currentThread().interrupt();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "40eb94ade3161d93e7a762a839004748f6d0ae89": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-5053. NameNode should invoke DataNode APIs to coordinate caching. (Andrew Wang)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-4949@1523145 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "13/09/13 4:27 PM",
+      "commitName": "40eb94ade3161d93e7a762a839004748f6d0ae89",
+      "commitAuthor": "Andrew Wang",
+      "diff": "@@ -0,0 +1,11 @@\n+  public void close() {\n+    if (isCachingEnabled) {\n+      monitor.shutdownNow();\n+      try {\n+        monitor.awaitTermination(3000, TimeUnit.MILLISECONDS);\n+      } catch (InterruptedException e) {\n+      }\n+      pendingCacheBlocks.stop();\n+      cachedBlocksMap.close();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void close() {\n    if (isCachingEnabled) {\n      monitor.shutdownNow();\n      try {\n        monitor.awaitTermination(3000, TimeUnit.MILLISECONDS);\n      } catch (InterruptedException e) {\n      }\n      pendingCacheBlocks.stop();\n      cachedBlocksMap.close();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationManager.java"
+    }
+  }
+}

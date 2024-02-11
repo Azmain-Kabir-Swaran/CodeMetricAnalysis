@@ -1,0 +1,92 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DiffListBySkipList.java",
+  "functionName": "remove",
+  "functionId": "remove___index-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DiffListBySkipList.java",
+  "functionStartLine": 433,
+  "functionEndLine": 487,
+  "numCommitsSeen": 6,
+  "timeTaken": 2648,
+  "changeHistory": [
+    "871d0d39faa2c4c992d61ed20497dcf6c3faa376",
+    "ba82e5c488ca0081534c1e40810b3f9e7da9eaad",
+    "60080fbfcf3919fc155af45975fa24bdeb6c8ffe",
+    "81d9446a92e3968234702b2981468a991c7cf8a0"
+  ],
+  "changeHistoryShort": {
+    "871d0d39faa2c4c992d61ed20497dcf6c3faa376": "Ybodychange",
+    "ba82e5c488ca0081534c1e40810b3f9e7da9eaad": "Yfilerename",
+    "60080fbfcf3919fc155af45975fa24bdeb6c8ffe": "Ybodychange",
+    "81d9446a92e3968234702b2981468a991c7cf8a0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "871d0d39faa2c4c992d61ed20497dcf6c3faa376": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13223. Reduce DiffListBySkipList memory usage.  Contributed by Shashikant Banerjee\n",
+      "commitDate": "06/03/18 12:23 PM",
+      "commitName": "871d0d39faa2c4c992d61ed20497dcf6c3faa376",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "02/03/18 5:47 PM",
+      "commitNameOld": "ba82e5c488ca0081534c1e40810b3f9e7da9eaad",
+      "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+      "daysBetweenCommits": 3.77,
+      "commitsBetweenForRepo": 17,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,55 @@\n   public DirectoryDiff remove(int index) {\n-    SkipListNode node \u003d getNode(index);\n+    final SkipListNode node \u003d getNode(index);\n+\n     int headLevel \u003d head.level();\n     int nodeLevel \u003d node.level();\n     final SkipListNode[] nodePath \u003d findPreviousNodes(node, nodeLevel);\n+\n     for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n-      if (nodePath[level] !\u003d head \u0026\u0026 level \u003e 0) {\n+      final SkipListNode previous \u003d nodePath[level];\n+      final SkipListNode next \u003d node.getSkipNode(level);\n+      if (level \u003d\u003d 0) {\n+        if (next !\u003d null) {\n+          previous.setSkipDiff4Target(next, 1, previous.getChildrenDiff(0));\n+        }\n+      } else if (previous !\u003d head) {\n         // if the last snapshot is deleted, for all the skip level nodes\n         // pointing to the last one, the combined children diff at each level\n         // \u003e 0 should be made null and skip pointers will be updated to null.\n         // if the snapshot being deleted is not the last one, we have to merge\n         // the diff of deleted node at each level to the previous skip level\n         // node at that level and the skip pointers will be updated to point to\n         // the skip nodes of the deleted node.\n-        if (index \u003d\u003d size() - 1) {\n-          nodePath[level].setSkipDiff(null, level);\n+        if (next \u003d\u003d null) {\n+          previous.setSkipDiff(null, level);\n         } else {\n           /* Ideally at level 0, the deleted diff will be combined with\n            * the previous diff , and deleted inodes will be cleaned up\n            * by passing a deleted processor here while combining the diffs.\n            * Level 0 merge with previous diff will be handled inside the\n            * {@link AbstractINodeDiffList#deleteSnapshotDiff} function.\n            */\n           if (node.getChildrenDiff(level) !\u003d null) {\n-            nodePath[level].getChildrenDiff(level)\n-                .combinePosterior(node.getChildrenDiff(level), null);\n+            final ChildrenDiff combined;\n+            if (previous \u003d\u003d nodePath[level - 1]\n+                \u0026\u0026 next \u003d\u003d node.getSkipNode(level - 1)) {\n+              combined \u003d nodePath[level - 1].getChildrenDiff(level - 1);\n+              previous.setSkipDiff4Target(next, level + 1, combined);\n+            } else if (next \u003d\u003d previous.getSkipNode(level + 1)) {\n+              combined \u003d previous.getChildrenDiff(level + 1);\n+            } else {\n+              combined \u003d new ChildrenDiff();\n+              combined.combinePosterior(previous.getChildrenDiff(level), null);\n+              combined.combinePosterior(node.getChildrenDiff(level), null);\n+            }\n+            previous.setSkipDiff(combined, level);\n           }\n         }\n       }\n-      nodePath[level].setSkipTo(node.getSkipNode(level), level);\n+      previous.setSkipTo(next, level);\n     }\n     if (nodeLevel \u003d\u003d headLevel) {\n       head.trim();\n     }\n     return skipNodeList.remove(index).getDiff();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public DirectoryDiff remove(int index) {\n    final SkipListNode node \u003d getNode(index);\n\n    int headLevel \u003d head.level();\n    int nodeLevel \u003d node.level();\n    final SkipListNode[] nodePath \u003d findPreviousNodes(node, nodeLevel);\n\n    for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n      final SkipListNode previous \u003d nodePath[level];\n      final SkipListNode next \u003d node.getSkipNode(level);\n      if (level \u003d\u003d 0) {\n        if (next !\u003d null) {\n          previous.setSkipDiff4Target(next, 1, previous.getChildrenDiff(0));\n        }\n      } else if (previous !\u003d head) {\n        // if the last snapshot is deleted, for all the skip level nodes\n        // pointing to the last one, the combined children diff at each level\n        // \u003e 0 should be made null and skip pointers will be updated to null.\n        // if the snapshot being deleted is not the last one, we have to merge\n        // the diff of deleted node at each level to the previous skip level\n        // node at that level and the skip pointers will be updated to point to\n        // the skip nodes of the deleted node.\n        if (next \u003d\u003d null) {\n          previous.setSkipDiff(null, level);\n        } else {\n          /* Ideally at level 0, the deleted diff will be combined with\n           * the previous diff , and deleted inodes will be cleaned up\n           * by passing a deleted processor here while combining the diffs.\n           * Level 0 merge with previous diff will be handled inside the\n           * {@link AbstractINodeDiffList#deleteSnapshotDiff} function.\n           */\n          if (node.getChildrenDiff(level) !\u003d null) {\n            final ChildrenDiff combined;\n            if (previous \u003d\u003d nodePath[level - 1]\n                \u0026\u0026 next \u003d\u003d node.getSkipNode(level - 1)) {\n              combined \u003d nodePath[level - 1].getChildrenDiff(level - 1);\n              previous.setSkipDiff4Target(next, level + 1, combined);\n            } else if (next \u003d\u003d previous.getSkipNode(level + 1)) {\n              combined \u003d previous.getChildrenDiff(level + 1);\n            } else {\n              combined \u003d new ChildrenDiff();\n              combined.combinePosterior(previous.getChildrenDiff(level), null);\n              combined.combinePosterior(node.getChildrenDiff(level), null);\n            }\n            previous.setSkipDiff(combined, level);\n          }\n        }\n      }\n      previous.setSkipTo(next, level);\n    }\n    if (nodeLevel \u003d\u003d headLevel) {\n      head.trim();\n    }\n    return skipNodeList.remove(index).getDiff();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DiffListBySkipList.java",
+      "extendedDetails": {}
+    },
+    "ba82e5c488ca0081534c1e40810b3f9e7da9eaad": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-13173.  Replace ArrayList with DirectoryDiffList(SnapshotSkipList) to store DirectoryDiffs.  Contributed by Shashikant Banerjee\n",
+      "commitDate": "02/03/18 5:47 PM",
+      "commitName": "ba82e5c488ca0081534c1e40810b3f9e7da9eaad",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "02/03/18 5:08 PM",
+      "commitNameOld": "90d2bdcb752f5f32ef65765af6fd5596dd5d373b",
+      "commitAuthorOld": "Andras Bokor",
+      "daysBetweenCommits": 0.03,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public DirectoryDiff remove(int index) {\n    SkipListNode node \u003d getNode(index);\n    int headLevel \u003d head.level();\n    int nodeLevel \u003d node.level();\n    final SkipListNode[] nodePath \u003d findPreviousNodes(node, nodeLevel);\n    for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n      if (nodePath[level] !\u003d head \u0026\u0026 level \u003e 0) {\n        // if the last snapshot is deleted, for all the skip level nodes\n        // pointing to the last one, the combined children diff at each level\n        // \u003e 0 should be made null and skip pointers will be updated to null.\n        // if the snapshot being deleted is not the last one, we have to merge\n        // the diff of deleted node at each level to the previous skip level\n        // node at that level and the skip pointers will be updated to point to\n        // the skip nodes of the deleted node.\n        if (index \u003d\u003d size() - 1) {\n          nodePath[level].setSkipDiff(null, level);\n        } else {\n          /* Ideally at level 0, the deleted diff will be combined with\n           * the previous diff , and deleted inodes will be cleaned up\n           * by passing a deleted processor here while combining the diffs.\n           * Level 0 merge with previous diff will be handled inside the\n           * {@link AbstractINodeDiffList#deleteSnapshotDiff} function.\n           */\n          if (node.getChildrenDiff(level) !\u003d null) {\n            nodePath[level].getChildrenDiff(level)\n                .combinePosterior(node.getChildrenDiff(level), null);\n          }\n        }\n      }\n      nodePath[level].setSkipTo(node.getSkipNode(level), level);\n    }\n    if (nodeLevel \u003d\u003d headLevel) {\n      head.trim();\n    }\n    return skipNodeList.remove(index).getDiff();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DiffListBySkipList.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectoryDiffList.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DiffListBySkipList.java"
+      }
+    },
+    "60080fbfcf3919fc155af45975fa24bdeb6c8ffe": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13171. Handle Deletion of nodes in SnasphotSkipList.  Contributed by Shashikant Banerjee\n",
+      "commitDate": "02/03/18 10:51 AM",
+      "commitName": "60080fbfcf3919fc155af45975fa24bdeb6c8ffe",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "01/03/18 2:12 PM",
+      "commitNameOld": "96e8f260ab90cc7b5a5aa2a59c182ef20a028238",
+      "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+      "daysBetweenCommits": 0.86,
+      "commitsBetweenForRepo": 7,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,3 +1,36 @@\n   public DirectoryDiff remove(int index) {\n-    throw new UnsupportedOperationException();\n+    SkipListNode node \u003d getNode(index);\n+    int headLevel \u003d head.level();\n+    int nodeLevel \u003d node.level();\n+    final SkipListNode[] nodePath \u003d findPreviousNodes(node, nodeLevel);\n+    for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n+      if (nodePath[level] !\u003d head \u0026\u0026 level \u003e 0) {\n+        // if the last snapshot is deleted, for all the skip level nodes\n+        // pointing to the last one, the combined children diff at each level\n+        // \u003e 0 should be made null and skip pointers will be updated to null.\n+        // if the snapshot being deleted is not the last one, we have to merge\n+        // the diff of deleted node at each level to the previous skip level\n+        // node at that level and the skip pointers will be updated to point to\n+        // the skip nodes of the deleted node.\n+        if (index \u003d\u003d size() - 1) {\n+          nodePath[level].setSkipDiff(null, level);\n+        } else {\n+          /* Ideally at level 0, the deleted diff will be combined with\n+           * the previous diff , and deleted inodes will be cleaned up\n+           * by passing a deleted processor here while combining the diffs.\n+           * Level 0 merge with previous diff will be handled inside the\n+           * {@link AbstractINodeDiffList#deleteSnapshotDiff} function.\n+           */\n+          if (node.getChildrenDiff(level) !\u003d null) {\n+            nodePath[level].getChildrenDiff(level)\n+                .combinePosterior(node.getChildrenDiff(level), null);\n+          }\n+        }\n+      }\n+      nodePath[level].setSkipTo(node.getSkipNode(level), level);\n+    }\n+    if (nodeLevel \u003d\u003d headLevel) {\n+      head.trim();\n+    }\n+    return skipNodeList.remove(index).getDiff();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public DirectoryDiff remove(int index) {\n    SkipListNode node \u003d getNode(index);\n    int headLevel \u003d head.level();\n    int nodeLevel \u003d node.level();\n    final SkipListNode[] nodePath \u003d findPreviousNodes(node, nodeLevel);\n    for (int level \u003d 0; level \u003c\u003d nodeLevel; level++) {\n      if (nodePath[level] !\u003d head \u0026\u0026 level \u003e 0) {\n        // if the last snapshot is deleted, for all the skip level nodes\n        // pointing to the last one, the combined children diff at each level\n        // \u003e 0 should be made null and skip pointers will be updated to null.\n        // if the snapshot being deleted is not the last one, we have to merge\n        // the diff of deleted node at each level to the previous skip level\n        // node at that level and the skip pointers will be updated to point to\n        // the skip nodes of the deleted node.\n        if (index \u003d\u003d size() - 1) {\n          nodePath[level].setSkipDiff(null, level);\n        } else {\n          /* Ideally at level 0, the deleted diff will be combined with\n           * the previous diff , and deleted inodes will be cleaned up\n           * by passing a deleted processor here while combining the diffs.\n           * Level 0 merge with previous diff will be handled inside the\n           * {@link AbstractINodeDiffList#deleteSnapshotDiff} function.\n           */\n          if (node.getChildrenDiff(level) !\u003d null) {\n            nodePath[level].getChildrenDiff(level)\n                .combinePosterior(node.getChildrenDiff(level), null);\n          }\n        }\n      }\n      nodePath[level].setSkipTo(node.getSkipNode(level), level);\n    }\n    if (nodeLevel \u003d\u003d headLevel) {\n      head.trim();\n    }\n    return skipNodeList.remove(index).getDiff();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectoryDiffList.java",
+      "extendedDetails": {}
+    },
+    "81d9446a92e3968234702b2981468a991c7cf8a0": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13102. Implement SnapshotSkipList class to store Multi level DirectoryDiffs.  Contributed by Shashikant Banerjee\n",
+      "commitDate": "28/02/18 1:42 PM",
+      "commitName": "81d9446a92e3968234702b2981468a991c7cf8a0",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "diff": "@@ -0,0 +1,3 @@\n+  public DirectoryDiff remove(int index) {\n+    throw new UnsupportedOperationException();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public DirectoryDiff remove(int index) {\n    throw new UnsupportedOperationException();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/DirectoryDiffList.java"
+    }
+  }
+}

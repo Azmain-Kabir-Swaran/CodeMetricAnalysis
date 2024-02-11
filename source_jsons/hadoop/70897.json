@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AliyunOSSInputStream.java",
+  "functionName": "read",
+  "functionId": "read",
+  "sourceFilePath": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSInputStream.java",
+  "functionStartLine": 183,
+  "functionEndLine": 203,
+  "numCommitsSeen": 8,
+  "timeTaken": 1252,
+  "changeHistory": [
+    "9195a6e302028ed3921d1016ac2fa5754f06ebf0",
+    "d9f73f1b7cd893a7d88baa9bfd1b809a5dec9e59",
+    "d33e928fbeb1764a724c8f3c051bb0d8be82bbff",
+    "a5d5342228050a778b20e95adf7885bdba39985d"
+  ],
+  "changeHistoryShort": {
+    "9195a6e302028ed3921d1016ac2fa5754f06ebf0": "Ybodychange",
+    "d9f73f1b7cd893a7d88baa9bfd1b809a5dec9e59": "Ybodychange",
+    "d33e928fbeb1764a724c8f3c051bb0d8be82bbff": "Ybodychange",
+    "a5d5342228050a778b20e95adf7885bdba39985d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9195a6e302028ed3921d1016ac2fa5754f06ebf0": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15027. AliyunOSS: Support multi-thread pre-read to improve sequential read from Hadoop to Aliyun OSS performance. (Contributed by Jinhu Wu)\n",
+      "commitDate": "16/01/18 11:55 PM",
+      "commitName": "9195a6e302028ed3921d1016ac2fa5754f06ebf0",
+      "commitAuthor": "Sammi Chen",
+      "commitDateOld": "15/02/17 12:34 AM",
+      "commitNameOld": "cd3e59a3dcc69f68711777d448da5228a55846b3",
+      "commitAuthorOld": "Kai Zheng",
+      "daysBetweenCommits": 335.97,
+      "commitsBetweenForRepo": 2216,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,21 @@\n   public synchronized int read() throws IOException {\n     checkNotClosed();\n \n     if (partRemaining \u003c\u003d 0 \u0026\u0026 position \u003c contentLength) {\n       reopen(position);\n     }\n \n-    int tries \u003d MAX_RETRIES;\n-    boolean retry;\n     int byteRead \u003d -1;\n-    do {\n-      retry \u003d false;\n-      try {\n-        byteRead \u003d wrappedStream.read();\n-      } catch (Exception e) {\n-        handleReadException(e, --tries);\n-        retry \u003d true;\n-      }\n-    } while (retry);\n+    if (partRemaining !\u003d 0) {\n+      byteRead \u003d this.buffer[this.buffer.length - (int)partRemaining] \u0026 0xFF;\n+    }\n     if (byteRead \u003e\u003d 0) {\n       position++;\n       partRemaining--;\n     }\n \n     if (statistics !\u003d null \u0026\u0026 byteRead \u003e\u003d 0) {\n       statistics.incrementBytesRead(byteRead);\n     }\n     return byteRead;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized int read() throws IOException {\n    checkNotClosed();\n\n    if (partRemaining \u003c\u003d 0 \u0026\u0026 position \u003c contentLength) {\n      reopen(position);\n    }\n\n    int byteRead \u003d -1;\n    if (partRemaining !\u003d 0) {\n      byteRead \u003d this.buffer[this.buffer.length - (int)partRemaining] \u0026 0xFF;\n    }\n    if (byteRead \u003e\u003d 0) {\n      position++;\n      partRemaining--;\n    }\n\n    if (statistics !\u003d null \u0026\u0026 byteRead \u003e\u003d 0) {\n      statistics.incrementBytesRead(byteRead);\n    }\n    return byteRead;\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSInputStream.java",
+      "extendedDetails": {}
+    },
+    "d9f73f1b7cd893a7d88baa9bfd1b809a5dec9e59": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13723. AliyunOSSInputStream#read() should update read bytes stat correctly. Contributed by Mingliang Liu\n",
+      "commitDate": "13/10/16 10:33 PM",
+      "commitName": "d9f73f1b7cd893a7d88baa9bfd1b809a5dec9e59",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "19/09/16 8:39 PM",
+      "commitNameOld": "9cd47602576cd01a905e27642b685905a88eee72",
+      "commitAuthorOld": "Kai Zheng",
+      "daysBetweenCommits": 24.08,
+      "commitsBetweenForRepo": 178,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,29 @@\n   public synchronized int read() throws IOException {\n     checkNotClosed();\n \n     if (partRemaining \u003c\u003d 0 \u0026\u0026 position \u003c contentLength) {\n       reopen(position);\n     }\n \n     int tries \u003d MAX_RETRIES;\n     boolean retry;\n     int byteRead \u003d -1;\n     do {\n       retry \u003d false;\n       try {\n         byteRead \u003d wrappedStream.read();\n       } catch (Exception e) {\n         handleReadException(e, --tries);\n         retry \u003d true;\n       }\n     } while (retry);\n     if (byteRead \u003e\u003d 0) {\n       position++;\n       partRemaining--;\n     }\n \n     if (statistics !\u003d null \u0026\u0026 byteRead \u003e\u003d 0) {\n-      statistics.incrementBytesRead(1);\n+      statistics.incrementBytesRead(byteRead);\n     }\n     return byteRead;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized int read() throws IOException {\n    checkNotClosed();\n\n    if (partRemaining \u003c\u003d 0 \u0026\u0026 position \u003c contentLength) {\n      reopen(position);\n    }\n\n    int tries \u003d MAX_RETRIES;\n    boolean retry;\n    int byteRead \u003d -1;\n    do {\n      retry \u003d false;\n      try {\n        byteRead \u003d wrappedStream.read();\n      } catch (Exception e) {\n        handleReadException(e, --tries);\n        retry \u003d true;\n      }\n    } while (retry);\n    if (byteRead \u003e\u003d 0) {\n      position++;\n      partRemaining--;\n    }\n\n    if (statistics !\u003d null \u0026\u0026 byteRead \u003e\u003d 0) {\n      statistics.incrementBytesRead(byteRead);\n    }\n    return byteRead;\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSInputStream.java",
+      "extendedDetails": {}
+    },
+    "d33e928fbeb1764a724c8f3c051bb0d8be82bbff": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13529. Do some code refactoring. Contributed by Genmao Yu.\n",
+      "commitDate": "06/09/16 8:15 PM",
+      "commitName": "d33e928fbeb1764a724c8f3c051bb0d8be82bbff",
+      "commitAuthor": "Mingfei",
+      "commitDateOld": "06/09/16 8:15 PM",
+      "commitNameOld": "4d84c814fcaf074022593c057d8f8dec4cd461fa",
+      "commitAuthorOld": "Mingfei",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 4,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,29 @@\n   public synchronized int read() throws IOException {\n     checkNotClosed();\n \n-    if (partRemaining \u003c\u003d 0 \u0026\u0026 position \u003c dataLen) {\n+    if (partRemaining \u003c\u003d 0 \u0026\u0026 position \u003c contentLength) {\n       reopen(position);\n     }\n \n     int tries \u003d MAX_RETRIES;\n     boolean retry;\n     int byteRead \u003d -1;\n     do {\n       retry \u003d false;\n       try {\n         byteRead \u003d wrappedStream.read();\n       } catch (Exception e) {\n         handleReadException(e, --tries);\n         retry \u003d true;\n       }\n     } while (retry);\n     if (byteRead \u003e\u003d 0) {\n       position++;\n       partRemaining--;\n     }\n \n     if (statistics !\u003d null \u0026\u0026 byteRead \u003e\u003d 0) {\n       statistics.incrementBytesRead(1);\n     }\n     return byteRead;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized int read() throws IOException {\n    checkNotClosed();\n\n    if (partRemaining \u003c\u003d 0 \u0026\u0026 position \u003c contentLength) {\n      reopen(position);\n    }\n\n    int tries \u003d MAX_RETRIES;\n    boolean retry;\n    int byteRead \u003d -1;\n    do {\n      retry \u003d false;\n      try {\n        byteRead \u003d wrappedStream.read();\n      } catch (Exception e) {\n        handleReadException(e, --tries);\n        retry \u003d true;\n      }\n    } while (retry);\n    if (byteRead \u003e\u003d 0) {\n      position++;\n      partRemaining--;\n    }\n\n    if (statistics !\u003d null \u0026\u0026 byteRead \u003e\u003d 0) {\n      statistics.incrementBytesRead(1);\n    }\n    return byteRead;\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSInputStream.java",
+      "extendedDetails": {}
+    },
+    "a5d5342228050a778b20e95adf7885bdba39985d": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12756. Incorporate Aliyun OSS file system implementation. Contributed by Mingfei Shi and Lin Zhou\n",
+      "commitDate": "06/09/16 8:15 PM",
+      "commitName": "a5d5342228050a778b20e95adf7885bdba39985d",
+      "commitAuthor": "Kai Zheng",
+      "diff": "@@ -0,0 +1,29 @@\n+  public synchronized int read() throws IOException {\n+    checkNotClosed();\n+\n+    if (partRemaining \u003c\u003d 0 \u0026\u0026 position \u003c dataLen) {\n+      reopen(position);\n+    }\n+\n+    int tries \u003d MAX_RETRIES;\n+    boolean retry;\n+    int byteRead \u003d -1;\n+    do {\n+      retry \u003d false;\n+      try {\n+        byteRead \u003d wrappedStream.read();\n+      } catch (Exception e) {\n+        handleReadException(e, --tries);\n+        retry \u003d true;\n+      }\n+    } while (retry);\n+    if (byteRead \u003e\u003d 0) {\n+      position++;\n+      partRemaining--;\n+    }\n+\n+    if (statistics !\u003d null \u0026\u0026 byteRead \u003e\u003d 0) {\n+      statistics.incrementBytesRead(1);\n+    }\n+    return byteRead;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized int read() throws IOException {\n    checkNotClosed();\n\n    if (partRemaining \u003c\u003d 0 \u0026\u0026 position \u003c dataLen) {\n      reopen(position);\n    }\n\n    int tries \u003d MAX_RETRIES;\n    boolean retry;\n    int byteRead \u003d -1;\n    do {\n      retry \u003d false;\n      try {\n        byteRead \u003d wrappedStream.read();\n      } catch (Exception e) {\n        handleReadException(e, --tries);\n        retry \u003d true;\n      }\n    } while (retry);\n    if (byteRead \u003e\u003d 0) {\n      position++;\n      partRemaining--;\n    }\n\n    if (statistics !\u003d null \u0026\u0026 byteRead \u003e\u003d 0) {\n      statistics.incrementBytesRead(1);\n    }\n    return byteRead;\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSInputStream.java"
+    }
+  }
+}

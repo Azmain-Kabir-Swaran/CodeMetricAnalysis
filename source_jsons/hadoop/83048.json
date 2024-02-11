@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RollingFileSystemSink.java",
+  "functionName": "rollLogDirIfNeeded",
+  "functionId": "rollLogDirIfNeeded",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java",
+  "functionStartLine": 504,
+  "functionEndLine": 542,
+  "numCommitsSeen": 9,
+  "timeTaken": 1451,
+  "changeHistory": [
+    "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc",
+    "c2460dad642feee1086442d33c30c24ec77236b9",
+    "5b59a0ea85c923384e36ad7c036e751551774142",
+    "ee005e010cff3f97a5daa8000ac2cd151e2631ca"
+  ],
+  "changeHistoryShort": {
+    "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc": "Ybodychange",
+    "c2460dad642feee1086442d33c30c24ec77236b9": "Ybodychange",
+    "5b59a0ea85c923384e36ad7c036e751551774142": "Ybodychange",
+    "ee005e010cff3f97a5daa8000ac2cd151e2631ca": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9782. RollingFileSystemSink should have configurable roll interval. (Daniel Templeton via kasha)\n",
+      "commitDate": "24/05/16 10:37 AM",
+      "commitName": "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "25/02/16 4:31 PM",
+      "commitNameOld": "c2460dad642feee1086442d33c30c24ec77236b9",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 88.71,
+      "commitsBetweenForRepo": 545,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,39 @@\n   private void rollLogDirIfNeeded() throws MetricsException {\n+    // Because we\u0027re working relative to the clock, we use a Date instead\n+    // of Time.monotonicNow().\n     Date now \u003d new Date();\n-    String currentDir \u003d DATE_FORMAT.format(now);\n-    Path path \u003d new Path(basePath, currentDir);\n \n     // We check whether currentOutStream is null instead of currentDirPath,\n     // because if currentDirPath is null, then currentOutStream is null, but\n-    // currentOutStream can be null for other reasons.\n-    if ((currentOutStream \u003d\u003d null) || !path.equals(currentDirPath)) {\n+    // currentOutStream can be null for other reasons.  Same for nextFlush.\n+    if ((currentOutStream \u003d\u003d null) || now.after(nextFlush.getTime())) {\n       // If we\u0027re not yet connected to HDFS, create the connection\n       if (!initialized) {\n         initialized \u003d initFs();\n       }\n \n       if (initialized) {\n         // Close the stream. This step could have been handled already by the\n         // flusher thread, but if it has, the PrintStream will just swallow the\n         // exception, which is fine.\n         if (currentOutStream !\u003d null) {\n           currentOutStream.close();\n         }\n \n-        currentDirPath \u003d path;\n+        currentDirPath \u003d findCurrentDirectory(now);\n \n         try {\n           rollLogDir();\n         } catch (IOException ex) {\n           throwMetricsException(\"Failed to create new log file\", ex);\n         }\n \n-        scheduleFlush(now);\n+        // Update the time of the next flush\n+        updateFlushTime(now);\n+        // Schedule the next flush at that time\n+        scheduleFlush(nextFlush.getTime());\n       }\n+    } else if (forceFlush) {\n+      scheduleFlush(new Date());\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void rollLogDirIfNeeded() throws MetricsException {\n    // Because we\u0027re working relative to the clock, we use a Date instead\n    // of Time.monotonicNow().\n    Date now \u003d new Date();\n\n    // We check whether currentOutStream is null instead of currentDirPath,\n    // because if currentDirPath is null, then currentOutStream is null, but\n    // currentOutStream can be null for other reasons.  Same for nextFlush.\n    if ((currentOutStream \u003d\u003d null) || now.after(nextFlush.getTime())) {\n      // If we\u0027re not yet connected to HDFS, create the connection\n      if (!initialized) {\n        initialized \u003d initFs();\n      }\n\n      if (initialized) {\n        // Close the stream. This step could have been handled already by the\n        // flusher thread, but if it has, the PrintStream will just swallow the\n        // exception, which is fine.\n        if (currentOutStream !\u003d null) {\n          currentOutStream.close();\n        }\n\n        currentDirPath \u003d findCurrentDirectory(now);\n\n        try {\n          rollLogDir();\n        } catch (IOException ex) {\n          throwMetricsException(\"Failed to create new log file\", ex);\n        }\n\n        // Update the time of the next flush\n        updateFlushTime(now);\n        // Schedule the next flush at that time\n        scheduleFlush(nextFlush.getTime());\n      }\n    } else if (forceFlush) {\n      scheduleFlush(new Date());\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java",
+      "extendedDetails": {}
+    },
+    "c2460dad642feee1086442d33c30c24ec77236b9": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9858. RollingFileSystemSink can throw an NPE on non-secure clusters. (Daniel Templeton via kasha)\n",
+      "commitDate": "25/02/16 4:31 PM",
+      "commitName": "c2460dad642feee1086442d33c30c24ec77236b9",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "11/02/16 8:37 PM",
+      "commitNameOld": "33ce7f6c072144f55be30c66099eef5bc736405e",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 13.83,
+      "commitsBetweenForRepo": 94,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,34 @@\n   private void rollLogDirIfNeeded() throws MetricsException {\n     Date now \u003d new Date();\n     String currentDir \u003d DATE_FORMAT.format(now);\n     Path path \u003d new Path(basePath, currentDir);\n \n     // We check whether currentOutStream is null instead of currentDirPath,\n     // because if currentDirPath is null, then currentOutStream is null, but\n     // currentOutStream can be null for other reasons.\n     if ((currentOutStream \u003d\u003d null) || !path.equals(currentDirPath)) {\n-      // Close the stream. This step could have been handled already by the\n-      // flusher thread, but if it has, the PrintStream will just swallow the\n-      // exception, which is fine.\n-      if (currentOutStream !\u003d null) {\n-        currentOutStream.close();\n+      // If we\u0027re not yet connected to HDFS, create the connection\n+      if (!initialized) {\n+        initialized \u003d initFs();\n       }\n \n-      currentDirPath \u003d path;\n+      if (initialized) {\n+        // Close the stream. This step could have been handled already by the\n+        // flusher thread, but if it has, the PrintStream will just swallow the\n+        // exception, which is fine.\n+        if (currentOutStream !\u003d null) {\n+          currentOutStream.close();\n+        }\n \n-      try {\n-        rollLogDir();\n-      } catch (IOException ex) {\n-        throwMetricsException(\"Failed to create new log file\", ex);\n+        currentDirPath \u003d path;\n+\n+        try {\n+          rollLogDir();\n+        } catch (IOException ex) {\n+          throwMetricsException(\"Failed to create new log file\", ex);\n+        }\n+\n+        scheduleFlush(now);\n       }\n-\n-      scheduleFlush(now);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void rollLogDirIfNeeded() throws MetricsException {\n    Date now \u003d new Date();\n    String currentDir \u003d DATE_FORMAT.format(now);\n    Path path \u003d new Path(basePath, currentDir);\n\n    // We check whether currentOutStream is null instead of currentDirPath,\n    // because if currentDirPath is null, then currentOutStream is null, but\n    // currentOutStream can be null for other reasons.\n    if ((currentOutStream \u003d\u003d null) || !path.equals(currentDirPath)) {\n      // If we\u0027re not yet connected to HDFS, create the connection\n      if (!initialized) {\n        initialized \u003d initFs();\n      }\n\n      if (initialized) {\n        // Close the stream. This step could have been handled already by the\n        // flusher thread, but if it has, the PrintStream will just swallow the\n        // exception, which is fine.\n        if (currentOutStream !\u003d null) {\n          currentOutStream.close();\n        }\n\n        currentDirPath \u003d path;\n\n        try {\n          rollLogDir();\n        } catch (IOException ex) {\n          throwMetricsException(\"Failed to create new log file\", ex);\n        }\n\n        scheduleFlush(now);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java",
+      "extendedDetails": {}
+    },
+    "5b59a0ea85c923384e36ad7c036e751551774142": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-12759. RollingFileSystemSink should eagerly rotate directories. Contributed by Daniel Templeton.\n",
+      "commitDate": "06/02/16 8:52 PM",
+      "commitName": "5b59a0ea85c923384e36ad7c036e751551774142",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "28/01/16 5:43 PM",
+      "commitNameOld": "ee005e010cff3f97a5daa8000ac2cd151e2631ca",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 9.13,
+      "commitsBetweenForRepo": 63,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,27 @@\n   private void rollLogDirIfNeeded() throws MetricsException {\n-    String currentDir \u003d DATE_FORMAT.format(new Date());\n+    Date now \u003d new Date();\n+    String currentDir \u003d DATE_FORMAT.format(now);\n     Path path \u003d new Path(basePath, currentDir);\n \n     // We check whether currentOutStream is null instead of currentDirPath,\n     // because if currentDirPath is null, then currentOutStream is null, but\n     // currentOutStream can be null for other reasons.\n     if ((currentOutStream \u003d\u003d null) || !path.equals(currentDirPath)) {\n-      currentDirPath \u003d path;\n-\n+      // Close the stream. This step could have been handled already by the\n+      // flusher thread, but if it has, the PrintStream will just swallow the\n+      // exception, which is fine.\n       if (currentOutStream !\u003d null) {\n         currentOutStream.close();\n       }\n \n+      currentDirPath \u003d path;\n+\n       try {\n         rollLogDir();\n       } catch (IOException ex) {\n-        throwMetricsException(\"Failed to creating new log file\", ex);\n+        throwMetricsException(\"Failed to create new log file\", ex);\n       }\n+\n+      scheduleFlush(now);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void rollLogDirIfNeeded() throws MetricsException {\n    Date now \u003d new Date();\n    String currentDir \u003d DATE_FORMAT.format(now);\n    Path path \u003d new Path(basePath, currentDir);\n\n    // We check whether currentOutStream is null instead of currentDirPath,\n    // because if currentDirPath is null, then currentOutStream is null, but\n    // currentOutStream can be null for other reasons.\n    if ((currentOutStream \u003d\u003d null) || !path.equals(currentDirPath)) {\n      // Close the stream. This step could have been handled already by the\n      // flusher thread, but if it has, the PrintStream will just swallow the\n      // exception, which is fine.\n      if (currentOutStream !\u003d null) {\n        currentOutStream.close();\n      }\n\n      currentDirPath \u003d path;\n\n      try {\n        rollLogDir();\n      } catch (IOException ex) {\n        throwMetricsException(\"Failed to create new log file\", ex);\n      }\n\n      scheduleFlush(now);\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java",
+      "extendedDetails": {}
+    },
+    "ee005e010cff3f97a5daa8000ac2cd151e2631ca": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12702. Add an HDFS metrics sink. (Daniel Templeton via kasha)\n",
+      "commitDate": "28/01/16 5:43 PM",
+      "commitName": "ee005e010cff3f97a5daa8000ac2cd151e2631ca",
+      "commitAuthor": "Karthik Kambatla",
+      "diff": "@@ -0,0 +1,21 @@\n+  private void rollLogDirIfNeeded() throws MetricsException {\n+    String currentDir \u003d DATE_FORMAT.format(new Date());\n+    Path path \u003d new Path(basePath, currentDir);\n+\n+    // We check whether currentOutStream is null instead of currentDirPath,\n+    // because if currentDirPath is null, then currentOutStream is null, but\n+    // currentOutStream can be null for other reasons.\n+    if ((currentOutStream \u003d\u003d null) || !path.equals(currentDirPath)) {\n+      currentDirPath \u003d path;\n+\n+      if (currentOutStream !\u003d null) {\n+        currentOutStream.close();\n+      }\n+\n+      try {\n+        rollLogDir();\n+      } catch (IOException ex) {\n+        throwMetricsException(\"Failed to creating new log file\", ex);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void rollLogDirIfNeeded() throws MetricsException {\n    String currentDir \u003d DATE_FORMAT.format(new Date());\n    Path path \u003d new Path(basePath, currentDir);\n\n    // We check whether currentOutStream is null instead of currentDirPath,\n    // because if currentDirPath is null, then currentOutStream is null, but\n    // currentOutStream can be null for other reasons.\n    if ((currentOutStream \u003d\u003d null) || !path.equals(currentDirPath)) {\n      currentDirPath \u003d path;\n\n      if (currentOutStream !\u003d null) {\n        currentOutStream.close();\n      }\n\n      try {\n        rollLogDir();\n      } catch (IOException ex) {\n        throwMetricsException(\"Failed to creating new log file\", ex);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java"
+    }
+  }
+}

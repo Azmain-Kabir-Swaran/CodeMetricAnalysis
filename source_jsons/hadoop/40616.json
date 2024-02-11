@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PlacementConstraintProcessor.java",
+  "functionName": "handleRejectedRequests",
+  "functionId": "handleRejectedRequests___appAttemptId-ApplicationAttemptId__response-AllocateResponse",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/constraint/processor/PlacementConstraintProcessor.java",
+  "functionStartLine": 243,
+  "functionEndLine": 281,
+  "numCommitsSeen": 7,
+  "timeTaken": 2309,
+  "changeHistory": [
+    "0b489e564ce5a50324a530e29c18aa8a75276c50",
+    "6e5ba9366fc05719906ff2789b1a0fd26001182b",
+    "f9af15d659f59fd0cf564fe1ecc8e06c6429ba68"
+  ],
+  "changeHistoryShort": {
+    "0b489e564ce5a50324a530e29c18aa8a75276c50": "Yfilerename",
+    "6e5ba9366fc05719906ff2789b1a0fd26001182b": "Ybodychange",
+    "f9af15d659f59fd0cf564fe1ecc8e06c6429ba68": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0b489e564ce5a50324a530e29c18aa8a75276c50": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-7920. Simplify configuration for PlacementConstraints. Contributed by Wangda Tan.\n",
+      "commitDate": "15/02/18 2:23 PM",
+      "commitName": "0b489e564ce5a50324a530e29c18aa8a75276c50",
+      "commitAuthor": "Konstantinos Karanasos",
+      "commitDateOld": "15/02/18 1:32 PM",
+      "commitNameOld": "47473952e56b0380147d42f4110ad03c2276c961",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 0.04,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void handleRejectedRequests(ApplicationAttemptId appAttemptId,\n      AllocateResponse response) {\n    List\u003cSchedulingRequestWithPlacementAttempt\u003e rejectedAlgoRequests \u003d\n        this.placementDispatcher.pullRejectedRequests(\n            appAttemptId.getApplicationId());\n    if (rejectedAlgoRequests !\u003d null \u0026\u0026 !rejectedAlgoRequests.isEmpty()) {\n      LOG.warn(\"Following requests of [{}] were rejected by\" +\n              \" the PlacementAlgorithmOutput Algorithm: {}\",\n          appAttemptId.getApplicationId(), rejectedAlgoRequests);\n      rejectedAlgoRequests.stream()\n          .filter(req -\u003e req.getPlacementAttempt() \u003c retryAttempts)\n          .forEach(req -\u003e handleSchedulingResponse(\n              new Response(false, appAttemptId.getApplicationId(),\n                  req.getSchedulingRequest(), req.getPlacementAttempt(),\n                  null)));\n      ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n          rejectedAlgoRequests.stream()\n              .filter(req -\u003e req.getPlacementAttempt() \u003e\u003d retryAttempts)\n              .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n                  RejectionReason.COULD_NOT_PLACE_ON_NODE,\n                  sr.getSchedulingRequest()))\n              .collect(Collectors.toList()));\n    }\n    List\u003cSchedulingRequest\u003e rejectedRequests \u003d\n        this.requestsToReject.get(appAttemptId.getApplicationId());\n    if (rejectedRequests !\u003d null \u0026\u0026 !rejectedRequests.isEmpty()) {\n      synchronized (rejectedRequests) {\n        LOG.warn(\"Following requests of [{}] exhausted all retry attempts \" +\n                \"trying to schedule on placed node: {}\",\n            appAttemptId.getApplicationId(), rejectedRequests);\n        ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n            rejectedRequests.stream()\n                .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n                    RejectionReason.COULD_NOT_SCHEDULE_ON_NODE, sr))\n                .collect(Collectors.toList()));\n        rejectedRequests.clear();\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/constraint/processor/PlacementConstraintProcessor.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/constraint/processor/PlacementProcessor.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/constraint/processor/PlacementConstraintProcessor.java"
+      }
+    },
+    "6e5ba9366fc05719906ff2789b1a0fd26001182b": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7839. Modify PlacementAlgorithm to Check node capacity before placing request on node. (Panagiotis Garefalakis via asuresh)\n",
+      "commitDate": "02/02/18 10:28 AM",
+      "commitName": "6e5ba9366fc05719906ff2789b1a0fd26001182b",
+      "commitAuthor": "Arun Suresh",
+      "commitDateOld": "31/01/18 1:30 AM",
+      "commitNameOld": "38af23796971193fa529c3d08ffde8fcd6e607b6",
+      "commitAuthorOld": "Arun Suresh",
+      "daysBetweenCommits": 2.37,
+      "commitsBetweenForRepo": 33,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,39 @@\n   private void handleRejectedRequests(ApplicationAttemptId appAttemptId,\n       AllocateResponse response) {\n-    List\u003cSchedulingRequest\u003e rejectedRequests \u003d\n+    List\u003cSchedulingRequestWithPlacementAttempt\u003e rejectedAlgoRequests \u003d\n         this.placementDispatcher.pullRejectedRequests(\n             appAttemptId.getApplicationId());\n-    if (rejectedRequests !\u003d null \u0026\u0026 !rejectedRequests.isEmpty()) {\n+    if (rejectedAlgoRequests !\u003d null \u0026\u0026 !rejectedAlgoRequests.isEmpty()) {\n       LOG.warn(\"Following requests of [{}] were rejected by\" +\n               \" the PlacementAlgorithmOutput Algorithm: {}\",\n-          appAttemptId.getApplicationId(), rejectedRequests);\n+          appAttemptId.getApplicationId(), rejectedAlgoRequests);\n+      rejectedAlgoRequests.stream()\n+          .filter(req -\u003e req.getPlacementAttempt() \u003c retryAttempts)\n+          .forEach(req -\u003e handleSchedulingResponse(\n+              new Response(false, appAttemptId.getApplicationId(),\n+                  req.getSchedulingRequest(), req.getPlacementAttempt(),\n+                  null)));\n       ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n-          rejectedRequests.stream()\n+          rejectedAlgoRequests.stream()\n+              .filter(req -\u003e req.getPlacementAttempt() \u003e\u003d retryAttempts)\n               .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n-                  RejectionReason.COULD_NOT_PLACE_ON_NODE, sr))\n+                  RejectionReason.COULD_NOT_PLACE_ON_NODE,\n+                  sr.getSchedulingRequest()))\n               .collect(Collectors.toList()));\n     }\n-    rejectedRequests \u003d\n+    List\u003cSchedulingRequest\u003e rejectedRequests \u003d\n         this.requestsToReject.get(appAttemptId.getApplicationId());\n     if (rejectedRequests !\u003d null \u0026\u0026 !rejectedRequests.isEmpty()) {\n       synchronized (rejectedRequests) {\n         LOG.warn(\"Following requests of [{}] exhausted all retry attempts \" +\n                 \"trying to schedule on placed node: {}\",\n             appAttemptId.getApplicationId(), rejectedRequests);\n         ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n             rejectedRequests.stream()\n                 .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n                     RejectionReason.COULD_NOT_SCHEDULE_ON_NODE, sr))\n                 .collect(Collectors.toList()));\n         rejectedRequests.clear();\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void handleRejectedRequests(ApplicationAttemptId appAttemptId,\n      AllocateResponse response) {\n    List\u003cSchedulingRequestWithPlacementAttempt\u003e rejectedAlgoRequests \u003d\n        this.placementDispatcher.pullRejectedRequests(\n            appAttemptId.getApplicationId());\n    if (rejectedAlgoRequests !\u003d null \u0026\u0026 !rejectedAlgoRequests.isEmpty()) {\n      LOG.warn(\"Following requests of [{}] were rejected by\" +\n              \" the PlacementAlgorithmOutput Algorithm: {}\",\n          appAttemptId.getApplicationId(), rejectedAlgoRequests);\n      rejectedAlgoRequests.stream()\n          .filter(req -\u003e req.getPlacementAttempt() \u003c retryAttempts)\n          .forEach(req -\u003e handleSchedulingResponse(\n              new Response(false, appAttemptId.getApplicationId(),\n                  req.getSchedulingRequest(), req.getPlacementAttempt(),\n                  null)));\n      ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n          rejectedAlgoRequests.stream()\n              .filter(req -\u003e req.getPlacementAttempt() \u003e\u003d retryAttempts)\n              .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n                  RejectionReason.COULD_NOT_PLACE_ON_NODE,\n                  sr.getSchedulingRequest()))\n              .collect(Collectors.toList()));\n    }\n    List\u003cSchedulingRequest\u003e rejectedRequests \u003d\n        this.requestsToReject.get(appAttemptId.getApplicationId());\n    if (rejectedRequests !\u003d null \u0026\u0026 !rejectedRequests.isEmpty()) {\n      synchronized (rejectedRequests) {\n        LOG.warn(\"Following requests of [{}] exhausted all retry attempts \" +\n                \"trying to schedule on placed node: {}\",\n            appAttemptId.getApplicationId(), rejectedRequests);\n        ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n            rejectedRequests.stream()\n                .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n                    RejectionReason.COULD_NOT_SCHEDULE_ON_NODE, sr))\n                .collect(Collectors.toList()));\n        rejectedRequests.clear();\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/constraint/processor/PlacementProcessor.java",
+      "extendedDetails": {}
+    },
+    "f9af15d659f59fd0cf564fe1ecc8e06c6429ba68": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-7612. Add Processor Framework for Rich Placement Constraints. (asuresh)\n",
+      "commitDate": "31/01/18 1:30 AM",
+      "commitName": "f9af15d659f59fd0cf564fe1ecc8e06c6429ba68",
+      "commitAuthor": "Arun Suresh",
+      "diff": "@@ -0,0 +1,31 @@\n+  private void handleRejectedRequests(ApplicationAttemptId appAttemptId,\n+      AllocateResponse response) {\n+    List\u003cSchedulingRequest\u003e rejectedRequests \u003d\n+        this.placementDispatcher.pullRejectedRequests(\n+            appAttemptId.getApplicationId());\n+    if (rejectedRequests !\u003d null \u0026\u0026 !rejectedRequests.isEmpty()) {\n+      LOG.warn(\"Following requests of [{}] were rejected by\" +\n+              \" the PlacementAlgorithmOutput Algorithm: {}\",\n+          appAttemptId.getApplicationId(), rejectedRequests);\n+      ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n+          rejectedRequests.stream()\n+              .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n+                  RejectionReason.COULD_NOT_PLACE_ON_NODE, sr))\n+              .collect(Collectors.toList()));\n+    }\n+    rejectedRequests \u003d\n+        this.requestsToReject.get(appAttemptId.getApplicationId());\n+    if (rejectedRequests !\u003d null \u0026\u0026 !rejectedRequests.isEmpty()) {\n+      synchronized (rejectedRequests) {\n+        LOG.warn(\"Following requests of [{}] exhausted all retry attempts \" +\n+                \"trying to schedule on placed node: {}\",\n+            appAttemptId.getApplicationId(), rejectedRequests);\n+        ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n+            rejectedRequests.stream()\n+                .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n+                    RejectionReason.COULD_NOT_SCHEDULE_ON_NODE, sr))\n+                .collect(Collectors.toList()));\n+        rejectedRequests.clear();\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void handleRejectedRequests(ApplicationAttemptId appAttemptId,\n      AllocateResponse response) {\n    List\u003cSchedulingRequest\u003e rejectedRequests \u003d\n        this.placementDispatcher.pullRejectedRequests(\n            appAttemptId.getApplicationId());\n    if (rejectedRequests !\u003d null \u0026\u0026 !rejectedRequests.isEmpty()) {\n      LOG.warn(\"Following requests of [{}] were rejected by\" +\n              \" the PlacementAlgorithmOutput Algorithm: {}\",\n          appAttemptId.getApplicationId(), rejectedRequests);\n      ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n          rejectedRequests.stream()\n              .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n                  RejectionReason.COULD_NOT_PLACE_ON_NODE, sr))\n              .collect(Collectors.toList()));\n    }\n    rejectedRequests \u003d\n        this.requestsToReject.get(appAttemptId.getApplicationId());\n    if (rejectedRequests !\u003d null \u0026\u0026 !rejectedRequests.isEmpty()) {\n      synchronized (rejectedRequests) {\n        LOG.warn(\"Following requests of [{}] exhausted all retry attempts \" +\n                \"trying to schedule on placed node: {}\",\n            appAttemptId.getApplicationId(), rejectedRequests);\n        ApplicationMasterServiceUtils.addToRejectedSchedulingRequests(response,\n            rejectedRequests.stream()\n                .map(sr -\u003e RejectedSchedulingRequest.newInstance(\n                    RejectionReason.COULD_NOT_SCHEDULE_ON_NODE, sr))\n                .collect(Collectors.toList()));\n        rejectedRequests.clear();\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/constraint/processor/PlacementProcessor.java"
+    }
+  }
+}

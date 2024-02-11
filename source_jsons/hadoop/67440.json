@@ -1,0 +1,122 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AdlFileSystem.java",
+  "functionName": "createNonRecursive",
+  "functionId": "createNonRecursive___f-Path__permission-FsPermission__flags-EnumSet__CreateFlag____bufferSize-int__replication-short__blockSize-long__progress-Progressable",
+  "sourceFilePath": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java",
+  "functionStartLine": 417,
+  "functionEndLine": 433,
+  "numCommitsSeen": 22,
+  "timeTaken": 2825,
+  "changeHistory": [
+    "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417",
+    "9581fb715cbc8a6ad28566e83c6d0242a7306688"
+  ],
+  "changeHistoryShort": {
+    "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417": "Ymultichange(Ymovefromfile,Ybodychange,Yparametermetachange,Yparameterchange)",
+    "9581fb715cbc8a6ad28566e83c6d0242a7306688": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange,Yparametermetachange,Yparameterchange)",
+      "commitMessage": "HADOOP-13037. Refactor Azure Data Lake Store as an independent FileSystem. Contributed by Vishwajeet Dusane\n",
+      "commitDate": "11/11/16 11:15 AM",
+      "commitName": "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417",
+      "commitAuthor": "Chris Douglas",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HADOOP-13037. Refactor Azure Data Lake Store as an independent FileSystem. Contributed by Vishwajeet Dusane\n",
+          "commitDate": "11/11/16 11:15 AM",
+          "commitName": "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "11/11/16 10:58 AM",
+          "commitNameOld": "a9ad5d6c815ddd840f4e12f9f2b56164b910da98",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,17 @@\n-  public FSDataOutputStream createNonRecursive(final Path f,\n-      final FsPermission permission, final EnumSet\u003cCreateFlag\u003e flag,\n-      final int bufferSize, final short replication, final long blockSize,\n-      final Progressable progress) throws IOException {\n+  public FSDataOutputStream createNonRecursive(Path f, FsPermission permission,\n+      EnumSet\u003cCreateFlag\u003e flags, int bufferSize, short replication,\n+      long blockSize, Progressable progress) throws IOException {\n     statistics.incrementWriteOps(1);\n+    IfExists overwriteRule \u003d IfExists.FAIL;\n+    for (CreateFlag flag : flags) {\n+      if (flag \u003d\u003d CreateFlag.OVERWRITE) {\n+        overwriteRule \u003d IfExists.OVERWRITE;\n+        break;\n+      }\n+    }\n \n-    String leaseId \u003d java.util.UUID.randomUUID().toString();\n-    return new FSDataOutputStream(new BatchAppendOutputStream(f, bufferSize,\n-        new PermissionParam(applyUMask(permission)), new CreateFlagParam(flag),\n-        new CreateParentParam(false), new BufferSizeParam(bufferSize),\n-        new ReplicationParam(replication), new LeaseParam(leaseId),\n-        new BlockSizeParam(blockSize),\n-        new ADLVersionInfo(VersionInfo.getVersion())), statistics) {\n-    };\n+    return new FSDataOutputStream(new AdlFsOutputStream(adlClient\n+        .createFile(toRelativeFilePath(f), overwriteRule,\n+            Integer.toOctalString(applyUMask(permission).toShort()), false),\n+        getConf()), this.statistics);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSDataOutputStream createNonRecursive(Path f, FsPermission permission,\n      EnumSet\u003cCreateFlag\u003e flags, int bufferSize, short replication,\n      long blockSize, Progressable progress) throws IOException {\n    statistics.incrementWriteOps(1);\n    IfExists overwriteRule \u003d IfExists.FAIL;\n    for (CreateFlag flag : flags) {\n      if (flag \u003d\u003d CreateFlag.OVERWRITE) {\n        overwriteRule \u003d IfExists.OVERWRITE;\n        break;\n      }\n    }\n\n    return new FSDataOutputStream(new AdlFsOutputStream(adlClient\n        .createFile(toRelativeFilePath(f), overwriteRule,\n            Integer.toOctalString(applyUMask(permission).toShort()), false),\n        getConf()), this.statistics);\n  }",
+          "path": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/hdfs/web/PrivateAzureDataLakeFileSystem.java",
+            "newPath": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java",
+            "oldMethodName": "createNonRecursive",
+            "newMethodName": "createNonRecursive"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13037. Refactor Azure Data Lake Store as an independent FileSystem. Contributed by Vishwajeet Dusane\n",
+          "commitDate": "11/11/16 11:15 AM",
+          "commitName": "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "11/11/16 10:58 AM",
+          "commitNameOld": "a9ad5d6c815ddd840f4e12f9f2b56164b910da98",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,17 @@\n-  public FSDataOutputStream createNonRecursive(final Path f,\n-      final FsPermission permission, final EnumSet\u003cCreateFlag\u003e flag,\n-      final int bufferSize, final short replication, final long blockSize,\n-      final Progressable progress) throws IOException {\n+  public FSDataOutputStream createNonRecursive(Path f, FsPermission permission,\n+      EnumSet\u003cCreateFlag\u003e flags, int bufferSize, short replication,\n+      long blockSize, Progressable progress) throws IOException {\n     statistics.incrementWriteOps(1);\n+    IfExists overwriteRule \u003d IfExists.FAIL;\n+    for (CreateFlag flag : flags) {\n+      if (flag \u003d\u003d CreateFlag.OVERWRITE) {\n+        overwriteRule \u003d IfExists.OVERWRITE;\n+        break;\n+      }\n+    }\n \n-    String leaseId \u003d java.util.UUID.randomUUID().toString();\n-    return new FSDataOutputStream(new BatchAppendOutputStream(f, bufferSize,\n-        new PermissionParam(applyUMask(permission)), new CreateFlagParam(flag),\n-        new CreateParentParam(false), new BufferSizeParam(bufferSize),\n-        new ReplicationParam(replication), new LeaseParam(leaseId),\n-        new BlockSizeParam(blockSize),\n-        new ADLVersionInfo(VersionInfo.getVersion())), statistics) {\n-    };\n+    return new FSDataOutputStream(new AdlFsOutputStream(adlClient\n+        .createFile(toRelativeFilePath(f), overwriteRule,\n+            Integer.toOctalString(applyUMask(permission).toShort()), false),\n+        getConf()), this.statistics);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSDataOutputStream createNonRecursive(Path f, FsPermission permission,\n      EnumSet\u003cCreateFlag\u003e flags, int bufferSize, short replication,\n      long blockSize, Progressable progress) throws IOException {\n    statistics.incrementWriteOps(1);\n    IfExists overwriteRule \u003d IfExists.FAIL;\n    for (CreateFlag flag : flags) {\n      if (flag \u003d\u003d CreateFlag.OVERWRITE) {\n        overwriteRule \u003d IfExists.OVERWRITE;\n        break;\n      }\n    }\n\n    return new FSDataOutputStream(new AdlFsOutputStream(adlClient\n        .createFile(toRelativeFilePath(f), overwriteRule,\n            Integer.toOctalString(applyUMask(permission).toShort()), false),\n        getConf()), this.statistics);\n  }",
+          "path": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HADOOP-13037. Refactor Azure Data Lake Store as an independent FileSystem. Contributed by Vishwajeet Dusane\n",
+          "commitDate": "11/11/16 11:15 AM",
+          "commitName": "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "11/11/16 10:58 AM",
+          "commitNameOld": "a9ad5d6c815ddd840f4e12f9f2b56164b910da98",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,17 @@\n-  public FSDataOutputStream createNonRecursive(final Path f,\n-      final FsPermission permission, final EnumSet\u003cCreateFlag\u003e flag,\n-      final int bufferSize, final short replication, final long blockSize,\n-      final Progressable progress) throws IOException {\n+  public FSDataOutputStream createNonRecursive(Path f, FsPermission permission,\n+      EnumSet\u003cCreateFlag\u003e flags, int bufferSize, short replication,\n+      long blockSize, Progressable progress) throws IOException {\n     statistics.incrementWriteOps(1);\n+    IfExists overwriteRule \u003d IfExists.FAIL;\n+    for (CreateFlag flag : flags) {\n+      if (flag \u003d\u003d CreateFlag.OVERWRITE) {\n+        overwriteRule \u003d IfExists.OVERWRITE;\n+        break;\n+      }\n+    }\n \n-    String leaseId \u003d java.util.UUID.randomUUID().toString();\n-    return new FSDataOutputStream(new BatchAppendOutputStream(f, bufferSize,\n-        new PermissionParam(applyUMask(permission)), new CreateFlagParam(flag),\n-        new CreateParentParam(false), new BufferSizeParam(bufferSize),\n-        new ReplicationParam(replication), new LeaseParam(leaseId),\n-        new BlockSizeParam(blockSize),\n-        new ADLVersionInfo(VersionInfo.getVersion())), statistics) {\n-    };\n+    return new FSDataOutputStream(new AdlFsOutputStream(adlClient\n+        .createFile(toRelativeFilePath(f), overwriteRule,\n+            Integer.toOctalString(applyUMask(permission).toShort()), false),\n+        getConf()), this.statistics);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSDataOutputStream createNonRecursive(Path f, FsPermission permission,\n      EnumSet\u003cCreateFlag\u003e flags, int bufferSize, short replication,\n      long blockSize, Progressable progress) throws IOException {\n    statistics.incrementWriteOps(1);\n    IfExists overwriteRule \u003d IfExists.FAIL;\n    for (CreateFlag flag : flags) {\n      if (flag \u003d\u003d CreateFlag.OVERWRITE) {\n        overwriteRule \u003d IfExists.OVERWRITE;\n        break;\n      }\n    }\n\n    return new FSDataOutputStream(new AdlFsOutputStream(adlClient\n        .createFile(toRelativeFilePath(f), overwriteRule,\n            Integer.toOctalString(applyUMask(permission).toShort()), false),\n        getConf()), this.statistics);\n  }",
+          "path": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[f-Path(modifiers-final), permission-FsPermission(modifiers-final), flag-EnumSet\u003cCreateFlag\u003e(modifiers-final), bufferSize-int(modifiers-final), replication-short(modifiers-final), blockSize-long(modifiers-final), progress-Progressable(modifiers-final)]",
+            "newValue": "[f-Path, permission-FsPermission, flags-EnumSet\u003cCreateFlag\u003e, bufferSize-int, replication-short, blockSize-long, progress-Progressable]"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-13037. Refactor Azure Data Lake Store as an independent FileSystem. Contributed by Vishwajeet Dusane\n",
+          "commitDate": "11/11/16 11:15 AM",
+          "commitName": "5c61ad24887f76dfc5a5935b2c5dceb6bfd99417",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "11/11/16 10:58 AM",
+          "commitNameOld": "a9ad5d6c815ddd840f4e12f9f2b56164b910da98",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,17 @@\n-  public FSDataOutputStream createNonRecursive(final Path f,\n-      final FsPermission permission, final EnumSet\u003cCreateFlag\u003e flag,\n-      final int bufferSize, final short replication, final long blockSize,\n-      final Progressable progress) throws IOException {\n+  public FSDataOutputStream createNonRecursive(Path f, FsPermission permission,\n+      EnumSet\u003cCreateFlag\u003e flags, int bufferSize, short replication,\n+      long blockSize, Progressable progress) throws IOException {\n     statistics.incrementWriteOps(1);\n+    IfExists overwriteRule \u003d IfExists.FAIL;\n+    for (CreateFlag flag : flags) {\n+      if (flag \u003d\u003d CreateFlag.OVERWRITE) {\n+        overwriteRule \u003d IfExists.OVERWRITE;\n+        break;\n+      }\n+    }\n \n-    String leaseId \u003d java.util.UUID.randomUUID().toString();\n-    return new FSDataOutputStream(new BatchAppendOutputStream(f, bufferSize,\n-        new PermissionParam(applyUMask(permission)), new CreateFlagParam(flag),\n-        new CreateParentParam(false), new BufferSizeParam(bufferSize),\n-        new ReplicationParam(replication), new LeaseParam(leaseId),\n-        new BlockSizeParam(blockSize),\n-        new ADLVersionInfo(VersionInfo.getVersion())), statistics) {\n-    };\n+    return new FSDataOutputStream(new AdlFsOutputStream(adlClient\n+        .createFile(toRelativeFilePath(f), overwriteRule,\n+            Integer.toOctalString(applyUMask(permission).toShort()), false),\n+        getConf()), this.statistics);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSDataOutputStream createNonRecursive(Path f, FsPermission permission,\n      EnumSet\u003cCreateFlag\u003e flags, int bufferSize, short replication,\n      long blockSize, Progressable progress) throws IOException {\n    statistics.incrementWriteOps(1);\n    IfExists overwriteRule \u003d IfExists.FAIL;\n    for (CreateFlag flag : flags) {\n      if (flag \u003d\u003d CreateFlag.OVERWRITE) {\n        overwriteRule \u003d IfExists.OVERWRITE;\n        break;\n      }\n    }\n\n    return new FSDataOutputStream(new AdlFsOutputStream(adlClient\n        .createFile(toRelativeFilePath(f), overwriteRule,\n            Integer.toOctalString(applyUMask(permission).toShort()), false),\n        getConf()), this.statistics);\n  }",
+          "path": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/fs/adl/AdlFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[f-Path(modifiers-final), permission-FsPermission(modifiers-final), flag-EnumSet\u003cCreateFlag\u003e(modifiers-final), bufferSize-int(modifiers-final), replication-short(modifiers-final), blockSize-long(modifiers-final), progress-Progressable(modifiers-final)]",
+            "newValue": "[f-Path, permission-FsPermission, flags-EnumSet\u003cCreateFlag\u003e, bufferSize-int, replication-short, blockSize-long, progress-Progressable]"
+          }
+        }
+      ]
+    },
+    "9581fb715cbc8a6ad28566e83c6d0242a7306688": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12666. Support Microsoft Azure Data Lake - as a file system in Hadoop. Contributed by Vishwajeet Dusane.\n",
+      "commitDate": "09/06/16 2:33 PM",
+      "commitName": "9581fb715cbc8a6ad28566e83c6d0242a7306688",
+      "commitAuthor": "Chris Nauroth",
+      "diff": "@@ -0,0 +1,15 @@\n+  public FSDataOutputStream createNonRecursive(final Path f,\n+      final FsPermission permission, final EnumSet\u003cCreateFlag\u003e flag,\n+      final int bufferSize, final short replication, final long blockSize,\n+      final Progressable progress) throws IOException {\n+    statistics.incrementWriteOps(1);\n+\n+    String leaseId \u003d java.util.UUID.randomUUID().toString();\n+    return new FSDataOutputStream(new BatchAppendOutputStream(f, bufferSize,\n+        new PermissionParam(applyUMask(permission)), new CreateFlagParam(flag),\n+        new CreateParentParam(false), new BufferSizeParam(bufferSize),\n+        new ReplicationParam(replication), new LeaseParam(leaseId),\n+        new BlockSizeParam(blockSize),\n+        new ADLVersionInfo(VersionInfo.getVersion())), statistics) {\n+    };\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public FSDataOutputStream createNonRecursive(final Path f,\n      final FsPermission permission, final EnumSet\u003cCreateFlag\u003e flag,\n      final int bufferSize, final short replication, final long blockSize,\n      final Progressable progress) throws IOException {\n    statistics.incrementWriteOps(1);\n\n    String leaseId \u003d java.util.UUID.randomUUID().toString();\n    return new FSDataOutputStream(new BatchAppendOutputStream(f, bufferSize,\n        new PermissionParam(applyUMask(permission)), new CreateFlagParam(flag),\n        new CreateParentParam(false), new BufferSizeParam(bufferSize),\n        new ReplicationParam(replication), new LeaseParam(leaseId),\n        new BlockSizeParam(blockSize),\n        new ADLVersionInfo(VersionInfo.getVersion())), statistics) {\n    };\n  }",
+      "path": "hadoop-tools/hadoop-azure-datalake/src/main/java/org/apache/hadoop/hdfs/web/PrivateAzureDataLakeFileSystem.java"
+    }
+  }
+}

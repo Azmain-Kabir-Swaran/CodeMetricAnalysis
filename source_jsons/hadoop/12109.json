@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DataNode.java",
+  "functionName": "initIpcServer",
+  "functionId": "initIpcServer",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+  "functionStartLine": 1012,
+  "functionEndLine": 1064,
+  "numCommitsSeen": 358,
+  "timeTaken": 2092,
+  "changeHistory": [
+    "dfcb331ba3516264398121c9f23af3a79c0509cc"
+  ],
+  "changeHistoryShort": {
+    "dfcb331ba3516264398121c9f23af3a79c0509cc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "dfcb331ba3516264398121c9f23af3a79c0509cc": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13076: [SPS]: Addendum. Resolve conflicts after rebasing branch to trunk. Contributed by Rakesh R.\n",
+      "commitDate": "12/08/18 3:06 AM",
+      "commitName": "dfcb331ba3516264398121c9f23af3a79c0509cc",
+      "commitAuthor": "Rakesh Radhakrishnan",
+      "diff": "@@ -0,0 +1,53 @@\n+  private void initIpcServer() throws IOException {\n+    InetSocketAddress ipcAddr \u003d NetUtils.createSocketAddr(\n+        getConf().getTrimmed(DFS_DATANODE_IPC_ADDRESS_KEY));\n+    \n+    // Add all the RPC protocols that the Datanode implements    \n+    RPC.setProtocolEngine(getConf(), ClientDatanodeProtocolPB.class,\n+        ProtobufRpcEngine.class);\n+    ClientDatanodeProtocolServerSideTranslatorPB clientDatanodeProtocolXlator \u003d \n+          new ClientDatanodeProtocolServerSideTranslatorPB(this);\n+    BlockingService service \u003d ClientDatanodeProtocolService\n+        .newReflectiveBlockingService(clientDatanodeProtocolXlator);\n+    ipcServer \u003d new RPC.Builder(getConf())\n+        .setProtocol(ClientDatanodeProtocolPB.class)\n+        .setInstance(service)\n+        .setBindAddress(ipcAddr.getHostName())\n+        .setPort(ipcAddr.getPort())\n+        .setNumHandlers(\n+            getConf().getInt(DFS_DATANODE_HANDLER_COUNT_KEY,\n+                DFS_DATANODE_HANDLER_COUNT_DEFAULT)).setVerbose(false)\n+        .setSecretManager(blockPoolTokenSecretManager).build();\n+\n+    ReconfigurationProtocolServerSideTranslatorPB reconfigurationProtocolXlator\n+        \u003d new ReconfigurationProtocolServerSideTranslatorPB(this);\n+    service \u003d ReconfigurationProtocolService\n+        .newReflectiveBlockingService(reconfigurationProtocolXlator);\n+    DFSUtil.addPBProtocol(getConf(), ReconfigurationProtocolPB.class, service,\n+        ipcServer);\n+\n+    InterDatanodeProtocolServerSideTranslatorPB interDatanodeProtocolXlator \u003d \n+        new InterDatanodeProtocolServerSideTranslatorPB(this);\n+    service \u003d InterDatanodeProtocolService\n+        .newReflectiveBlockingService(interDatanodeProtocolXlator);\n+    DFSUtil.addPBProtocol(getConf(), InterDatanodeProtocolPB.class, service,\n+        ipcServer);\n+\n+    TraceAdminProtocolServerSideTranslatorPB traceAdminXlator \u003d\n+        new TraceAdminProtocolServerSideTranslatorPB(this);\n+    BlockingService traceAdminService \u003d TraceAdminService\n+        .newReflectiveBlockingService(traceAdminXlator);\n+    DFSUtil.addPBProtocol(\n+        getConf(),\n+        TraceAdminProtocolPB.class,\n+        traceAdminService,\n+        ipcServer);\n+\n+    LOG.info(\"Opened IPC server at {}\", ipcServer.getListenerAddress());\n+\n+    // set service-level authorization security policy\n+    if (getConf().getBoolean(\n+        CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION, false)) {\n+      ipcServer.refreshServiceAcl(getConf(), new HDFSPolicyProvider());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void initIpcServer() throws IOException {\n    InetSocketAddress ipcAddr \u003d NetUtils.createSocketAddr(\n        getConf().getTrimmed(DFS_DATANODE_IPC_ADDRESS_KEY));\n    \n    // Add all the RPC protocols that the Datanode implements    \n    RPC.setProtocolEngine(getConf(), ClientDatanodeProtocolPB.class,\n        ProtobufRpcEngine.class);\n    ClientDatanodeProtocolServerSideTranslatorPB clientDatanodeProtocolXlator \u003d \n          new ClientDatanodeProtocolServerSideTranslatorPB(this);\n    BlockingService service \u003d ClientDatanodeProtocolService\n        .newReflectiveBlockingService(clientDatanodeProtocolXlator);\n    ipcServer \u003d new RPC.Builder(getConf())\n        .setProtocol(ClientDatanodeProtocolPB.class)\n        .setInstance(service)\n        .setBindAddress(ipcAddr.getHostName())\n        .setPort(ipcAddr.getPort())\n        .setNumHandlers(\n            getConf().getInt(DFS_DATANODE_HANDLER_COUNT_KEY,\n                DFS_DATANODE_HANDLER_COUNT_DEFAULT)).setVerbose(false)\n        .setSecretManager(blockPoolTokenSecretManager).build();\n\n    ReconfigurationProtocolServerSideTranslatorPB reconfigurationProtocolXlator\n        \u003d new ReconfigurationProtocolServerSideTranslatorPB(this);\n    service \u003d ReconfigurationProtocolService\n        .newReflectiveBlockingService(reconfigurationProtocolXlator);\n    DFSUtil.addPBProtocol(getConf(), ReconfigurationProtocolPB.class, service,\n        ipcServer);\n\n    InterDatanodeProtocolServerSideTranslatorPB interDatanodeProtocolXlator \u003d \n        new InterDatanodeProtocolServerSideTranslatorPB(this);\n    service \u003d InterDatanodeProtocolService\n        .newReflectiveBlockingService(interDatanodeProtocolXlator);\n    DFSUtil.addPBProtocol(getConf(), InterDatanodeProtocolPB.class, service,\n        ipcServer);\n\n    TraceAdminProtocolServerSideTranslatorPB traceAdminXlator \u003d\n        new TraceAdminProtocolServerSideTranslatorPB(this);\n    BlockingService traceAdminService \u003d TraceAdminService\n        .newReflectiveBlockingService(traceAdminXlator);\n    DFSUtil.addPBProtocol(\n        getConf(),\n        TraceAdminProtocolPB.class,\n        traceAdminService,\n        ipcServer);\n\n    LOG.info(\"Opened IPC server at {}\", ipcServer.getListenerAddress());\n\n    // set service-level authorization security policy\n    if (getConf().getBoolean(\n        CommonConfigurationKeys.HADOOP_SECURITY_AUTHORIZATION, false)) {\n      ipcServer.refreshServiceAcl(getConf(), new HDFSPolicyProvider());\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java"
+    }
+  }
+}

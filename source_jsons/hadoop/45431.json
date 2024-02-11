@@ -1,0 +1,75 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TimelineConnector.java",
+  "functionName": "retryOn",
+  "functionId": "retryOn___op-TimelineClientRetryOp",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineConnector.java",
+  "functionStartLine": 329,
+  "functionEndLine": 364,
+  "numCommitsSeen": 50,
+  "timeTaken": 2439,
+  "changeHistory": [
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+    "00a748d24a565bce0cc8cfa2bdcf165778cea395",
+    "b2942762d7f76d510ece5621c71116346a6b12f6"
+  ],
+  "changeHistoryShort": {
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711": "Ymovefromfile",
+    "00a748d24a565bce0cc8cfa2bdcf165778cea395": "Ybodychange",
+    "b2942762d7f76d510ece5621c71116346a6b12f6": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711": {
+      "type": "Ymovefromfile",
+      "commitMessage": "YARN-4675. Reorganize TimelineClient and TimelineClientImpl into separate classes for ATSv1.x and ATSv2. Contributed by Naganarasimha G R.\n",
+      "commitDate": "16/02/17 11:41 AM",
+      "commitName": "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+      "commitAuthor": "Sangjin Lee",
+      "commitDateOld": "16/02/17 5:39 AM",
+      "commitNameOld": "5690b51ef7c708c0a71162ddaff04466bc71cdcc",
+      "commitAuthorOld": "Wei-Chiu Chuang",
+      "daysBetweenCommits": 0.25,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    public Object retryOn(TimelineClientRetryOp op)\n        throws RuntimeException, IOException {\n      int leftRetries \u003d maxRetries;\n      retried \u003d false;\n\n      // keep trying\n      while (true) {\n        try {\n          // try perform the op, if fail, keep retrying\n          return op.run();\n        } catch (IOException | RuntimeException e) {\n          // break if there\u0027s no retries left\n          if (leftRetries \u003d\u003d 0) {\n            break;\n          }\n          if (op.shouldRetryOn(e)) {\n            logException(e, leftRetries);\n          } else {\n            throw e;\n          }\n        }\n        if (leftRetries \u003e 0) {\n          leftRetries--;\n        }\n        retried \u003d true;\n        try {\n          // sleep for the given time interval\n          Thread.sleep(retryInterval);\n        } catch (InterruptedException ie) {\n          LOG.warn(\"Client retry sleep interrupted! \");\n        }\n      }\n      throw new RuntimeException(\"Failed to connect to timeline server. \"\n          + \"Connection retries limit exceeded. \"\n          + \"The posted timeline event may be missing\");\n    };",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineConnector.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineConnector.java",
+        "oldMethodName": "retryOn",
+        "newMethodName": "retryOn"
+      }
+    },
+    "00a748d24a565bce0cc8cfa2bdcf165778cea395": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3155. Refactor the exception handling code for TimelineClientImpl\u0027s retryOn method (Li Lu via wangda)\n",
+      "commitDate": "09/02/15 5:20 PM",
+      "commitName": "00a748d24a565bce0cc8cfa2bdcf165778cea395",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "09/02/15 3:56 PM",
+      "commitNameOld": "af0842589359ad800427337ad2c84fac09907f72",
+      "commitAuthorOld": "Jonathan Eagles",
+      "daysBetweenCommits": 0.06,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,49 +1,36 @@\n     public Object retryOn(TimelineClientRetryOp op)\n         throws RuntimeException, IOException {\n       int leftRetries \u003d maxRetries;\n       retried \u003d false;\n \n       // keep trying\n       while (true) {\n         try {\n           // try perform the op, if fail, keep retrying\n           return op.run();\n-        }  catch (IOException e) {\n-          // We may only throw runtime and IO exceptions. After switching to\n-          // Java 1.7, we can merge these two catch blocks into one.\n-\n-          // break if there\u0027s no retries left\n-          if (leftRetries \u003d\u003d 0) {\n-            break;\n-          }\n-          if (op.shouldRetryOn(e)) {\n-            logException(e, leftRetries);\n-          } else {\n-            throw e;\n-          }\n-        } catch (RuntimeException e) {\n+        } catch (IOException | RuntimeException e) {\n           // break if there\u0027s no retries left\n           if (leftRetries \u003d\u003d 0) {\n             break;\n           }\n           if (op.shouldRetryOn(e)) {\n             logException(e, leftRetries);\n           } else {\n             throw e;\n           }\n         }\n         if (leftRetries \u003e 0) {\n           leftRetries--;\n         }\n         retried \u003d true;\n         try {\n           // sleep for the given time interval\n           Thread.sleep(retryInterval);\n         } catch (InterruptedException ie) {\n           LOG.warn(\"Client retry sleep interrupted! \");\n         }\n       }\n       throw new RuntimeException(\"Failed to connect to timeline server. \"\n           + \"Connection retries limit exceeded. \"\n           + \"The posted timeline event may be missing\");\n     };\n\\ No newline at end of file\n",
+      "actualSource": "    public Object retryOn(TimelineClientRetryOp op)\n        throws RuntimeException, IOException {\n      int leftRetries \u003d maxRetries;\n      retried \u003d false;\n\n      // keep trying\n      while (true) {\n        try {\n          // try perform the op, if fail, keep retrying\n          return op.run();\n        } catch (IOException | RuntimeException e) {\n          // break if there\u0027s no retries left\n          if (leftRetries \u003d\u003d 0) {\n            break;\n          }\n          if (op.shouldRetryOn(e)) {\n            logException(e, leftRetries);\n          } else {\n            throw e;\n          }\n        }\n        if (leftRetries \u003e 0) {\n          leftRetries--;\n        }\n        retried \u003d true;\n        try {\n          // sleep for the given time interval\n          Thread.sleep(retryInterval);\n        } catch (InterruptedException ie) {\n          LOG.warn(\"Client retry sleep interrupted! \");\n        }\n      }\n      throw new RuntimeException(\"Failed to connect to timeline server. \"\n          + \"Connection retries limit exceeded. \"\n          + \"The posted timeline event may be missing\");\n    };",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+      "extendedDetails": {}
+    },
+    "b2942762d7f76d510ece5621c71116346a6b12f6": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2709. Made timeline client getDelegationToken API retry if ConnectException happens. Contributed by Li Lu.\n",
+      "commitDate": "21/10/14 4:06 PM",
+      "commitName": "b2942762d7f76d510ece5621c71116346a6b12f6",
+      "commitAuthor": "Zhijie Shen",
+      "diff": "@@ -0,0 +1,49 @@\n+    public Object retryOn(TimelineClientRetryOp op)\n+        throws RuntimeException, IOException {\n+      int leftRetries \u003d maxRetries;\n+      retried \u003d false;\n+\n+      // keep trying\n+      while (true) {\n+        try {\n+          // try perform the op, if fail, keep retrying\n+          return op.run();\n+        }  catch (IOException e) {\n+          // We may only throw runtime and IO exceptions. After switching to\n+          // Java 1.7, we can merge these two catch blocks into one.\n+\n+          // break if there\u0027s no retries left\n+          if (leftRetries \u003d\u003d 0) {\n+            break;\n+          }\n+          if (op.shouldRetryOn(e)) {\n+            logException(e, leftRetries);\n+          } else {\n+            throw e;\n+          }\n+        } catch (RuntimeException e) {\n+          // break if there\u0027s no retries left\n+          if (leftRetries \u003d\u003d 0) {\n+            break;\n+          }\n+          if (op.shouldRetryOn(e)) {\n+            logException(e, leftRetries);\n+          } else {\n+            throw e;\n+          }\n+        }\n+        if (leftRetries \u003e 0) {\n+          leftRetries--;\n+        }\n+        retried \u003d true;\n+        try {\n+          // sleep for the given time interval\n+          Thread.sleep(retryInterval);\n+        } catch (InterruptedException ie) {\n+          LOG.warn(\"Client retry sleep interrupted! \");\n+        }\n+      }\n+      throw new RuntimeException(\"Failed to connect to timeline server. \"\n+          + \"Connection retries limit exceeded. \"\n+          + \"The posted timeline event may be missing\");\n+    };\n\\ No newline at end of file\n",
+      "actualSource": "    public Object retryOn(TimelineClientRetryOp op)\n        throws RuntimeException, IOException {\n      int leftRetries \u003d maxRetries;\n      retried \u003d false;\n\n      // keep trying\n      while (true) {\n        try {\n          // try perform the op, if fail, keep retrying\n          return op.run();\n        }  catch (IOException e) {\n          // We may only throw runtime and IO exceptions. After switching to\n          // Java 1.7, we can merge these two catch blocks into one.\n\n          // break if there\u0027s no retries left\n          if (leftRetries \u003d\u003d 0) {\n            break;\n          }\n          if (op.shouldRetryOn(e)) {\n            logException(e, leftRetries);\n          } else {\n            throw e;\n          }\n        } catch (RuntimeException e) {\n          // break if there\u0027s no retries left\n          if (leftRetries \u003d\u003d 0) {\n            break;\n          }\n          if (op.shouldRetryOn(e)) {\n            logException(e, leftRetries);\n          } else {\n            throw e;\n          }\n        }\n        if (leftRetries \u003e 0) {\n          leftRetries--;\n        }\n        retried \u003d true;\n        try {\n          // sleep for the given time interval\n          Thread.sleep(retryInterval);\n        } catch (InterruptedException ie) {\n          LOG.warn(\"Client retry sleep interrupted! \");\n        }\n      }\n      throw new RuntimeException(\"Failed to connect to timeline server. \"\n          + \"Connection retries limit exceeded. \"\n          + \"The posted timeline event may be missing\");\n    };",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "YarnClientImpl.java",
+  "functionName": "getApplicationAttemptReport",
+  "functionId": "getApplicationAttemptReport___appAttemptId-ApplicationAttemptId",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-client/src/main/java/org/apache/hadoop/yarn/client/api/impl/YarnClientImpl.java",
+  "functionStartLine": 752,
+  "functionEndLine": 782,
+  "numCommitsSeen": 70,
+  "timeTaken": 2700,
+  "changeHistory": [
+    "ee3355be3cd1cd956296a1b79b264177ff139ce6",
+    "6af044bb75fe3ddf184841483cce5e222ad1853a",
+    "cbee889711eddc5c67a61df4a6531b4ab3cd205a"
+  ],
+  "changeHistoryShort": {
+    "ee3355be3cd1cd956296a1b79b264177ff139ce6": "Ybodychange",
+    "6af044bb75fe3ddf184841483cce5e222ad1853a": "Ybodychange",
+    "cbee889711eddc5c67a61df4a6531b4ab3cd205a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ee3355be3cd1cd956296a1b79b264177ff139ce6": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8303. YarnClient should contact TimelineReader for application/attempt/container report.\n",
+      "commitDate": "16/11/18 4:28 AM",
+      "commitName": "ee3355be3cd1cd956296a1b79b264177ff139ce6",
+      "commitAuthor": "Rohith Sharma K S",
+      "commitDateOld": "12/09/18 3:31 AM",
+      "commitNameOld": "8cf6a9a2bde9d4ccad95a514885634792889ec7f",
+      "commitAuthorOld": "bibinchundatt",
+      "daysBetweenCommits": 65.08,
+      "commitsBetweenForRepo": 633,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,31 @@\n   public ApplicationAttemptReport getApplicationAttemptReport(\n       ApplicationAttemptId appAttemptId) throws YarnException, IOException {\n     try {\n       GetApplicationAttemptReportRequest request \u003d Records\n           .newRecord(GetApplicationAttemptReportRequest.class);\n       request.setApplicationAttemptId(appAttemptId);\n       GetApplicationAttemptReportResponse response \u003d rmClient\n           .getApplicationAttemptReport(request);\n       return response.getApplicationAttemptReport();\n     } catch (YarnException e) {\n-      if (!historyServiceEnabled) {\n-        // Just throw it as usual if historyService is not enabled.\n-        throw e;\n-      }\n+\n       // Even if history-service is enabled, treat all exceptions still the same\n       // except the following\n       if (e.getClass() !\u003d ApplicationNotFoundException.class) {\n         throw e;\n       }\n+      if (timelineV2ServiceEnabled) {\n+        try {\n+          return ahsV2Client.getApplicationAttemptReport(appAttemptId);\n+        } catch (Exception ex) {\n+          LOG.warn(\"Failed to fetch application attempt report from \"\n+              + \"ATS v2\", ex);\n+        }\n+      }\n+      if (!historyServiceEnabled) {\n+        // Just throw it as usual if historyService is not enabled.\n+        throw e;\n+      }\n       return historyClient.getApplicationAttemptReport(appAttemptId);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ApplicationAttemptReport getApplicationAttemptReport(\n      ApplicationAttemptId appAttemptId) throws YarnException, IOException {\n    try {\n      GetApplicationAttemptReportRequest request \u003d Records\n          .newRecord(GetApplicationAttemptReportRequest.class);\n      request.setApplicationAttemptId(appAttemptId);\n      GetApplicationAttemptReportResponse response \u003d rmClient\n          .getApplicationAttemptReport(request);\n      return response.getApplicationAttemptReport();\n    } catch (YarnException e) {\n\n      // Even if history-service is enabled, treat all exceptions still the same\n      // except the following\n      if (e.getClass() !\u003d ApplicationNotFoundException.class) {\n        throw e;\n      }\n      if (timelineV2ServiceEnabled) {\n        try {\n          return ahsV2Client.getApplicationAttemptReport(appAttemptId);\n        } catch (Exception ex) {\n          LOG.warn(\"Failed to fetch application attempt report from \"\n              + \"ATS v2\", ex);\n        }\n      }\n      if (!historyServiceEnabled) {\n        // Just throw it as usual if historyService is not enabled.\n        throw e;\n      }\n      return historyClient.getApplicationAttemptReport(appAttemptId);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-client/src/main/java/org/apache/hadoop/yarn/client/api/impl/YarnClientImpl.java",
+      "extendedDetails": {}
+    },
+    "6af044bb75fe3ddf184841483cce5e222ad1853a": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-1389. Made ApplicationClientProtocol and ApplicationHistoryProtocol expose analogous getApplication(s)/Attempt(s)/Container(s) APIs. Contributed by Mayank Bansal.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1577052 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "13/03/14 12:42 AM",
+      "commitName": "6af044bb75fe3ddf184841483cce5e222ad1853a",
+      "commitAuthor": "Zhijie Shen",
+      "commitDateOld": "10/03/14 5:52 PM",
+      "commitNameOld": "0edda2537346207e522120adeb8db1e9d058c884",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 2.29,
+      "commitsBetweenForRepo": 18,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,7 +1,22 @@\n   public ApplicationAttemptReport getApplicationAttemptReport(\n       ApplicationAttemptId appAttemptId) throws YarnException, IOException {\n-    if (historyServiceEnabled) {\n+    try {\n+      GetApplicationAttemptReportRequest request \u003d Records\n+          .newRecord(GetApplicationAttemptReportRequest.class);\n+      request.setApplicationAttemptId(appAttemptId);\n+      GetApplicationAttemptReportResponse response \u003d rmClient\n+          .getApplicationAttemptReport(request);\n+      return response.getApplicationAttemptReport();\n+    } catch (YarnException e) {\n+      if (!historyServiceEnabled) {\n+        // Just throw it as usual if historyService is not enabled.\n+        throw e;\n+      }\n+      // Even if history-service is enabled, treat all exceptions still the same\n+      // except the following\n+      if (e.getClass() !\u003d ApplicationNotFoundException.class) {\n+        throw e;\n+      }\n       return historyClient.getApplicationAttemptReport(appAttemptId);\n     }\n-    throw new YarnException(\"History service is not enabled.\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ApplicationAttemptReport getApplicationAttemptReport(\n      ApplicationAttemptId appAttemptId) throws YarnException, IOException {\n    try {\n      GetApplicationAttemptReportRequest request \u003d Records\n          .newRecord(GetApplicationAttemptReportRequest.class);\n      request.setApplicationAttemptId(appAttemptId);\n      GetApplicationAttemptReportResponse response \u003d rmClient\n          .getApplicationAttemptReport(request);\n      return response.getApplicationAttemptReport();\n    } catch (YarnException e) {\n      if (!historyServiceEnabled) {\n        // Just throw it as usual if historyService is not enabled.\n        throw e;\n      }\n      // Even if history-service is enabled, treat all exceptions still the same\n      // except the following\n      if (e.getClass() !\u003d ApplicationNotFoundException.class) {\n        throw e;\n      }\n      return historyClient.getApplicationAttemptReport(appAttemptId);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-client/src/main/java/org/apache/hadoop/yarn/client/api/impl/YarnClientImpl.java",
+      "extendedDetails": {}
+    },
+    "cbee889711eddc5c67a61df4a6531b4ab3cd205a": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-321. Merging YARN-321 branch to trunk.\nsvn merge ../branches/YARN-321\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1561452 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "25/01/14 8:51 PM",
+      "commitName": "cbee889711eddc5c67a61df4a6531b4ab3cd205a",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,7 @@\n+  public ApplicationAttemptReport getApplicationAttemptReport(\n+      ApplicationAttemptId appAttemptId) throws YarnException, IOException {\n+    if (historyServiceEnabled) {\n+      return historyClient.getApplicationAttemptReport(appAttemptId);\n+    }\n+    throw new YarnException(\"History service is not enabled.\");\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public ApplicationAttemptReport getApplicationAttemptReport(\n      ApplicationAttemptId appAttemptId) throws YarnException, IOException {\n    if (historyServiceEnabled) {\n      return historyClient.getApplicationAttemptReport(appAttemptId);\n    }\n    throw new YarnException(\"History service is not enabled.\");\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-client/src/main/java/org/apache/hadoop/yarn/client/api/impl/YarnClientImpl.java"
+    }
+  }
+}

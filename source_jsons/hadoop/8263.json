@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AclTransformation.java",
+  "functionName": "mergeAclEntries",
+  "functionId": "mergeAclEntries___existingAcl-List__AclEntry____inAclSpec-List__AclEntry__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/AclTransformation.java",
+  "functionStartLine": 137,
+  "functionEndLine": 182,
+  "numCommitsSeen": 8,
+  "timeTaken": 797,
+  "changeHistory": [
+    "c6585675710aa800317ad35e6fdf95c50c559d68"
+  ],
+  "changeHistoryShort": {
+    "c6585675710aa800317ad35e6fdf95c50c559d68": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c6585675710aa800317ad35e6fdf95c50c559d68": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-5673. Implement logic for modification of ACLs. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-4685@1556090 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/01/14 4:47 PM",
+      "commitName": "c6585675710aa800317ad35e6fdf95c50c559d68",
+      "commitAuthor": "Chris Nauroth",
+      "diff": "@@ -0,0 +1,46 @@\n+  public static List\u003cAclEntry\u003e mergeAclEntries(List\u003cAclEntry\u003e existingAcl,\n+      List\u003cAclEntry\u003e inAclSpec) throws AclException {\n+    ValidatedAclSpec aclSpec \u003d new ValidatedAclSpec(inAclSpec);\n+    ArrayList\u003cAclEntry\u003e aclBuilder \u003d Lists.newArrayListWithCapacity(MAX_ENTRIES);\n+    List\u003cAclEntry\u003e foundAclSpecEntries \u003d\n+      Lists.newArrayListWithCapacity(MAX_ENTRIES);\n+    EnumMap\u003cAclEntryScope, AclEntry\u003e providedMask \u003d\n+      Maps.newEnumMap(AclEntryScope.class);\n+    EnumSet\u003cAclEntryScope\u003e maskDirty \u003d EnumSet.noneOf(AclEntryScope.class);\n+    EnumSet\u003cAclEntryScope\u003e scopeDirty \u003d EnumSet.noneOf(AclEntryScope.class);\n+    for (AclEntry existingEntry: existingAcl) {\n+      AclEntry aclSpecEntry \u003d aclSpec.findByKey(existingEntry);\n+      if (aclSpecEntry !\u003d null) {\n+        foundAclSpecEntries.add(aclSpecEntry);\n+        scopeDirty.add(aclSpecEntry.getScope());\n+        if (aclSpecEntry.getType() \u003d\u003d MASK) {\n+          providedMask.put(aclSpecEntry.getScope(), aclSpecEntry);\n+          maskDirty.add(aclSpecEntry.getScope());\n+        } else {\n+          aclBuilder.add(aclSpecEntry);\n+        }\n+      } else {\n+        if (existingEntry.getType() \u003d\u003d MASK) {\n+          providedMask.put(existingEntry.getScope(), existingEntry);\n+        } else {\n+          aclBuilder.add(existingEntry);\n+        }\n+      }\n+    }\n+    // ACL spec entries that were not replacements are new additions.\n+    for (AclEntry newEntry: aclSpec) {\n+      if (Collections.binarySearch(foundAclSpecEntries, newEntry,\n+          ACL_ENTRY_COMPARATOR) \u003c 0) {\n+        scopeDirty.add(newEntry.getScope());\n+        if (newEntry.getType() \u003d\u003d MASK) {\n+          providedMask.put(newEntry.getScope(), newEntry);\n+          maskDirty.add(newEntry.getScope());\n+        } else {\n+          aclBuilder.add(newEntry);\n+        }\n+      }\n+    }\n+    copyDefaultsIfNeeded(aclBuilder);\n+    calculateMasks(aclBuilder, providedMask, maskDirty, scopeDirty);\n+    return buildAndValidateAcl(aclBuilder);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static List\u003cAclEntry\u003e mergeAclEntries(List\u003cAclEntry\u003e existingAcl,\n      List\u003cAclEntry\u003e inAclSpec) throws AclException {\n    ValidatedAclSpec aclSpec \u003d new ValidatedAclSpec(inAclSpec);\n    ArrayList\u003cAclEntry\u003e aclBuilder \u003d Lists.newArrayListWithCapacity(MAX_ENTRIES);\n    List\u003cAclEntry\u003e foundAclSpecEntries \u003d\n      Lists.newArrayListWithCapacity(MAX_ENTRIES);\n    EnumMap\u003cAclEntryScope, AclEntry\u003e providedMask \u003d\n      Maps.newEnumMap(AclEntryScope.class);\n    EnumSet\u003cAclEntryScope\u003e maskDirty \u003d EnumSet.noneOf(AclEntryScope.class);\n    EnumSet\u003cAclEntryScope\u003e scopeDirty \u003d EnumSet.noneOf(AclEntryScope.class);\n    for (AclEntry existingEntry: existingAcl) {\n      AclEntry aclSpecEntry \u003d aclSpec.findByKey(existingEntry);\n      if (aclSpecEntry !\u003d null) {\n        foundAclSpecEntries.add(aclSpecEntry);\n        scopeDirty.add(aclSpecEntry.getScope());\n        if (aclSpecEntry.getType() \u003d\u003d MASK) {\n          providedMask.put(aclSpecEntry.getScope(), aclSpecEntry);\n          maskDirty.add(aclSpecEntry.getScope());\n        } else {\n          aclBuilder.add(aclSpecEntry);\n        }\n      } else {\n        if (existingEntry.getType() \u003d\u003d MASK) {\n          providedMask.put(existingEntry.getScope(), existingEntry);\n        } else {\n          aclBuilder.add(existingEntry);\n        }\n      }\n    }\n    // ACL spec entries that were not replacements are new additions.\n    for (AclEntry newEntry: aclSpec) {\n      if (Collections.binarySearch(foundAclSpecEntries, newEntry,\n          ACL_ENTRY_COMPARATOR) \u003c 0) {\n        scopeDirty.add(newEntry.getScope());\n        if (newEntry.getType() \u003d\u003d MASK) {\n          providedMask.put(newEntry.getScope(), newEntry);\n          maskDirty.add(newEntry.getScope());\n        } else {\n          aclBuilder.add(newEntry);\n        }\n      }\n    }\n    copyDefaultsIfNeeded(aclBuilder);\n    calculateMasks(aclBuilder, providedMask, maskDirty, scopeDirty);\n    return buildAndValidateAcl(aclBuilder);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/AclTransformation.java"
+    }
+  }
+}

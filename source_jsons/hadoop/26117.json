@@ -1,0 +1,133 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AppController.java",
+  "functionName": "requireTask",
+  "functionId": "requireTask",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AppController.java",
+  "functionStartLine": 436,
+  "functionEndLine": 462,
+  "numCommitsSeen": 28,
+  "timeTaken": 7213,
+  "changeHistory": [
+    "fe1cf3b0aca5f4d7a8af02a915b218f9b1de0fa6",
+    "68fa208b1cc991dec2577a07b3199a6935a71065",
+    "a3e8f6836b489f8f2ddd785ae038df729c85059f",
+    "b3c9c3c182f1fead0f47ef560e90fcc86042ea7f",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517"
+  ],
+  "changeHistoryShort": {
+    "fe1cf3b0aca5f4d7a8af02a915b218f9b1de0fa6": "Ybodychange",
+    "68fa208b1cc991dec2577a07b3199a6935a71065": "Ybodychange",
+    "a3e8f6836b489f8f2ddd785ae038df729c85059f": "Ymodifierchange",
+    "b3c9c3c182f1fead0f47ef560e90fcc86042ea7f": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fe1cf3b0aca5f4d7a8af02a915b218f9b1de0fa6": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-3417. Fixed job-access-controls to work with MR AM and JobHistoryServer web-apps. Contributed by Jonathan Eagles.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1240428 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "03/02/12 5:21 PM",
+      "commitName": "fe1cf3b0aca5f4d7a8af02a915b218f9b1de0fa6",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "13/12/11 3:05 PM",
+      "commitNameOld": "0ea8570be578be60e2f32849900a1c50506d78d3",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 52.09,
+      "commitsBetweenForRepo": 265,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,27 @@\n   public void requireTask() {\n-    try {\n-      if ($(TASK_ID).isEmpty()) {\n-        throw new RuntimeException(\"missing task ID\");\n+    if ($(TASK_ID).isEmpty()) {\n+      badRequest(\"missing task ID\");\n+      throw new RuntimeException(\"missing task ID\");\n+    }\n+\n+    TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n+    Job job \u003d app.context.getJob(taskID.getJobId());\n+    app.setJob(job);\n+    if (app.getJob() \u003d\u003d null) {\n+      notFound(MRApps.toString(taskID.getJobId()));\n+      throw new RuntimeException(\"Not Found: \" + $(JOB_ID));\n+    } else {\n+      app.setTask(app.getJob().getTask(taskID));\n+      if (app.getTask() \u003d\u003d null) {\n+        notFound($(TASK_ID));\n+        throw new RuntimeException(\"Not Found: \" + $(TASK_ID));\n       }\n-      TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n-      Job job \u003d app.context.getJob(taskID.getJobId());\n-      app.setJob(job);\n-      if (app.getJob() \u003d\u003d null) {\n-        notFound(MRApps.toString(taskID.getJobId()));\n-      } else {\n-        app.setTask(app.getJob().getTask(taskID));\n-        if (app.getTask() \u003d\u003d null) {\n-          notFound($(TASK_ID));\n-        }\n-      }\n-      checkAccess(job);\n-    } catch (Exception e) {\n-      badRequest(e.getMessage());\n+    }\n+    if (!checkAccess(job)) {\n+      accessDenied(\"User \" + request().getRemoteUser() + \" does not have \" +\n+          \" permission to view job \" + $(JOB_ID));\n+      throw new RuntimeException(\"Access denied: User \" +\n+          request().getRemoteUser() + \" does not have permission to view job \" +\n+          $(JOB_ID));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void requireTask() {\n    if ($(TASK_ID).isEmpty()) {\n      badRequest(\"missing task ID\");\n      throw new RuntimeException(\"missing task ID\");\n    }\n\n    TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n    Job job \u003d app.context.getJob(taskID.getJobId());\n    app.setJob(job);\n    if (app.getJob() \u003d\u003d null) {\n      notFound(MRApps.toString(taskID.getJobId()));\n      throw new RuntimeException(\"Not Found: \" + $(JOB_ID));\n    } else {\n      app.setTask(app.getJob().getTask(taskID));\n      if (app.getTask() \u003d\u003d null) {\n        notFound($(TASK_ID));\n        throw new RuntimeException(\"Not Found: \" + $(TASK_ID));\n      }\n    }\n    if (!checkAccess(job)) {\n      accessDenied(\"User \" + request().getRemoteUser() + \" does not have \" +\n          \" permission to view job \" + $(JOB_ID));\n      throw new RuntimeException(\"Access denied: User \" +\n          request().getRemoteUser() + \" does not have permission to view job \" +\n          $(JOB_ID));\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AppController.java",
+      "extendedDetails": {}
+    },
+    "68fa208b1cc991dec2577a07b3199a6935a71065": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-3103. Implement Job ACLs for MRAppMaster. (mahadev)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1195761 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "31/10/11 6:51 PM",
+      "commitName": "68fa208b1cc991dec2577a07b3199a6935a71065",
+      "commitAuthor": "Mahadev Konar",
+      "commitDateOld": "29/09/11 1:08 AM",
+      "commitNameOld": "71886657f89f64b289c6f426bd9f557ed0e53590",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 32.74,
+      "commitsBetweenForRepo": 290,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,21 @@\n   public void requireTask() {\n     try {\n       if ($(TASK_ID).isEmpty()) {\n         throw new RuntimeException(\"missing task ID\");\n       }\n       TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n-      app.setJob(app.context.getJob(taskID.getJobId()));\n+      Job job \u003d app.context.getJob(taskID.getJobId());\n+      app.setJob(job);\n       if (app.getJob() \u003d\u003d null) {\n         notFound(MRApps.toString(taskID.getJobId()));\n       } else {\n         app.setTask(app.getJob().getTask(taskID));\n         if (app.getTask() \u003d\u003d null) {\n           notFound($(TASK_ID));\n         }\n       }\n+      checkAccess(job);\n     } catch (Exception e) {\n       badRequest(e.getMessage());\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void requireTask() {\n    try {\n      if ($(TASK_ID).isEmpty()) {\n        throw new RuntimeException(\"missing task ID\");\n      }\n      TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n      Job job \u003d app.context.getJob(taskID.getJobId());\n      app.setJob(job);\n      if (app.getJob() \u003d\u003d null) {\n        notFound(MRApps.toString(taskID.getJobId()));\n      } else {\n        app.setTask(app.getJob().getTask(taskID));\n        if (app.getTask() \u003d\u003d null) {\n          notFound($(TASK_ID));\n        }\n      }\n      checkAccess(job);\n    } catch (Exception e) {\n      badRequest(e.getMessage());\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AppController.java",
+      "extendedDetails": {}
+    },
+    "a3e8f6836b489f8f2ddd785ae038df729c85059f": {
+      "type": "Ymodifierchange",
+      "commitMessage": "MAPREDUCE-2676. MR-279: JobHistory Job page needs reformatted. (Robert Evans via mahadev)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1170379 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "13/09/11 3:55 PM",
+      "commitName": "a3e8f6836b489f8f2ddd785ae038df729c85059f",
+      "commitAuthor": "Mahadev Konar",
+      "commitDateOld": "12/09/11 4:17 PM",
+      "commitNameOld": "7fa0bf355893890ba981050c6d94f458a08af68d",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.98,
+      "commitsBetweenForRepo": 9,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,19 @@\n-  void requireTask() {\n+  public void requireTask() {\n     try {\n       if ($(TASK_ID).isEmpty()) {\n         throw new RuntimeException(\"missing task ID\");\n       }\n       TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n       app.setJob(app.context.getJob(taskID.getJobId()));\n       if (app.getJob() \u003d\u003d null) {\n         notFound(MRApps.toString(taskID.getJobId()));\n       } else {\n         app.setTask(app.getJob().getTask(taskID));\n         if (app.getTask() \u003d\u003d null) {\n           notFound($(TASK_ID));\n         }\n       }\n     } catch (Exception e) {\n       badRequest(e.getMessage());\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void requireTask() {\n    try {\n      if ($(TASK_ID).isEmpty()) {\n        throw new RuntimeException(\"missing task ID\");\n      }\n      TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n      app.setJob(app.context.getJob(taskID.getJobId()));\n      if (app.getJob() \u003d\u003d null) {\n        notFound(MRApps.toString(taskID.getJobId()));\n      } else {\n        app.setTask(app.getJob().getTask(taskID));\n        if (app.getTask() \u003d\u003d null) {\n          notFound($(TASK_ID));\n        }\n      }\n    } catch (Exception e) {\n      badRequest(e.getMessage());\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AppController.java",
+      "extendedDetails": {
+        "oldValue": "[]",
+        "newValue": "[public]"
+      }
+    },
+    "b3c9c3c182f1fead0f47ef560e90fcc86042ea7f": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-2677. Fixed 404 for some links from HistoryServer. Contributed by Robert Evans.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1166901 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "08/09/11 1:59 PM",
+      "commitName": "b3c9c3c182f1fead0f47ef560e90fcc86042ea7f",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:14 PM",
+      "commitNameOld": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 14.86,
+      "commitsBetweenForRepo": 84,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,19 @@\n   void requireTask() {\n     try {\n       if ($(TASK_ID).isEmpty()) {\n         throw new RuntimeException(\"missing task ID\");\n       }\n       TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n-      app.job \u003d app.context.getJob(taskID.getJobId());\n-      if (app.job \u003d\u003d null) {\n+      app.setJob(app.context.getJob(taskID.getJobId()));\n+      if (app.getJob() \u003d\u003d null) {\n         notFound(MRApps.toString(taskID.getJobId()));\n       } else {\n-        app.task \u003d app.job.getTask(taskID);\n-        if (app.task \u003d\u003d null) {\n+        app.setTask(app.getJob().getTask(taskID));\n+        if (app.getTask() \u003d\u003d null) {\n           notFound($(TASK_ID));\n         }\n       }\n     } catch (Exception e) {\n       badRequest(e.getMessage());\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void requireTask() {\n    try {\n      if ($(TASK_ID).isEmpty()) {\n        throw new RuntimeException(\"missing task ID\");\n      }\n      TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n      app.setJob(app.context.getJob(taskID.getJobId()));\n      if (app.getJob() \u003d\u003d null) {\n        notFound(MRApps.toString(taskID.getJobId()));\n      } else {\n        app.setTask(app.getJob().getTask(taskID));\n        if (app.getTask() \u003d\u003d null) {\n          notFound($(TASK_ID));\n        }\n      }\n    } catch (Exception e) {\n      badRequest(e.getMessage());\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AppController.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  void requireTask() {\n    try {\n      if ($(TASK_ID).isEmpty()) {\n        throw new RuntimeException(\"missing task ID\");\n      }\n      TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n      app.job \u003d app.context.getJob(taskID.getJobId());\n      if (app.job \u003d\u003d null) {\n        notFound(MRApps.toString(taskID.getJobId()));\n      } else {\n        app.task \u003d app.job.getTask(taskID);\n        if (app.task \u003d\u003d null) {\n          notFound($(TASK_ID));\n        }\n      }\n    } catch (Exception e) {\n      badRequest(e.getMessage());\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AppController.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AppController.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AppController.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,19 @@\n+  void requireTask() {\n+    try {\n+      if ($(TASK_ID).isEmpty()) {\n+        throw new RuntimeException(\"missing task ID\");\n+      }\n+      TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n+      app.job \u003d app.context.getJob(taskID.getJobId());\n+      if (app.job \u003d\u003d null) {\n+        notFound(MRApps.toString(taskID.getJobId()));\n+      } else {\n+        app.task \u003d app.job.getTask(taskID);\n+        if (app.task \u003d\u003d null) {\n+          notFound($(TASK_ID));\n+        }\n+      }\n+    } catch (Exception e) {\n+      badRequest(e.getMessage());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void requireTask() {\n    try {\n      if ($(TASK_ID).isEmpty()) {\n        throw new RuntimeException(\"missing task ID\");\n      }\n      TaskId taskID \u003d MRApps.toTaskID($(TASK_ID));\n      app.job \u003d app.context.getJob(taskID.getJobId());\n      if (app.job \u003d\u003d null) {\n        notFound(MRApps.toString(taskID.getJobId()));\n      } else {\n        app.task \u003d app.job.getTask(taskID);\n        if (app.task \u003d\u003d null) {\n          notFound($(TASK_ID));\n        }\n      }\n    } catch (Exception e) {\n      badRequest(e.getMessage());\n    }\n  }",
+      "path": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/webapp/AppController.java"
+    }
+  }
+}

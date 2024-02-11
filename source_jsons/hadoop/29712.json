@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TimelineAuthenticationFilterInitializer.java",
+  "functionName": "setAuthFilterConfig",
+  "functionId": "setAuthFilterConfig___conf-Configuration",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/timeline/security/TimelineAuthenticationFilterInitializer.java",
+  "functionStartLine": 60,
+  "functionEndLine": 74,
+  "numCommitsSeen": 4,
+  "timeTaken": 602,
+  "changeHistory": [
+    "ee2ce923a922bfc3e89ad6f0f6a25e776fe91ffb",
+    "d3f11e3f13ed5efc7f0b7f19567d142e554c35ed"
+  ],
+  "changeHistoryShort": {
+    "ee2ce923a922bfc3e89ad6f0f6a25e776fe91ffb": "Ybodychange",
+    "d3f11e3f13ed5efc7f0b7f19567d142e554c35ed": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ee2ce923a922bfc3e89ad6f0f6a25e776fe91ffb": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8217. RmAuthenticationFilterInitializer and TimelineAuthenticationFilterInitializer should use Configuration.getPropsWithPrefix instead of iterator. Contributed by Suma Shivaprasad.\n",
+      "commitDate": "03/05/18 2:13 AM",
+      "commitName": "ee2ce923a922bfc3e89ad6f0f6a25e776fe91ffb",
+      "commitAuthor": "Rohith Sharma K S",
+      "commitDateOld": "29/08/17 10:59 PM",
+      "commitNameOld": "3d00c8f3942da931150de79f42cd4913bf751123",
+      "commitAuthorOld": "Varun Saxena",
+      "daysBetweenCommits": 246.13,
+      "commitsBetweenForRepo": 2374,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,40 +1,15 @@\n   protected void setAuthFilterConfig(Configuration conf) {\n     filterConfig \u003d new HashMap\u003cString, String\u003e();\n \n-    // setting the cookie path to root \u0027/\u0027 so it is used for all resources.\n-    filterConfig.put(AuthenticationFilter.COOKIE_PATH, \"/\");\n-\n-    for (Map.Entry\u003cString, String\u003e entry : conf) {\n-      String name \u003d entry.getKey();\n-      if (name.startsWith(ProxyUsers.CONF_HADOOP_PROXYUSER)) {\n-        String value \u003d conf.get(name);\n-        name \u003d name.substring(\"hadoop.\".length());\n-        filterConfig.put(name, value);\n-      }\n-    }\n-    for (Map.Entry\u003cString, String\u003e entry : conf) {\n-      String name \u003d entry.getKey();\n-      if (name.startsWith(PREFIX)) {\n-        // yarn.timeline-service.http-authentication.proxyuser will override\n-        // hadoop.proxyuser\n-        String value \u003d conf.get(name);\n-        name \u003d name.substring(PREFIX.length());\n-        filterConfig.put(name, value);\n-      }\n+    for (Map.Entry\u003cString, String\u003e entry : conf\n+        .getPropsWithPrefix(ProxyUsers.CONF_HADOOP_PROXYUSER).entrySet()) {\n+      filterConfig.put(\"proxyuser\" + entry.getKey(), entry.getValue());\n     }\n \n-    // Resolve _HOST into bind address\n-    String bindAddress \u003d conf.get(HttpServer2.BIND_ADDRESS);\n-    String principal \u003d\n-        filterConfig.get(KerberosAuthenticationHandler.PRINCIPAL);\n-    if (principal !\u003d null) {\n-      try {\n-        principal \u003d SecurityUtil.getServerPrincipal(principal, bindAddress);\n-      } catch (IOException ex) {\n-        throw new RuntimeException(\"Could not resolve Kerberos principal \" +\n-            \"name: \" + ex.toString(), ex);\n-      }\n-      filterConfig.put(KerberosAuthenticationHandler.PRINCIPAL,\n-          principal);\n-    }\n+    // yarn.timeline-service.http-authentication.proxyuser will override\n+    // hadoop.proxyuser\n+    Map\u003cString, String\u003e timelineAuthProps \u003d\n+        AuthenticationFilterInitializer.getFilterConfigMap(conf, PREFIX);\n+\n+    filterConfig.putAll(timelineAuthProps);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void setAuthFilterConfig(Configuration conf) {\n    filterConfig \u003d new HashMap\u003cString, String\u003e();\n\n    for (Map.Entry\u003cString, String\u003e entry : conf\n        .getPropsWithPrefix(ProxyUsers.CONF_HADOOP_PROXYUSER).entrySet()) {\n      filterConfig.put(\"proxyuser\" + entry.getKey(), entry.getValue());\n    }\n\n    // yarn.timeline-service.http-authentication.proxyuser will override\n    // hadoop.proxyuser\n    Map\u003cString, String\u003e timelineAuthProps \u003d\n        AuthenticationFilterInitializer.getFilterConfigMap(conf, PREFIX);\n\n    filterConfig.putAll(timelineAuthProps);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/timeline/security/TimelineAuthenticationFilterInitializer.java",
+      "extendedDetails": {}
+    },
+    "d3f11e3f13ed5efc7f0b7f19567d142e554c35ed": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6638. [ATSv2 Security] Timeline reader side changes for loading auth filters and principals. Contributed by Varun Saxena\n",
+      "commitDate": "29/08/17 10:59 PM",
+      "commitName": "d3f11e3f13ed5efc7f0b7f19567d142e554c35ed",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,40 @@\n+  protected void setAuthFilterConfig(Configuration conf) {\n+    filterConfig \u003d new HashMap\u003cString, String\u003e();\n+\n+    // setting the cookie path to root \u0027/\u0027 so it is used for all resources.\n+    filterConfig.put(AuthenticationFilter.COOKIE_PATH, \"/\");\n+\n+    for (Map.Entry\u003cString, String\u003e entry : conf) {\n+      String name \u003d entry.getKey();\n+      if (name.startsWith(ProxyUsers.CONF_HADOOP_PROXYUSER)) {\n+        String value \u003d conf.get(name);\n+        name \u003d name.substring(\"hadoop.\".length());\n+        filterConfig.put(name, value);\n+      }\n+    }\n+    for (Map.Entry\u003cString, String\u003e entry : conf) {\n+      String name \u003d entry.getKey();\n+      if (name.startsWith(PREFIX)) {\n+        // yarn.timeline-service.http-authentication.proxyuser will override\n+        // hadoop.proxyuser\n+        String value \u003d conf.get(name);\n+        name \u003d name.substring(PREFIX.length());\n+        filterConfig.put(name, value);\n+      }\n+    }\n+\n+    // Resolve _HOST into bind address\n+    String bindAddress \u003d conf.get(HttpServer2.BIND_ADDRESS);\n+    String principal \u003d\n+        filterConfig.get(KerberosAuthenticationHandler.PRINCIPAL);\n+    if (principal !\u003d null) {\n+      try {\n+        principal \u003d SecurityUtil.getServerPrincipal(principal, bindAddress);\n+      } catch (IOException ex) {\n+        throw new RuntimeException(\"Could not resolve Kerberos principal \" +\n+            \"name: \" + ex.toString(), ex);\n+      }\n+      filterConfig.put(KerberosAuthenticationHandler.PRINCIPAL,\n+          principal);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void setAuthFilterConfig(Configuration conf) {\n    filterConfig \u003d new HashMap\u003cString, String\u003e();\n\n    // setting the cookie path to root \u0027/\u0027 so it is used for all resources.\n    filterConfig.put(AuthenticationFilter.COOKIE_PATH, \"/\");\n\n    for (Map.Entry\u003cString, String\u003e entry : conf) {\n      String name \u003d entry.getKey();\n      if (name.startsWith(ProxyUsers.CONF_HADOOP_PROXYUSER)) {\n        String value \u003d conf.get(name);\n        name \u003d name.substring(\"hadoop.\".length());\n        filterConfig.put(name, value);\n      }\n    }\n    for (Map.Entry\u003cString, String\u003e entry : conf) {\n      String name \u003d entry.getKey();\n      if (name.startsWith(PREFIX)) {\n        // yarn.timeline-service.http-authentication.proxyuser will override\n        // hadoop.proxyuser\n        String value \u003d conf.get(name);\n        name \u003d name.substring(PREFIX.length());\n        filterConfig.put(name, value);\n      }\n    }\n\n    // Resolve _HOST into bind address\n    String bindAddress \u003d conf.get(HttpServer2.BIND_ADDRESS);\n    String principal \u003d\n        filterConfig.get(KerberosAuthenticationHandler.PRINCIPAL);\n    if (principal !\u003d null) {\n      try {\n        principal \u003d SecurityUtil.getServerPrincipal(principal, bindAddress);\n      } catch (IOException ex) {\n        throw new RuntimeException(\"Could not resolve Kerberos principal \" +\n            \"name: \" + ex.toString(), ex);\n      }\n      filterConfig.put(KerberosAuthenticationHandler.PRINCIPAL,\n          principal);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/timeline/security/TimelineAuthenticationFilterInitializer.java"
+    }
+  }
+}

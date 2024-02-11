@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "INodeReference.java",
+  "functionName": "getParentRef",
+  "functionId": "getParentRef___snapshotId-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeReference.java",
+  "functionStartLine": 442,
+  "functionEndLine": 462,
+  "numCommitsSeen": 48,
+  "timeTaken": 2076,
+  "changeHistory": [
+    "f7df24bb1b4278d27f5c2b7fecf7b69be4302c7a",
+    "8a83bb7ad6177f473c20c4cc9c0f46746224332c",
+    "10a037cccb00c9f791da394bf2dc05985fb80612"
+  ],
+  "changeHistoryShort": {
+    "f7df24bb1b4278d27f5c2b7fecf7b69be4302c7a": "Ybodychange",
+    "8a83bb7ad6177f473c20c4cc9c0f46746224332c": "Ybodychange",
+    "10a037cccb00c9f791da394bf2dc05985fb80612": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f7df24bb1b4278d27f5c2b7fecf7b69be4302c7a": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6996. SnapshotDiff report can hit IndexOutOfBoundsException when there are nested renamed directory/file. Contributed by Jing Zhao.\n",
+      "commitDate": "04/09/14 4:12 PM",
+      "commitName": "f7df24bb1b4278d27f5c2b7fecf7b69be4302c7a",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "11/08/14 2:28 PM",
+      "commitNameOld": "80691b073fe7c104a8684c0a8900a1657bcdc03f",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 24.07,
+      "commitsBetweenForRepo": 188,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,21 @@\n     public INodeReference getParentRef(int snapshotId) {\n       int start \u003d 0;\n       int end \u003d withNameList.size() - 1;\n       while (start \u003c end) {\n         int mid \u003d start + (end - start) / 2;\n         int sid \u003d withNameList.get(mid).lastSnapshotId; \n         if (sid \u003d\u003d snapshotId) {\n           return withNameList.get(mid);\n         } else if (sid \u003c snapshotId) {\n           start \u003d mid + 1;\n         } else {\n           end \u003d mid;\n         }\n       }\n-      if (withNameList.get(start).lastSnapshotId \u003e\u003d snapshotId) {\n+      if (start \u003c withNameList.size() \u0026\u0026\n+          withNameList.get(start).lastSnapshotId \u003e\u003d snapshotId) {\n         return withNameList.get(start);\n       } else {\n         return this.getParentReference();\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public INodeReference getParentRef(int snapshotId) {\n      int start \u003d 0;\n      int end \u003d withNameList.size() - 1;\n      while (start \u003c end) {\n        int mid \u003d start + (end - start) / 2;\n        int sid \u003d withNameList.get(mid).lastSnapshotId; \n        if (sid \u003d\u003d snapshotId) {\n          return withNameList.get(mid);\n        } else if (sid \u003c snapshotId) {\n          start \u003d mid + 1;\n        } else {\n          end \u003d mid;\n        }\n      }\n      if (start \u003c withNameList.size() \u0026\u0026\n          withNameList.get(start).lastSnapshotId \u003e\u003d snapshotId) {\n        return withNameList.get(start);\n      } else {\n        return this.getParentReference();\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeReference.java",
+      "extendedDetails": {}
+    },
+    "8a83bb7ad6177f473c20c4cc9c0f46746224332c": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-4667. Capture renamed files/directories in snapshot diff report. Contributed by Jing Zhao and Binglin Chang.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1604488 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "21/06/14 3:59 PM",
+      "commitName": "8a83bb7ad6177f473c20c4cc9c0f46746224332c",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "21/05/14 6:57 AM",
+      "commitNameOld": "ac23a55547716df29b3e25c98a113399e184d9d1",
+      "commitAuthorOld": "Uma Maheswara Rao G",
+      "daysBetweenCommits": 31.38,
+      "commitsBetweenForRepo": 188,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,20 @@\n     public INodeReference getParentRef(int snapshotId) {\n-      // when the given snapshotId is CURRENT_STATE_ID, it is possible that we\n-      // do not know where the corresponding inode belongs, thus we simply\n-      // return the last reference node\n-      if (snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n-        return this.getParentReference() !\u003d null ? this.getParentReference()\n-            : this.getLastWithName();\n-      }\n-      // otherwise we search the withNameList\n-      for (int i \u003d 0; i \u003c withNameList.size(); i++) {\n-        if (snapshotId \u003c\u003d withNameList.get(i).lastSnapshotId) {\n-          return withNameList.get(i);\n+      int start \u003d 0;\n+      int end \u003d withNameList.size() - 1;\n+      while (start \u003c end) {\n+        int mid \u003d start + (end - start) / 2;\n+        int sid \u003d withNameList.get(mid).lastSnapshotId; \n+        if (sid \u003d\u003d snapshotId) {\n+          return withNameList.get(mid);\n+        } else if (sid \u003c snapshotId) {\n+          start \u003d mid + 1;\n+        } else {\n+          end \u003d mid;\n         }\n       }\n-      return this.getParentReference();\n+      if (withNameList.get(start).lastSnapshotId \u003e\u003d snapshotId) {\n+        return withNameList.get(start);\n+      } else {\n+        return this.getParentReference();\n+      }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public INodeReference getParentRef(int snapshotId) {\n      int start \u003d 0;\n      int end \u003d withNameList.size() - 1;\n      while (start \u003c end) {\n        int mid \u003d start + (end - start) / 2;\n        int sid \u003d withNameList.get(mid).lastSnapshotId; \n        if (sid \u003d\u003d snapshotId) {\n          return withNameList.get(mid);\n        } else if (sid \u003c snapshotId) {\n          start \u003d mid + 1;\n        } else {\n          end \u003d mid;\n        }\n      }\n      if (withNameList.get(start).lastSnapshotId \u003e\u003d snapshotId) {\n        return withNameList.get(start);\n      } else {\n        return this.getParentReference();\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeReference.java",
+      "extendedDetails": {}
+    },
+    "10a037cccb00c9f791da394bf2dc05985fb80612": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-6266. Identify full path for a given INode. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1589920 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/04/14 7:05 PM",
+      "commitName": "10a037cccb00c9f791da394bf2dc05985fb80612",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,16 @@\n+    public INodeReference getParentRef(int snapshotId) {\n+      // when the given snapshotId is CURRENT_STATE_ID, it is possible that we\n+      // do not know where the corresponding inode belongs, thus we simply\n+      // return the last reference node\n+      if (snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n+        return this.getParentReference() !\u003d null ? this.getParentReference()\n+            : this.getLastWithName();\n+      }\n+      // otherwise we search the withNameList\n+      for (int i \u003d 0; i \u003c withNameList.size(); i++) {\n+        if (snapshotId \u003c\u003d withNameList.get(i).lastSnapshotId) {\n+          return withNameList.get(i);\n+        }\n+      }\n+      return this.getParentReference();\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public INodeReference getParentRef(int snapshotId) {\n      // when the given snapshotId is CURRENT_STATE_ID, it is possible that we\n      // do not know where the corresponding inode belongs, thus we simply\n      // return the last reference node\n      if (snapshotId \u003d\u003d Snapshot.CURRENT_STATE_ID) {\n        return this.getParentReference() !\u003d null ? this.getParentReference()\n            : this.getLastWithName();\n      }\n      // otherwise we search the withNameList\n      for (int i \u003d 0; i \u003c withNameList.size(); i++) {\n        if (snapshotId \u003c\u003d withNameList.get(i).lastSnapshotId) {\n          return withNameList.get(i);\n        }\n      }\n      return this.getParentReference();\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/INodeReference.java"
+    }
+  }
+}

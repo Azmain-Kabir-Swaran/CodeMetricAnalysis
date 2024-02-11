@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "WasbRemoteCallHelper.java",
+  "functionName": "shouldRetry",
+  "functionId": "shouldRetry___ioe-IOException(modifiers-final)__retry-int(modifiers-final)__url-String(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/WasbRemoteCallHelper.java",
+  "functionStartLine": 258,
+  "functionEndLine": 296,
+  "numCommitsSeen": 5,
+  "timeTaken": 1128,
+  "changeHistory": [
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329"
+  ],
+  "changeHistoryShort": {
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14443. Azure: Support retry and client side failover for authorization, SASKey and delegation token generation. Contributed by Santhosh G Nayak\n",
+      "commitDate": "30/06/17 4:53 PM",
+      "commitName": "38996fdcf0987d1da00ce46f8284d8fcdce57329",
+      "commitAuthor": "Mingliang Liu",
+      "diff": "@@ -0,0 +1,39 @@\n+  private void shouldRetry(final IOException ioe, final int retry,\n+      final String url) throws IOException {\n+    CharSequence authenticationExceptionMessage \u003d\n+        Constants.AUTHENTICATION_FAILED_ERROR_MESSAGE;\n+    if (ioe instanceof WasbRemoteCallException \u0026\u0026 ioe.getMessage()\n+        .equals(authenticationExceptionMessage)) {\n+      throw ioe;\n+    }\n+    try {\n+      final RetryPolicy.RetryAction a \u003d (retryPolicy !\u003d null)\n+                                        ? retryPolicy\n+                                            .shouldRetry(ioe, retry, 0, true)\n+                                        : RetryPolicy.RetryAction.FAIL;\n+\n+      boolean isRetry \u003d a.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.RETRY;\n+      boolean isFailoverAndRetry \u003d\n+          a.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAILOVER_AND_RETRY;\n+\n+      if (isRetry || isFailoverAndRetry) {\n+        LOG.debug(\"Retrying connect to Remote service:{}. Already tried {}\"\n+                + \" time(s); retry policy is {}, \" + \"delay {}ms.\", url, retry,\n+            retryPolicy, a.delayMillis);\n+\n+        Thread.sleep(a.delayMillis);\n+        return;\n+      }\n+    } catch(InterruptedIOException e) {\n+      LOG.warn(e.getMessage(), e);\n+      Thread.currentThread().interrupt();\n+      return;\n+    } catch (Exception e) {\n+      LOG.warn(\"Original exception is \", ioe);\n+      throw new WasbRemoteCallException(e.getMessage(), e);\n+    }\n+    LOG.debug(\"Not retrying anymore, already retried the urls {} time(s)\",\n+        retry);\n+    throw new WasbRemoteCallException(\n+        url + \":\" + \"Encountered IOException while making remote call\", ioe);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void shouldRetry(final IOException ioe, final int retry,\n      final String url) throws IOException {\n    CharSequence authenticationExceptionMessage \u003d\n        Constants.AUTHENTICATION_FAILED_ERROR_MESSAGE;\n    if (ioe instanceof WasbRemoteCallException \u0026\u0026 ioe.getMessage()\n        .equals(authenticationExceptionMessage)) {\n      throw ioe;\n    }\n    try {\n      final RetryPolicy.RetryAction a \u003d (retryPolicy !\u003d null)\n                                        ? retryPolicy\n                                            .shouldRetry(ioe, retry, 0, true)\n                                        : RetryPolicy.RetryAction.FAIL;\n\n      boolean isRetry \u003d a.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.RETRY;\n      boolean isFailoverAndRetry \u003d\n          a.action \u003d\u003d RetryPolicy.RetryAction.RetryDecision.FAILOVER_AND_RETRY;\n\n      if (isRetry || isFailoverAndRetry) {\n        LOG.debug(\"Retrying connect to Remote service:{}. Already tried {}\"\n                + \" time(s); retry policy is {}, \" + \"delay {}ms.\", url, retry,\n            retryPolicy, a.delayMillis);\n\n        Thread.sleep(a.delayMillis);\n        return;\n      }\n    } catch(InterruptedIOException e) {\n      LOG.warn(e.getMessage(), e);\n      Thread.currentThread().interrupt();\n      return;\n    } catch (Exception e) {\n      LOG.warn(\"Original exception is \", ioe);\n      throw new WasbRemoteCallException(e.getMessage(), e);\n    }\n    LOG.debug(\"Not retrying anymore, already retried the urls {} time(s)\",\n        retry);\n    throw new WasbRemoteCallException(\n        url + \":\" + \"Encountered IOException while making remote call\", ioe);\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/WasbRemoteCallHelper.java"
+    }
+  }
+}

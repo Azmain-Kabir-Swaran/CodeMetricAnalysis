@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMAppLogAggregation.java",
+  "functionName": "aggregateLogReport",
+  "functionId": "aggregateLogReport___nodeId-NodeId__report-LogAggregationReport__rmApp-RMAppImpl",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmapp/RMAppLogAggregation.java",
+  "functionStartLine": 118,
+  "functionEndLine": 165,
+  "numCommitsSeen": 1,
+  "timeTaken": 739,
+  "changeHistory": [
+    "4456ea67b949553b85e101e866b4b3f4b335f1f0"
+  ],
+  "changeHistoryShort": {
+    "4456ea67b949553b85e101e866b4b3f4b335f1f0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4456ea67b949553b85e101e866b4b3f4b335f1f0": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-8586. Extract log aggregation related fields and methods from RMAppImpl. Contributed by Peter Bacsko\n",
+      "commitDate": "16/08/19 2:36 AM",
+      "commitName": "4456ea67b949553b85e101e866b4b3f4b335f1f0",
+      "commitAuthor": "Szilard Nemeth",
+      "diff": "@@ -0,0 +1,48 @@\n+  void aggregateLogReport(NodeId nodeId, LogAggregationReport report,\n+      RMAppImpl rmApp) {\n+    this.writeLock.lock();\n+    try {\n+      if (this.logAggregationEnabled \u0026\u0026 !isLogAggregationFinished()) {\n+        LogAggregationReport curReport \u003d this.logAggregationStatus.get(nodeId);\n+        boolean stateChangedToFinal \u003d false;\n+        if (curReport \u003d\u003d null) {\n+          this.logAggregationStatus.put(nodeId, report);\n+          if (isLogAggregationFinishedForNM(report)) {\n+            stateChangedToFinal \u003d true;\n+          }\n+        } else {\n+          if (isLogAggregationFinishedForNM(report)) {\n+            if (!isLogAggregationFinishedForNM(curReport)) {\n+              stateChangedToFinal \u003d true;\n+            }\n+          }\n+          if (report.getLogAggregationStatus() !\u003d LogAggregationStatus.RUNNING\n+              || curReport.getLogAggregationStatus() !\u003d\n+              LogAggregationStatus.RUNNING_WITH_FAILURE) {\n+            if (curReport.getLogAggregationStatus()\n+                \u003d\u003d LogAggregationStatus.TIME_OUT\n+                \u0026\u0026 report.getLogAggregationStatus()\n+                \u003d\u003d LogAggregationStatus.RUNNING) {\n+              // If the log aggregation status got from latest NM heartbeat\n+              // is RUNNING, and current log aggregation status is TIME_OUT,\n+              // based on whether there are any failure messages for this NM,\n+              // we will reset the log aggregation status as RUNNING or\n+              // RUNNING_WITH_FAILURE\n+              if (isThereFailureMessageForNM(nodeId)) {\n+                report.setLogAggregationStatus(\n+                    LogAggregationStatus.RUNNING_WITH_FAILURE);\n+              }\n+            }\n+            curReport.setLogAggregationStatus(report\n+                .getLogAggregationStatus());\n+          }\n+        }\n+        updateLogAggregationDiagnosticMessages(nodeId, report);\n+        if (RMAppImpl.isAppInFinalState(rmApp) \u0026\u0026 stateChangedToFinal) {\n+          updateLogAggregationStatus(nodeId);\n+        }\n+      }\n+    } finally {\n+      this.writeLock.unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void aggregateLogReport(NodeId nodeId, LogAggregationReport report,\n      RMAppImpl rmApp) {\n    this.writeLock.lock();\n    try {\n      if (this.logAggregationEnabled \u0026\u0026 !isLogAggregationFinished()) {\n        LogAggregationReport curReport \u003d this.logAggregationStatus.get(nodeId);\n        boolean stateChangedToFinal \u003d false;\n        if (curReport \u003d\u003d null) {\n          this.logAggregationStatus.put(nodeId, report);\n          if (isLogAggregationFinishedForNM(report)) {\n            stateChangedToFinal \u003d true;\n          }\n        } else {\n          if (isLogAggregationFinishedForNM(report)) {\n            if (!isLogAggregationFinishedForNM(curReport)) {\n              stateChangedToFinal \u003d true;\n            }\n          }\n          if (report.getLogAggregationStatus() !\u003d LogAggregationStatus.RUNNING\n              || curReport.getLogAggregationStatus() !\u003d\n              LogAggregationStatus.RUNNING_WITH_FAILURE) {\n            if (curReport.getLogAggregationStatus()\n                \u003d\u003d LogAggregationStatus.TIME_OUT\n                \u0026\u0026 report.getLogAggregationStatus()\n                \u003d\u003d LogAggregationStatus.RUNNING) {\n              // If the log aggregation status got from latest NM heartbeat\n              // is RUNNING, and current log aggregation status is TIME_OUT,\n              // based on whether there are any failure messages for this NM,\n              // we will reset the log aggregation status as RUNNING or\n              // RUNNING_WITH_FAILURE\n              if (isThereFailureMessageForNM(nodeId)) {\n                report.setLogAggregationStatus(\n                    LogAggregationStatus.RUNNING_WITH_FAILURE);\n              }\n            }\n            curReport.setLogAggregationStatus(report\n                .getLogAggregationStatus());\n          }\n        }\n        updateLogAggregationDiagnosticMessages(nodeId, report);\n        if (RMAppImpl.isAppInFinalState(rmApp) \u0026\u0026 stateChangedToFinal) {\n          updateLogAggregationStatus(nodeId);\n        }\n      }\n    } finally {\n      this.writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmapp/RMAppLogAggregation.java"
+    }
+  }
+}

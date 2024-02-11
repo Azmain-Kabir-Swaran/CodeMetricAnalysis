@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StreamXmlRecordReader.java",
+  "functionName": "slowReadUntilMatch",
+  "functionId": "slowReadUntilMatch___markPattern-Pattern__includePat-boolean__outBufOrNull-DataOutputBuffer",
+  "sourceFilePath": "hadoop-tools/hadoop-streaming/src/main/java/org/apache/hadoop/streaming/mapreduce/StreamXmlRecordReader.java",
+  "functionStartLine": 132,
+  "functionEndLine": 194,
+  "numCommitsSeen": 1,
+  "timeTaken": 450,
+  "changeHistory": [
+    "9c87911c4ab35faead3e4729951b2855fb20e3b0"
+  ],
+  "changeHistoryShort": {
+    "9c87911c4ab35faead3e4729951b2855fb20e3b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9c87911c4ab35faead3e4729951b2855fb20e3b0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-8521. Port StreamInputFormat to new Map Reduce API (madhukara phatak via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1360238 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "11/07/12 8:44 AM",
+      "commitName": "9c87911c4ab35faead3e4729951b2855fb20e3b0",
+      "commitAuthor": "Robert Joseph Evans",
+      "diff": "@@ -0,0 +1,63 @@\n+  private boolean slowReadUntilMatch(Pattern markPattern, boolean includePat,\n+      DataOutputBuffer outBufOrNull) throws IOException {\n+    byte[] buf \u003d new byte[Math.max(lookAhead_, maxRecSize_)];\n+    int read \u003d 0;\n+    bin_.mark(Math.max(lookAhead_, maxRecSize_) + 2); // mark to invalidate if\n+    // we read more\n+    read \u003d bin_.read(buf);\n+    if (read \u003d\u003d -1)\n+      return false;\n+\n+    String sbuf \u003d new String(buf, 0, read, \"UTF-8\");\n+    Matcher match \u003d markPattern.matcher(sbuf);\n+\n+    firstMatchStart_ \u003d NA;\n+    firstMatchEnd_ \u003d NA;\n+    int bufPos \u003d 0;\n+    int state \u003d synched_ ? CDATA_OUT : CDATA_UNK;\n+    int s \u003d 0;\n+\n+    while (match.find(bufPos)) {\n+      int input;\n+      if (match.group(1) !\u003d null) {\n+        input \u003d CDATA_BEGIN;\n+      } else if (match.group(2) !\u003d null) {\n+        input \u003d CDATA_END;\n+        firstMatchStart_ \u003d NA; // |\u003cDOC CDATA[ \u003c/DOC\u003e ]]\u003e should keep it\n+      } else {\n+        input \u003d RECORD_MAYBE;\n+      }\n+      if (input \u003d\u003d RECORD_MAYBE) {\n+        if (firstMatchStart_ \u003d\u003d NA) {\n+          firstMatchStart_ \u003d match.start();\n+          firstMatchEnd_ \u003d match.end();\n+        }\n+      }\n+      state \u003d nextState(state, input, match.start());\n+      if (state \u003d\u003d RECORD_ACCEPT) {\n+        break;\n+      }\n+      bufPos \u003d match.end();\n+      s++;\n+    }\n+    if (state !\u003d CDATA_UNK) {\n+      synched_ \u003d true;\n+    }\n+    boolean matched \u003d (firstMatchStart_ !\u003d NA)\n+    \u0026\u0026 (state \u003d\u003d RECORD_ACCEPT || state \u003d\u003d CDATA_UNK);\n+    if (matched) {\n+      int endPos \u003d includePat ? firstMatchEnd_ : firstMatchStart_;\n+      bin_.reset();\n+\n+      for (long skiplen \u003d endPos; skiplen \u003e 0;) {\n+        skiplen -\u003d bin_.skip(skiplen); // Skip succeeds as we have read this\n+        // buffer\n+      }\n+\n+      pos_ +\u003d endPos;\n+      if (outBufOrNull !\u003d null) {\n+        outBufOrNull.writeBytes(sbuf.substring(0, endPos));\n+      }\n+    }\n+    return matched;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean slowReadUntilMatch(Pattern markPattern, boolean includePat,\n      DataOutputBuffer outBufOrNull) throws IOException {\n    byte[] buf \u003d new byte[Math.max(lookAhead_, maxRecSize_)];\n    int read \u003d 0;\n    bin_.mark(Math.max(lookAhead_, maxRecSize_) + 2); // mark to invalidate if\n    // we read more\n    read \u003d bin_.read(buf);\n    if (read \u003d\u003d -1)\n      return false;\n\n    String sbuf \u003d new String(buf, 0, read, \"UTF-8\");\n    Matcher match \u003d markPattern.matcher(sbuf);\n\n    firstMatchStart_ \u003d NA;\n    firstMatchEnd_ \u003d NA;\n    int bufPos \u003d 0;\n    int state \u003d synched_ ? CDATA_OUT : CDATA_UNK;\n    int s \u003d 0;\n\n    while (match.find(bufPos)) {\n      int input;\n      if (match.group(1) !\u003d null) {\n        input \u003d CDATA_BEGIN;\n      } else if (match.group(2) !\u003d null) {\n        input \u003d CDATA_END;\n        firstMatchStart_ \u003d NA; // |\u003cDOC CDATA[ \u003c/DOC\u003e ]]\u003e should keep it\n      } else {\n        input \u003d RECORD_MAYBE;\n      }\n      if (input \u003d\u003d RECORD_MAYBE) {\n        if (firstMatchStart_ \u003d\u003d NA) {\n          firstMatchStart_ \u003d match.start();\n          firstMatchEnd_ \u003d match.end();\n        }\n      }\n      state \u003d nextState(state, input, match.start());\n      if (state \u003d\u003d RECORD_ACCEPT) {\n        break;\n      }\n      bufPos \u003d match.end();\n      s++;\n    }\n    if (state !\u003d CDATA_UNK) {\n      synched_ \u003d true;\n    }\n    boolean matched \u003d (firstMatchStart_ !\u003d NA)\n    \u0026\u0026 (state \u003d\u003d RECORD_ACCEPT || state \u003d\u003d CDATA_UNK);\n    if (matched) {\n      int endPos \u003d includePat ? firstMatchEnd_ : firstMatchStart_;\n      bin_.reset();\n\n      for (long skiplen \u003d endPos; skiplen \u003e 0;) {\n        skiplen -\u003d bin_.skip(skiplen); // Skip succeeds as we have read this\n        // buffer\n      }\n\n      pos_ +\u003d endPos;\n      if (outBufOrNull !\u003d null) {\n        outBufOrNull.writeBytes(sbuf.substring(0, endPos));\n      }\n    }\n    return matched;\n  }",
+      "path": "hadoop-tools/hadoop-streaming/src/main/java/org/apache/hadoop/streaming/mapreduce/StreamXmlRecordReader.java"
+    }
+  }
+}

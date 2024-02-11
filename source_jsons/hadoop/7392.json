@@ -1,0 +1,562 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TransferFsImage.java",
+  "functionName": "uploadImageFromStorage",
+  "functionId": "uploadImageFromStorage___fsName-URL__conf-Configuration__storage-NNStorage__nnf-NameNodeFile__txid-long__canceler-Canceler",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+  "functionStartLine": 243,
+  "functionEndLine": 263,
+  "numCommitsSeen": 192,
+  "timeTaken": 6881,
+  "changeHistory": [
+    "49dfad942970459297f72632ed8dfd353e0c86de",
+    "01af3a31772ee820e932ac70973072e9509a30fa",
+    "94a1632fcb677fda6f4d812614026417f1d0a360",
+    "dbd22b23c2d68b97b4da47215897906f06f978e3",
+    "0f595915a388305edbb3ce928415571811d304e8",
+    "e3d2e4c156851de7dac16154521a2e06ea83ec7b",
+    "045dc880e13271737b3cf316296e92fb95806663",
+    "8dd3148e734fa9d1db761ce65410fdc49c0fe1d5",
+    "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "d86f3183d93714ba078416af4f609d26376eadb0",
+    "28e6a4e44a3e920dcaf858f9a74a6358226b3a63"
+  ],
+  "changeHistoryShort": {
+    "49dfad942970459297f72632ed8dfd353e0c86de": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "01af3a31772ee820e932ac70973072e9509a30fa": "Ymultichange(Yrename,Yparameterchange,Ymodifierchange,Ybodychange)",
+    "94a1632fcb677fda6f4d812614026417f1d0a360": "Ymultichange(Yrename,Yparameterchange,Ymodifierchange,Ybodychange)",
+    "dbd22b23c2d68b97b4da47215897906f06f978e3": "Ymultichange(Yparameterchange,Ybodychange)",
+    "0f595915a388305edbb3ce928415571811d304e8": "Ymultichange(Yparameterchange,Ybodychange)",
+    "e3d2e4c156851de7dac16154521a2e06ea83ec7b": "Ymultichange(Yparameterchange,Ybodychange)",
+    "045dc880e13271737b3cf316296e92fb95806663": "Ymultichange(Yparameterchange,Ybodychange)",
+    "8dd3148e734fa9d1db761ce65410fdc49c0fe1d5": "Yparameterchange",
+    "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "d86f3183d93714ba078416af4f609d26376eadb0": "Yfilerename",
+    "28e6a4e44a3e920dcaf858f9a74a6358226b3a63": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "49dfad942970459297f72632ed8dfd353e0c86de": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-6440. Support more than 2 NameNodes. Contributed by Jesse Yates.\n",
+      "commitDate": "23/06/15 5:26 PM",
+      "commitName": "49dfad942970459297f72632ed8dfd353e0c86de",
+      "commitAuthor": "Aaron T. Myers",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-6440. Support more than 2 NameNodes. Contributed by Jesse Yates.\n",
+          "commitDate": "23/06/15 5:26 PM",
+          "commitName": "49dfad942970459297f72632ed8dfd353e0c86de",
+          "commitAuthor": "Aaron T. Myers",
+          "commitDateOld": "05/05/15 3:41 PM",
+          "commitNameOld": "4da8490b512a33a255ed27309860859388d7c168",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 49.07,
+          "commitsBetweenForRepo": 435,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,21 @@\n-  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n+  public static TransferResult uploadImageFromStorage(URL fsName, Configuration conf,\n       NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n       throws IOException {\n     URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n     long startTime \u003d Time.monotonicNow();\n     try {\n       uploadImage(url, conf, storage, nnf, txid, canceler);\n     } catch (HttpPutFailedException e) {\n-      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n-        // this is OK - this means that a previous attempt to upload\n-        // this checkpoint succeeded even though we thought it failed.\n-        LOG.info(\"Image upload with txid \" + txid + \n-            \" conflicted with a previous image upload to the \" +\n-            \"same NameNode. Continuing...\", e);\n-        return;\n-      } else {\n+      // translate the error code to a result, which is a bit more obvious in usage\n+      TransferResult result \u003d TransferResult.getResultForCode(e.getResponseCode());\n+      if (result.shouldReThrowException) {\n         throw e;\n       }\n+      return result;\n     }\n     double xferSec \u003d Math.max(\n         ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n     LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n         + \" in \" + xferSec + \" seconds\");\n+    return TransferResult.SUCCESS;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static TransferResult uploadImageFromStorage(URL fsName, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n      throws IOException {\n    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n    long startTime \u003d Time.monotonicNow();\n    try {\n      uploadImage(url, conf, storage, nnf, txid, canceler);\n    } catch (HttpPutFailedException e) {\n      // translate the error code to a result, which is a bit more obvious in usage\n      TransferResult result \u003d TransferResult.getResultForCode(e.getResponseCode());\n      if (result.shouldReThrowException) {\n        throw e;\n      }\n      return result;\n    }\n    double xferSec \u003d Math.max(\n        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n        + \" in \" + xferSec + \" seconds\");\n    return TransferResult.SUCCESS;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "TransferResult"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6440. Support more than 2 NameNodes. Contributed by Jesse Yates.\n",
+          "commitDate": "23/06/15 5:26 PM",
+          "commitName": "49dfad942970459297f72632ed8dfd353e0c86de",
+          "commitAuthor": "Aaron T. Myers",
+          "commitDateOld": "05/05/15 3:41 PM",
+          "commitNameOld": "4da8490b512a33a255ed27309860859388d7c168",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 49.07,
+          "commitsBetweenForRepo": 435,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,21 @@\n-  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n+  public static TransferResult uploadImageFromStorage(URL fsName, Configuration conf,\n       NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n       throws IOException {\n     URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n     long startTime \u003d Time.monotonicNow();\n     try {\n       uploadImage(url, conf, storage, nnf, txid, canceler);\n     } catch (HttpPutFailedException e) {\n-      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n-        // this is OK - this means that a previous attempt to upload\n-        // this checkpoint succeeded even though we thought it failed.\n-        LOG.info(\"Image upload with txid \" + txid + \n-            \" conflicted with a previous image upload to the \" +\n-            \"same NameNode. Continuing...\", e);\n-        return;\n-      } else {\n+      // translate the error code to a result, which is a bit more obvious in usage\n+      TransferResult result \u003d TransferResult.getResultForCode(e.getResponseCode());\n+      if (result.shouldReThrowException) {\n         throw e;\n       }\n+      return result;\n     }\n     double xferSec \u003d Math.max(\n         ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n     LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n         + \" in \" + xferSec + \" seconds\");\n+    return TransferResult.SUCCESS;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static TransferResult uploadImageFromStorage(URL fsName, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n      throws IOException {\n    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n    long startTime \u003d Time.monotonicNow();\n    try {\n      uploadImage(url, conf, storage, nnf, txid, canceler);\n    } catch (HttpPutFailedException e) {\n      // translate the error code to a result, which is a bit more obvious in usage\n      TransferResult result \u003d TransferResult.getResultForCode(e.getResponseCode());\n      if (result.shouldReThrowException) {\n        throw e;\n      }\n      return result;\n    }\n    double xferSec \u003d Math.max(\n        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n        + \" in \" + xferSec + \" seconds\");\n    return TransferResult.SUCCESS;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "01af3a31772ee820e932ac70973072e9509a30fa": {
+      "type": "Ymultichange(Yrename,Yparameterchange,Ymodifierchange,Ybodychange)",
+      "commitMessage": "HDFS-6243. HA NameNode transition to active or shutdown may leave lingering image transfer thread. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1587410 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "14/04/14 9:49 PM",
+      "commitName": "01af3a31772ee820e932ac70973072e9509a30fa",
+      "commitAuthor": "Chris Nauroth",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-6243. HA NameNode transition to active or shutdown may leave lingering image transfer thread. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1587410 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "14/04/14 9:49 PM",
+          "commitName": "01af3a31772ee820e932ac70973072e9509a30fa",
+          "commitAuthor": "Chris Nauroth",
+          "commitDateOld": "24/03/14 4:32 PM",
+          "commitNameOld": "c2ef7e239eb0e81cf8a3e971378e9e696202de67",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 21.22,
+          "commitsBetweenForRepo": 146,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,62 +1,24 @@\n-  private static void uploadImage(URL url, Configuration conf,\n-      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n-\n-    File imageFile \u003d storage.findImageFile(nnf, txId);\n-    if (imageFile \u003d\u003d null) {\n-      throw new IOException(\"Could not find image with txid \" + txId);\n-    }\n-\n-    HttpURLConnection connection \u003d null;\n+  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n+      throws IOException {\n+    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n+    long startTime \u003d Time.monotonicNow();\n     try {\n-      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n-\n-      // write all params for image upload request as query itself.\n-      // Request body contains the image to be uploaded.\n-      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n-          txId, imageFile.length(), nnf);\n-      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n-        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n-      }\n-\n-      URL urlWithParams \u003d uriBuilder.build().toURL();\n-      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n-          urlWithParams, UserGroupInformation.isSecurityEnabled());\n-      // Set the request to PUT\n-      connection.setRequestMethod(\"PUT\");\n-      connection.setDoOutput(true);\n-\n-      \n-      int chunkSize \u003d conf.getInt(\n-          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n-          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n-      if (imageFile.length() \u003e chunkSize) {\n-        // using chunked streaming mode to support upload of 2GB+ files and to\n-        // avoid internal buffering.\n-        // this mode should be used only if more than chunkSize data is present\n-        // to upload. otherwise upload may not happen sometimes.\n-        connection.setChunkedStreamingMode(chunkSize);\n-      }\n-\n-      setTimeout(connection);\n-\n-      // set headers for verification\n-      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n-\n-      // Write the file to output stream.\n-      writeFileToPutRequest(conf, connection, imageFile);\n-\n-      int responseCode \u003d connection.getResponseCode();\n-      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n-        throw new HttpPutFailedException(connection.getResponseMessage(),\n-            responseCode);\n-      }\n-    } catch (AuthenticationException e) {\n-      throw new IOException(e);\n-    } catch (URISyntaxException e) {\n-      throw new IOException(e);\n-    } finally {\n-      if (connection !\u003d null) {\n-        connection.disconnect();\n+      uploadImage(url, conf, storage, nnf, txid, canceler);\n+    } catch (HttpPutFailedException e) {\n+      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n+        // this is OK - this means that a previous attempt to upload\n+        // this checkpoint succeeded even though we thought it failed.\n+        LOG.info(\"Image upload with txid \" + txid + \n+            \" conflicted with a previous image upload to the \" +\n+            \"same NameNode. Continuing...\", e);\n+        return;\n+      } else {\n+        throw e;\n       }\n     }\n+    double xferSec \u003d Math.max(\n+        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n+    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n+        + \" in \" + xferSec + \" seconds\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n      throws IOException {\n    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n    long startTime \u003d Time.monotonicNow();\n    try {\n      uploadImage(url, conf, storage, nnf, txid, canceler);\n    } catch (HttpPutFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    double xferSec \u003d Math.max(\n        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n        + \" in \" + xferSec + \" seconds\");\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "uploadImage",
+            "newValue": "uploadImageFromStorage"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-6243. HA NameNode transition to active or shutdown may leave lingering image transfer thread. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1587410 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "14/04/14 9:49 PM",
+          "commitName": "01af3a31772ee820e932ac70973072e9509a30fa",
+          "commitAuthor": "Chris Nauroth",
+          "commitDateOld": "24/03/14 4:32 PM",
+          "commitNameOld": "c2ef7e239eb0e81cf8a3e971378e9e696202de67",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 21.22,
+          "commitsBetweenForRepo": 146,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,62 +1,24 @@\n-  private static void uploadImage(URL url, Configuration conf,\n-      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n-\n-    File imageFile \u003d storage.findImageFile(nnf, txId);\n-    if (imageFile \u003d\u003d null) {\n-      throw new IOException(\"Could not find image with txid \" + txId);\n-    }\n-\n-    HttpURLConnection connection \u003d null;\n+  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n+      throws IOException {\n+    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n+    long startTime \u003d Time.monotonicNow();\n     try {\n-      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n-\n-      // write all params for image upload request as query itself.\n-      // Request body contains the image to be uploaded.\n-      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n-          txId, imageFile.length(), nnf);\n-      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n-        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n-      }\n-\n-      URL urlWithParams \u003d uriBuilder.build().toURL();\n-      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n-          urlWithParams, UserGroupInformation.isSecurityEnabled());\n-      // Set the request to PUT\n-      connection.setRequestMethod(\"PUT\");\n-      connection.setDoOutput(true);\n-\n-      \n-      int chunkSize \u003d conf.getInt(\n-          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n-          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n-      if (imageFile.length() \u003e chunkSize) {\n-        // using chunked streaming mode to support upload of 2GB+ files and to\n-        // avoid internal buffering.\n-        // this mode should be used only if more than chunkSize data is present\n-        // to upload. otherwise upload may not happen sometimes.\n-        connection.setChunkedStreamingMode(chunkSize);\n-      }\n-\n-      setTimeout(connection);\n-\n-      // set headers for verification\n-      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n-\n-      // Write the file to output stream.\n-      writeFileToPutRequest(conf, connection, imageFile);\n-\n-      int responseCode \u003d connection.getResponseCode();\n-      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n-        throw new HttpPutFailedException(connection.getResponseMessage(),\n-            responseCode);\n-      }\n-    } catch (AuthenticationException e) {\n-      throw new IOException(e);\n-    } catch (URISyntaxException e) {\n-      throw new IOException(e);\n-    } finally {\n-      if (connection !\u003d null) {\n-        connection.disconnect();\n+      uploadImage(url, conf, storage, nnf, txid, canceler);\n+    } catch (HttpPutFailedException e) {\n+      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n+        // this is OK - this means that a previous attempt to upload\n+        // this checkpoint succeeded even though we thought it failed.\n+        LOG.info(\"Image upload with txid \" + txid + \n+            \" conflicted with a previous image upload to the \" +\n+            \"same NameNode. Continuing...\", e);\n+        return;\n+      } else {\n+        throw e;\n       }\n     }\n+    double xferSec \u003d Math.max(\n+        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n+    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n+        + \" in \" + xferSec + \" seconds\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n      throws IOException {\n    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n    long startTime \u003d Time.monotonicNow();\n    try {\n      uploadImage(url, conf, storage, nnf, txid, canceler);\n    } catch (HttpPutFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    double xferSec \u003d Math.max(\n        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n        + \" in \" + xferSec + \" seconds\");\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "[url-URL, conf-Configuration, storage-NNStorage, nnf-NameNodeFile, txId-long]",
+            "newValue": "[fsName-URL, conf-Configuration, storage-NNStorage, nnf-NameNodeFile, txid-long, canceler-Canceler]"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-6243. HA NameNode transition to active or shutdown may leave lingering image transfer thread. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1587410 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "14/04/14 9:49 PM",
+          "commitName": "01af3a31772ee820e932ac70973072e9509a30fa",
+          "commitAuthor": "Chris Nauroth",
+          "commitDateOld": "24/03/14 4:32 PM",
+          "commitNameOld": "c2ef7e239eb0e81cf8a3e971378e9e696202de67",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 21.22,
+          "commitsBetweenForRepo": 146,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,62 +1,24 @@\n-  private static void uploadImage(URL url, Configuration conf,\n-      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n-\n-    File imageFile \u003d storage.findImageFile(nnf, txId);\n-    if (imageFile \u003d\u003d null) {\n-      throw new IOException(\"Could not find image with txid \" + txId);\n-    }\n-\n-    HttpURLConnection connection \u003d null;\n+  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n+      throws IOException {\n+    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n+    long startTime \u003d Time.monotonicNow();\n     try {\n-      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n-\n-      // write all params for image upload request as query itself.\n-      // Request body contains the image to be uploaded.\n-      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n-          txId, imageFile.length(), nnf);\n-      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n-        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n-      }\n-\n-      URL urlWithParams \u003d uriBuilder.build().toURL();\n-      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n-          urlWithParams, UserGroupInformation.isSecurityEnabled());\n-      // Set the request to PUT\n-      connection.setRequestMethod(\"PUT\");\n-      connection.setDoOutput(true);\n-\n-      \n-      int chunkSize \u003d conf.getInt(\n-          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n-          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n-      if (imageFile.length() \u003e chunkSize) {\n-        // using chunked streaming mode to support upload of 2GB+ files and to\n-        // avoid internal buffering.\n-        // this mode should be used only if more than chunkSize data is present\n-        // to upload. otherwise upload may not happen sometimes.\n-        connection.setChunkedStreamingMode(chunkSize);\n-      }\n-\n-      setTimeout(connection);\n-\n-      // set headers for verification\n-      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n-\n-      // Write the file to output stream.\n-      writeFileToPutRequest(conf, connection, imageFile);\n-\n-      int responseCode \u003d connection.getResponseCode();\n-      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n-        throw new HttpPutFailedException(connection.getResponseMessage(),\n-            responseCode);\n-      }\n-    } catch (AuthenticationException e) {\n-      throw new IOException(e);\n-    } catch (URISyntaxException e) {\n-      throw new IOException(e);\n-    } finally {\n-      if (connection !\u003d null) {\n-        connection.disconnect();\n+      uploadImage(url, conf, storage, nnf, txid, canceler);\n+    } catch (HttpPutFailedException e) {\n+      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n+        // this is OK - this means that a previous attempt to upload\n+        // this checkpoint succeeded even though we thought it failed.\n+        LOG.info(\"Image upload with txid \" + txid + \n+            \" conflicted with a previous image upload to the \" +\n+            \"same NameNode. Continuing...\", e);\n+        return;\n+      } else {\n+        throw e;\n       }\n     }\n+    double xferSec \u003d Math.max(\n+        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n+    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n+        + \" in \" + xferSec + \" seconds\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n      throws IOException {\n    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n    long startTime \u003d Time.monotonicNow();\n    try {\n      uploadImage(url, conf, storage, nnf, txid, canceler);\n    } catch (HttpPutFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    double xferSec \u003d Math.max(\n        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n        + \" in \" + xferSec + \" seconds\");\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "[private, static]",
+            "newValue": "[public, static]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6243. HA NameNode transition to active or shutdown may leave lingering image transfer thread. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1587410 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "14/04/14 9:49 PM",
+          "commitName": "01af3a31772ee820e932ac70973072e9509a30fa",
+          "commitAuthor": "Chris Nauroth",
+          "commitDateOld": "24/03/14 4:32 PM",
+          "commitNameOld": "c2ef7e239eb0e81cf8a3e971378e9e696202de67",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 21.22,
+          "commitsBetweenForRepo": 146,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,62 +1,24 @@\n-  private static void uploadImage(URL url, Configuration conf,\n-      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n-\n-    File imageFile \u003d storage.findImageFile(nnf, txId);\n-    if (imageFile \u003d\u003d null) {\n-      throw new IOException(\"Could not find image with txid \" + txId);\n-    }\n-\n-    HttpURLConnection connection \u003d null;\n+  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n+      throws IOException {\n+    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n+    long startTime \u003d Time.monotonicNow();\n     try {\n-      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n-\n-      // write all params for image upload request as query itself.\n-      // Request body contains the image to be uploaded.\n-      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n-          txId, imageFile.length(), nnf);\n-      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n-        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n-      }\n-\n-      URL urlWithParams \u003d uriBuilder.build().toURL();\n-      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n-          urlWithParams, UserGroupInformation.isSecurityEnabled());\n-      // Set the request to PUT\n-      connection.setRequestMethod(\"PUT\");\n-      connection.setDoOutput(true);\n-\n-      \n-      int chunkSize \u003d conf.getInt(\n-          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n-          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n-      if (imageFile.length() \u003e chunkSize) {\n-        // using chunked streaming mode to support upload of 2GB+ files and to\n-        // avoid internal buffering.\n-        // this mode should be used only if more than chunkSize data is present\n-        // to upload. otherwise upload may not happen sometimes.\n-        connection.setChunkedStreamingMode(chunkSize);\n-      }\n-\n-      setTimeout(connection);\n-\n-      // set headers for verification\n-      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n-\n-      // Write the file to output stream.\n-      writeFileToPutRequest(conf, connection, imageFile);\n-\n-      int responseCode \u003d connection.getResponseCode();\n-      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n-        throw new HttpPutFailedException(connection.getResponseMessage(),\n-            responseCode);\n-      }\n-    } catch (AuthenticationException e) {\n-      throw new IOException(e);\n-    } catch (URISyntaxException e) {\n-      throw new IOException(e);\n-    } finally {\n-      if (connection !\u003d null) {\n-        connection.disconnect();\n+      uploadImage(url, conf, storage, nnf, txid, canceler);\n+    } catch (HttpPutFailedException e) {\n+      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n+        // this is OK - this means that a previous attempt to upload\n+        // this checkpoint succeeded even though we thought it failed.\n+        LOG.info(\"Image upload with txid \" + txid + \n+            \" conflicted with a previous image upload to the \" +\n+            \"same NameNode. Continuing...\", e);\n+        return;\n+      } else {\n+        throw e;\n       }\n     }\n+    double xferSec \u003d Math.max(\n+        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n+    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n+        + \" in \" + xferSec + \" seconds\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txid, Canceler canceler)\n      throws IOException {\n    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n    long startTime \u003d Time.monotonicNow();\n    try {\n      uploadImage(url, conf, storage, nnf, txid, canceler);\n    } catch (HttpPutFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    double xferSec \u003d Math.max(\n        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n        + \" in \" + xferSec + \" seconds\");\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "94a1632fcb677fda6f4d812614026417f1d0a360": {
+      "type": "Ymultichange(Yrename,Yparameterchange,Ymodifierchange,Ybodychange)",
+      "commitMessage": "HDFS-3405. Checkpointing should use HTTP POST or PUT instead of GET-GET to send merged fsimages. Contributed by Vinayakumar B.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575611 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "08/03/14 1:25 PM",
+      "commitName": "94a1632fcb677fda6f4d812614026417f1d0a360",
+      "commitAuthor": "Andrew Wang",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-3405. Checkpointing should use HTTP POST or PUT instead of GET-GET to send merged fsimages. Contributed by Vinayakumar B.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575611 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/03/14 1:25 PM",
+          "commitName": "94a1632fcb677fda6f4d812614026417f1d0a360",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "08/03/14 1:15 PM",
+          "commitNameOld": "dbd22b23c2d68b97b4da47215897906f06f978e3",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,62 @@\n-  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n-      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n-    \n-    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n-        myNNAddress, storage);\n-    // this doesn\u0027t directly upload an image, but rather asks the NN\n-    // to connect back to the 2NN to download the specified image.\n+  private static void uploadImage(URL url, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n+\n+    File imageFile \u003d storage.findImageFile(nnf, txId);\n+    if (imageFile \u003d\u003d null) {\n+      throw new IOException(\"Could not find image with txid \" + txId);\n+    }\n+\n+    HttpURLConnection connection \u003d null;\n     try {\n-      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n-    } catch (HttpGetFailedException e) {\n-      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n-        // this is OK - this means that a previous attempt to upload\n-        // this checkpoint succeeded even though we thought it failed.\n-        LOG.info(\"Image upload with txid \" + txid + \n-            \" conflicted with a previous image upload to the \" +\n-            \"same NameNode. Continuing...\", e);\n-        return;\n-      } else {\n-        throw e;\n+      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n+\n+      // write all params for image upload request as query itself.\n+      // Request body contains the image to be uploaded.\n+      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n+          txId, imageFile.length(), nnf);\n+      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n+        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n+      }\n+\n+      URL urlWithParams \u003d uriBuilder.build().toURL();\n+      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n+          urlWithParams, UserGroupInformation.isSecurityEnabled());\n+      // Set the request to PUT\n+      connection.setRequestMethod(\"PUT\");\n+      connection.setDoOutput(true);\n+\n+      \n+      int chunkSize \u003d conf.getInt(\n+          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n+          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n+      if (imageFile.length() \u003e chunkSize) {\n+        // using chunked streaming mode to support upload of 2GB+ files and to\n+        // avoid internal buffering.\n+        // this mode should be used only if more than chunkSize data is present\n+        // to upload. otherwise upload may not happen sometimes.\n+        connection.setChunkedStreamingMode(chunkSize);\n+      }\n+\n+      setTimeout(connection);\n+\n+      // set headers for verification\n+      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n+\n+      // Write the file to output stream.\n+      writeFileToPutRequest(conf, connection, imageFile);\n+\n+      int responseCode \u003d connection.getResponseCode();\n+      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n+        throw new HttpPutFailedException(connection.getResponseMessage(),\n+            responseCode);\n+      }\n+    } catch (AuthenticationException e) {\n+      throw new IOException(e);\n+    } catch (URISyntaxException e) {\n+      throw new IOException(e);\n+    } finally {\n+      if (connection !\u003d null) {\n+        connection.disconnect();\n       }\n     }\n-    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n-    \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static void uploadImage(URL url, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n\n    File imageFile \u003d storage.findImageFile(nnf, txId);\n    if (imageFile \u003d\u003d null) {\n      throw new IOException(\"Could not find image with txid \" + txId);\n    }\n\n    HttpURLConnection connection \u003d null;\n    try {\n      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n\n      // write all params for image upload request as query itself.\n      // Request body contains the image to be uploaded.\n      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n          txId, imageFile.length(), nnf);\n      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n      }\n\n      URL urlWithParams \u003d uriBuilder.build().toURL();\n      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n          urlWithParams, UserGroupInformation.isSecurityEnabled());\n      // Set the request to PUT\n      connection.setRequestMethod(\"PUT\");\n      connection.setDoOutput(true);\n\n      \n      int chunkSize \u003d conf.getInt(\n          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n      if (imageFile.length() \u003e chunkSize) {\n        // using chunked streaming mode to support upload of 2GB+ files and to\n        // avoid internal buffering.\n        // this mode should be used only if more than chunkSize data is present\n        // to upload. otherwise upload may not happen sometimes.\n        connection.setChunkedStreamingMode(chunkSize);\n      }\n\n      setTimeout(connection);\n\n      // set headers for verification\n      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n\n      // Write the file to output stream.\n      writeFileToPutRequest(conf, connection, imageFile);\n\n      int responseCode \u003d connection.getResponseCode();\n      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n        throw new HttpPutFailedException(connection.getResponseMessage(),\n            responseCode);\n      }\n    } catch (AuthenticationException e) {\n      throw new IOException(e);\n    } catch (URISyntaxException e) {\n      throw new IOException(e);\n    } finally {\n      if (connection !\u003d null) {\n        connection.disconnect();\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "uploadImageFromStorage",
+            "newValue": "uploadImage"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-3405. Checkpointing should use HTTP POST or PUT instead of GET-GET to send merged fsimages. Contributed by Vinayakumar B.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575611 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/03/14 1:25 PM",
+          "commitName": "94a1632fcb677fda6f4d812614026417f1d0a360",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "08/03/14 1:15 PM",
+          "commitNameOld": "dbd22b23c2d68b97b4da47215897906f06f978e3",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,62 @@\n-  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n-      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n-    \n-    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n-        myNNAddress, storage);\n-    // this doesn\u0027t directly upload an image, but rather asks the NN\n-    // to connect back to the 2NN to download the specified image.\n+  private static void uploadImage(URL url, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n+\n+    File imageFile \u003d storage.findImageFile(nnf, txId);\n+    if (imageFile \u003d\u003d null) {\n+      throw new IOException(\"Could not find image with txid \" + txId);\n+    }\n+\n+    HttpURLConnection connection \u003d null;\n     try {\n-      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n-    } catch (HttpGetFailedException e) {\n-      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n-        // this is OK - this means that a previous attempt to upload\n-        // this checkpoint succeeded even though we thought it failed.\n-        LOG.info(\"Image upload with txid \" + txid + \n-            \" conflicted with a previous image upload to the \" +\n-            \"same NameNode. Continuing...\", e);\n-        return;\n-      } else {\n-        throw e;\n+      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n+\n+      // write all params for image upload request as query itself.\n+      // Request body contains the image to be uploaded.\n+      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n+          txId, imageFile.length(), nnf);\n+      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n+        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n+      }\n+\n+      URL urlWithParams \u003d uriBuilder.build().toURL();\n+      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n+          urlWithParams, UserGroupInformation.isSecurityEnabled());\n+      // Set the request to PUT\n+      connection.setRequestMethod(\"PUT\");\n+      connection.setDoOutput(true);\n+\n+      \n+      int chunkSize \u003d conf.getInt(\n+          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n+          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n+      if (imageFile.length() \u003e chunkSize) {\n+        // using chunked streaming mode to support upload of 2GB+ files and to\n+        // avoid internal buffering.\n+        // this mode should be used only if more than chunkSize data is present\n+        // to upload. otherwise upload may not happen sometimes.\n+        connection.setChunkedStreamingMode(chunkSize);\n+      }\n+\n+      setTimeout(connection);\n+\n+      // set headers for verification\n+      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n+\n+      // Write the file to output stream.\n+      writeFileToPutRequest(conf, connection, imageFile);\n+\n+      int responseCode \u003d connection.getResponseCode();\n+      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n+        throw new HttpPutFailedException(connection.getResponseMessage(),\n+            responseCode);\n+      }\n+    } catch (AuthenticationException e) {\n+      throw new IOException(e);\n+    } catch (URISyntaxException e) {\n+      throw new IOException(e);\n+    } finally {\n+      if (connection !\u003d null) {\n+        connection.disconnect();\n       }\n     }\n-    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n-    \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static void uploadImage(URL url, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n\n    File imageFile \u003d storage.findImageFile(nnf, txId);\n    if (imageFile \u003d\u003d null) {\n      throw new IOException(\"Could not find image with txid \" + txId);\n    }\n\n    HttpURLConnection connection \u003d null;\n    try {\n      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n\n      // write all params for image upload request as query itself.\n      // Request body contains the image to be uploaded.\n      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n          txId, imageFile.length(), nnf);\n      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n      }\n\n      URL urlWithParams \u003d uriBuilder.build().toURL();\n      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n          urlWithParams, UserGroupInformation.isSecurityEnabled());\n      // Set the request to PUT\n      connection.setRequestMethod(\"PUT\");\n      connection.setDoOutput(true);\n\n      \n      int chunkSize \u003d conf.getInt(\n          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n      if (imageFile.length() \u003e chunkSize) {\n        // using chunked streaming mode to support upload of 2GB+ files and to\n        // avoid internal buffering.\n        // this mode should be used only if more than chunkSize data is present\n        // to upload. otherwise upload may not happen sometimes.\n        connection.setChunkedStreamingMode(chunkSize);\n      }\n\n      setTimeout(connection);\n\n      // set headers for verification\n      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n\n      // Write the file to output stream.\n      writeFileToPutRequest(conf, connection, imageFile);\n\n      int responseCode \u003d connection.getResponseCode();\n      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n        throw new HttpPutFailedException(connection.getResponseMessage(),\n            responseCode);\n      }\n    } catch (AuthenticationException e) {\n      throw new IOException(e);\n    } catch (URISyntaxException e) {\n      throw new IOException(e);\n    } finally {\n      if (connection !\u003d null) {\n        connection.disconnect();\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "[fsName-URL, myNNAddress-URL, storage-Storage, nnf-NameNodeFile, txid-long]",
+            "newValue": "[url-URL, conf-Configuration, storage-NNStorage, nnf-NameNodeFile, txId-long]"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-3405. Checkpointing should use HTTP POST or PUT instead of GET-GET to send merged fsimages. Contributed by Vinayakumar B.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575611 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/03/14 1:25 PM",
+          "commitName": "94a1632fcb677fda6f4d812614026417f1d0a360",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "08/03/14 1:15 PM",
+          "commitNameOld": "dbd22b23c2d68b97b4da47215897906f06f978e3",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,62 @@\n-  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n-      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n-    \n-    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n-        myNNAddress, storage);\n-    // this doesn\u0027t directly upload an image, but rather asks the NN\n-    // to connect back to the 2NN to download the specified image.\n+  private static void uploadImage(URL url, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n+\n+    File imageFile \u003d storage.findImageFile(nnf, txId);\n+    if (imageFile \u003d\u003d null) {\n+      throw new IOException(\"Could not find image with txid \" + txId);\n+    }\n+\n+    HttpURLConnection connection \u003d null;\n     try {\n-      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n-    } catch (HttpGetFailedException e) {\n-      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n-        // this is OK - this means that a previous attempt to upload\n-        // this checkpoint succeeded even though we thought it failed.\n-        LOG.info(\"Image upload with txid \" + txid + \n-            \" conflicted with a previous image upload to the \" +\n-            \"same NameNode. Continuing...\", e);\n-        return;\n-      } else {\n-        throw e;\n+      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n+\n+      // write all params for image upload request as query itself.\n+      // Request body contains the image to be uploaded.\n+      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n+          txId, imageFile.length(), nnf);\n+      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n+        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n+      }\n+\n+      URL urlWithParams \u003d uriBuilder.build().toURL();\n+      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n+          urlWithParams, UserGroupInformation.isSecurityEnabled());\n+      // Set the request to PUT\n+      connection.setRequestMethod(\"PUT\");\n+      connection.setDoOutput(true);\n+\n+      \n+      int chunkSize \u003d conf.getInt(\n+          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n+          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n+      if (imageFile.length() \u003e chunkSize) {\n+        // using chunked streaming mode to support upload of 2GB+ files and to\n+        // avoid internal buffering.\n+        // this mode should be used only if more than chunkSize data is present\n+        // to upload. otherwise upload may not happen sometimes.\n+        connection.setChunkedStreamingMode(chunkSize);\n+      }\n+\n+      setTimeout(connection);\n+\n+      // set headers for verification\n+      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n+\n+      // Write the file to output stream.\n+      writeFileToPutRequest(conf, connection, imageFile);\n+\n+      int responseCode \u003d connection.getResponseCode();\n+      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n+        throw new HttpPutFailedException(connection.getResponseMessage(),\n+            responseCode);\n+      }\n+    } catch (AuthenticationException e) {\n+      throw new IOException(e);\n+    } catch (URISyntaxException e) {\n+      throw new IOException(e);\n+    } finally {\n+      if (connection !\u003d null) {\n+        connection.disconnect();\n       }\n     }\n-    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n-    \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static void uploadImage(URL url, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n\n    File imageFile \u003d storage.findImageFile(nnf, txId);\n    if (imageFile \u003d\u003d null) {\n      throw new IOException(\"Could not find image with txid \" + txId);\n    }\n\n    HttpURLConnection connection \u003d null;\n    try {\n      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n\n      // write all params for image upload request as query itself.\n      // Request body contains the image to be uploaded.\n      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n          txId, imageFile.length(), nnf);\n      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n      }\n\n      URL urlWithParams \u003d uriBuilder.build().toURL();\n      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n          urlWithParams, UserGroupInformation.isSecurityEnabled());\n      // Set the request to PUT\n      connection.setRequestMethod(\"PUT\");\n      connection.setDoOutput(true);\n\n      \n      int chunkSize \u003d conf.getInt(\n          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n      if (imageFile.length() \u003e chunkSize) {\n        // using chunked streaming mode to support upload of 2GB+ files and to\n        // avoid internal buffering.\n        // this mode should be used only if more than chunkSize data is present\n        // to upload. otherwise upload may not happen sometimes.\n        connection.setChunkedStreamingMode(chunkSize);\n      }\n\n      setTimeout(connection);\n\n      // set headers for verification\n      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n\n      // Write the file to output stream.\n      writeFileToPutRequest(conf, connection, imageFile);\n\n      int responseCode \u003d connection.getResponseCode();\n      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n        throw new HttpPutFailedException(connection.getResponseMessage(),\n            responseCode);\n      }\n    } catch (AuthenticationException e) {\n      throw new IOException(e);\n    } catch (URISyntaxException e) {\n      throw new IOException(e);\n    } finally {\n      if (connection !\u003d null) {\n        connection.disconnect();\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "[public, static]",
+            "newValue": "[private, static]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3405. Checkpointing should use HTTP POST or PUT instead of GET-GET to send merged fsimages. Contributed by Vinayakumar B.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575611 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/03/14 1:25 PM",
+          "commitName": "94a1632fcb677fda6f4d812614026417f1d0a360",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "08/03/14 1:15 PM",
+          "commitNameOld": "dbd22b23c2d68b97b4da47215897906f06f978e3",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,62 @@\n-  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n-      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n-    \n-    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n-        myNNAddress, storage);\n-    // this doesn\u0027t directly upload an image, but rather asks the NN\n-    // to connect back to the 2NN to download the specified image.\n+  private static void uploadImage(URL url, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n+\n+    File imageFile \u003d storage.findImageFile(nnf, txId);\n+    if (imageFile \u003d\u003d null) {\n+      throw new IOException(\"Could not find image with txid \" + txId);\n+    }\n+\n+    HttpURLConnection connection \u003d null;\n     try {\n-      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n-    } catch (HttpGetFailedException e) {\n-      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n-        // this is OK - this means that a previous attempt to upload\n-        // this checkpoint succeeded even though we thought it failed.\n-        LOG.info(\"Image upload with txid \" + txid + \n-            \" conflicted with a previous image upload to the \" +\n-            \"same NameNode. Continuing...\", e);\n-        return;\n-      } else {\n-        throw e;\n+      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n+\n+      // write all params for image upload request as query itself.\n+      // Request body contains the image to be uploaded.\n+      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n+          txId, imageFile.length(), nnf);\n+      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n+        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n+      }\n+\n+      URL urlWithParams \u003d uriBuilder.build().toURL();\n+      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n+          urlWithParams, UserGroupInformation.isSecurityEnabled());\n+      // Set the request to PUT\n+      connection.setRequestMethod(\"PUT\");\n+      connection.setDoOutput(true);\n+\n+      \n+      int chunkSize \u003d conf.getInt(\n+          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n+          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n+      if (imageFile.length() \u003e chunkSize) {\n+        // using chunked streaming mode to support upload of 2GB+ files and to\n+        // avoid internal buffering.\n+        // this mode should be used only if more than chunkSize data is present\n+        // to upload. otherwise upload may not happen sometimes.\n+        connection.setChunkedStreamingMode(chunkSize);\n+      }\n+\n+      setTimeout(connection);\n+\n+      // set headers for verification\n+      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n+\n+      // Write the file to output stream.\n+      writeFileToPutRequest(conf, connection, imageFile);\n+\n+      int responseCode \u003d connection.getResponseCode();\n+      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n+        throw new HttpPutFailedException(connection.getResponseMessage(),\n+            responseCode);\n+      }\n+    } catch (AuthenticationException e) {\n+      throw new IOException(e);\n+    } catch (URISyntaxException e) {\n+      throw new IOException(e);\n+    } finally {\n+      if (connection !\u003d null) {\n+        connection.disconnect();\n       }\n     }\n-    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n-    \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static void uploadImage(URL url, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txId) throws IOException {\n\n    File imageFile \u003d storage.findImageFile(nnf, txId);\n    if (imageFile \u003d\u003d null) {\n      throw new IOException(\"Could not find image with txid \" + txId);\n    }\n\n    HttpURLConnection connection \u003d null;\n    try {\n      URIBuilder uriBuilder \u003d new URIBuilder(url.toURI());\n\n      // write all params for image upload request as query itself.\n      // Request body contains the image to be uploaded.\n      Map\u003cString, String\u003e params \u003d ImageServlet.getParamsForPutImage(storage,\n          txId, imageFile.length(), nnf);\n      for (Entry\u003cString, String\u003e entry : params.entrySet()) {\n        uriBuilder.addParameter(entry.getKey(), entry.getValue());\n      }\n\n      URL urlWithParams \u003d uriBuilder.build().toURL();\n      connection \u003d (HttpURLConnection) connectionFactory.openConnection(\n          urlWithParams, UserGroupInformation.isSecurityEnabled());\n      // Set the request to PUT\n      connection.setRequestMethod(\"PUT\");\n      connection.setDoOutput(true);\n\n      \n      int chunkSize \u003d conf.getInt(\n          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_KEY,\n          DFSConfigKeys.DFS_IMAGE_TRANSFER_CHUNKSIZE_DEFAULT);\n      if (imageFile.length() \u003e chunkSize) {\n        // using chunked streaming mode to support upload of 2GB+ files and to\n        // avoid internal buffering.\n        // this mode should be used only if more than chunkSize data is present\n        // to upload. otherwise upload may not happen sometimes.\n        connection.setChunkedStreamingMode(chunkSize);\n      }\n\n      setTimeout(connection);\n\n      // set headers for verification\n      ImageServlet.setVerificationHeadersForPut(connection, imageFile);\n\n      // Write the file to output stream.\n      writeFileToPutRequest(conf, connection, imageFile);\n\n      int responseCode \u003d connection.getResponseCode();\n      if (responseCode !\u003d HttpURLConnection.HTTP_OK) {\n        throw new HttpPutFailedException(connection.getResponseMessage(),\n            responseCode);\n      }\n    } catch (AuthenticationException e) {\n      throw new IOException(e);\n    } catch (URISyntaxException e) {\n      throw new IOException(e);\n    } finally {\n      if (connection !\u003d null) {\n        connection.disconnect();\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "dbd22b23c2d68b97b4da47215897906f06f978e3": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "Revert HDFS-3405 for recommit with correct renamed files\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575610 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "08/03/14 1:15 PM",
+      "commitName": "dbd22b23c2d68b97b4da47215897906f06f978e3",
+      "commitAuthor": "Andrew Wang",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "Revert HDFS-3405 for recommit with correct renamed files\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575610 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/03/14 1:15 PM",
+          "commitName": "dbd22b23c2d68b97b4da47215897906f06f978e3",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "07/03/14 4:39 PM",
+          "commitNameOld": "0f595915a388305edbb3ce928415571811d304e8",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 0.86,
+          "commitsBetweenForRepo": 8,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,24 @@\n-  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n-      NNStorage storage, NameNodeFile nnf, long txid) throws IOException {\n+  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n+      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n     \n-    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n-    long startTime \u003d Time.monotonicNow();\n+    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n+        myNNAddress, storage);\n+    // this doesn\u0027t directly upload an image, but rather asks the NN\n+    // to connect back to the 2NN to download the specified image.\n     try {\n-      uploadImage(url, conf, storage, nnf, txid);\n-    } catch (HttpPutFailedException e) {\n+      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n+    } catch (HttpGetFailedException e) {\n       if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n         // this is OK - this means that a previous attempt to upload\n         // this checkpoint succeeded even though we thought it failed.\n         LOG.info(\"Image upload with txid \" + txid + \n             \" conflicted with a previous image upload to the \" +\n             \"same NameNode. Continuing...\", e);\n         return;\n       } else {\n         throw e;\n       }\n     }\n-    double xferSec \u003d Math.max(\n-        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n-    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n-        + \" in \" + xferSec + \" seconds\");\n+    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n+    \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n        myNNAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    try {\n      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    } catch (HttpGetFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "[fsName-URL, conf-Configuration, storage-NNStorage, nnf-NameNodeFile, txid-long]",
+            "newValue": "[fsName-URL, myNNAddress-URL, storage-Storage, nnf-NameNodeFile, txid-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "Revert HDFS-3405 for recommit with correct renamed files\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575610 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/03/14 1:15 PM",
+          "commitName": "dbd22b23c2d68b97b4da47215897906f06f978e3",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "07/03/14 4:39 PM",
+          "commitNameOld": "0f595915a388305edbb3ce928415571811d304e8",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 0.86,
+          "commitsBetweenForRepo": 8,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,24 @@\n-  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n-      NNStorage storage, NameNodeFile nnf, long txid) throws IOException {\n+  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n+      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n     \n-    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n-    long startTime \u003d Time.monotonicNow();\n+    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n+        myNNAddress, storage);\n+    // this doesn\u0027t directly upload an image, but rather asks the NN\n+    // to connect back to the 2NN to download the specified image.\n     try {\n-      uploadImage(url, conf, storage, nnf, txid);\n-    } catch (HttpPutFailedException e) {\n+      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n+    } catch (HttpGetFailedException e) {\n       if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n         // this is OK - this means that a previous attempt to upload\n         // this checkpoint succeeded even though we thought it failed.\n         LOG.info(\"Image upload with txid \" + txid + \n             \" conflicted with a previous image upload to the \" +\n             \"same NameNode. Continuing...\", e);\n         return;\n       } else {\n         throw e;\n       }\n     }\n-    double xferSec \u003d Math.max(\n-        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n-    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n-        + \" in \" + xferSec + \" seconds\");\n+    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n+    \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n        myNNAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    try {\n      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    } catch (HttpGetFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "0f595915a388305edbb3ce928415571811d304e8": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-3405. Checkpointing should use HTTP POST or PUT instead of GET-GET to send merged fsimages. Contributed by Vinayakumar B.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575457 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/03/14 4:39 PM",
+      "commitName": "0f595915a388305edbb3ce928415571811d304e8",
+      "commitAuthor": "Andrew Wang",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-3405. Checkpointing should use HTTP POST or PUT instead of GET-GET to send merged fsimages. Contributed by Vinayakumar B.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575457 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "07/03/14 4:39 PM",
+          "commitName": "0f595915a388305edbb3ce928415571811d304e8",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "27/02/14 5:21 PM",
+          "commitNameOld": "e9a17c8ce0656a4e5d47401ca22a575c5f5f66db",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 7.97,
+          "commitsBetweenForRepo": 73,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,24 @@\n-  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n-      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n+  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txid) throws IOException {\n     \n-    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n-        myNNAddress, storage);\n-    // this doesn\u0027t directly upload an image, but rather asks the NN\n-    // to connect back to the 2NN to download the specified image.\n+    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n+    long startTime \u003d Time.monotonicNow();\n     try {\n-      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n-    } catch (HttpGetFailedException e) {\n+      uploadImage(url, conf, storage, nnf, txid);\n+    } catch (HttpPutFailedException e) {\n       if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n         // this is OK - this means that a previous attempt to upload\n         // this checkpoint succeeded even though we thought it failed.\n         LOG.info(\"Image upload with txid \" + txid + \n             \" conflicted with a previous image upload to the \" +\n             \"same NameNode. Continuing...\", e);\n         return;\n       } else {\n         throw e;\n       }\n     }\n-    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n-    \t\tfsName);\n+    double xferSec \u003d Math.max(\n+        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n+    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n+        + \" in \" + xferSec + \" seconds\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txid) throws IOException {\n    \n    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n    long startTime \u003d Time.monotonicNow();\n    try {\n      uploadImage(url, conf, storage, nnf, txid);\n    } catch (HttpPutFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    double xferSec \u003d Math.max(\n        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n        + \" in \" + xferSec + \" seconds\");\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "[fsName-URL, myNNAddress-URL, storage-Storage, nnf-NameNodeFile, txid-long]",
+            "newValue": "[fsName-URL, conf-Configuration, storage-NNStorage, nnf-NameNodeFile, txid-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3405. Checkpointing should use HTTP POST or PUT instead of GET-GET to send merged fsimages. Contributed by Vinayakumar B.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575457 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "07/03/14 4:39 PM",
+          "commitName": "0f595915a388305edbb3ce928415571811d304e8",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "27/02/14 5:21 PM",
+          "commitNameOld": "e9a17c8ce0656a4e5d47401ca22a575c5f5f66db",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 7.97,
+          "commitsBetweenForRepo": 73,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,24 @@\n-  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n-      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n+  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n+      NNStorage storage, NameNodeFile nnf, long txid) throws IOException {\n     \n-    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n-        myNNAddress, storage);\n-    // this doesn\u0027t directly upload an image, but rather asks the NN\n-    // to connect back to the 2NN to download the specified image.\n+    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n+    long startTime \u003d Time.monotonicNow();\n     try {\n-      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n-    } catch (HttpGetFailedException e) {\n+      uploadImage(url, conf, storage, nnf, txid);\n+    } catch (HttpPutFailedException e) {\n       if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n         // this is OK - this means that a previous attempt to upload\n         // this checkpoint succeeded even though we thought it failed.\n         LOG.info(\"Image upload with txid \" + txid + \n             \" conflicted with a previous image upload to the \" +\n             \"same NameNode. Continuing...\", e);\n         return;\n       } else {\n         throw e;\n       }\n     }\n-    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n-    \t\tfsName);\n+    double xferSec \u003d Math.max(\n+        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n+    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n+        + \" in \" + xferSec + \" seconds\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, Configuration conf,\n      NNStorage storage, NameNodeFile nnf, long txid) throws IOException {\n    \n    URL url \u003d new URL(fsName, ImageServlet.PATH_SPEC);\n    long startTime \u003d Time.monotonicNow();\n    try {\n      uploadImage(url, conf, storage, nnf, txid);\n    } catch (HttpPutFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    double xferSec \u003d Math.max(\n        ((float) (Time.monotonicNow() - startTime)) / 1000.0, 0.001);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" + fsName\n        + \" in \" + xferSec + \" seconds\");\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e3d2e4c156851de7dac16154521a2e06ea83ec7b": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-6000. Avoid saving namespace when starting rolling upgrade. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-5535@1571840 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "25/02/14 1:58 PM",
+      "commitName": "e3d2e4c156851de7dac16154521a2e06ea83ec7b",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-6000. Avoid saving namespace when starting rolling upgrade. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-5535@1571840 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "25/02/14 1:58 PM",
+          "commitName": "e3d2e4c156851de7dac16154521a2e06ea83ec7b",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "06/12/13 10:01 AM",
+          "commitNameOld": "045dc880e13271737b3cf316296e92fb95806663",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 81.16,
+          "commitsBetweenForRepo": 552,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,24 @@\n-  public static void uploadImageFromStorage(URL fsName,\n-      URL myNNAddress,\n-      Storage storage, long txid) throws IOException {\n+  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n+      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n     \n-    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n-        txid, myNNAddress, storage);\n+    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n+        myNNAddress, storage);\n     // this doesn\u0027t directly upload an image, but rather asks the NN\n     // to connect back to the 2NN to download the specified image.\n     try {\n       TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n     } catch (HttpGetFailedException e) {\n       if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n         // this is OK - this means that a previous attempt to upload\n         // this checkpoint succeeded even though we thought it failed.\n         LOG.info(\"Image upload with txid \" + txid + \n             \" conflicted with a previous image upload to the \" +\n             \"same NameNode. Continuing...\", e);\n         return;\n       } else {\n         throw e;\n       }\n     }\n     LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n     \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n        myNNAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    try {\n      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    } catch (HttpGetFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "[fsName-URL, myNNAddress-URL, storage-Storage, txid-long]",
+            "newValue": "[fsName-URL, myNNAddress-URL, storage-Storage, nnf-NameNodeFile, txid-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6000. Avoid saving namespace when starting rolling upgrade. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-5535@1571840 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "25/02/14 1:58 PM",
+          "commitName": "e3d2e4c156851de7dac16154521a2e06ea83ec7b",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "06/12/13 10:01 AM",
+          "commitNameOld": "045dc880e13271737b3cf316296e92fb95806663",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 81.16,
+          "commitsBetweenForRepo": 552,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,24 @@\n-  public static void uploadImageFromStorage(URL fsName,\n-      URL myNNAddress,\n-      Storage storage, long txid) throws IOException {\n+  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n+      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n     \n-    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n-        txid, myNNAddress, storage);\n+    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n+        myNNAddress, storage);\n     // this doesn\u0027t directly upload an image, but rather asks the NN\n     // to connect back to the 2NN to download the specified image.\n     try {\n       TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n     } catch (HttpGetFailedException e) {\n       if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n         // this is OK - this means that a previous attempt to upload\n         // this checkpoint succeeded even though we thought it failed.\n         LOG.info(\"Image upload with txid \" + txid + \n             \" conflicted with a previous image upload to the \" +\n             \"same NameNode. Continuing...\", e);\n         return;\n       } else {\n         throw e;\n       }\n     }\n     LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n     \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName, URL myNNAddress,\n      Storage storage, NameNodeFile nnf, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(nnf, txid,\n        myNNAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    try {\n      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    } catch (HttpGetFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "045dc880e13271737b3cf316296e92fb95806663": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-5312. Generate HTTP/HTTPS URL in DFSUtil#getInfoServer() based on the configured http policy. Contributed by Haohui Mai.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1548629 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/12/13 10:01 AM",
+      "commitName": "045dc880e13271737b3cf316296e92fb95806663",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-5312. Generate HTTP/HTTPS URL in DFSUtil#getInfoServer() based on the configured http policy. Contributed by Haohui Mai.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1548629 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "06/12/13 10:01 AM",
+          "commitName": "045dc880e13271737b3cf316296e92fb95806663",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "25/11/13 5:16 PM",
+          "commitNameOld": "d8a23834614581a292aad214dddcbcc4bbe86d27",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 10.7,
+          "commitsBetweenForRepo": 59,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,25 @@\n-  public static void uploadImageFromStorage(String fsName,\n-      InetSocketAddress imageListenAddress,\n+  public static void uploadImageFromStorage(URL fsName,\n+      URL myNNAddress,\n       Storage storage, long txid) throws IOException {\n     \n     String fileid \u003d GetImageServlet.getParamStringToPutImage(\n-        txid, imageListenAddress, storage);\n+        txid, myNNAddress, storage);\n     // this doesn\u0027t directly upload an image, but rather asks the NN\n     // to connect back to the 2NN to download the specified image.\n     try {\n       TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n     } catch (HttpGetFailedException e) {\n       if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n         // this is OK - this means that a previous attempt to upload\n         // this checkpoint succeeded even though we thought it failed.\n         LOG.info(\"Image upload with txid \" + txid + \n             \" conflicted with a previous image upload to the \" +\n             \"same NameNode. Continuing...\", e);\n         return;\n       } else {\n         throw e;\n       }\n     }\n     LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n     \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName,\n      URL myNNAddress,\n      Storage storage, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n        txid, myNNAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    try {\n      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    } catch (HttpGetFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "[fsName-String, imageListenAddress-InetSocketAddress, storage-Storage, txid-long]",
+            "newValue": "[fsName-URL, myNNAddress-URL, storage-Storage, txid-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-5312. Generate HTTP/HTTPS URL in DFSUtil#getInfoServer() based on the configured http policy. Contributed by Haohui Mai.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1548629 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "06/12/13 10:01 AM",
+          "commitName": "045dc880e13271737b3cf316296e92fb95806663",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "25/11/13 5:16 PM",
+          "commitNameOld": "d8a23834614581a292aad214dddcbcc4bbe86d27",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 10.7,
+          "commitsBetweenForRepo": 59,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,25 @@\n-  public static void uploadImageFromStorage(String fsName,\n-      InetSocketAddress imageListenAddress,\n+  public static void uploadImageFromStorage(URL fsName,\n+      URL myNNAddress,\n       Storage storage, long txid) throws IOException {\n     \n     String fileid \u003d GetImageServlet.getParamStringToPutImage(\n-        txid, imageListenAddress, storage);\n+        txid, myNNAddress, storage);\n     // this doesn\u0027t directly upload an image, but rather asks the NN\n     // to connect back to the 2NN to download the specified image.\n     try {\n       TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n     } catch (HttpGetFailedException e) {\n       if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n         // this is OK - this means that a previous attempt to upload\n         // this checkpoint succeeded even though we thought it failed.\n         LOG.info(\"Image upload with txid \" + txid + \n             \" conflicted with a previous image upload to the \" +\n             \"same NameNode. Continuing...\", e);\n         return;\n       } else {\n         throw e;\n       }\n     }\n     LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n     \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(URL fsName,\n      URL myNNAddress,\n      Storage storage, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n        txid, myNNAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    try {\n      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    } catch (HttpGetFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "8dd3148e734fa9d1db761ce65410fdc49c0fe1d5": {
+      "type": "Yparameterchange",
+      "commitMessage": "HDFS-3190. Simple refactors in existing NN code to assist QuorumJournalManager extension. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1356525 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/07/12 4:59 PM",
+      "commitName": "8dd3148e734fa9d1db761ce65410fdc49c0fe1d5",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "11/06/12 10:00 PM",
+      "commitNameOld": "8879653ab44efcca36e073a383b2e5bb56da88fd",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 20.79,
+      "commitsBetweenForRepo": 90,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,25 @@\n   public static void uploadImageFromStorage(String fsName,\n       InetSocketAddress imageListenAddress,\n-      NNStorage storage, long txid) throws IOException {\n+      Storage storage, long txid) throws IOException {\n     \n     String fileid \u003d GetImageServlet.getParamStringToPutImage(\n         txid, imageListenAddress, storage);\n     // this doesn\u0027t directly upload an image, but rather asks the NN\n     // to connect back to the 2NN to download the specified image.\n     try {\n       TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n     } catch (HttpGetFailedException e) {\n       if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n         // this is OK - this means that a previous attempt to upload\n         // this checkpoint succeeded even though we thought it failed.\n         LOG.info(\"Image upload with txid \" + txid + \n             \" conflicted with a previous image upload to the \" +\n             \"same NameNode. Continuing...\", e);\n         return;\n       } else {\n         throw e;\n       }\n     }\n     LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n     \t\tfsName);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void uploadImageFromStorage(String fsName,\n      InetSocketAddress imageListenAddress,\n      Storage storage, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n        txid, imageListenAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    try {\n      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    } catch (HttpGetFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+      "extendedDetails": {
+        "oldValue": "[fsName-String, imageListenAddress-InetSocketAddress, storage-NNStorage, txid-long]",
+        "newValue": "[fsName-String, imageListenAddress-InetSocketAddress, storage-Storage, txid-long]"
+      }
+    },
+    "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HDFS-2291. Allow the StandbyNode to make checkpoints in an HA setup. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-1623@1227411 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/01/12 4:22 PM",
+      "commitName": "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae",
+      "commitAuthor": "Todd Lipcon",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-2291. Allow the StandbyNode to make checkpoints in an HA setup. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-1623@1227411 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "04/01/12 4:22 PM",
+          "commitName": "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "04/09/11 12:30 PM",
+          "commitNameOld": "8ae98a9d1ca4725e28783370517cb3a3ecda7324",
+          "commitAuthorOld": "Aaron Myers",
+          "daysBetweenCommits": 122.2,
+          "commitsBetweenForRepo": 844,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,25 @@\n-  static void uploadImageFromStorage(String fsName,\n+  public static void uploadImageFromStorage(String fsName,\n       InetSocketAddress imageListenAddress,\n       NNStorage storage, long txid) throws IOException {\n     \n     String fileid \u003d GetImageServlet.getParamStringToPutImage(\n         txid, imageListenAddress, storage);\n     // this doesn\u0027t directly upload an image, but rather asks the NN\n     // to connect back to the 2NN to download the specified image.\n-    TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n+    try {\n+      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n+    } catch (HttpGetFailedException e) {\n+      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n+        // this is OK - this means that a previous attempt to upload\n+        // this checkpoint succeeded even though we thought it failed.\n+        LOG.info(\"Image upload with txid \" + txid + \n+            \" conflicted with a previous image upload to the \" +\n+            \"same NameNode. Continuing...\", e);\n+        return;\n+      } else {\n+        throw e;\n+      }\n+    }\n     LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n     \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(String fsName,\n      InetSocketAddress imageListenAddress,\n      NNStorage storage, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n        txid, imageListenAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    try {\n      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    } catch (HttpGetFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {
+            "oldValue": "[static]",
+            "newValue": "[public, static]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-2291. Allow the StandbyNode to make checkpoints in an HA setup. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-1623@1227411 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "04/01/12 4:22 PM",
+          "commitName": "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "04/09/11 12:30 PM",
+          "commitNameOld": "8ae98a9d1ca4725e28783370517cb3a3ecda7324",
+          "commitAuthorOld": "Aaron Myers",
+          "daysBetweenCommits": 122.2,
+          "commitsBetweenForRepo": 844,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,25 @@\n-  static void uploadImageFromStorage(String fsName,\n+  public static void uploadImageFromStorage(String fsName,\n       InetSocketAddress imageListenAddress,\n       NNStorage storage, long txid) throws IOException {\n     \n     String fileid \u003d GetImageServlet.getParamStringToPutImage(\n         txid, imageListenAddress, storage);\n     // this doesn\u0027t directly upload an image, but rather asks the NN\n     // to connect back to the 2NN to download the specified image.\n-    TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n+    try {\n+      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n+    } catch (HttpGetFailedException e) {\n+      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n+        // this is OK - this means that a previous attempt to upload\n+        // this checkpoint succeeded even though we thought it failed.\n+        LOG.info(\"Image upload with txid \" + txid + \n+            \" conflicted with a previous image upload to the \" +\n+            \"same NameNode. Continuing...\", e);\n+        return;\n+      } else {\n+        throw e;\n+      }\n+    }\n     LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n     \t\tfsName);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void uploadImageFromStorage(String fsName,\n      InetSocketAddress imageListenAddress,\n      NNStorage storage, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n        txid, imageListenAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    try {\n      TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    } catch (HttpGetFailedException e) {\n      if (e.getResponseCode() \u003d\u003d HttpServletResponse.SC_CONFLICT) {\n        // this is OK - this means that a previous attempt to upload\n        // this checkpoint succeeded even though we thought it failed.\n        LOG.info(\"Image upload with txid \" + txid + \n            \" conflicted with a previous image upload to the \" +\n            \"same NameNode. Continuing...\", e);\n        return;\n      } else {\n        throw e;\n      }\n    }\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  static void uploadImageFromStorage(String fsName,\n      InetSocketAddress imageListenAddress,\n      NNStorage storage, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n        txid, imageListenAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java"
+      }
+    },
+    "d86f3183d93714ba078416af4f609d26376eadb0": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-2096. Mavenization of hadoop-hdfs. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159702 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "19/08/11 10:36 AM",
+      "commitName": "d86f3183d93714ba078416af4f609d26376eadb0",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "19/08/11 10:26 AM",
+      "commitNameOld": "6ee5a73e0e91a2ef27753a32c576835e951d8119",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  static void uploadImageFromStorage(String fsName,\n      InetSocketAddress imageListenAddress,\n      NNStorage storage, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n        txid, imageListenAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+      "path": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+      "extendedDetails": {
+        "oldPath": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+        "newPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java"
+      }
+    },
+    "28e6a4e44a3e920dcaf858f9a74a6358226b3a63": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-1073. Redesign the NameNode\u0027s storage layout for image checkpoints and edit logs to introduce transaction IDs and be more robust. Contributed by Todd Lipcon and Ivan Kelly.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1152295 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "29/07/11 9:28 AM",
+      "commitName": "28e6a4e44a3e920dcaf858f9a74a6358226b3a63",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,12 @@\n+  static void uploadImageFromStorage(String fsName,\n+      InetSocketAddress imageListenAddress,\n+      NNStorage storage, long txid) throws IOException {\n+    \n+    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n+        txid, imageListenAddress, storage);\n+    // this doesn\u0027t directly upload an image, but rather asks the NN\n+    // to connect back to the 2NN to download the specified image.\n+    TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n+    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n+    \t\tfsName);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static void uploadImageFromStorage(String fsName,\n      InetSocketAddress imageListenAddress,\n      NNStorage storage, long txid) throws IOException {\n    \n    String fileid \u003d GetImageServlet.getParamStringToPutImage(\n        txid, imageListenAddress, storage);\n    // this doesn\u0027t directly upload an image, but rather asks the NN\n    // to connect back to the 2NN to download the specified image.\n    TransferFsImage.getFileClient(fsName, fileid, null, null, false);\n    LOG.info(\"Uploaded image with txid \" + txid + \" to namenode at \" +\n    \t\tfsName);\n  }",
+      "path": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java"
+    }
+  }
+}

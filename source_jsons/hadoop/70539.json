@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SecureWasbRemoteCallHelper.java",
+  "functionName": "makeRemoteRequest",
+  "functionId": "makeRemoteRequest___urls-String[](modifiers-final)__path-String(modifiers-final)__queryParams-List__NameValuePair__(modifiers-final)__httpMethod-String(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/SecureWasbRemoteCallHelper.java",
+  "functionStartLine": 92,
+  "functionEndLine": 141,
+  "numCommitsSeen": 3,
+  "timeTaken": 1064,
+  "changeHistory": [
+    "b0e78ae085928c82ae63a05a29a628c2e289c0fc",
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329"
+  ],
+  "changeHistoryShort": {
+    "b0e78ae085928c82ae63a05a29a628c2e289c0fc": "Ybodychange",
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b0e78ae085928c82ae63a05a29a628c2e289c0fc": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14640. Azure: Support affinity for service running on localhost and reuse SPNEGO hadoop.auth cookie for authorization, SASKey and delegation token generation. Contributed by Santhosh G Nayak.\n",
+      "commitDate": "17/07/17 2:27 AM",
+      "commitName": "b0e78ae085928c82ae63a05a29a628c2e289c0fc",
+      "commitAuthor": "Jitendra Pandey",
+      "commitDateOld": "30/06/17 4:53 PM",
+      "commitNameOld": "38996fdcf0987d1da00ce46f8284d8fcdce57329",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 16.4,
+      "commitsBetweenForRepo": 64,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,50 @@\n   public String makeRemoteRequest(final String[] urls,\n       final String path, final List\u003cNameValuePair\u003e queryParams,\n       final String httpMethod) throws IOException {\n     final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n     UserGroupInformation connectUgi \u003d ugi.getRealUser();\n-    if (connectUgi \u003d\u003d null) {\n+    if (connectUgi !\u003d null) {\n+      queryParams.add(new NameValuePair() {\n+        @Override public String getName() {\n+          return Constants.DOAS_PARAM;\n+        }\n+\n+        @Override public String getValue() {\n+          return ugi.getShortUserName();\n+        }\n+      });\n+    } else  {\n       connectUgi \u003d ugi;\n     }\n+\n+    final Token delegationToken \u003d getDelegationToken(ugi);\n+    if (!alwaysRequiresKerberosAuth \u0026\u0026 delegationToken !\u003d null) {\n+      final String delegationTokenEncodedUrlString \u003d\n+          delegationToken.encodeToUrlString();\n+      queryParams.add(new NameValuePair() {\n+        @Override public String getName() {\n+          return DELEGATION_TOKEN_QUERY_PARAM_NAME;\n+        }\n+\n+        @Override public String getValue() {\n+          return delegationTokenEncodedUrlString;\n+        }\n+      });\n+    }\n+\n     if (delegationToken \u003d\u003d null) {\n       connectUgi.checkTGTAndReloginFromKeytab();\n     }\n     String s \u003d null;\n     try {\n       s \u003d connectUgi.doAs(new PrivilegedExceptionAction\u003cString\u003e() {\n         @Override public String run() throws Exception {\n           return retryableRequest(urls, path, queryParams, httpMethod);\n         }\n       });\n     } catch (InterruptedException e) {\n       Thread.currentThread().interrupt();\n       throw new IOException(e.getMessage(), e);\n     }\n     return s;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public String makeRemoteRequest(final String[] urls,\n      final String path, final List\u003cNameValuePair\u003e queryParams,\n      final String httpMethod) throws IOException {\n    final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n    UserGroupInformation connectUgi \u003d ugi.getRealUser();\n    if (connectUgi !\u003d null) {\n      queryParams.add(new NameValuePair() {\n        @Override public String getName() {\n          return Constants.DOAS_PARAM;\n        }\n\n        @Override public String getValue() {\n          return ugi.getShortUserName();\n        }\n      });\n    } else  {\n      connectUgi \u003d ugi;\n    }\n\n    final Token delegationToken \u003d getDelegationToken(ugi);\n    if (!alwaysRequiresKerberosAuth \u0026\u0026 delegationToken !\u003d null) {\n      final String delegationTokenEncodedUrlString \u003d\n          delegationToken.encodeToUrlString();\n      queryParams.add(new NameValuePair() {\n        @Override public String getName() {\n          return DELEGATION_TOKEN_QUERY_PARAM_NAME;\n        }\n\n        @Override public String getValue() {\n          return delegationTokenEncodedUrlString;\n        }\n      });\n    }\n\n    if (delegationToken \u003d\u003d null) {\n      connectUgi.checkTGTAndReloginFromKeytab();\n    }\n    String s \u003d null;\n    try {\n      s \u003d connectUgi.doAs(new PrivilegedExceptionAction\u003cString\u003e() {\n        @Override public String run() throws Exception {\n          return retryableRequest(urls, path, queryParams, httpMethod);\n        }\n      });\n    } catch (InterruptedException e) {\n      Thread.currentThread().interrupt();\n      throw new IOException(e.getMessage(), e);\n    }\n    return s;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/SecureWasbRemoteCallHelper.java",
+      "extendedDetails": {}
+    },
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14443. Azure: Support retry and client side failover for authorization, SASKey and delegation token generation. Contributed by Santhosh G Nayak\n",
+      "commitDate": "30/06/17 4:53 PM",
+      "commitName": "38996fdcf0987d1da00ce46f8284d8fcdce57329",
+      "commitAuthor": "Mingliang Liu",
+      "diff": "@@ -0,0 +1,24 @@\n+  public String makeRemoteRequest(final String[] urls,\n+      final String path, final List\u003cNameValuePair\u003e queryParams,\n+      final String httpMethod) throws IOException {\n+    final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n+    UserGroupInformation connectUgi \u003d ugi.getRealUser();\n+    if (connectUgi \u003d\u003d null) {\n+      connectUgi \u003d ugi;\n+    }\n+    if (delegationToken \u003d\u003d null) {\n+      connectUgi.checkTGTAndReloginFromKeytab();\n+    }\n+    String s \u003d null;\n+    try {\n+      s \u003d connectUgi.doAs(new PrivilegedExceptionAction\u003cString\u003e() {\n+        @Override public String run() throws Exception {\n+          return retryableRequest(urls, path, queryParams, httpMethod);\n+        }\n+      });\n+    } catch (InterruptedException e) {\n+      Thread.currentThread().interrupt();\n+      throw new IOException(e.getMessage(), e);\n+    }\n+    return s;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public String makeRemoteRequest(final String[] urls,\n      final String path, final List\u003cNameValuePair\u003e queryParams,\n      final String httpMethod) throws IOException {\n    final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n    UserGroupInformation connectUgi \u003d ugi.getRealUser();\n    if (connectUgi \u003d\u003d null) {\n      connectUgi \u003d ugi;\n    }\n    if (delegationToken \u003d\u003d null) {\n      connectUgi.checkTGTAndReloginFromKeytab();\n    }\n    String s \u003d null;\n    try {\n      s \u003d connectUgi.doAs(new PrivilegedExceptionAction\u003cString\u003e() {\n        @Override public String run() throws Exception {\n          return retryableRequest(urls, path, queryParams, httpMethod);\n        }\n      });\n    } catch (InterruptedException e) {\n      Thread.currentThread().interrupt();\n      throw new IOException(e.getMessage(), e);\n    }\n    return s;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/SecureWasbRemoteCallHelper.java"
+    }
+  }
+}

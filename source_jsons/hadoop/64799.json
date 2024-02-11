@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "InconsistentAmazonS3Client.java",
+  "functionName": "restoreDeleted",
+  "functionId": "restoreDeleted___summaries-List__S3ObjectSummary____prefixes-List__String____recursive-boolean__prefix-String",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/InconsistentAmazonS3Client.java",
+  "functionStartLine": 386,
+  "functionEndLine": 411,
+  "numCommitsSeen": 7,
+  "timeTaken": 1332,
+  "changeHistory": [
+    "511df1e837b19ccb9271520589452d82d50ac69d",
+    "5bbca80428ffbe776650652de86a3bba885edb31"
+  ],
+  "changeHistoryShort": {
+    "511df1e837b19ccb9271520589452d82d50ac69d": "Ybodychange",
+    "5bbca80428ffbe776650652de86a3bba885edb31": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "511df1e837b19ccb9271520589452d82d50ac69d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16430. S3AFilesystem.delete to incrementally update s3guard with deletions\n\nContributed by Steve Loughran.\n\nThis overlaps the scanning for directory entries with batched calls to S3 DELETE and updates of the S3Guard tables.\nIt also uses S3Guard to list the files to delete, so find newly created files even when S3 listings are not use consistent.\n\nFor path which the client considers S3Guard to be authoritative, we also do a recursive LIST of the store and delete files; this is to find unindexed files and do guarantee that the delete(path, true) call really does delete everything underneath.\n\nChange-Id: Ice2f6e940c506e0b3a78fa534a99721b1698708e\n",
+      "commitDate": "05/09/19 6:25 AM",
+      "commitName": "511df1e837b19ccb9271520589452d82d50ac69d",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "11/02/19 1:07 PM",
+      "commitNameOld": "6c999fe4b0181720c8e55be8388bd592196c8c87",
+      "commitAuthorOld": "Masatake Iwasaki",
+      "daysBetweenCommits": 205.68,
+      "commitsBetweenForRepo": 1617,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,26 @@\n   private void restoreDeleted(List\u003cS3ObjectSummary\u003e summaries,\n       List\u003cString\u003e prefixes, boolean recursive, String prefix) {\n \n     // Go through all deleted keys\n     for (String key : new HashSet\u003c\u003e(delayedDeletes.keySet())) {\n       Delete delete \u003d delayedDeletes.get(key);\n       if (isKeyDelayed(delete.time(), key)) {\n         if (isDescendant(prefix, key, recursive)) {\n           if (delete.summary() !\u003d null) {\n             addSummaryIfNotPresent(summaries, delete.summary());\n           }\n         }\n         // Non-recursive list has delimiter: will return rolled-up prefixes for\n         // all keys that are not direct children\n         if (!recursive) {\n           if (isDescendant(prefix, key, true)) {\n             addPrefixIfNotPresent(prefixes, prefix, key);\n           }\n         }\n       } else {\n         // Clean up any expired entries\n+        LOG.debug(\"Remove expired key {}\", key);\n         delayedDeletes.remove(key);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void restoreDeleted(List\u003cS3ObjectSummary\u003e summaries,\n      List\u003cString\u003e prefixes, boolean recursive, String prefix) {\n\n    // Go through all deleted keys\n    for (String key : new HashSet\u003c\u003e(delayedDeletes.keySet())) {\n      Delete delete \u003d delayedDeletes.get(key);\n      if (isKeyDelayed(delete.time(), key)) {\n        if (isDescendant(prefix, key, recursive)) {\n          if (delete.summary() !\u003d null) {\n            addSummaryIfNotPresent(summaries, delete.summary());\n          }\n        }\n        // Non-recursive list has delimiter: will return rolled-up prefixes for\n        // all keys that are not direct children\n        if (!recursive) {\n          if (isDescendant(prefix, key, true)) {\n            addPrefixIfNotPresent(prefixes, prefix, key);\n          }\n        }\n      } else {\n        // Clean up any expired entries\n        LOG.debug(\"Remove expired key {}\", key);\n        delayedDeletes.remove(key);\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/InconsistentAmazonS3Client.java",
+      "extendedDetails": {}
+    },
+    "5bbca80428ffbe776650652de86a3bba885edb31": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13421. Switch to v2 of the S3 List Objects API in S3A.\nContributed by Aaron Fabbri\n",
+      "commitDate": "08/09/17 4:07 AM",
+      "commitName": "5bbca80428ffbe776650652de86a3bba885edb31",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,25 @@\n+  private void restoreDeleted(List\u003cS3ObjectSummary\u003e summaries,\n+      List\u003cString\u003e prefixes, boolean recursive, String prefix) {\n+\n+    // Go through all deleted keys\n+    for (String key : new HashSet\u003c\u003e(delayedDeletes.keySet())) {\n+      Delete delete \u003d delayedDeletes.get(key);\n+      if (isKeyDelayed(delete.time(), key)) {\n+        if (isDescendant(prefix, key, recursive)) {\n+          if (delete.summary() !\u003d null) {\n+            addSummaryIfNotPresent(summaries, delete.summary());\n+          }\n+        }\n+        // Non-recursive list has delimiter: will return rolled-up prefixes for\n+        // all keys that are not direct children\n+        if (!recursive) {\n+          if (isDescendant(prefix, key, true)) {\n+            addPrefixIfNotPresent(prefixes, prefix, key);\n+          }\n+        }\n+      } else {\n+        // Clean up any expired entries\n+        delayedDeletes.remove(key);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void restoreDeleted(List\u003cS3ObjectSummary\u003e summaries,\n      List\u003cString\u003e prefixes, boolean recursive, String prefix) {\n\n    // Go through all deleted keys\n    for (String key : new HashSet\u003c\u003e(delayedDeletes.keySet())) {\n      Delete delete \u003d delayedDeletes.get(key);\n      if (isKeyDelayed(delete.time(), key)) {\n        if (isDescendant(prefix, key, recursive)) {\n          if (delete.summary() !\u003d null) {\n            addSummaryIfNotPresent(summaries, delete.summary());\n          }\n        }\n        // Non-recursive list has delimiter: will return rolled-up prefixes for\n        // all keys that are not direct children\n        if (!recursive) {\n          if (isDescendant(prefix, key, true)) {\n            addPrefixIfNotPresent(prefixes, prefix, key);\n          }\n        }\n      } else {\n        // Clean up any expired entries\n        delayedDeletes.remove(key);\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/InconsistentAmazonS3Client.java"
+    }
+  }
+}

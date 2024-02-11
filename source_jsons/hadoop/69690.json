@@ -1,0 +1,137 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbfsOutputStream.java",
+  "functionName": "flushWrittenBytesToServiceInternal",
+  "functionId": "flushWrittenBytesToServiceInternal___offset-long(modifiers-final)__retainUncommitedData-boolean(modifiers-final)__isClose-boolean(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsOutputStream.java",
+  "functionStartLine": 390,
+  "functionEndLine": 407,
+  "numCommitsSeen": 25,
+  "timeTaken": 3377,
+  "changeHistory": [
+    "b214bbd2d92a0c02b71d352dba85f3b87317933c",
+    "b033c681e4fc3ee1a38caa807e130aee481d99d5",
+    "1edf1914acb74e45f6717c703f519cb382aae173",
+    "346c0c8aff0b206d45f34dbce4fcc81364115d95",
+    "f044deedbbfee0812316d587139cb828f27172e9"
+  ],
+  "changeHistoryShort": {
+    "b214bbd2d92a0c02b71d352dba85f3b87317933c": "Ybodychange",
+    "b033c681e4fc3ee1a38caa807e130aee481d99d5": "Ybodychange",
+    "1edf1914acb74e45f6717c703f519cb382aae173": "Ymultichange(Yparameterchange,Ybodychange)",
+    "346c0c8aff0b206d45f34dbce4fcc81364115d95": "Ybodychange",
+    "f044deedbbfee0812316d587139cb828f27172e9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b214bbd2d92a0c02b71d352dba85f3b87317933c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16916: ABFS: Delegation SAS generator for integration with Ranger\n\nContributed by Thomas Marquardt.\n\nDETAILS:\n\nPreviously we had a SASGenerator class which generated Service SAS, but we need to add DelegationSASGenerator.\nI separated SASGenerator into a base class and two subclasses ServiceSASGenerator and DelegationSASGenreator.  The\ncode in ServiceSASGenerator is copied from SASGenerator but the DelegationSASGenrator code is new.  The\nDelegationSASGenerator code demonstrates how to use Delegation SAS with minimal permissions, as would be used\nby an authorization service such as Apache Ranger.  Adding this to the tests helps us lock in this behavior.\n\nAdded a MockDelegationSASTokenProvider for testing User Delegation SAS.\n\nFixed the ITestAzureBlobFileSystemCheckAccess tests to assume oauth client ID so that they are ignored when that\nis not configured.\n\nTo improve performance, AbfsInputStream/AbfsOutputStream re-use SAS tokens until the expiry is within 120 seconds.\nAfter this a new SAS will be requested.  The default period of 120 seconds can be changed using the configuration\nsetting \"fs.azure.sas.token.renew.period.for.streams\".\n\nThe SASTokenProvider operation names were updated to correspond better with the ADLS Gen2 REST API, since these\noperations must be provided tokens with appropriate SAS parameters to succeed.\n\nSupport for the version 2.0 AAD authentication endpoint was added to AzureADAuthenticator.\n\nThe getFileStatus method was mistakenly calling the ADLS Gen2 Get Properties API which requires read permission\nwhile the getFileStatus call only requires execute permission.  ADLS Gen2 Get Status API is supposed to be used\nfor this purpose, so the underlying AbfsClient.getPathStatus API was updated with a includeProperties\nparameter which is set to false for getFileStatus and true for getXAttr.\n\nAdded SASTokenProvider support for delete recursive.\n\nFixed bugs in AzureBlobFileSystem where public methods were not validating the Path by calling makeQualified.  This is\nnecessary to avoid passing null paths and to convert relative paths into absolute paths.\n\nCanonicalized the path used for root path internally so that root path can be used with SAS tokens, which requires\nthat the path in the URL and the path in the SAS token match.  Internally the code was using\n\"//\" instead of \"/\" for the root path, sometimes.  Also related to this, the AzureBlobFileSystemStore.getRelativePath\nAPI was updated so that we no longer remove and then add back a preceding forward / to paths.\n\nTo run ITestAzureBlobFileSystemDelegationSAS tests follow the instructions in testing_azure.md under the heading\n\"To run Delegation SAS test cases\".  You also need to set \"fs.azure.enable.check.access\" to true.\n\nTEST RESULTS:\n\nnamespace.enabled\u003dtrue\nauth.type\u003dSharedKey\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 41\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dfalse\nauth.type\u003dSharedKey\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 244\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dtrue\nauth.type\u003dSharedKey\nsas.token.provider.type\u003dMockDelegationSASTokenProvider\nenable.check.access\u003dtrue\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 0, Skipped: 33\nTests run: 206, Failures: 0, Errors: 0, Skipped: 24\n\nnamespace.enabled\u003dtrue\nauth.type\u003dOAuth\n-------------------\n$mvn -T 1C -Dparallel-tests\u003dabfs -Dscale -DtestsThreadCount\u003d8 clean verify\nTests run: 63, Failures: 0, Errors: 0, Skipped: 0\nTests run: 432, Failures: 0, Errors: 1, Skipped: 74\nTests run: 206, Failures: 0, Errors: 0, Skipped: 140\n",
+      "commitDate": "12/05/20 11:35 AM",
+      "commitName": "b214bbd2d92a0c02b71d352dba85f3b87317933c",
+      "commitAuthor": "Thomas Marquardt",
+      "commitDateOld": "23/04/20 5:35 AM",
+      "commitNameOld": "459eb2ad6d5bc6b21462e728fb334c6e30e14c39",
+      "commitAuthorOld": "Mehakmeet Singh",
+      "daysBetweenCommits": 19.25,
+      "commitsBetweenForRepo": 67,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,18 @@\n   private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n       final boolean retainUncommitedData, final boolean isClose) throws IOException {\n     AbfsPerfTracker tracker \u003d client.getAbfsPerfTracker();\n     try (AbfsPerfInfo perfInfo \u003d new AbfsPerfInfo(tracker,\n             \"flushWrittenBytesToServiceInternal\", \"flush\")) {\n-      AbfsRestOperation op \u003d client.flush(path, offset, retainUncommitedData, isClose);\n+      AbfsRestOperation op \u003d client.flush(path, offset, retainUncommitedData, isClose, cachedSasToken.get());\n+      cachedSasToken.update(op.getSasToken());\n       perfInfo.registerResult(op.getResult()).registerSuccess(true);\n     } catch (AzureBlobFileSystemException ex) {\n       if (ex instanceof AbfsRestOperationException) {\n         if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n           throw new FileNotFoundException(ex.getMessage());\n         }\n       }\n       throw new IOException(ex);\n     }\n     this.lastFlushOffset \u003d offset;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n      final boolean retainUncommitedData, final boolean isClose) throws IOException {\n    AbfsPerfTracker tracker \u003d client.getAbfsPerfTracker();\n    try (AbfsPerfInfo perfInfo \u003d new AbfsPerfInfo(tracker,\n            \"flushWrittenBytesToServiceInternal\", \"flush\")) {\n      AbfsRestOperation op \u003d client.flush(path, offset, retainUncommitedData, isClose, cachedSasToken.get());\n      cachedSasToken.update(op.getSasToken());\n      perfInfo.registerResult(op.getResult()).registerSuccess(true);\n    } catch (AzureBlobFileSystemException ex) {\n      if (ex instanceof AbfsRestOperationException) {\n        if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n          throw new FileNotFoundException(ex.getMessage());\n        }\n      }\n      throw new IOException(ex);\n    }\n    this.lastFlushOffset \u003d offset;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsOutputStream.java",
+      "extendedDetails": {}
+    },
+    "b033c681e4fc3ee1a38caa807e130aee481d99d5": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16612. Track Azure Blob File System client-perceived latency\n\nContributed by Jeetesh Mangwani.\n\nThis add the ability to track the end-to-end performance of ADLS Gen 2 REST APIs by measuring latency in the Hadoop ABFS driver.\nThe latency information is sent back to the ADLS Gen 2 REST API endpoints in the subsequent requests.\n",
+      "commitDate": "19/11/19 9:00 AM",
+      "commitName": "b033c681e4fc3ee1a38caa807e130aee481d99d5",
+      "commitAuthor": "Jeetesh Mangwani",
+      "commitDateOld": "28/09/19 8:39 PM",
+      "commitNameOld": "c0edc848a8e71b5e2a1586a589bbf2ac8685040d",
+      "commitAuthorOld": "Sneha Vijayarajan",
+      "daysBetweenCommits": 51.56,
+      "commitsBetweenForRepo": 252,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,17 @@\n   private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n       final boolean retainUncommitedData, final boolean isClose) throws IOException {\n-    try {\n-      client.flush(path, offset, retainUncommitedData, isClose);\n+    AbfsPerfTracker tracker \u003d client.getAbfsPerfTracker();\n+    try (AbfsPerfInfo perfInfo \u003d new AbfsPerfInfo(tracker,\n+            \"flushWrittenBytesToServiceInternal\", \"flush\")) {\n+      AbfsRestOperation op \u003d client.flush(path, offset, retainUncommitedData, isClose);\n+      perfInfo.registerResult(op.getResult()).registerSuccess(true);\n     } catch (AzureBlobFileSystemException ex) {\n       if (ex instanceof AbfsRestOperationException) {\n         if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n           throw new FileNotFoundException(ex.getMessage());\n         }\n       }\n       throw new IOException(ex);\n     }\n     this.lastFlushOffset \u003d offset;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n      final boolean retainUncommitedData, final boolean isClose) throws IOException {\n    AbfsPerfTracker tracker \u003d client.getAbfsPerfTracker();\n    try (AbfsPerfInfo perfInfo \u003d new AbfsPerfInfo(tracker,\n            \"flushWrittenBytesToServiceInternal\", \"flush\")) {\n      AbfsRestOperation op \u003d client.flush(path, offset, retainUncommitedData, isClose);\n      perfInfo.registerResult(op.getResult()).registerSuccess(true);\n    } catch (AzureBlobFileSystemException ex) {\n      if (ex instanceof AbfsRestOperationException) {\n        if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n          throw new FileNotFoundException(ex.getMessage());\n        }\n      }\n      throw new IOException(ex);\n    }\n    this.lastFlushOffset \u003d offset;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsOutputStream.java",
+      "extendedDetails": {}
+    },
+    "1edf1914acb74e45f6717c703f519cb382aae173": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16182. Update abfs storage back-end with \"close\" flag when application is done writing to a file.\n\nContributed by Vishwajeet Dusane.\n",
+      "commitDate": "18/03/19 6:18 AM",
+      "commitName": "1edf1914acb74e45f6717c703f519cb382aae173",
+      "commitAuthor": "Vishwajeet Dusane",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16182. Update abfs storage back-end with \"close\" flag when application is done writing to a file.\n\nContributed by Vishwajeet Dusane.\n",
+          "commitDate": "18/03/19 6:18 AM",
+          "commitName": "1edf1914acb74e45f6717c703f519cb382aae173",
+          "commitAuthor": "Vishwajeet Dusane",
+          "commitDateOld": "17/12/18 3:15 AM",
+          "commitNameOld": "346c0c8aff0b206d45f34dbce4fcc81364115d95",
+          "commitAuthorOld": "Da Zhou",
+          "daysBetweenCommits": 91.09,
+          "commitsBetweenForRepo": 685,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,14 @@\n   private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n-      final boolean retainUncommitedData) throws IOException {\n+      final boolean retainUncommitedData, final boolean isClose) throws IOException {\n     try {\n-      client.flush(path, offset, retainUncommitedData);\n+      client.flush(path, offset, retainUncommitedData, isClose);\n     } catch (AzureBlobFileSystemException ex) {\n       if (ex instanceof AbfsRestOperationException) {\n         if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n           throw new FileNotFoundException(ex.getMessage());\n         }\n       }\n       throw new IOException(ex);\n     }\n     this.lastFlushOffset \u003d offset;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n      final boolean retainUncommitedData, final boolean isClose) throws IOException {\n    try {\n      client.flush(path, offset, retainUncommitedData, isClose);\n    } catch (AzureBlobFileSystemException ex) {\n      if (ex instanceof AbfsRestOperationException) {\n        if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n          throw new FileNotFoundException(ex.getMessage());\n        }\n      }\n      throw new IOException(ex);\n    }\n    this.lastFlushOffset \u003d offset;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsOutputStream.java",
+          "extendedDetails": {
+            "oldValue": "[offset-long(modifiers-final), retainUncommitedData-boolean(modifiers-final)]",
+            "newValue": "[offset-long(modifiers-final), retainUncommitedData-boolean(modifiers-final), isClose-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16182. Update abfs storage back-end with \"close\" flag when application is done writing to a file.\n\nContributed by Vishwajeet Dusane.\n",
+          "commitDate": "18/03/19 6:18 AM",
+          "commitName": "1edf1914acb74e45f6717c703f519cb382aae173",
+          "commitAuthor": "Vishwajeet Dusane",
+          "commitDateOld": "17/12/18 3:15 AM",
+          "commitNameOld": "346c0c8aff0b206d45f34dbce4fcc81364115d95",
+          "commitAuthorOld": "Da Zhou",
+          "daysBetweenCommits": 91.09,
+          "commitsBetweenForRepo": 685,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,14 @@\n   private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n-      final boolean retainUncommitedData) throws IOException {\n+      final boolean retainUncommitedData, final boolean isClose) throws IOException {\n     try {\n-      client.flush(path, offset, retainUncommitedData);\n+      client.flush(path, offset, retainUncommitedData, isClose);\n     } catch (AzureBlobFileSystemException ex) {\n       if (ex instanceof AbfsRestOperationException) {\n         if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n           throw new FileNotFoundException(ex.getMessage());\n         }\n       }\n       throw new IOException(ex);\n     }\n     this.lastFlushOffset \u003d offset;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n      final boolean retainUncommitedData, final boolean isClose) throws IOException {\n    try {\n      client.flush(path, offset, retainUncommitedData, isClose);\n    } catch (AzureBlobFileSystemException ex) {\n      if (ex instanceof AbfsRestOperationException) {\n        if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n          throw new FileNotFoundException(ex.getMessage());\n        }\n      }\n      throw new IOException(ex);\n    }\n    this.lastFlushOffset \u003d offset;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsOutputStream.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "346c0c8aff0b206d45f34dbce4fcc81364115d95": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16004. ABFS: Convert 404 error response in AbfsInputStream and AbfsOutPutStream to FileNotFoundException.\n\nContributed by Da Zhou.\n",
+      "commitDate": "17/12/18 3:15 AM",
+      "commitName": "346c0c8aff0b206d45f34dbce4fcc81364115d95",
+      "commitAuthor": "Da Zhou",
+      "commitDateOld": "17/09/18 12:54 PM",
+      "commitNameOld": "4410eacba7862ec24173356fe3fd468fd79aeb8f",
+      "commitAuthorOld": "Thomas Marquardt",
+      "daysBetweenCommits": 90.64,
+      "commitsBetweenForRepo": 747,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,9 +1,14 @@\n   private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n       final boolean retainUncommitedData) throws IOException {\n     try {\n       client.flush(path, offset, retainUncommitedData);\n     } catch (AzureBlobFileSystemException ex) {\n+      if (ex instanceof AbfsRestOperationException) {\n+        if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n+          throw new FileNotFoundException(ex.getMessage());\n+        }\n+      }\n       throw new IOException(ex);\n     }\n     this.lastFlushOffset \u003d offset;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void flushWrittenBytesToServiceInternal(final long offset,\n      final boolean retainUncommitedData) throws IOException {\n    try {\n      client.flush(path, offset, retainUncommitedData);\n    } catch (AzureBlobFileSystemException ex) {\n      if (ex instanceof AbfsRestOperationException) {\n        if (((AbfsRestOperationException) ex).getStatusCode() \u003d\u003d HttpURLConnection.HTTP_NOT_FOUND) {\n          throw new FileNotFoundException(ex.getMessage());\n        }\n      }\n      throw new IOException(ex);\n    }\n    this.lastFlushOffset \u003d offset;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsOutputStream.java",
+      "extendedDetails": {}
+    },
+    "f044deedbbfee0812316d587139cb828f27172e9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15407. HADOOP-15540. Support Windows Azure Storage - Blob file system \"ABFS\" in Hadoop: Core Commit.\n\nContributed by Shane Mainali, Thomas Marquardt, Zichen Sun, Georgi Chalakov, Esfandiar Manii, Amit Singh, Dana Kaban, Da Zhou, Junhua Gu, Saher Ahwal, Saurabh Pant, James Baker, Shaoyu Zhang, Lawrence Chen, Kevin Chen and Steve Loughran\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "f044deedbbfee0812316d587139cb828f27172e9",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,8 @@\n+  private synchronized void flushWrittenBytesToServiceInternal(final long offset, final boolean retainUncommitedData) throws IOException {\n+    try {\n+      client.flush(path, offset, retainUncommitedData);\n+    } catch (AzureBlobFileSystemException ex) {\n+      throw new IOException(ex);\n+    }\n+    this.lastFlushOffset \u003d offset;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void flushWrittenBytesToServiceInternal(final long offset, final boolean retainUncommitedData) throws IOException {\n    try {\n      client.flush(path, offset, retainUncommitedData);\n    } catch (AzureBlobFileSystemException ex) {\n      throw new IOException(ex);\n    }\n    this.lastFlushOffset \u003d offset;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsOutputStream.java"
+    }
+  }
+}

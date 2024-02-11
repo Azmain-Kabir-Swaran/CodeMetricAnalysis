@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AuxServices.java",
+  "functionName": "maybeReadManifestFile",
+  "functionId": "maybeReadManifestFile",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/AuxServices.java",
+  "functionStartLine": 555,
+  "functionEndLine": 585,
+  "numCommitsSeen": 28,
+  "timeTaken": 2641,
+  "changeHistory": [
+    "ea724181d66ebe3c2cc7ed071948e9bc463bf223",
+    "c7a5a4435ec3098c2765e8ef53b7771e0532ff61"
+  ],
+  "changeHistoryShort": {
+    "ea724181d66ebe3c2cc7ed071948e9bc463bf223": "Ybodychange",
+    "c7a5a4435ec3098c2765e8ef53b7771e0532ff61": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ea724181d66ebe3c2cc7ed071948e9bc463bf223": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9132. Added file permission check for auxiliary services manifest file.\n           Contributed by Billie Rinaldi\n",
+      "commitDate": "21/12/18 11:56 AM",
+      "commitName": "ea724181d66ebe3c2cc7ed071948e9bc463bf223",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "18/12/18 2:05 PM",
+      "commitNameOld": "c7a5a4435ec3098c2765e8ef53b7771e0532ff61",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 2.91,
+      "commitsBetweenForRepo": 18,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,31 @@\n   private synchronized AuxServiceRecords maybeReadManifestFile() throws\n       IOException {\n     if (manifest \u003d\u003d null) {\n       return null;\n     }\n     if (!manifestFS.exists(manifest)) {\n-      LOG.info(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n+      LOG.warn(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n       return null;\n     }\n     FileStatus status;\n     try {\n       status \u003d manifestFS.getFileStatus(manifest);\n     } catch (FileNotFoundException e) {\n-      LOG.info(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n+      LOG.warn(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n+      return null;\n+    }\n+    if (!status.isFile()) {\n+      LOG.warn(\"Manifest file \" + manifest + \" is not a file\");\n+    }\n+    if (!checkManifestOwnerAndPermissions(status)) {\n       return null;\n     }\n     if (status.getModificationTime() \u003d\u003d manifestModifyTS) {\n       return null;\n     }\n     manifestModifyTS \u003d status.getModificationTime();\n     LOG.info(\"Reading auxiliary services manifest \" + manifest);\n     try (FSDataInputStream in \u003d manifestFS.open(manifest)) {\n       return mapper.readValue((InputStream) in, AuxServiceRecords.class);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized AuxServiceRecords maybeReadManifestFile() throws\n      IOException {\n    if (manifest \u003d\u003d null) {\n      return null;\n    }\n    if (!manifestFS.exists(manifest)) {\n      LOG.warn(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n      return null;\n    }\n    FileStatus status;\n    try {\n      status \u003d manifestFS.getFileStatus(manifest);\n    } catch (FileNotFoundException e) {\n      LOG.warn(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n      return null;\n    }\n    if (!status.isFile()) {\n      LOG.warn(\"Manifest file \" + manifest + \" is not a file\");\n    }\n    if (!checkManifestOwnerAndPermissions(status)) {\n      return null;\n    }\n    if (status.getModificationTime() \u003d\u003d manifestModifyTS) {\n      return null;\n    }\n    manifestModifyTS \u003d status.getModificationTime();\n    LOG.info(\"Reading auxiliary services manifest \" + manifest);\n    try (FSDataInputStream in \u003d manifestFS.open(manifest)) {\n      return mapper.readValue((InputStream) in, AuxServiceRecords.class);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/AuxServices.java",
+      "extendedDetails": {}
+    },
+    "c7a5a4435ec3098c2765e8ef53b7771e0532ff61": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-9075.  Add ability to register/remove auxiliary service without restart node manager.\n            Contributed by Billie Rinaldi\n",
+      "commitDate": "18/12/18 2:05 PM",
+      "commitName": "c7a5a4435ec3098c2765e8ef53b7771e0532ff61",
+      "commitAuthor": "Eric Yang",
+      "diff": "@@ -0,0 +1,25 @@\n+  private synchronized AuxServiceRecords maybeReadManifestFile() throws\n+      IOException {\n+    if (manifest \u003d\u003d null) {\n+      return null;\n+    }\n+    if (!manifestFS.exists(manifest)) {\n+      LOG.info(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n+      return null;\n+    }\n+    FileStatus status;\n+    try {\n+      status \u003d manifestFS.getFileStatus(manifest);\n+    } catch (FileNotFoundException e) {\n+      LOG.info(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n+      return null;\n+    }\n+    if (status.getModificationTime() \u003d\u003d manifestModifyTS) {\n+      return null;\n+    }\n+    manifestModifyTS \u003d status.getModificationTime();\n+    LOG.info(\"Reading auxiliary services manifest \" + manifest);\n+    try (FSDataInputStream in \u003d manifestFS.open(manifest)) {\n+      return mapper.readValue((InputStream) in, AuxServiceRecords.class);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized AuxServiceRecords maybeReadManifestFile() throws\n      IOException {\n    if (manifest \u003d\u003d null) {\n      return null;\n    }\n    if (!manifestFS.exists(manifest)) {\n      LOG.info(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n      return null;\n    }\n    FileStatus status;\n    try {\n      status \u003d manifestFS.getFileStatus(manifest);\n    } catch (FileNotFoundException e) {\n      LOG.info(\"Manifest file \" + manifest + \" doesn\u0027t exist\");\n      return null;\n    }\n    if (status.getModificationTime() \u003d\u003d manifestModifyTS) {\n      return null;\n    }\n    manifestModifyTS \u003d status.getModificationTime();\n    LOG.info(\"Reading auxiliary services manifest \" + manifest);\n    try (FSDataInputStream in \u003d manifestFS.open(manifest)) {\n      return mapper.readValue((InputStream) in, AuxServiceRecords.class);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/AuxServices.java"
+    }
+  }
+}

@@ -1,0 +1,95 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "Fetcher.java",
+  "functionName": "connect",
+  "functionId": "connect___connection-URLConnection__connectionTimeout-int",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java",
+  "functionStartLine": 695,
+  "functionEndLine": 749,
+  "numCommitsSeen": 37,
+  "timeTaken": 5159,
+  "changeHistory": [
+    "177e8090f5809beb3ebcb656cd0affbb3f487de8",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "177e8090f5809beb3ebcb656cd0affbb3f487de8": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "177e8090f5809beb3ebcb656cd0affbb3f487de8": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6156. Fetcher - connect() doesn\u0027t handle connection refused correctly. Contributed by Junping Du\n",
+      "commitDate": "13/11/14 7:42 AM",
+      "commitName": "177e8090f5809beb3ebcb656cd0affbb3f487de8",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "15/10/14 8:52 AM",
+      "commitNameOld": "b9edad64034a9c8a121ec2b37792c190ba561e26",
+      "commitAuthorOld": "Jason Lowe",
+      "daysBetweenCommits": 28.99,
+      "commitsBetweenForRepo": 290,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,55 @@\n   private void connect(URLConnection connection, int connectionTimeout)\n   throws IOException {\n     int unit \u003d 0;\n     if (connectionTimeout \u003c 0) {\n       throw new IOException(\"Invalid timeout \"\n                             + \"[timeout \u003d \" + connectionTimeout + \" ms]\");\n     } else if (connectionTimeout \u003e 0) {\n       unit \u003d Math.min(UNIT_CONNECT_TIMEOUT, connectionTimeout);\n     }\n+    long startTime \u003d Time.monotonicNow();\n+    long lastTime \u003d startTime;\n+    int attempts \u003d 0;\n     // set the connect timeout to the unit-connect-timeout\n     connection.setConnectTimeout(unit);\n     while (true) {\n       try {\n+        attempts++;\n         connection.connect();\n         break;\n       } catch (IOException ioe) {\n-        // update the total remaining connect-timeout\n-        connectionTimeout -\u003d unit;\n-\n+        long currentTime \u003d Time.monotonicNow();\n+        long retryTime \u003d currentTime - startTime;\n+        long leftTime \u003d connectionTimeout - retryTime;\n+        long timeSinceLastIteration \u003d currentTime - lastTime;\n         // throw an exception if we have waited for timeout amount of time\n         // note that the updated value if timeout is used here\n-        if (connectionTimeout \u003d\u003d 0) {\n+        if (leftTime \u003c\u003d 0) {\n+          int retryTimeInSeconds \u003d (int) retryTime/1000;\n+          LOG.error(\"Connection retry failed with \" + attempts + \n+              \" attempts in \" + retryTimeInSeconds + \" seconds\");\n           throw ioe;\n         }\n-\n         // reset the connect timeout for the last try\n-        if (connectionTimeout \u003c unit) {\n-          unit \u003d connectionTimeout;\n+        if (leftTime \u003c unit) {\n+          unit \u003d (int)leftTime;\n           // reset the connect time out for the final connect\n           connection.setConnectTimeout(unit);\n         }\n+        \n+        if (timeSinceLastIteration \u003c unit) {\n+          try {\n+            // sleep the left time of unit\n+            sleep(unit - timeSinceLastIteration);\n+          } catch (InterruptedException e) {\n+            LOG.warn(\"Sleep in connection retry get interrupted.\");\n+            if (stopped) {\n+              return;\n+            }\n+          }\n+        }\n+        // update the total remaining connect-timeout\n+        lastTime \u003d Time.monotonicNow();\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void connect(URLConnection connection, int connectionTimeout)\n  throws IOException {\n    int unit \u003d 0;\n    if (connectionTimeout \u003c 0) {\n      throw new IOException(\"Invalid timeout \"\n                            + \"[timeout \u003d \" + connectionTimeout + \" ms]\");\n    } else if (connectionTimeout \u003e 0) {\n      unit \u003d Math.min(UNIT_CONNECT_TIMEOUT, connectionTimeout);\n    }\n    long startTime \u003d Time.monotonicNow();\n    long lastTime \u003d startTime;\n    int attempts \u003d 0;\n    // set the connect timeout to the unit-connect-timeout\n    connection.setConnectTimeout(unit);\n    while (true) {\n      try {\n        attempts++;\n        connection.connect();\n        break;\n      } catch (IOException ioe) {\n        long currentTime \u003d Time.monotonicNow();\n        long retryTime \u003d currentTime - startTime;\n        long leftTime \u003d connectionTimeout - retryTime;\n        long timeSinceLastIteration \u003d currentTime - lastTime;\n        // throw an exception if we have waited for timeout amount of time\n        // note that the updated value if timeout is used here\n        if (leftTime \u003c\u003d 0) {\n          int retryTimeInSeconds \u003d (int) retryTime/1000;\n          LOG.error(\"Connection retry failed with \" + attempts + \n              \" attempts in \" + retryTimeInSeconds + \" seconds\");\n          throw ioe;\n        }\n        // reset the connect timeout for the last try\n        if (leftTime \u003c unit) {\n          unit \u003d (int)leftTime;\n          // reset the connect time out for the final connect\n          connection.setConnectTimeout(unit);\n        }\n        \n        if (timeSinceLastIteration \u003c unit) {\n          try {\n            // sleep the left time of unit\n            sleep(unit - timeSinceLastIteration);\n          } catch (InterruptedException e) {\n            LOG.warn(\"Sleep in connection retry get interrupted.\");\n            if (stopped) {\n              return;\n            }\n          }\n        }\n        // update the total remaining connect-timeout\n        lastTime \u003d Time.monotonicNow();\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void connect(URLConnection connection, int connectionTimeout)\n  throws IOException {\n    int unit \u003d 0;\n    if (connectionTimeout \u003c 0) {\n      throw new IOException(\"Invalid timeout \"\n                            + \"[timeout \u003d \" + connectionTimeout + \" ms]\");\n    } else if (connectionTimeout \u003e 0) {\n      unit \u003d Math.min(UNIT_CONNECT_TIMEOUT, connectionTimeout);\n    }\n    // set the connect timeout to the unit-connect-timeout\n    connection.setConnectTimeout(unit);\n    while (true) {\n      try {\n        connection.connect();\n        break;\n      } catch (IOException ioe) {\n        // update the total remaining connect-timeout\n        connectionTimeout -\u003d unit;\n\n        // throw an exception if we have waited for timeout amount of time\n        // note that the updated value if timeout is used here\n        if (connectionTimeout \u003d\u003d 0) {\n          throw ioe;\n        }\n\n        // reset the connect timeout for the last try\n        if (connectionTimeout \u003c unit) {\n          unit \u003d connectionTimeout;\n          // reset the connect time out for the final connect\n          connection.setConnectTimeout(unit);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yfilerename",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "17/08/11 8:02 PM",
+      "commitNameOld": "dd86860633d2ed64705b669a75bf318442ed6225",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 0.34,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void connect(URLConnection connection, int connectionTimeout)\n  throws IOException {\n    int unit \u003d 0;\n    if (connectionTimeout \u003c 0) {\n      throw new IOException(\"Invalid timeout \"\n                            + \"[timeout \u003d \" + connectionTimeout + \" ms]\");\n    } else if (connectionTimeout \u003e 0) {\n      unit \u003d Math.min(UNIT_CONNECT_TIMEOUT, connectionTimeout);\n    }\n    // set the connect timeout to the unit-connect-timeout\n    connection.setConnectTimeout(unit);\n    while (true) {\n      try {\n        connection.connect();\n        break;\n      } catch (IOException ioe) {\n        // update the total remaining connect-timeout\n        connectionTimeout -\u003d unit;\n\n        // throw an exception if we have waited for timeout amount of time\n        // note that the updated value if timeout is used here\n        if (connectionTimeout \u003d\u003d 0) {\n          throw ioe;\n        }\n\n        // reset the connect timeout for the last try\n        if (connectionTimeout \u003c unit) {\n          unit \u003d connectionTimeout;\n          // reset the connect time out for the final connect\n          connection.setConnectTimeout(unit);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java",
+      "extendedDetails": {
+        "oldPath": "mapreduce/src/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java",
+        "newPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,34 @@\n+  private void connect(URLConnection connection, int connectionTimeout)\n+  throws IOException {\n+    int unit \u003d 0;\n+    if (connectionTimeout \u003c 0) {\n+      throw new IOException(\"Invalid timeout \"\n+                            + \"[timeout \u003d \" + connectionTimeout + \" ms]\");\n+    } else if (connectionTimeout \u003e 0) {\n+      unit \u003d Math.min(UNIT_CONNECT_TIMEOUT, connectionTimeout);\n+    }\n+    // set the connect timeout to the unit-connect-timeout\n+    connection.setConnectTimeout(unit);\n+    while (true) {\n+      try {\n+        connection.connect();\n+        break;\n+      } catch (IOException ioe) {\n+        // update the total remaining connect-timeout\n+        connectionTimeout -\u003d unit;\n+\n+        // throw an exception if we have waited for timeout amount of time\n+        // note that the updated value if timeout is used here\n+        if (connectionTimeout \u003d\u003d 0) {\n+          throw ioe;\n+        }\n+\n+        // reset the connect timeout for the last try\n+        if (connectionTimeout \u003c unit) {\n+          unit \u003d connectionTimeout;\n+          // reset the connect time out for the final connect\n+          connection.setConnectTimeout(unit);\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void connect(URLConnection connection, int connectionTimeout)\n  throws IOException {\n    int unit \u003d 0;\n    if (connectionTimeout \u003c 0) {\n      throw new IOException(\"Invalid timeout \"\n                            + \"[timeout \u003d \" + connectionTimeout + \" ms]\");\n    } else if (connectionTimeout \u003e 0) {\n      unit \u003d Math.min(UNIT_CONNECT_TIMEOUT, connectionTimeout);\n    }\n    // set the connect timeout to the unit-connect-timeout\n    connection.setConnectTimeout(unit);\n    while (true) {\n      try {\n        connection.connect();\n        break;\n      } catch (IOException ioe) {\n        // update the total remaining connect-timeout\n        connectionTimeout -\u003d unit;\n\n        // throw an exception if we have waited for timeout amount of time\n        // note that the updated value if timeout is used here\n        if (connectionTimeout \u003d\u003d 0) {\n          throw ioe;\n        }\n\n        // reset the connect timeout for the last try\n        if (connectionTimeout \u003c unit) {\n          unit \u003d connectionTimeout;\n          // reset the connect time out for the final connect\n          connection.setConnectTimeout(unit);\n        }\n      }\n    }\n  }",
+      "path": "mapreduce/src/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java"
+    }
+  }
+}

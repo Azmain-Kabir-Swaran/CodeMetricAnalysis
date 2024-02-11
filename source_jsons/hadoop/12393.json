@@ -1,0 +1,144 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LocalReplicaInPipeline.java",
+  "functionName": "waitForMinLength",
+  "functionId": "waitForMinLength___minLength-long__time-long__unit-TimeUnit",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplicaInPipeline.java",
+  "functionStartLine": 201,
+  "functionEndLine": 219,
+  "numCommitsSeen": 117,
+  "timeTaken": 6060,
+  "changeHistory": [
+    "8b64fbab1a4c7d65a5daf515c2d170d6a2fd4917",
+    "86c9862bec0248d671e657aa56094a2919b8ac14",
+    "e90a5b40430cc1fbce075d34b31e3cc05fd9831f"
+  ],
+  "changeHistoryShort": {
+    "8b64fbab1a4c7d65a5daf515c2d170d6a2fd4917": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparameterchange)",
+    "86c9862bec0248d671e657aa56094a2919b8ac14": "Yparameterchange",
+    "e90a5b40430cc1fbce075d34b31e3cc05fd9831f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8b64fbab1a4c7d65a5daf515c2d170d6a2fd4917": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparameterchange)",
+      "commitMessage": "HDFS-13994. Improve DataNode BlockSender waitForMinLength. Contributed by BELUGA BEHR.\n",
+      "commitDate": "19/10/18 10:36 AM",
+      "commitName": "8b64fbab1a4c7d65a5daf515c2d170d6a2fd4917",
+      "commitAuthor": "Inigo Goiri",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-13994. Improve DataNode BlockSender waitForMinLength. Contributed by BELUGA BEHR.\n",
+          "commitDate": "19/10/18 10:36 AM",
+          "commitName": "8b64fbab1a4c7d65a5daf515c2d170d6a2fd4917",
+          "commitAuthor": "Inigo Goiri",
+          "commitDateOld": "19/10/18 10:13 AM",
+          "commitNameOld": "9aebafd2da44fd048d201b6ea5a043d7dda3dad9",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,19 @@\n-  private static void waitForMinLength(ReplicaInPipeline rbw, long len)\n+  public void waitForMinLength(long minLength, long time, TimeUnit unit)\n       throws IOException {\n-    // Wait for 3 seconds for rbw replica to reach the minimum length\n-    for (int i \u003d 0; i \u003c 30 \u0026\u0026 rbw.getBytesOnDisk() \u003c len; i++) {\n-      try {\n-        Thread.sleep(100);\n-      } catch (InterruptedException ie) {\n-        throw new IOException(ie);\n+    long nanos \u003d unit.toNanos(time);\n+    lock.lock();\n+    try {\n+      while (bytesOnDisk \u003c minLength) {\n+        if (nanos \u003c\u003d 0L) {\n+          throw new IOException(\n+              String.format(\"Need %d bytes, but only %d bytes available\",\n+                  minLength, bytesOnDisk));\n+        }\n+        nanos \u003d bytesOnDiskChange.awaitNanos(nanos);\n       }\n-    }\n-    long bytesOnDisk \u003d rbw.getBytesOnDisk();\n-    if (bytesOnDisk \u003c len) {\n-      throw new IOException(\n-          String.format(\"Need %d bytes, but only %d bytes available\", len,\n-              bytesOnDisk));\n+    } catch (InterruptedException e) {\n+      throw new IOException(e);\n+    } finally {\n+      lock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void waitForMinLength(long minLength, long time, TimeUnit unit)\n      throws IOException {\n    long nanos \u003d unit.toNanos(time);\n    lock.lock();\n    try {\n      while (bytesOnDisk \u003c minLength) {\n        if (nanos \u003c\u003d 0L) {\n          throw new IOException(\n              String.format(\"Need %d bytes, but only %d bytes available\",\n                  minLength, bytesOnDisk));\n        }\n        nanos \u003d bytesOnDiskChange.awaitNanos(nanos);\n      }\n    } catch (InterruptedException e) {\n      throw new IOException(e);\n    } finally {\n      lock.unlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplicaInPipeline.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockSender.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplicaInPipeline.java",
+            "oldMethodName": "waitForMinLength",
+            "newMethodName": "waitForMinLength"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-13994. Improve DataNode BlockSender waitForMinLength. Contributed by BELUGA BEHR.\n",
+          "commitDate": "19/10/18 10:36 AM",
+          "commitName": "8b64fbab1a4c7d65a5daf515c2d170d6a2fd4917",
+          "commitAuthor": "Inigo Goiri",
+          "commitDateOld": "19/10/18 10:13 AM",
+          "commitNameOld": "9aebafd2da44fd048d201b6ea5a043d7dda3dad9",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,19 @@\n-  private static void waitForMinLength(ReplicaInPipeline rbw, long len)\n+  public void waitForMinLength(long minLength, long time, TimeUnit unit)\n       throws IOException {\n-    // Wait for 3 seconds for rbw replica to reach the minimum length\n-    for (int i \u003d 0; i \u003c 30 \u0026\u0026 rbw.getBytesOnDisk() \u003c len; i++) {\n-      try {\n-        Thread.sleep(100);\n-      } catch (InterruptedException ie) {\n-        throw new IOException(ie);\n+    long nanos \u003d unit.toNanos(time);\n+    lock.lock();\n+    try {\n+      while (bytesOnDisk \u003c minLength) {\n+        if (nanos \u003c\u003d 0L) {\n+          throw new IOException(\n+              String.format(\"Need %d bytes, but only %d bytes available\",\n+                  minLength, bytesOnDisk));\n+        }\n+        nanos \u003d bytesOnDiskChange.awaitNanos(nanos);\n       }\n-    }\n-    long bytesOnDisk \u003d rbw.getBytesOnDisk();\n-    if (bytesOnDisk \u003c len) {\n-      throw new IOException(\n-          String.format(\"Need %d bytes, but only %d bytes available\", len,\n-              bytesOnDisk));\n+    } catch (InterruptedException e) {\n+      throw new IOException(e);\n+    } finally {\n+      lock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void waitForMinLength(long minLength, long time, TimeUnit unit)\n      throws IOException {\n    long nanos \u003d unit.toNanos(time);\n    lock.lock();\n    try {\n      while (bytesOnDisk \u003c minLength) {\n        if (nanos \u003c\u003d 0L) {\n          throw new IOException(\n              String.format(\"Need %d bytes, but only %d bytes available\",\n                  minLength, bytesOnDisk));\n        }\n        nanos \u003d bytesOnDiskChange.awaitNanos(nanos);\n      }\n    } catch (InterruptedException e) {\n      throw new IOException(e);\n    } finally {\n      lock.unlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplicaInPipeline.java",
+          "extendedDetails": {
+            "oldValue": "[private, static]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13994. Improve DataNode BlockSender waitForMinLength. Contributed by BELUGA BEHR.\n",
+          "commitDate": "19/10/18 10:36 AM",
+          "commitName": "8b64fbab1a4c7d65a5daf515c2d170d6a2fd4917",
+          "commitAuthor": "Inigo Goiri",
+          "commitDateOld": "19/10/18 10:13 AM",
+          "commitNameOld": "9aebafd2da44fd048d201b6ea5a043d7dda3dad9",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,19 @@\n-  private static void waitForMinLength(ReplicaInPipeline rbw, long len)\n+  public void waitForMinLength(long minLength, long time, TimeUnit unit)\n       throws IOException {\n-    // Wait for 3 seconds for rbw replica to reach the minimum length\n-    for (int i \u003d 0; i \u003c 30 \u0026\u0026 rbw.getBytesOnDisk() \u003c len; i++) {\n-      try {\n-        Thread.sleep(100);\n-      } catch (InterruptedException ie) {\n-        throw new IOException(ie);\n+    long nanos \u003d unit.toNanos(time);\n+    lock.lock();\n+    try {\n+      while (bytesOnDisk \u003c minLength) {\n+        if (nanos \u003c\u003d 0L) {\n+          throw new IOException(\n+              String.format(\"Need %d bytes, but only %d bytes available\",\n+                  minLength, bytesOnDisk));\n+        }\n+        nanos \u003d bytesOnDiskChange.awaitNanos(nanos);\n       }\n-    }\n-    long bytesOnDisk \u003d rbw.getBytesOnDisk();\n-    if (bytesOnDisk \u003c len) {\n-      throw new IOException(\n-          String.format(\"Need %d bytes, but only %d bytes available\", len,\n-              bytesOnDisk));\n+    } catch (InterruptedException e) {\n+      throw new IOException(e);\n+    } finally {\n+      lock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void waitForMinLength(long minLength, long time, TimeUnit unit)\n      throws IOException {\n    long nanos \u003d unit.toNanos(time);\n    lock.lock();\n    try {\n      while (bytesOnDisk \u003c minLength) {\n        if (nanos \u003c\u003d 0L) {\n          throw new IOException(\n              String.format(\"Need %d bytes, but only %d bytes available\",\n                  minLength, bytesOnDisk));\n        }\n        nanos \u003d bytesOnDiskChange.awaitNanos(nanos);\n      }\n    } catch (InterruptedException e) {\n      throw new IOException(e);\n    } finally {\n      lock.unlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplicaInPipeline.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13994. Improve DataNode BlockSender waitForMinLength. Contributed by BELUGA BEHR.\n",
+          "commitDate": "19/10/18 10:36 AM",
+          "commitName": "8b64fbab1a4c7d65a5daf515c2d170d6a2fd4917",
+          "commitAuthor": "Inigo Goiri",
+          "commitDateOld": "19/10/18 10:13 AM",
+          "commitNameOld": "9aebafd2da44fd048d201b6ea5a043d7dda3dad9",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,19 @@\n-  private static void waitForMinLength(ReplicaInPipeline rbw, long len)\n+  public void waitForMinLength(long minLength, long time, TimeUnit unit)\n       throws IOException {\n-    // Wait for 3 seconds for rbw replica to reach the minimum length\n-    for (int i \u003d 0; i \u003c 30 \u0026\u0026 rbw.getBytesOnDisk() \u003c len; i++) {\n-      try {\n-        Thread.sleep(100);\n-      } catch (InterruptedException ie) {\n-        throw new IOException(ie);\n+    long nanos \u003d unit.toNanos(time);\n+    lock.lock();\n+    try {\n+      while (bytesOnDisk \u003c minLength) {\n+        if (nanos \u003c\u003d 0L) {\n+          throw new IOException(\n+              String.format(\"Need %d bytes, but only %d bytes available\",\n+                  minLength, bytesOnDisk));\n+        }\n+        nanos \u003d bytesOnDiskChange.awaitNanos(nanos);\n       }\n-    }\n-    long bytesOnDisk \u003d rbw.getBytesOnDisk();\n-    if (bytesOnDisk \u003c len) {\n-      throw new IOException(\n-          String.format(\"Need %d bytes, but only %d bytes available\", len,\n-              bytesOnDisk));\n+    } catch (InterruptedException e) {\n+      throw new IOException(e);\n+    } finally {\n+      lock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void waitForMinLength(long minLength, long time, TimeUnit unit)\n      throws IOException {\n    long nanos \u003d unit.toNanos(time);\n    lock.lock();\n    try {\n      while (bytesOnDisk \u003c minLength) {\n        if (nanos \u003c\u003d 0L) {\n          throw new IOException(\n              String.format(\"Need %d bytes, but only %d bytes available\",\n                  minLength, bytesOnDisk));\n        }\n        nanos \u003d bytesOnDiskChange.awaitNanos(nanos);\n      }\n    } catch (InterruptedException e) {\n      throw new IOException(e);\n    } finally {\n      lock.unlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplicaInPipeline.java",
+          "extendedDetails": {
+            "oldValue": "[rbw-ReplicaInPipeline, len-long]",
+            "newValue": "[minLength-long, time-long, unit-TimeUnit]"
+          }
+        }
+      ]
+    },
+    "86c9862bec0248d671e657aa56094a2919b8ac14": {
+      "type": "Yparameterchange",
+      "commitMessage": "HDFS-10636. Modify ReplicaInfo to remove the assumption that replica metadata and data are stored in java.io.File. (Virajith Jalaparti via lei)\n",
+      "commitDate": "13/09/16 12:54 PM",
+      "commitName": "86c9862bec0248d671e657aa56094a2919b8ac14",
+      "commitAuthor": "Lei Xu",
+      "commitDateOld": "29/08/16 1:59 PM",
+      "commitNameOld": "5d1609ddf275e4907bd224bf618e2aad4b262888",
+      "commitAuthorOld": "Yongjun Zhang",
+      "daysBetweenCommits": 14.95,
+      "commitsBetweenForRepo": 76,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,17 @@\n-  private static void waitForMinLength(ReplicaBeingWritten rbw, long len)\n+  private static void waitForMinLength(ReplicaInPipeline rbw, long len)\n       throws IOException {\n     // Wait for 3 seconds for rbw replica to reach the minimum length\n     for (int i \u003d 0; i \u003c 30 \u0026\u0026 rbw.getBytesOnDisk() \u003c len; i++) {\n       try {\n         Thread.sleep(100);\n       } catch (InterruptedException ie) {\n         throw new IOException(ie);\n       }\n     }\n     long bytesOnDisk \u003d rbw.getBytesOnDisk();\n     if (bytesOnDisk \u003c len) {\n       throw new IOException(\n           String.format(\"Need %d bytes, but only %d bytes available\", len,\n               bytesOnDisk));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void waitForMinLength(ReplicaInPipeline rbw, long len)\n      throws IOException {\n    // Wait for 3 seconds for rbw replica to reach the minimum length\n    for (int i \u003d 0; i \u003c 30 \u0026\u0026 rbw.getBytesOnDisk() \u003c len; i++) {\n      try {\n        Thread.sleep(100);\n      } catch (InterruptedException ie) {\n        throw new IOException(ie);\n      }\n    }\n    long bytesOnDisk \u003d rbw.getBytesOnDisk();\n    if (bytesOnDisk \u003c len) {\n      throw new IOException(\n          String.format(\"Need %d bytes, but only %d bytes available\", len,\n              bytesOnDisk));\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockSender.java",
+      "extendedDetails": {
+        "oldValue": "[rbw-ReplicaBeingWritten, len-long]",
+        "newValue": "[rbw-ReplicaInPipeline, len-long]"
+      }
+    },
+    "e90a5b40430cc1fbce075d34b31e3cc05fd9831f": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-2371. Refactor BlockSender.java for better readability. Contributed by Suresh Srinivas.\n\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1177161 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "28/09/11 9:40 PM",
+      "commitName": "e90a5b40430cc1fbce075d34b31e3cc05fd9831f",
+      "commitAuthor": "Suresh Srinivas",
+      "diff": "@@ -0,0 +1,17 @@\n+  private static void waitForMinLength(ReplicaBeingWritten rbw, long len)\n+      throws IOException {\n+    // Wait for 3 seconds for rbw replica to reach the minimum length\n+    for (int i \u003d 0; i \u003c 30 \u0026\u0026 rbw.getBytesOnDisk() \u003c len; i++) {\n+      try {\n+        Thread.sleep(100);\n+      } catch (InterruptedException ie) {\n+        throw new IOException(ie);\n+      }\n+    }\n+    long bytesOnDisk \u003d rbw.getBytesOnDisk();\n+    if (bytesOnDisk \u003c len) {\n+      throw new IOException(\n+          String.format(\"Need %d bytes, but only %d bytes available\", len,\n+              bytesOnDisk));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void waitForMinLength(ReplicaBeingWritten rbw, long len)\n      throws IOException {\n    // Wait for 3 seconds for rbw replica to reach the minimum length\n    for (int i \u003d 0; i \u003c 30 \u0026\u0026 rbw.getBytesOnDisk() \u003c len; i++) {\n      try {\n        Thread.sleep(100);\n      } catch (InterruptedException ie) {\n        throw new IOException(ie);\n      }\n    }\n    long bytesOnDisk \u003d rbw.getBytesOnDisk();\n    if (bytesOnDisk \u003c len) {\n      throw new IOException(\n          String.format(\"Need %d bytes, but only %d bytes available\", len,\n              bytesOnDisk));\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockSender.java"
+    }
+  }
+}

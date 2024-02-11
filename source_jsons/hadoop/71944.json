@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "KMSAuthenticationFilter.java",
+  "functionName": "doFilter",
+  "functionId": "doFilter___request-ServletRequest__response-ServletResponse__filterChain-FilterChain",
+  "sourceFilePath": "hadoop-common-project/hadoop-kms/src/main/java/org/apache/hadoop/crypto/key/kms/server/KMSAuthenticationFilter.java",
+  "functionStartLine": 146,
+  "functionEndLine": 176,
+  "numCommitsSeen": 13,
+  "timeTaken": 913,
+  "changeHistory": [
+    "d75cbc5749808491d2b06f80506d95b6fb1b9e9c",
+    "bda9c584c828fdd18e9c066747d58dbf751a585d",
+    "17d4fbbf0af9b93de9502afb274e91533140d1c6"
+  ],
+  "changeHistoryShort": {
+    "d75cbc5749808491d2b06f80506d95b6fb1b9e9c": "Ybodychange",
+    "bda9c584c828fdd18e9c066747d58dbf751a585d": "Ybodychange",
+    "17d4fbbf0af9b93de9502afb274e91533140d1c6": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d75cbc5749808491d2b06f80506d95b6fb1b9e9c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13693. Remove the message about HTTP OPTIONS in SPNEGO initialization message from kms audit log.\n",
+      "commitDate": "18/10/16 6:24 PM",
+      "commitName": "d75cbc5749808491d2b06f80506d95b6fb1b9e9c",
+      "commitAuthor": "Xiao Chen",
+      "commitDateOld": "03/06/16 4:48 PM",
+      "commitNameOld": "713cb71820ad94a5436f35824d07aa12fcba5cc6",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 137.07,
+      "commitsBetweenForRepo": 1038,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,31 @@\n   public void doFilter(ServletRequest request, ServletResponse response,\n       FilterChain filterChain) throws IOException, ServletException {\n     KMSResponse kmsResponse \u003d new KMSResponse(response);\n     super.doFilter(request, kmsResponse, filterChain);\n \n     if (kmsResponse.statusCode !\u003d HttpServletResponse.SC_OK \u0026\u0026\n         kmsResponse.statusCode !\u003d HttpServletResponse.SC_CREATED \u0026\u0026\n         kmsResponse.statusCode !\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n       KMSWebApp.getInvalidCallsMeter().mark();\n     }\n \n     // HttpServletResponse.SC_UNAUTHORIZED is because the request does not\n     // belong to an authenticated user.\n     if (kmsResponse.statusCode \u003d\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n       KMSWebApp.getUnauthenticatedCallsMeter().mark();\n       String method \u003d ((HttpServletRequest) request).getMethod();\n       StringBuffer requestURL \u003d ((HttpServletRequest) request).getRequestURL();\n       String queryString \u003d ((HttpServletRequest) request).getQueryString();\n       if (queryString !\u003d null) {\n         requestURL.append(\"?\").append(queryString);\n       }\n \n-      KMSWebApp.getKMSAudit().unauthenticated(\n-          request.getRemoteHost(), method, requestURL.toString(),\n-          kmsResponse.msg);\n+      if (!method.equals(\"OPTIONS\")) {\n+        // an HTTP OPTIONS request is made as part of the SPNEGO authentication\n+        // sequence. We do not need to audit log it, since it doesn\u0027t belong\n+        // to KMS context. KMS server doesn\u0027t handle OPTIONS either.\n+        KMSWebApp.getKMSAudit().unauthenticated(request.getRemoteHost(), method,\n+            requestURL.toString(), kmsResponse.msg);\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void doFilter(ServletRequest request, ServletResponse response,\n      FilterChain filterChain) throws IOException, ServletException {\n    KMSResponse kmsResponse \u003d new KMSResponse(response);\n    super.doFilter(request, kmsResponse, filterChain);\n\n    if (kmsResponse.statusCode !\u003d HttpServletResponse.SC_OK \u0026\u0026\n        kmsResponse.statusCode !\u003d HttpServletResponse.SC_CREATED \u0026\u0026\n        kmsResponse.statusCode !\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n      KMSWebApp.getInvalidCallsMeter().mark();\n    }\n\n    // HttpServletResponse.SC_UNAUTHORIZED is because the request does not\n    // belong to an authenticated user.\n    if (kmsResponse.statusCode \u003d\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n      KMSWebApp.getUnauthenticatedCallsMeter().mark();\n      String method \u003d ((HttpServletRequest) request).getMethod();\n      StringBuffer requestURL \u003d ((HttpServletRequest) request).getRequestURL();\n      String queryString \u003d ((HttpServletRequest) request).getQueryString();\n      if (queryString !\u003d null) {\n        requestURL.append(\"?\").append(queryString);\n      }\n\n      if (!method.equals(\"OPTIONS\")) {\n        // an HTTP OPTIONS request is made as part of the SPNEGO authentication\n        // sequence. We do not need to audit log it, since it doesn\u0027t belong\n        // to KMS context. KMS server doesn\u0027t handle OPTIONS either.\n        KMSWebApp.getKMSAudit().unauthenticated(request.getRemoteHost(), method,\n            requestURL.toString(), kmsResponse.msg);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-kms/src/main/java/org/apache/hadoop/crypto/key/kms/server/KMSAuthenticationFilter.java",
+      "extendedDetails": {}
+    },
+    "bda9c584c828fdd18e9c066747d58dbf751a585d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10756. KMS audit log should consolidate successful similar requests. (asuresh via tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1614725 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "30/07/14 10:54 AM",
+      "commitName": "bda9c584c828fdd18e9c066747d58dbf751a585d",
+      "commitAuthor": "Alejandro Abdelnur",
+      "commitDateOld": "05/05/14 2:43 PM",
+      "commitNameOld": "17d4fbbf0af9b93de9502afb274e91533140d1c6",
+      "commitAuthorOld": "Alejandro Abdelnur",
+      "daysBetweenCommits": 85.84,
+      "commitsBetweenForRepo": 553,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,27 @@\n   public void doFilter(ServletRequest request, ServletResponse response,\n       FilterChain filterChain) throws IOException, ServletException {\n     KMSResponse kmsResponse \u003d new KMSResponse(response);\n     super.doFilter(request, kmsResponse, filterChain);\n \n     if (kmsResponse.statusCode !\u003d HttpServletResponse.SC_OK \u0026\u0026\n         kmsResponse.statusCode !\u003d HttpServletResponse.SC_CREATED \u0026\u0026\n         kmsResponse.statusCode !\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n       KMSWebApp.getInvalidCallsMeter().mark();\n     }\n \n     // HttpServletResponse.SC_UNAUTHORIZED is because the request does not\n     // belong to an authenticated user.\n     if (kmsResponse.statusCode \u003d\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n       KMSWebApp.getUnauthenticatedCallsMeter().mark();\n       String method \u003d ((HttpServletRequest) request).getMethod();\n       StringBuffer requestURL \u003d ((HttpServletRequest) request).getRequestURL();\n       String queryString \u003d ((HttpServletRequest) request).getQueryString();\n       if (queryString !\u003d null) {\n         requestURL.append(\"?\").append(queryString);\n       }\n-      KMSAudit.unauthenticated(request.getRemoteHost(), method,\n-          requestURL.toString(), kmsResponse.msg);\n+\n+      KMSWebApp.getKMSAudit().unauthenticated(\n+          request.getRemoteHost(), method, requestURL.toString(),\n+          kmsResponse.msg);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void doFilter(ServletRequest request, ServletResponse response,\n      FilterChain filterChain) throws IOException, ServletException {\n    KMSResponse kmsResponse \u003d new KMSResponse(response);\n    super.doFilter(request, kmsResponse, filterChain);\n\n    if (kmsResponse.statusCode !\u003d HttpServletResponse.SC_OK \u0026\u0026\n        kmsResponse.statusCode !\u003d HttpServletResponse.SC_CREATED \u0026\u0026\n        kmsResponse.statusCode !\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n      KMSWebApp.getInvalidCallsMeter().mark();\n    }\n\n    // HttpServletResponse.SC_UNAUTHORIZED is because the request does not\n    // belong to an authenticated user.\n    if (kmsResponse.statusCode \u003d\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n      KMSWebApp.getUnauthenticatedCallsMeter().mark();\n      String method \u003d ((HttpServletRequest) request).getMethod();\n      StringBuffer requestURL \u003d ((HttpServletRequest) request).getRequestURL();\n      String queryString \u003d ((HttpServletRequest) request).getQueryString();\n      if (queryString !\u003d null) {\n        requestURL.append(\"?\").append(queryString);\n      }\n\n      KMSWebApp.getKMSAudit().unauthenticated(\n          request.getRemoteHost(), method, requestURL.toString(),\n          kmsResponse.msg);\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-kms/src/main/java/org/apache/hadoop/crypto/key/kms/server/KMSAuthenticationFilter.java",
+      "extendedDetails": {}
+    },
+    "17d4fbbf0af9b93de9502afb274e91533140d1c6": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10433. Key Management Server based on KeyProvider API. (tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1592637 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "05/05/14 2:43 PM",
+      "commitName": "17d4fbbf0af9b93de9502afb274e91533140d1c6",
+      "commitAuthor": "Alejandro Abdelnur",
+      "diff": "@@ -0,0 +1,25 @@\n+  public void doFilter(ServletRequest request, ServletResponse response,\n+      FilterChain filterChain) throws IOException, ServletException {\n+    KMSResponse kmsResponse \u003d new KMSResponse(response);\n+    super.doFilter(request, kmsResponse, filterChain);\n+\n+    if (kmsResponse.statusCode !\u003d HttpServletResponse.SC_OK \u0026\u0026\n+        kmsResponse.statusCode !\u003d HttpServletResponse.SC_CREATED \u0026\u0026\n+        kmsResponse.statusCode !\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n+      KMSWebApp.getInvalidCallsMeter().mark();\n+    }\n+\n+    // HttpServletResponse.SC_UNAUTHORIZED is because the request does not\n+    // belong to an authenticated user.\n+    if (kmsResponse.statusCode \u003d\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n+      KMSWebApp.getUnauthenticatedCallsMeter().mark();\n+      String method \u003d ((HttpServletRequest) request).getMethod();\n+      StringBuffer requestURL \u003d ((HttpServletRequest) request).getRequestURL();\n+      String queryString \u003d ((HttpServletRequest) request).getQueryString();\n+      if (queryString !\u003d null) {\n+        requestURL.append(\"?\").append(queryString);\n+      }\n+      KMSAudit.unauthenticated(request.getRemoteHost(), method,\n+          requestURL.toString(), kmsResponse.msg);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void doFilter(ServletRequest request, ServletResponse response,\n      FilterChain filterChain) throws IOException, ServletException {\n    KMSResponse kmsResponse \u003d new KMSResponse(response);\n    super.doFilter(request, kmsResponse, filterChain);\n\n    if (kmsResponse.statusCode !\u003d HttpServletResponse.SC_OK \u0026\u0026\n        kmsResponse.statusCode !\u003d HttpServletResponse.SC_CREATED \u0026\u0026\n        kmsResponse.statusCode !\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n      KMSWebApp.getInvalidCallsMeter().mark();\n    }\n\n    // HttpServletResponse.SC_UNAUTHORIZED is because the request does not\n    // belong to an authenticated user.\n    if (kmsResponse.statusCode \u003d\u003d HttpServletResponse.SC_UNAUTHORIZED) {\n      KMSWebApp.getUnauthenticatedCallsMeter().mark();\n      String method \u003d ((HttpServletRequest) request).getMethod();\n      StringBuffer requestURL \u003d ((HttpServletRequest) request).getRequestURL();\n      String queryString \u003d ((HttpServletRequest) request).getQueryString();\n      if (queryString !\u003d null) {\n        requestURL.append(\"?\").append(queryString);\n      }\n      KMSAudit.unauthenticated(request.getRemoteHost(), method,\n          requestURL.toString(), kmsResponse.msg);\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-kms/src/main/java/org/apache/hadoop/crypto/key/kms/server/KMSAuthenticationFilter.java"
+    }
+  }
+}

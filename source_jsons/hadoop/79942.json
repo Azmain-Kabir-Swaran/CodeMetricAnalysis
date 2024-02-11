@@ -1,0 +1,251 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RawLocalFileSystem.java",
+  "functionName": "create",
+  "functionId": "create___f-Path__permission-FsPermission__overwrite-boolean__bufferSize-int__replication-short__blockSize-long__progress-Progressable",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+  "functionStartLine": 349,
+  "functionEndLine": 356,
+  "numCommitsSeen": 82,
+  "timeTaken": 2322,
+  "changeHistory": [
+    "e996a1bfd4f3ada6cbd9633fe68fda1e0c910bdf",
+    "03867eb1bb173c66b5eb3bebf2fe03a1188635b5",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+    "35a4624771f84a60deb62a3807a3ac0701b0d7d0",
+    "0294c49df60150bd9b363af5cfbc312222c12c69",
+    "bcd64325a11cb0dd5096ffc093d0ffa68c4fcc58",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36"
+  ],
+  "changeHistoryShort": {
+    "e996a1bfd4f3ada6cbd9633fe68fda1e0c910bdf": "Ybodychange",
+    "03867eb1bb173c66b5eb3bebf2fe03a1188635b5": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yfilerename",
+    "35a4624771f84a60deb62a3807a3ac0701b0d7d0": "Ymultichange(Yparameterchange,Ybodychange)",
+    "0294c49df60150bd9b363af5cfbc312222c12c69": "Ybodychange",
+    "bcd64325a11cb0dd5096ffc093d0ffa68c4fcc58": "Ymultichange(Yparameterchange,Ybodychange)",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e996a1bfd4f3ada6cbd9633fe68fda1e0c910bdf": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11321. copyToLocal cannot save a file to an SMB share unless the user has Full Control permissions. Contributed by Chris Nauroth.\n",
+      "commitDate": "16/12/14 3:29 PM",
+      "commitName": "e996a1bfd4f3ada6cbd9633fe68fda1e0c910bdf",
+      "commitAuthor": "cnauroth",
+      "commitDateOld": "09/12/14 2:31 PM",
+      "commitNameOld": "03867eb1bb173c66b5eb3bebf2fe03a1188635b5",
+      "commitAuthorOld": "Colin Patrick Mccabe",
+      "daysBetweenCommits": 7.04,
+      "commitsBetweenForRepo": 53,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,8 @@\n   public FSDataOutputStream create(Path f, FsPermission permission,\n     boolean overwrite, int bufferSize, short replication, long blockSize,\n     Progressable progress) throws IOException {\n \n-    FSDataOutputStream out \u003d create(f,\n-        overwrite, bufferSize, replication, blockSize, progress);\n-    boolean success \u003d false;\n-    try {\n-      setPermission(f, permission);\n-      success \u003d true;\n-      return out;\n-    } finally {\n-      if (!success) {\n-        IOUtils.cleanup(LOG, out);\n-      }\n-    }\n+    FSDataOutputStream out \u003d create(f, overwrite, true, bufferSize, replication,\n+        blockSize, progress, permission);\n+    return out;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n    boolean overwrite, int bufferSize, short replication, long blockSize,\n    Progressable progress) throws IOException {\n\n    FSDataOutputStream out \u003d create(f, overwrite, true, bufferSize, replication,\n        blockSize, progress, permission);\n    return out;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {}
+    },
+    "03867eb1bb173c66b5eb3bebf2fe03a1188635b5": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11349. RawLocalFileSystem leaks file descriptor while creating a file if creat succeeds but chmod fails. (Varun Saxena via Colin P.  McCabe)\n",
+      "commitDate": "09/12/14 2:31 PM",
+      "commitName": "03867eb1bb173c66b5eb3bebf2fe03a1188635b5",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "commitDateOld": "22/10/14 3:57 PM",
+      "commitNameOld": "3b12fd6cfbf4cc91ef8e8616c7aafa9de006cde5",
+      "commitAuthorOld": "Jian He",
+      "daysBetweenCommits": 47.98,
+      "commitsBetweenForRepo": 405,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,9 +1,17 @@\n   public FSDataOutputStream create(Path f, FsPermission permission,\n     boolean overwrite, int bufferSize, short replication, long blockSize,\n     Progressable progress) throws IOException {\n \n     FSDataOutputStream out \u003d create(f,\n         overwrite, bufferSize, replication, blockSize, progress);\n-    setPermission(f, permission);\n-    return out;\n+    boolean success \u003d false;\n+    try {\n+      setPermission(f, permission);\n+      success \u003d true;\n+      return out;\n+    } finally {\n+      if (!success) {\n+        IOUtils.cleanup(LOG, out);\n+      }\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n    boolean overwrite, int bufferSize, short replication, long blockSize,\n    Progressable progress) throws IOException {\n\n    FSDataOutputStream out \u003d create(f,\n        overwrite, bufferSize, replication, blockSize, progress);\n    boolean success \u003d false;\n    try {\n      setPermission(f, permission);\n      success \u003d true;\n      return out;\n    } finally {\n      if (!success) {\n        IOUtils.cleanup(LOG, out);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n    boolean overwrite, int bufferSize, short replication, long blockSize,\n    Progressable progress) throws IOException {\n\n    FSDataOutputStream out \u003d create(f,\n        overwrite, bufferSize, replication, blockSize, progress);\n    setPermission(f, permission);\n    return out;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+        "newPath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java"
+      }
+    },
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-6671. Use maven for hadoop common builds. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153184 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/08/11 9:37 AM",
+      "commitName": "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "01/08/11 3:53 PM",
+      "commitNameOld": "9bac807cedbcff34e1a144fb475eff267e5ed86d",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n    boolean overwrite, int bufferSize, short replication, long blockSize,\n    Progressable progress) throws IOException {\n\n    FSDataOutputStream out \u003d create(f,\n        overwrite, bufferSize, replication, blockSize, progress);\n    setPermission(f, permission);\n    return out;\n  }",
+      "path": "hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {
+        "oldPath": "common/src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+        "newPath": "hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "11/06/11 9:13 PM",
+      "commitNameOld": "a285fb5effe9ba3be4ec5f942afaf5ddd1186151",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n    boolean overwrite, int bufferSize, short replication, long blockSize,\n    Progressable progress) throws IOException {\n\n    FSDataOutputStream out \u003d create(f,\n        overwrite, bufferSize, replication, blockSize, progress);\n    setPermission(f, permission);\n    return out;\n  }",
+      "path": "common/src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {
+        "oldPath": "src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+        "newPath": "common/src/java/org/apache/hadoop/fs/RawLocalFileSystem.java"
+      }
+    },
+    "35a4624771f84a60deb62a3807a3ac0701b0d7d0": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-6826.  Revert FileSystem create method that takes CreateFlags.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@956710 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "21/06/10 2:45 PM",
+      "commitName": "35a4624771f84a60deb62a3807a3ac0701b0d7d0",
+      "commitAuthor": "Thomas White",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-6826.  Revert FileSystem create method that takes CreateFlags.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@956710 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "21/06/10 2:45 PM",
+          "commitName": "35a4624771f84a60deb62a3807a3ac0701b0d7d0",
+          "commitAuthor": "Thomas White",
+          "commitDateOld": "11/06/10 2:34 PM",
+          "commitNameOld": "6378822a67c0baa502d22201f5c2b478cbe1261c",
+          "commitAuthorOld": "Thomas White",
+          "daysBetweenCommits": 10.01,
+          "commitsBetweenForRepo": 9,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,9 @@\n   public FSDataOutputStream create(Path f, FsPermission permission,\n-    EnumSet\u003cCreateFlag\u003e flag, int bufferSize, short replication, long blockSize,\n+    boolean overwrite, int bufferSize, short replication, long blockSize,\n     Progressable progress) throws IOException {\n-    return primitiveCreate(f,\n-        permission.applyUMask(FsPermission.getUMask(getConf())), flag,\n-        bufferSize,  replication,  blockSize,  progress,  -1);\n-    \n-    \n-     \n+\n+    FSDataOutputStream out \u003d create(f,\n+        overwrite, bufferSize, replication, blockSize, progress);\n+    setPermission(f, permission);\n+    return out;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n    boolean overwrite, int bufferSize, short replication, long blockSize,\n    Progressable progress) throws IOException {\n\n    FSDataOutputStream out \u003d create(f,\n        overwrite, bufferSize, replication, blockSize, progress);\n    setPermission(f, permission);\n    return out;\n  }",
+          "path": "src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[f-Path, permission-FsPermission, flag-EnumSet\u003cCreateFlag\u003e, bufferSize-int, replication-short, blockSize-long, progress-Progressable]",
+            "newValue": "[f-Path, permission-FsPermission, overwrite-boolean, bufferSize-int, replication-short, blockSize-long, progress-Progressable]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-6826.  Revert FileSystem create method that takes CreateFlags.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@956710 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "21/06/10 2:45 PM",
+          "commitName": "35a4624771f84a60deb62a3807a3ac0701b0d7d0",
+          "commitAuthor": "Thomas White",
+          "commitDateOld": "11/06/10 2:34 PM",
+          "commitNameOld": "6378822a67c0baa502d22201f5c2b478cbe1261c",
+          "commitAuthorOld": "Thomas White",
+          "daysBetweenCommits": 10.01,
+          "commitsBetweenForRepo": 9,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,9 @@\n   public FSDataOutputStream create(Path f, FsPermission permission,\n-    EnumSet\u003cCreateFlag\u003e flag, int bufferSize, short replication, long blockSize,\n+    boolean overwrite, int bufferSize, short replication, long blockSize,\n     Progressable progress) throws IOException {\n-    return primitiveCreate(f,\n-        permission.applyUMask(FsPermission.getUMask(getConf())), flag,\n-        bufferSize,  replication,  blockSize,  progress,  -1);\n-    \n-    \n-     \n+\n+    FSDataOutputStream out \u003d create(f,\n+        overwrite, bufferSize, replication, blockSize, progress);\n+    setPermission(f, permission);\n+    return out;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n    boolean overwrite, int bufferSize, short replication, long blockSize,\n    Progressable progress) throws IOException {\n\n    FSDataOutputStream out \u003d create(f,\n        overwrite, bufferSize, replication, blockSize, progress);\n    setPermission(f, permission);\n    return out;\n  }",
+          "path": "src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "0294c49df60150bd9b363af5cfbc312222c12c69": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-4952. Add new improved file system interface FileContext for the application writer. Contributed by Sanjay Radia.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@816398 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/09/09 3:27 PM",
+      "commitName": "0294c49df60150bd9b363af5cfbc312222c12c69",
+      "commitAuthor": "Suresh Srinivas",
+      "commitDateOld": "07/09/09 6:25 AM",
+      "commitNameOld": "9b0b37e410afaf8fe0f7c6e0938a2095bef9e6d2",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 10.38,
+      "commitsBetweenForRepo": 19,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,10 @@\n   public FSDataOutputStream create(Path f, FsPermission permission,\n-      EnumSet\u003cCreateFlag\u003e flag, int bufferSize, short replication, long blockSize,\n-      Progressable progress) throws IOException {\n+    EnumSet\u003cCreateFlag\u003e flag, int bufferSize, short replication, long blockSize,\n+    Progressable progress) throws IOException {\n+    return primitiveCreate(f,\n+        permission.applyUMask(FsPermission.getUMask(getConf())), flag,\n+        bufferSize,  replication,  blockSize,  progress,  -1);\n     \n-      if(flag.contains(CreateFlag.APPEND)){\n-        if (!exists(f)){\n-          if(flag.contains(CreateFlag.CREATE))\n-            return create(f, false, bufferSize, replication, blockSize, progress);\n-        }\n-        return append(f, bufferSize, progress);\n-    }\n-   \n-    FSDataOutputStream out \u003d create(f,\n-        flag.contains(CreateFlag.OVERWRITE), bufferSize, replication, blockSize, progress);\n-    setPermission(f, permission);\n-    return out;\n+    \n+     \n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n    EnumSet\u003cCreateFlag\u003e flag, int bufferSize, short replication, long blockSize,\n    Progressable progress) throws IOException {\n    return primitiveCreate(f,\n        permission.applyUMask(FsPermission.getUMask(getConf())), flag,\n        bufferSize,  replication,  blockSize,  progress,  -1);\n    \n    \n     \n  }",
+      "path": "src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {}
+    },
+    "bcd64325a11cb0dd5096ffc093d0ffa68c4fcc58": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "Merged src/core, src/test/core, src/contrib/eclipse-plugin, and\nsrc/contrib/ec2 from trunk 776174:784663\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/core/branches/HADOOP-4687/core@784965 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "15/06/09 1:28 PM",
+      "commitName": "bcd64325a11cb0dd5096ffc093d0ffa68c4fcc58",
+      "commitAuthor": "Owen O\u0027Malley",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "Merged src/core, src/test/core, src/contrib/eclipse-plugin, and\nsrc/contrib/ec2 from trunk 776174:784663\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/core/branches/HADOOP-4687/core@784965 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "15/06/09 1:28 PM",
+          "commitName": "bcd64325a11cb0dd5096ffc093d0ffa68c4fcc58",
+          "commitAuthor": "Owen O\u0027Malley",
+          "commitDateOld": "18/05/09 9:20 PM",
+          "commitNameOld": "5128a9a453d64bfe1ed978cf9ffed27985eeef36",
+          "commitAuthorOld": "Owen O\u0027Malley",
+          "daysBetweenCommits": 27.67,
+          "commitsBetweenForRepo": 16,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,17 @@\n   public FSDataOutputStream create(Path f, FsPermission permission,\n-      boolean overwrite, int bufferSize, short replication, long blockSize,\n+      EnumSet\u003cCreateFlag\u003e flag, int bufferSize, short replication, long blockSize,\n       Progressable progress) throws IOException {\n+    \n+      if(flag.contains(CreateFlag.APPEND)){\n+        if (!exists(f)){\n+          if(flag.contains(CreateFlag.CREATE))\n+            return create(f, false, bufferSize, replication, blockSize, progress);\n+        }\n+        return append(f, bufferSize, progress);\n+    }\n+   \n     FSDataOutputStream out \u003d create(f,\n-        overwrite, bufferSize, replication, blockSize, progress);\n+        flag.contains(CreateFlag.OVERWRITE), bufferSize, replication, blockSize, progress);\n     setPermission(f, permission);\n     return out;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n      EnumSet\u003cCreateFlag\u003e flag, int bufferSize, short replication, long blockSize,\n      Progressable progress) throws IOException {\n    \n      if(flag.contains(CreateFlag.APPEND)){\n        if (!exists(f)){\n          if(flag.contains(CreateFlag.CREATE))\n            return create(f, false, bufferSize, replication, blockSize, progress);\n        }\n        return append(f, bufferSize, progress);\n    }\n   \n    FSDataOutputStream out \u003d create(f,\n        flag.contains(CreateFlag.OVERWRITE), bufferSize, replication, blockSize, progress);\n    setPermission(f, permission);\n    return out;\n  }",
+          "path": "src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[f-Path, permission-FsPermission, overwrite-boolean, bufferSize-int, replication-short, blockSize-long, progress-Progressable]",
+            "newValue": "[f-Path, permission-FsPermission, flag-EnumSet\u003cCreateFlag\u003e, bufferSize-int, replication-short, blockSize-long, progress-Progressable]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "Merged src/core, src/test/core, src/contrib/eclipse-plugin, and\nsrc/contrib/ec2 from trunk 776174:784663\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/core/branches/HADOOP-4687/core@784965 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "15/06/09 1:28 PM",
+          "commitName": "bcd64325a11cb0dd5096ffc093d0ffa68c4fcc58",
+          "commitAuthor": "Owen O\u0027Malley",
+          "commitDateOld": "18/05/09 9:20 PM",
+          "commitNameOld": "5128a9a453d64bfe1ed978cf9ffed27985eeef36",
+          "commitAuthorOld": "Owen O\u0027Malley",
+          "daysBetweenCommits": 27.67,
+          "commitsBetweenForRepo": 16,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,17 @@\n   public FSDataOutputStream create(Path f, FsPermission permission,\n-      boolean overwrite, int bufferSize, short replication, long blockSize,\n+      EnumSet\u003cCreateFlag\u003e flag, int bufferSize, short replication, long blockSize,\n       Progressable progress) throws IOException {\n+    \n+      if(flag.contains(CreateFlag.APPEND)){\n+        if (!exists(f)){\n+          if(flag.contains(CreateFlag.CREATE))\n+            return create(f, false, bufferSize, replication, blockSize, progress);\n+        }\n+        return append(f, bufferSize, progress);\n+    }\n+   \n     FSDataOutputStream out \u003d create(f,\n-        overwrite, bufferSize, replication, blockSize, progress);\n+        flag.contains(CreateFlag.OVERWRITE), bufferSize, replication, blockSize, progress);\n     setPermission(f, permission);\n     return out;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n      EnumSet\u003cCreateFlag\u003e flag, int bufferSize, short replication, long blockSize,\n      Progressable progress) throws IOException {\n    \n      if(flag.contains(CreateFlag.APPEND)){\n        if (!exists(f)){\n          if(flag.contains(CreateFlag.CREATE))\n            return create(f, false, bufferSize, replication, blockSize, progress);\n        }\n        return append(f, bufferSize, progress);\n    }\n   \n    FSDataOutputStream out \u003d create(f,\n        flag.contains(CreateFlag.OVERWRITE), bufferSize, replication, blockSize, progress);\n    setPermission(f, permission);\n    return out;\n  }",
+          "path": "src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-4687 Moving src directories on branch\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/core/branches/HADOOP-4687/core@776174 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/05/09 9:20 PM",
+      "commitName": "5128a9a453d64bfe1ed978cf9ffed27985eeef36",
+      "commitAuthor": "Owen O\u0027Malley",
+      "diff": "@@ -0,0 +1,8 @@\n+  public FSDataOutputStream create(Path f, FsPermission permission,\n+      boolean overwrite, int bufferSize, short replication, long blockSize,\n+      Progressable progress) throws IOException {\n+    FSDataOutputStream out \u003d create(f,\n+        overwrite, bufferSize, replication, blockSize, progress);\n+    setPermission(f, permission);\n+    return out;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public FSDataOutputStream create(Path f, FsPermission permission,\n      boolean overwrite, int bufferSize, short replication, long blockSize,\n      Progressable progress) throws IOException {\n    FSDataOutputStream out \u003d create(f,\n        overwrite, bufferSize, replication, blockSize, progress);\n    setPermission(f, permission);\n    return out;\n  }",
+      "path": "src/java/org/apache/hadoop/fs/RawLocalFileSystem.java"
+    }
+  }
+}

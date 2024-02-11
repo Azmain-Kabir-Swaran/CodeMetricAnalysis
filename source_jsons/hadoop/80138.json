@@ -1,0 +1,137 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileSystemMultipartUploader.java",
+  "functionName": "complete",
+  "functionId": "complete___filePath-Path__handleMap-Map__Integer,PartHandle____multipartUploadId-UploadHandle",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystemMultipartUploader.java",
+  "functionStartLine": 117,
+  "functionEndLine": 153,
+  "numCommitsSeen": 11,
+  "timeTaken": 3233,
+  "changeHistory": [
+    "c1d24f848345f6d34a2ac2d570d49e9787a0df6a",
+    "6fab6886f652492573734b832ca0375459a82775",
+    "2e6c1109dcdeedb59a3345047e9201271c9a0b27",
+    "2ec97abb2e93c1a8127e7a146c08e26454b583fa",
+    "980031bb043dd026a6bf42b0e71d304ac89294a5"
+  ],
+  "changeHistoryShort": {
+    "c1d24f848345f6d34a2ac2d570d49e9787a0df6a": "Ymultichange(Yparameterchange,Ybodychange)",
+    "6fab6886f652492573734b832ca0375459a82775": "Ybodychange",
+    "2e6c1109dcdeedb59a3345047e9201271c9a0b27": "Ybodychange",
+    "2ec97abb2e93c1a8127e7a146c08e26454b583fa": "Ybodychange",
+    "980031bb043dd026a6bf42b0e71d304ac89294a5": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c1d24f848345f6d34a2ac2d570d49e9787a0df6a": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-13713. Add specification of Multipart Upload API to FS specification, with contract tests.\n\nContributed by Ewan Higgs and Steve Loughran.\n",
+      "commitDate": "29/11/18 7:12 AM",
+      "commitName": "c1d24f848345f6d34a2ac2d570d49e9787a0df6a",
+      "commitAuthor": "Ewan Higgs",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13713. Add specification of Multipart Upload API to FS specification, with contract tests.\n\nContributed by Ewan Higgs and Steve Loughran.\n",
+          "commitDate": "29/11/18 7:12 AM",
+          "commitName": "c1d24f848345f6d34a2ac2d570d49e9787a0df6a",
+          "commitAuthor": "Ewan Higgs",
+          "commitDateOld": "02/10/18 5:05 AM",
+          "commitNameOld": "6fab6886f652492573734b832ca0375459a82775",
+          "commitAuthorOld": "Ewan Higgs",
+          "daysBetweenCommits": 58.13,
+          "commitsBetweenForRepo": 512,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,37 @@\n-  public PathHandle complete(Path filePath,\n-      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n-      throws IOException {\n+  public PathHandle complete(Path filePath, Map\u003cInteger, PartHandle\u003e handleMap,\n+      UploadHandle multipartUploadId) throws IOException {\n \n     checkUploadId(multipartUploadId.toByteArray());\n \n-    if (handles.isEmpty()) {\n-      throw new IOException(\"Empty upload\");\n-    }\n-    // If destination already exists, we believe we already completed it.\n-    if (fs.exists(filePath)) {\n-      return getPathHandle(filePath);\n-    }\n+    checkPartHandles(handleMap);\n+    List\u003cMap.Entry\u003cInteger, PartHandle\u003e\u003e handles \u003d\n+        new ArrayList\u003c\u003e(handleMap.entrySet());\n+    handles.sort(Comparator.comparingInt(Map.Entry::getKey));\n \n-    handles.sort(Comparator.comparing(Pair::getKey));\n     List\u003cPath\u003e partHandles \u003d handles\n         .stream()\n         .map(pair -\u003e {\n           byte[] byteArray \u003d pair.getValue().toByteArray();\n           return new Path(new String(byteArray, 0, byteArray.length,\n               Charsets.UTF_8));\n         })\n         .collect(Collectors.toList());\n \n-    Path collectorPath \u003d createCollectorPath(filePath);\n+    byte[] uploadIdByteArray \u003d multipartUploadId.toByteArray();\n+    Path collectorPath \u003d new Path(new String(uploadIdByteArray, 0,\n+        uploadIdByteArray.length, Charsets.UTF_8));\n+\n     boolean emptyFile \u003d totalPartsLen(partHandles) \u003d\u003d 0;\n     if (emptyFile) {\n       fs.create(filePath).close();\n     } else {\n       Path filePathInsideCollector \u003d mergePaths(collectorPath,\n           new Path(Path.SEPARATOR + filePath.getName()));\n       fs.create(filePathInsideCollector).close();\n       fs.concat(filePathInsideCollector,\n           partHandles.toArray(new Path[handles.size()]));\n       fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n     }\n     fs.delete(collectorPath, true);\n     return getPathHandle(filePath);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public PathHandle complete(Path filePath, Map\u003cInteger, PartHandle\u003e handleMap,\n      UploadHandle multipartUploadId) throws IOException {\n\n    checkUploadId(multipartUploadId.toByteArray());\n\n    checkPartHandles(handleMap);\n    List\u003cMap.Entry\u003cInteger, PartHandle\u003e\u003e handles \u003d\n        new ArrayList\u003c\u003e(handleMap.entrySet());\n    handles.sort(Comparator.comparingInt(Map.Entry::getKey));\n\n    List\u003cPath\u003e partHandles \u003d handles\n        .stream()\n        .map(pair -\u003e {\n          byte[] byteArray \u003d pair.getValue().toByteArray();\n          return new Path(new String(byteArray, 0, byteArray.length,\n              Charsets.UTF_8));\n        })\n        .collect(Collectors.toList());\n\n    byte[] uploadIdByteArray \u003d multipartUploadId.toByteArray();\n    Path collectorPath \u003d new Path(new String(uploadIdByteArray, 0,\n        uploadIdByteArray.length, Charsets.UTF_8));\n\n    boolean emptyFile \u003d totalPartsLen(partHandles) \u003d\u003d 0;\n    if (emptyFile) {\n      fs.create(filePath).close();\n    } else {\n      Path filePathInsideCollector \u003d mergePaths(collectorPath,\n          new Path(Path.SEPARATOR + filePath.getName()));\n      fs.create(filePathInsideCollector).close();\n      fs.concat(filePathInsideCollector,\n          partHandles.toArray(new Path[handles.size()]));\n      fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n    }\n    fs.delete(collectorPath, true);\n    return getPathHandle(filePath);\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystemMultipartUploader.java",
+          "extendedDetails": {
+            "oldValue": "[filePath-Path, handles-List\u003cPair\u003cInteger,PartHandle\u003e\u003e, multipartUploadId-UploadHandle]",
+            "newValue": "[filePath-Path, handleMap-Map\u003cInteger,PartHandle\u003e, multipartUploadId-UploadHandle]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13713. Add specification of Multipart Upload API to FS specification, with contract tests.\n\nContributed by Ewan Higgs and Steve Loughran.\n",
+          "commitDate": "29/11/18 7:12 AM",
+          "commitName": "c1d24f848345f6d34a2ac2d570d49e9787a0df6a",
+          "commitAuthor": "Ewan Higgs",
+          "commitDateOld": "02/10/18 5:05 AM",
+          "commitNameOld": "6fab6886f652492573734b832ca0375459a82775",
+          "commitAuthorOld": "Ewan Higgs",
+          "daysBetweenCommits": 58.13,
+          "commitsBetweenForRepo": 512,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,37 @@\n-  public PathHandle complete(Path filePath,\n-      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n-      throws IOException {\n+  public PathHandle complete(Path filePath, Map\u003cInteger, PartHandle\u003e handleMap,\n+      UploadHandle multipartUploadId) throws IOException {\n \n     checkUploadId(multipartUploadId.toByteArray());\n \n-    if (handles.isEmpty()) {\n-      throw new IOException(\"Empty upload\");\n-    }\n-    // If destination already exists, we believe we already completed it.\n-    if (fs.exists(filePath)) {\n-      return getPathHandle(filePath);\n-    }\n+    checkPartHandles(handleMap);\n+    List\u003cMap.Entry\u003cInteger, PartHandle\u003e\u003e handles \u003d\n+        new ArrayList\u003c\u003e(handleMap.entrySet());\n+    handles.sort(Comparator.comparingInt(Map.Entry::getKey));\n \n-    handles.sort(Comparator.comparing(Pair::getKey));\n     List\u003cPath\u003e partHandles \u003d handles\n         .stream()\n         .map(pair -\u003e {\n           byte[] byteArray \u003d pair.getValue().toByteArray();\n           return new Path(new String(byteArray, 0, byteArray.length,\n               Charsets.UTF_8));\n         })\n         .collect(Collectors.toList());\n \n-    Path collectorPath \u003d createCollectorPath(filePath);\n+    byte[] uploadIdByteArray \u003d multipartUploadId.toByteArray();\n+    Path collectorPath \u003d new Path(new String(uploadIdByteArray, 0,\n+        uploadIdByteArray.length, Charsets.UTF_8));\n+\n     boolean emptyFile \u003d totalPartsLen(partHandles) \u003d\u003d 0;\n     if (emptyFile) {\n       fs.create(filePath).close();\n     } else {\n       Path filePathInsideCollector \u003d mergePaths(collectorPath,\n           new Path(Path.SEPARATOR + filePath.getName()));\n       fs.create(filePathInsideCollector).close();\n       fs.concat(filePathInsideCollector,\n           partHandles.toArray(new Path[handles.size()]));\n       fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n     }\n     fs.delete(collectorPath, true);\n     return getPathHandle(filePath);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public PathHandle complete(Path filePath, Map\u003cInteger, PartHandle\u003e handleMap,\n      UploadHandle multipartUploadId) throws IOException {\n\n    checkUploadId(multipartUploadId.toByteArray());\n\n    checkPartHandles(handleMap);\n    List\u003cMap.Entry\u003cInteger, PartHandle\u003e\u003e handles \u003d\n        new ArrayList\u003c\u003e(handleMap.entrySet());\n    handles.sort(Comparator.comparingInt(Map.Entry::getKey));\n\n    List\u003cPath\u003e partHandles \u003d handles\n        .stream()\n        .map(pair -\u003e {\n          byte[] byteArray \u003d pair.getValue().toByteArray();\n          return new Path(new String(byteArray, 0, byteArray.length,\n              Charsets.UTF_8));\n        })\n        .collect(Collectors.toList());\n\n    byte[] uploadIdByteArray \u003d multipartUploadId.toByteArray();\n    Path collectorPath \u003d new Path(new String(uploadIdByteArray, 0,\n        uploadIdByteArray.length, Charsets.UTF_8));\n\n    boolean emptyFile \u003d totalPartsLen(partHandles) \u003d\u003d 0;\n    if (emptyFile) {\n      fs.create(filePath).close();\n    } else {\n      Path filePathInsideCollector \u003d mergePaths(collectorPath,\n          new Path(Path.SEPARATOR + filePath.getName()));\n      fs.create(filePathInsideCollector).close();\n      fs.concat(filePathInsideCollector,\n          partHandles.toArray(new Path[handles.size()]));\n      fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n    }\n    fs.delete(collectorPath, true);\n    return getPathHandle(filePath);\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystemMultipartUploader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "6fab6886f652492573734b832ca0375459a82775": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13936. Multipart upload to HDFS to support 0 byte upload. Contributed by Ewan Higgs.\n",
+      "commitDate": "02/10/18 5:05 AM",
+      "commitName": "6fab6886f652492573734b832ca0375459a82775",
+      "commitAuthor": "Ewan Higgs",
+      "commitDateOld": "24/09/18 8:49 AM",
+      "commitNameOld": "d060cbea48ffc75da0f4fa98c3ea5203d6db1360",
+      "commitAuthorOld": "Sunil G",
+      "daysBetweenCommits": 7.84,
+      "commitsBetweenForRepo": 54,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,39 @@\n   public PathHandle complete(Path filePath,\n       List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n       throws IOException {\n \n     checkUploadId(multipartUploadId.toByteArray());\n \n     if (handles.isEmpty()) {\n       throw new IOException(\"Empty upload\");\n     }\n     // If destination already exists, we believe we already completed it.\n     if (fs.exists(filePath)) {\n       return getPathHandle(filePath);\n     }\n \n     handles.sort(Comparator.comparing(Pair::getKey));\n     List\u003cPath\u003e partHandles \u003d handles\n         .stream()\n         .map(pair -\u003e {\n           byte[] byteArray \u003d pair.getValue().toByteArray();\n           return new Path(new String(byteArray, 0, byteArray.length,\n               Charsets.UTF_8));\n         })\n         .collect(Collectors.toList());\n \n     Path collectorPath \u003d createCollectorPath(filePath);\n-    Path filePathInsideCollector \u003d mergePaths(collectorPath,\n-        new Path(Path.SEPARATOR + filePath.getName()));\n-    fs.create(filePathInsideCollector).close();\n-    fs.concat(filePathInsideCollector,\n-        partHandles.toArray(new Path[handles.size()]));\n-    fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n+    boolean emptyFile \u003d totalPartsLen(partHandles) \u003d\u003d 0;\n+    if (emptyFile) {\n+      fs.create(filePath).close();\n+    } else {\n+      Path filePathInsideCollector \u003d mergePaths(collectorPath,\n+          new Path(Path.SEPARATOR + filePath.getName()));\n+      fs.create(filePathInsideCollector).close();\n+      fs.concat(filePathInsideCollector,\n+          partHandles.toArray(new Path[handles.size()]));\n+      fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n+    }\n     fs.delete(collectorPath, true);\n     return getPathHandle(filePath);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public PathHandle complete(Path filePath,\n      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n      throws IOException {\n\n    checkUploadId(multipartUploadId.toByteArray());\n\n    if (handles.isEmpty()) {\n      throw new IOException(\"Empty upload\");\n    }\n    // If destination already exists, we believe we already completed it.\n    if (fs.exists(filePath)) {\n      return getPathHandle(filePath);\n    }\n\n    handles.sort(Comparator.comparing(Pair::getKey));\n    List\u003cPath\u003e partHandles \u003d handles\n        .stream()\n        .map(pair -\u003e {\n          byte[] byteArray \u003d pair.getValue().toByteArray();\n          return new Path(new String(byteArray, 0, byteArray.length,\n              Charsets.UTF_8));\n        })\n        .collect(Collectors.toList());\n\n    Path collectorPath \u003d createCollectorPath(filePath);\n    boolean emptyFile \u003d totalPartsLen(partHandles) \u003d\u003d 0;\n    if (emptyFile) {\n      fs.create(filePath).close();\n    } else {\n      Path filePathInsideCollector \u003d mergePaths(collectorPath,\n          new Path(Path.SEPARATOR + filePath.getName()));\n      fs.create(filePathInsideCollector).close();\n      fs.concat(filePathInsideCollector,\n          partHandles.toArray(new Path[handles.size()]));\n      fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n    }\n    fs.delete(collectorPath, true);\n    return getPathHandle(filePath);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystemMultipartUploader.java",
+      "extendedDetails": {}
+    },
+    "2e6c1109dcdeedb59a3345047e9201271c9a0b27": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15667. FileSystemMultipartUploader should verify that UploadHandle has non-0 length.\nContributed by Ewan Higgs\n",
+      "commitDate": "30/08/18 6:33 AM",
+      "commitName": "2e6c1109dcdeedb59a3345047e9201271c9a0b27",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "08/08/18 4:50 AM",
+      "commitNameOld": "2ec97abb2e93c1a8127e7a146c08e26454b583fa",
+      "commitAuthorOld": "Ewan Higgs",
+      "daysBetweenCommits": 22.07,
+      "commitsBetweenForRepo": 206,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,34 @@\n   public PathHandle complete(Path filePath,\n       List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n       throws IOException {\n \n+    checkUploadId(multipartUploadId.toByteArray());\n+\n     if (handles.isEmpty()) {\n       throw new IOException(\"Empty upload\");\n     }\n     // If destination already exists, we believe we already completed it.\n     if (fs.exists(filePath)) {\n       return getPathHandle(filePath);\n     }\n \n     handles.sort(Comparator.comparing(Pair::getKey));\n     List\u003cPath\u003e partHandles \u003d handles\n         .stream()\n         .map(pair -\u003e {\n           byte[] byteArray \u003d pair.getValue().toByteArray();\n           return new Path(new String(byteArray, 0, byteArray.length,\n               Charsets.UTF_8));\n         })\n         .collect(Collectors.toList());\n \n     Path collectorPath \u003d createCollectorPath(filePath);\n     Path filePathInsideCollector \u003d mergePaths(collectorPath,\n         new Path(Path.SEPARATOR + filePath.getName()));\n     fs.create(filePathInsideCollector).close();\n     fs.concat(filePathInsideCollector,\n         partHandles.toArray(new Path[handles.size()]));\n     fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n     fs.delete(collectorPath, true);\n     return getPathHandle(filePath);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public PathHandle complete(Path filePath,\n      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n      throws IOException {\n\n    checkUploadId(multipartUploadId.toByteArray());\n\n    if (handles.isEmpty()) {\n      throw new IOException(\"Empty upload\");\n    }\n    // If destination already exists, we believe we already completed it.\n    if (fs.exists(filePath)) {\n      return getPathHandle(filePath);\n    }\n\n    handles.sort(Comparator.comparing(Pair::getKey));\n    List\u003cPath\u003e partHandles \u003d handles\n        .stream()\n        .map(pair -\u003e {\n          byte[] byteArray \u003d pair.getValue().toByteArray();\n          return new Path(new String(byteArray, 0, byteArray.length,\n              Charsets.UTF_8));\n        })\n        .collect(Collectors.toList());\n\n    Path collectorPath \u003d createCollectorPath(filePath);\n    Path filePathInsideCollector \u003d mergePaths(collectorPath,\n        new Path(Path.SEPARATOR + filePath.getName()));\n    fs.create(filePathInsideCollector).close();\n    fs.concat(filePathInsideCollector,\n        partHandles.toArray(new Path[handles.size()]));\n    fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n    fs.delete(collectorPath, true);\n    return getPathHandle(filePath);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystemMultipartUploader.java",
+      "extendedDetails": {}
+    },
+    "2ec97abb2e93c1a8127e7a146c08e26454b583fa": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15576. S3A Multipart Uploader to work with S3Guard and encryption Originally contributed by Ewan Higgs with refinements by Steve Loughran.\n",
+      "commitDate": "08/08/18 4:50 AM",
+      "commitName": "2ec97abb2e93c1a8127e7a146c08e26454b583fa",
+      "commitAuthor": "Ewan Higgs",
+      "commitDateOld": "17/06/18 11:54 AM",
+      "commitNameOld": "980031bb043dd026a6bf42b0e71d304ac89294a5",
+      "commitAuthorOld": "Chris Douglas",
+      "daysBetweenCommits": 51.71,
+      "commitsBetweenForRepo": 308,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,32 @@\n   public PathHandle complete(Path filePath,\n       List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n       throws IOException {\n+\n+    if (handles.isEmpty()) {\n+      throw new IOException(\"Empty upload\");\n+    }\n+    // If destination already exists, we believe we already completed it.\n+    if (fs.exists(filePath)) {\n+      return getPathHandle(filePath);\n+    }\n+\n     handles.sort(Comparator.comparing(Pair::getKey));\n     List\u003cPath\u003e partHandles \u003d handles\n         .stream()\n         .map(pair -\u003e {\n           byte[] byteArray \u003d pair.getValue().toByteArray();\n           return new Path(new String(byteArray, 0, byteArray.length,\n               Charsets.UTF_8));\n         })\n         .collect(Collectors.toList());\n \n     Path collectorPath \u003d createCollectorPath(filePath);\n-    Path filePathInsideCollector \u003d Path.mergePaths(collectorPath,\n+    Path filePathInsideCollector \u003d mergePaths(collectorPath,\n         new Path(Path.SEPARATOR + filePath.getName()));\n     fs.create(filePathInsideCollector).close();\n     fs.concat(filePathInsideCollector,\n         partHandles.toArray(new Path[handles.size()]));\n     fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n     fs.delete(collectorPath, true);\n-    FileStatus status \u003d fs.getFileStatus(filePath);\n-    return fs.getPathHandle(status);\n+    return getPathHandle(filePath);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public PathHandle complete(Path filePath,\n      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n      throws IOException {\n\n    if (handles.isEmpty()) {\n      throw new IOException(\"Empty upload\");\n    }\n    // If destination already exists, we believe we already completed it.\n    if (fs.exists(filePath)) {\n      return getPathHandle(filePath);\n    }\n\n    handles.sort(Comparator.comparing(Pair::getKey));\n    List\u003cPath\u003e partHandles \u003d handles\n        .stream()\n        .map(pair -\u003e {\n          byte[] byteArray \u003d pair.getValue().toByteArray();\n          return new Path(new String(byteArray, 0, byteArray.length,\n              Charsets.UTF_8));\n        })\n        .collect(Collectors.toList());\n\n    Path collectorPath \u003d createCollectorPath(filePath);\n    Path filePathInsideCollector \u003d mergePaths(collectorPath,\n        new Path(Path.SEPARATOR + filePath.getName()));\n    fs.create(filePathInsideCollector).close();\n    fs.concat(filePathInsideCollector,\n        partHandles.toArray(new Path[handles.size()]));\n    fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n    fs.delete(collectorPath, true);\n    return getPathHandle(filePath);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystemMultipartUploader.java",
+      "extendedDetails": {}
+    },
+    "980031bb043dd026a6bf42b0e71d304ac89294a5": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13186. Multipart Uploader API. Contributed by Ewan Higgs\n",
+      "commitDate": "17/06/18 11:54 AM",
+      "commitName": "980031bb043dd026a6bf42b0e71d304ac89294a5",
+      "commitAuthor": "Chris Douglas",
+      "diff": "@@ -0,0 +1,24 @@\n+  public PathHandle complete(Path filePath,\n+      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n+      throws IOException {\n+    handles.sort(Comparator.comparing(Pair::getKey));\n+    List\u003cPath\u003e partHandles \u003d handles\n+        .stream()\n+        .map(pair -\u003e {\n+          byte[] byteArray \u003d pair.getValue().toByteArray();\n+          return new Path(new String(byteArray, 0, byteArray.length,\n+              Charsets.UTF_8));\n+        })\n+        .collect(Collectors.toList());\n+\n+    Path collectorPath \u003d createCollectorPath(filePath);\n+    Path filePathInsideCollector \u003d Path.mergePaths(collectorPath,\n+        new Path(Path.SEPARATOR + filePath.getName()));\n+    fs.create(filePathInsideCollector).close();\n+    fs.concat(filePathInsideCollector,\n+        partHandles.toArray(new Path[handles.size()]));\n+    fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n+    fs.delete(collectorPath, true);\n+    FileStatus status \u003d fs.getFileStatus(filePath);\n+    return fs.getPathHandle(status);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public PathHandle complete(Path filePath,\n      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle multipartUploadId)\n      throws IOException {\n    handles.sort(Comparator.comparing(Pair::getKey));\n    List\u003cPath\u003e partHandles \u003d handles\n        .stream()\n        .map(pair -\u003e {\n          byte[] byteArray \u003d pair.getValue().toByteArray();\n          return new Path(new String(byteArray, 0, byteArray.length,\n              Charsets.UTF_8));\n        })\n        .collect(Collectors.toList());\n\n    Path collectorPath \u003d createCollectorPath(filePath);\n    Path filePathInsideCollector \u003d Path.mergePaths(collectorPath,\n        new Path(Path.SEPARATOR + filePath.getName()));\n    fs.create(filePathInsideCollector).close();\n    fs.concat(filePathInsideCollector,\n        partHandles.toArray(new Path[handles.size()]));\n    fs.rename(filePathInsideCollector, filePath, Options.Rename.OVERWRITE);\n    fs.delete(collectorPath, true);\n    FileStatus status \u003d fs.getFileStatus(filePath);\n    return fs.getPathHandle(status);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystemMultipartUploader.java"
+    }
+  }
+}

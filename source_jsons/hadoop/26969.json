@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CosNOutputStream.java",
+  "functionName": "uploadPart",
+  "functionId": "uploadPart",
+  "sourceFilePath": "hadoop-cloud-storage-project/hadoop-cos/src/main/java/org/apache/hadoop/fs/cosn/CosNOutputStream.java",
+  "functionStartLine": 187,
+  "functionEndLine": 237,
+  "numCommitsSeen": 1,
+  "timeTaken": 323,
+  "changeHistory": [
+    "8a9ede5cff816b66afc37e7c9d2b33aee48795d2"
+  ],
+  "changeHistoryShort": {
+    "8a9ede5cff816b66afc37e7c9d2b33aee48795d2": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8a9ede5cff816b66afc37e7c9d2b33aee48795d2": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15616. Incorporate Tencent Cloud COS File System Implementation. Contributed by Yang Yu.\n",
+      "commitDate": "27/09/19 1:53 AM",
+      "commitName": "8a9ede5cff816b66afc37e7c9d2b33aee48795d2",
+      "commitAuthor": "Sammi Chen",
+      "diff": "@@ -0,0 +1,51 @@\n+  private void uploadPart() throws IOException {\n+    this.currentBlockOutputStream.flush();\n+    this.currentBlockOutputStream.close();\n+    this.blockCacheBuffers.add(this.currentBlockBuffer);\n+\n+    if (this.currentBlockId \u003d\u003d 0) {\n+      uploadId \u003d (store).getUploadId(key);\n+    }\n+\n+    ListenableFuture\u003cPartETag\u003e partETagListenableFuture \u003d\n+        this.executorService.submit(\n+            new Callable\u003cPartETag\u003e() {\n+              private final ByteBufferWrapper buf \u003d currentBlockBuffer;\n+              private final String localKey \u003d key;\n+              private final String localUploadId \u003d uploadId;\n+              private final int blockId \u003d currentBlockId;\n+\n+              @Override\n+              public PartETag call() throws Exception {\n+                if (LOG.isDebugEnabled()) {\n+                  LOG.debug(\"{} is uploading a part.\",\n+                      Thread.currentThread().getName());\n+                }\n+                PartETag partETag \u003d (store).uploadPart(\n+                    new ByteBufferInputStream(this.buf.getByteBuffer()),\n+                    this.localKey, this.localUploadId,\n+                    this.blockId + 1, this.buf.getByteBuffer().remaining());\n+                BufferPool.getInstance().returnBuffer(this.buf);\n+                return partETag;\n+              }\n+            });\n+    this.etagList.add(partETagListenableFuture);\n+    try {\n+      this.currentBlockBuffer \u003d\n+          BufferPool.getInstance().getBuffer((int) this.blockSize);\n+    } catch (IOException e) {\n+      String errMsg \u003d String.format(\"Getting a buffer [size:%d] from \"\n+          + \"the buffer pool failed.\", this.blockSize);\n+      throw new IOException(errMsg, e);\n+    }\n+    this.currentBlockId++;\n+    if (null !\u003d this.digest) {\n+      this.digest.reset();\n+      this.currentBlockOutputStream \u003d new DigestOutputStream(\n+          new ByteBufferOutputStream(this.currentBlockBuffer.getByteBuffer()),\n+          this.digest);\n+    } else {\n+      this.currentBlockOutputStream \u003d\n+          new ByteBufferOutputStream(this.currentBlockBuffer.getByteBuffer());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void uploadPart() throws IOException {\n    this.currentBlockOutputStream.flush();\n    this.currentBlockOutputStream.close();\n    this.blockCacheBuffers.add(this.currentBlockBuffer);\n\n    if (this.currentBlockId \u003d\u003d 0) {\n      uploadId \u003d (store).getUploadId(key);\n    }\n\n    ListenableFuture\u003cPartETag\u003e partETagListenableFuture \u003d\n        this.executorService.submit(\n            new Callable\u003cPartETag\u003e() {\n              private final ByteBufferWrapper buf \u003d currentBlockBuffer;\n              private final String localKey \u003d key;\n              private final String localUploadId \u003d uploadId;\n              private final int blockId \u003d currentBlockId;\n\n              @Override\n              public PartETag call() throws Exception {\n                if (LOG.isDebugEnabled()) {\n                  LOG.debug(\"{} is uploading a part.\",\n                      Thread.currentThread().getName());\n                }\n                PartETag partETag \u003d (store).uploadPart(\n                    new ByteBufferInputStream(this.buf.getByteBuffer()),\n                    this.localKey, this.localUploadId,\n                    this.blockId + 1, this.buf.getByteBuffer().remaining());\n                BufferPool.getInstance().returnBuffer(this.buf);\n                return partETag;\n              }\n            });\n    this.etagList.add(partETagListenableFuture);\n    try {\n      this.currentBlockBuffer \u003d\n          BufferPool.getInstance().getBuffer((int) this.blockSize);\n    } catch (IOException e) {\n      String errMsg \u003d String.format(\"Getting a buffer [size:%d] from \"\n          + \"the buffer pool failed.\", this.blockSize);\n      throw new IOException(errMsg, e);\n    }\n    this.currentBlockId++;\n    if (null !\u003d this.digest) {\n      this.digest.reset();\n      this.currentBlockOutputStream \u003d new DigestOutputStream(\n          new ByteBufferOutputStream(this.currentBlockBuffer.getByteBuffer()),\n          this.digest);\n    } else {\n      this.currentBlockOutputStream \u003d\n          new ByteBufferOutputStream(this.currentBlockBuffer.getByteBuffer());\n    }\n  }",
+      "path": "hadoop-cloud-storage-project/hadoop-cos/src/main/java/org/apache/hadoop/fs/cosn/CosNOutputStream.java"
+    }
+  }
+}

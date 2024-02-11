@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CosmosDBDocumentStoreWriter.java",
+  "functionName": "createCollection",
+  "functionId": "createCollection___collectionName-String(modifiers-final)",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-documentstore/src/main/java/org/apache/hadoop/yarn/server/timelineservice/documentstore/writer/cosmosdb/CosmosDBDocumentStoreWriter.java",
+  "functionStartLine": 136,
+  "functionEndLine": 163,
+  "numCommitsSeen": 3,
+  "timeTaken": 959,
+  "changeHistory": [
+    "ccaa99c9235e0c6922e56f93254583eca49a12e1",
+    "f235a942d5b7cab86f0cb4f5ba285f07cd939a40"
+  ],
+  "changeHistoryShort": {
+    "ccaa99c9235e0c6922e56f93254583eca49a12e1": "Ybodychange",
+    "f235a942d5b7cab86f0cb4f5ba285f07cd939a40": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ccaa99c9235e0c6922e56f93254583eca49a12e1": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16381. The JSON License is included in binary tarball via azure-documentdb:1.16.2. Contributed by Sushil Ks.\n",
+      "commitDate": "10/07/19 9:49 PM",
+      "commitName": "ccaa99c9235e0c6922e56f93254583eca49a12e1",
+      "commitAuthor": "Akira Ajisaka",
+      "commitDateOld": "12/04/19 6:28 PM",
+      "commitNameOld": "1943db557124439f9f41c18a618455ccf4c3e6cc",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 89.14,
+      "commitsBetweenForRepo": 592,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,28 @@\n   public void createCollection(final String collectionName) {\n     LOG.info(\"Creating Timeline Collection : {} for Database : {}\",\n         collectionName, databaseName);\n-    try {\n-      client.readCollection(String.format(COLLECTION_LINK, databaseName,\n-          collectionName), new RequestOptions());\n-      LOG.info(\"Collection {} already exists.\", collectionName);\n-    } catch (DocumentClientException docExceptionOnRead) {\n-      if (docExceptionOnRead.getStatusCode() \u003d\u003d 404) {\n-        DocumentCollection collection \u003d new DocumentCollection();\n-        collection.setId(collectionName);\n-        LOG.info(\"Creating collection {} under Database {}\",\n-            collectionName, databaseName);\n-        try {\n-          client.createCollection(\n-              String.format(DATABASE_LINK, databaseName),\n-              collection, new RequestOptions());\n-        } catch (DocumentClientException docExceptionOnCreate) {\n-          LOG.error(\"Unable to create Collection : {} under Database : {}\",\n-              collectionName, databaseName, docExceptionOnCreate);\n-        }\n-      } else {\n-        LOG.error(\"Error while reading Collection : {} under Database : {}\",\n-            collectionName, databaseName, docExceptionOnRead);\n-      }\n-    }\n+    client.queryCollections(String.format(DATABASE_LINK, databaseName),\n+        new SqlQuerySpec(QUERY_COLLECTION_IF_EXISTS,\n+            new SqlParameterCollection(\n+                new SqlParameter(ID, collectionName))), null)\n+        .single() // there should be single page of result\n+        .flatMap((Func1\u003cFeedResponse\u003cDocumentCollection\u003e, Observable\u003c?\u003e\u003e)\n+            page -\u003e {\n+            if (page.getResults().isEmpty()) {\n+              // if there is no matching collection create one.\n+              DocumentCollection collection \u003d new DocumentCollection();\n+              collection.setId(collectionName);\n+              LOG.info(\"Creating collection {}\", collectionName);\n+              return client.createCollection(\n+                  String.format(DATABASE_LINK, databaseName),\n+                  collection, null);\n+            } else {\n+              // collection already exists, nothing else to be done.\n+              LOG.info(\"Collection {} already exists.\", collectionName);\n+              return Observable.empty();\n+            }\n+          })\n+        .doOnError(throwable -\u003e LOG.error(\"Unable to create collection : {}\",\n+            collectionName, throwable))\n+        .toCompletable().await();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void createCollection(final String collectionName) {\n    LOG.info(\"Creating Timeline Collection : {} for Database : {}\",\n        collectionName, databaseName);\n    client.queryCollections(String.format(DATABASE_LINK, databaseName),\n        new SqlQuerySpec(QUERY_COLLECTION_IF_EXISTS,\n            new SqlParameterCollection(\n                new SqlParameter(ID, collectionName))), null)\n        .single() // there should be single page of result\n        .flatMap((Func1\u003cFeedResponse\u003cDocumentCollection\u003e, Observable\u003c?\u003e\u003e)\n            page -\u003e {\n            if (page.getResults().isEmpty()) {\n              // if there is no matching collection create one.\n              DocumentCollection collection \u003d new DocumentCollection();\n              collection.setId(collectionName);\n              LOG.info(\"Creating collection {}\", collectionName);\n              return client.createCollection(\n                  String.format(DATABASE_LINK, databaseName),\n                  collection, null);\n            } else {\n              // collection already exists, nothing else to be done.\n              LOG.info(\"Collection {} already exists.\", collectionName);\n              return Observable.empty();\n            }\n          })\n        .doOnError(throwable -\u003e LOG.error(\"Unable to create collection : {}\",\n            collectionName, throwable))\n        .toCompletable().await();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-documentstore/src/main/java/org/apache/hadoop/yarn/server/timelineservice/documentstore/writer/cosmosdb/CosmosDBDocumentStoreWriter.java",
+      "extendedDetails": {}
+    },
+    "f235a942d5b7cab86f0cb4f5ba285f07cd939a40": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-9016 DocumentStore as a backend for ATSv2. Contributed by Sushil Ks.\n",
+      "commitDate": "13/03/19 4:45 PM",
+      "commitName": "f235a942d5b7cab86f0cb4f5ba285f07cd939a40",
+      "commitAuthor": "Vrushali C",
+      "diff": "@@ -0,0 +1,27 @@\n+  public void createCollection(final String collectionName) {\n+    LOG.info(\"Creating Timeline Collection : {} for Database : {}\",\n+        collectionName, databaseName);\n+    try {\n+      client.readCollection(String.format(COLLECTION_LINK, databaseName,\n+          collectionName), new RequestOptions());\n+      LOG.info(\"Collection {} already exists.\", collectionName);\n+    } catch (DocumentClientException docExceptionOnRead) {\n+      if (docExceptionOnRead.getStatusCode() \u003d\u003d 404) {\n+        DocumentCollection collection \u003d new DocumentCollection();\n+        collection.setId(collectionName);\n+        LOG.info(\"Creating collection {} under Database {}\",\n+            collectionName, databaseName);\n+        try {\n+          client.createCollection(\n+              String.format(DATABASE_LINK, databaseName),\n+              collection, new RequestOptions());\n+        } catch (DocumentClientException docExceptionOnCreate) {\n+          LOG.error(\"Unable to create Collection : {} under Database : {}\",\n+              collectionName, databaseName, docExceptionOnCreate);\n+        }\n+      } else {\n+        LOG.error(\"Error while reading Collection : {} under Database : {}\",\n+            collectionName, databaseName, docExceptionOnRead);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void createCollection(final String collectionName) {\n    LOG.info(\"Creating Timeline Collection : {} for Database : {}\",\n        collectionName, databaseName);\n    try {\n      client.readCollection(String.format(COLLECTION_LINK, databaseName,\n          collectionName), new RequestOptions());\n      LOG.info(\"Collection {} already exists.\", collectionName);\n    } catch (DocumentClientException docExceptionOnRead) {\n      if (docExceptionOnRead.getStatusCode() \u003d\u003d 404) {\n        DocumentCollection collection \u003d new DocumentCollection();\n        collection.setId(collectionName);\n        LOG.info(\"Creating collection {} under Database {}\",\n            collectionName, databaseName);\n        try {\n          client.createCollection(\n              String.format(DATABASE_LINK, databaseName),\n              collection, new RequestOptions());\n        } catch (DocumentClientException docExceptionOnCreate) {\n          LOG.error(\"Unable to create Collection : {} under Database : {}\",\n              collectionName, databaseName, docExceptionOnCreate);\n        }\n      } else {\n        LOG.error(\"Error while reading Collection : {} under Database : {}\",\n            collectionName, databaseName, docExceptionOnRead);\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-documentstore/src/main/java/org/apache/hadoop/yarn/server/timelineservice/documentstore/writer/cosmosdb/CosmosDBDocumentStoreWriter.java"
+    }
+  }
+}

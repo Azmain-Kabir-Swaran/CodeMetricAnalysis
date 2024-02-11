@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CacheReplicationMonitor.java",
+  "functionName": "waitForRescanIfNeeded",
+  "functionId": "waitForRescanIfNeeded",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+  "functionStartLine": 220,
+  "functionEndLine": 242,
+  "numCommitsSeen": 28,
+  "timeTaken": 2177,
+  "changeHistory": [
+    "44864c68b59a72f27279212c1316adec37e5209a",
+    "d85c017d0488930d806f267141057fc73e68c728",
+    "991c453ca3ac141a3f286f74af8401f83c38b230"
+  ],
+  "changeHistoryShort": {
+    "44864c68b59a72f27279212c1316adec37e5209a": "Ybodychange",
+    "d85c017d0488930d806f267141057fc73e68c728": "Ybodychange",
+    "991c453ca3ac141a3f286f74af8401f83c38b230": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "44864c68b59a72f27279212c1316adec37e5209a": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6783. Fix HDFS CacheReplicationMonitor rescan logic. Contributed by Yi Liu and Colin Patrick McCabe.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1617872 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "13/08/14 9:20 PM",
+      "commitName": "44864c68b59a72f27279212c1316adec37e5209a",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "commitDateOld": "03/07/14 10:13 AM",
+      "commitNameOld": "93e23a99157c30b51752fc49748c3c210745a187",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 41.46,
+      "commitsBetweenForRepo": 299,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,23 @@\n   public void waitForRescanIfNeeded() {\n     Preconditions.checkArgument(!namesystem.hasWriteLock(),\n         \"Must not hold the FSN write lock when waiting for a rescan.\");\n     Preconditions.checkArgument(lock.isHeldByCurrentThread(),\n         \"Must hold the CRM lock when waiting for a rescan.\");\n-    if (!needsRescan) {\n+    if (neededScanCount \u003c\u003d completedScanCount) {\n       return;\n     }\n     // If no scan is already ongoing, mark the CRM as dirty and kick\n-    if (!isScanning) {\n+    if (curScanCount \u003c 0) {\n       doRescan.signal();\n     }\n     // Wait until the scan finishes and the count advances\n-    final long startCount \u003d scanCount;\n-    while ((!shutdown) \u0026\u0026 (startCount \u003e\u003d scanCount)) {\n+    while ((!shutdown) \u0026\u0026 (completedScanCount \u003c neededScanCount)) {\n       try {\n         scanFinished.await();\n       } catch (InterruptedException e) {\n         LOG.warn(\"Interrupted while waiting for CacheReplicationMonitor\"\n             + \" rescan\", e);\n         break;\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void waitForRescanIfNeeded() {\n    Preconditions.checkArgument(!namesystem.hasWriteLock(),\n        \"Must not hold the FSN write lock when waiting for a rescan.\");\n    Preconditions.checkArgument(lock.isHeldByCurrentThread(),\n        \"Must hold the CRM lock when waiting for a rescan.\");\n    if (neededScanCount \u003c\u003d completedScanCount) {\n      return;\n    }\n    // If no scan is already ongoing, mark the CRM as dirty and kick\n    if (curScanCount \u003c 0) {\n      doRescan.signal();\n    }\n    // Wait until the scan finishes and the count advances\n    while ((!shutdown) \u0026\u0026 (completedScanCount \u003c neededScanCount)) {\n      try {\n        scanFinished.await();\n      } catch (InterruptedException e) {\n        LOG.warn(\"Interrupted while waiting for CacheReplicationMonitor\"\n            + \" rescan\", e);\n        break;\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+      "extendedDetails": {}
+    },
+    "d85c017d0488930d806f267141057fc73e68c728": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-5651. Remove dfs.namenode.caching.enabled and improve CRM locking. Contributed by Colin Patrick McCabe.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1555002 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/01/14 6:45 PM",
+      "commitName": "d85c017d0488930d806f267141057fc73e68c728",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "31/12/13 4:01 PM",
+      "commitNameOld": "07e4fb1455abc33584fc666ef745abe256ebd7d1",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 2.11,
+      "commitsBetweenForRepo": 8,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,11 +1,24 @@\n   public void waitForRescanIfNeeded() {\n-    lock.lock();\n-    try {\n-      if (!needsRescan) {\n-        return;\n-      }\n-    } finally {\n-      lock.unlock();\n+    Preconditions.checkArgument(!namesystem.hasWriteLock(),\n+        \"Must not hold the FSN write lock when waiting for a rescan.\");\n+    Preconditions.checkArgument(lock.isHeldByCurrentThread(),\n+        \"Must hold the CRM lock when waiting for a rescan.\");\n+    if (!needsRescan) {\n+      return;\n     }\n-    waitForRescan();\n+    // If no scan is already ongoing, mark the CRM as dirty and kick\n+    if (!isScanning) {\n+      doRescan.signal();\n+    }\n+    // Wait until the scan finishes and the count advances\n+    final long startCount \u003d scanCount;\n+    while ((!shutdown) \u0026\u0026 (startCount \u003e\u003d scanCount)) {\n+      try {\n+        scanFinished.await();\n+      } catch (InterruptedException e) {\n+        LOG.warn(\"Interrupted while waiting for CacheReplicationMonitor\"\n+            + \" rescan\", e);\n+        break;\n+      }\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void waitForRescanIfNeeded() {\n    Preconditions.checkArgument(!namesystem.hasWriteLock(),\n        \"Must not hold the FSN write lock when waiting for a rescan.\");\n    Preconditions.checkArgument(lock.isHeldByCurrentThread(),\n        \"Must hold the CRM lock when waiting for a rescan.\");\n    if (!needsRescan) {\n      return;\n    }\n    // If no scan is already ongoing, mark the CRM as dirty and kick\n    if (!isScanning) {\n      doRescan.signal();\n    }\n    // Wait until the scan finishes and the count advances\n    final long startCount \u003d scanCount;\n    while ((!shutdown) \u0026\u0026 (startCount \u003e\u003d scanCount)) {\n      try {\n        scanFinished.await();\n      } catch (InterruptedException e) {\n        LOG.warn(\"Interrupted while waiting for CacheReplicationMonitor\"\n            + \" rescan\", e);\n        break;\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java",
+      "extendedDetails": {}
+    },
+    "991c453ca3ac141a3f286f74af8401f83c38b230": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-5431. Support cachepool-based limit management in path-based caching. (awang via cmccabe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1551651 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/12/13 10:47 AM",
+      "commitName": "991c453ca3ac141a3f286f74af8401f83c38b230",
+      "commitAuthor": "Colin McCabe",
+      "diff": "@@ -0,0 +1,11 @@\n+  public void waitForRescanIfNeeded() {\n+    lock.lock();\n+    try {\n+      if (!needsRescan) {\n+        return;\n+      }\n+    } finally {\n+      lock.unlock();\n+    }\n+    waitForRescan();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void waitForRescanIfNeeded() {\n    lock.lock();\n    try {\n      if (!needsRescan) {\n        return;\n      }\n    } finally {\n      lock.unlock();\n    }\n    waitForRescan();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/CacheReplicationMonitor.java"
+    }
+  }
+}

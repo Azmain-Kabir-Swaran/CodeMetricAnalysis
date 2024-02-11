@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DirectoryStagingCommitter.java",
+  "functionName": "setupJob",
+  "functionId": "setupJob___context-JobContext",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+  "functionStartLine": 66,
+  "functionEndLine": 95,
+  "numCommitsSeen": 5,
+  "timeTaken": 2437,
+  "changeHistory": [
+    "6574f27fa348542411bff888b184cd7ce34e5d9e",
+    "6a3433bffdbdefc5aa66705085bcf6fa089721b2",
+    "5a0babf76550f63dad4c17173c4da2bf335c6532",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": "Ybodychange",
+    "6a3433bffdbdefc5aa66705085bcf6fa089721b2": "Ybodychange",
+    "5a0babf76550f63dad4c17173c4da2bf335c6532": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16570. S3A committers encounter scale issues.\n\nContributed by Steve Loughran.\n\nThis addresses two scale issues which has surfaced in large scale benchmarks\nof the S3A Committers.\n\n* Thread pools are not cleaned up.\n  This now happens, with tests.\n\n* OOM on job commit for jobs with many thousands of tasks,\n  each generating tens of (very large) files.\n\nInstead of loading all pending commits into memory as a single list, the list\nof files to load is the sole list which is passed around; .pendingset files are\nloaded and processed in isolation -and reloaded if necessary for any\nabort/rollback operation.\n\nThe parallel commit/abort/revert operations now work at the .pendingset level,\nrather than that of individual pending commit files. The existing parallelized\nTasks API is still used to commit those files, but with a null thread pool, so\nas to serialize the operations.\n\nChange-Id: I5c8240cd31800eaa83d112358770ca0eb2bca797\n",
+      "commitDate": "04/10/19 10:54 AM",
+      "commitName": "6574f27fa348542411bff888b184cd7ce34e5d9e",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "11/07/19 10:15 AM",
+      "commitNameOld": "6a3433bffdbdefc5aa66705085bcf6fa089721b2",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 85.03,
+      "commitsBetweenForRepo": 766,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,30 @@\n   public void setupJob(JobContext context) throws IOException {\n-    super.setupJob(context);\n     Path outputPath \u003d getOutputPath();\n     FileSystem fs \u003d getDestFS();\n     ConflictResolution conflictResolution \u003d getConflictResolutionMode(\n         context, fs.getConf());\n     LOG.info(\"Conflict Resolution mode is {}\", conflictResolution);\n     try {\n       final FileStatus status \u003d fs.getFileStatus(outputPath);\n \n       // if it is not a directory, fail fast for all conflict options.\n       if (!status.isDirectory()) {\n         throw new PathExistsException(outputPath.toString(),\n             \"output path is not a directory: \"\n                 + InternalCommitterConstants.E_DEST_EXISTS);\n       }\n       switch(conflictResolution) {\n       case FAIL:\n         throw failDestinationExists(outputPath,\n             \"Setting job as \" + getRole());\n       case APPEND:\n       case REPLACE:\n         LOG.debug(\"Destination directory exists; conflict policy permits this\");\n       }\n     } catch (FileNotFoundException ignored) {\n       // there is no destination path, hence, no conflict.\n-      // make the parent directory, which also triggers a recursive directory\n-      // creation operation\n-      fs.mkdirs(outputPath);\n     }\n+    // make the parent directory, which also triggers a recursive directory\n+    // creation operation\n+    super.setupJob(context);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void setupJob(JobContext context) throws IOException {\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    ConflictResolution conflictResolution \u003d getConflictResolutionMode(\n        context, fs.getConf());\n    LOG.info(\"Conflict Resolution mode is {}\", conflictResolution);\n    try {\n      final FileStatus status \u003d fs.getFileStatus(outputPath);\n\n      // if it is not a directory, fail fast for all conflict options.\n      if (!status.isDirectory()) {\n        throw new PathExistsException(outputPath.toString(),\n            \"output path is not a directory: \"\n                + InternalCommitterConstants.E_DEST_EXISTS);\n      }\n      switch(conflictResolution) {\n      case FAIL:\n        throw failDestinationExists(outputPath,\n            \"Setting job as \" + getRole());\n      case APPEND:\n      case REPLACE:\n        LOG.debug(\"Destination directory exists; conflict policy permits this\");\n      }\n    } catch (FileNotFoundException ignored) {\n      // there is no destination path, hence, no conflict.\n    }\n    // make the parent directory, which also triggers a recursive directory\n    // creation operation\n    super.setupJob(context);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+      "extendedDetails": {}
+    },
+    "6a3433bffdbdefc5aa66705085bcf6fa089721b2": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16357. TeraSort Job failing on S3 DirectoryStagingCommitter: destination path exists.\n\nContributed by Steve Loughran.\n\nThis patch\n\n* changes the default for the staging committer to append, as we get for the classic FileOutputFormat committer\n* adds a check for the dest path being a file not a dir\n* adds tests for this\n* Changes AbstractCommitTerasortIT. to not use the simple parser, so fails if the file is present.\n\nChange-Id: Id53742958ed1cf321ff96c9063505d64f3254f53\n",
+      "commitDate": "11/07/19 10:15 AM",
+      "commitName": "6a3433bffdbdefc5aa66705085bcf6fa089721b2",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "30/08/18 6:49 AM",
+      "commitNameOld": "5a0babf76550f63dad4c17173c4da2bf335c6532",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 315.14,
+      "commitsBetweenForRepo": 2404,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,11 +1,31 @@\n   public void setupJob(JobContext context) throws IOException {\n     super.setupJob(context);\n     Path outputPath \u003d getOutputPath();\n     FileSystem fs \u003d getDestFS();\n-    if (getConflictResolutionMode(context, fs.getConf())\n-        \u003d\u003d ConflictResolution.FAIL\n-        \u0026\u0026 fs.exists(outputPath)) {\n-      throw failDestinationExists(outputPath,\n-          \"Setting job as \" + getRole());\n+    ConflictResolution conflictResolution \u003d getConflictResolutionMode(\n+        context, fs.getConf());\n+    LOG.info(\"Conflict Resolution mode is {}\", conflictResolution);\n+    try {\n+      final FileStatus status \u003d fs.getFileStatus(outputPath);\n+\n+      // if it is not a directory, fail fast for all conflict options.\n+      if (!status.isDirectory()) {\n+        throw new PathExistsException(outputPath.toString(),\n+            \"output path is not a directory: \"\n+                + InternalCommitterConstants.E_DEST_EXISTS);\n+      }\n+      switch(conflictResolution) {\n+      case FAIL:\n+        throw failDestinationExists(outputPath,\n+            \"Setting job as \" + getRole());\n+      case APPEND:\n+      case REPLACE:\n+        LOG.debug(\"Destination directory exists; conflict policy permits this\");\n+      }\n+    } catch (FileNotFoundException ignored) {\n+      // there is no destination path, hence, no conflict.\n+      // make the parent directory, which also triggers a recursive directory\n+      // creation operation\n+      fs.mkdirs(outputPath);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void setupJob(JobContext context) throws IOException {\n    super.setupJob(context);\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    ConflictResolution conflictResolution \u003d getConflictResolutionMode(\n        context, fs.getConf());\n    LOG.info(\"Conflict Resolution mode is {}\", conflictResolution);\n    try {\n      final FileStatus status \u003d fs.getFileStatus(outputPath);\n\n      // if it is not a directory, fail fast for all conflict options.\n      if (!status.isDirectory()) {\n        throw new PathExistsException(outputPath.toString(),\n            \"output path is not a directory: \"\n                + InternalCommitterConstants.E_DEST_EXISTS);\n      }\n      switch(conflictResolution) {\n      case FAIL:\n        throw failDestinationExists(outputPath,\n            \"Setting job as \" + getRole());\n      case APPEND:\n      case REPLACE:\n        LOG.debug(\"Destination directory exists; conflict policy permits this\");\n      }\n    } catch (FileNotFoundException ignored) {\n      // there is no destination path, hence, no conflict.\n      // make the parent directory, which also triggers a recursive directory\n      // creation operation\n      fs.mkdirs(outputPath);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+      "extendedDetails": {}
+    },
+    "5a0babf76550f63dad4c17173c4da2bf335c6532": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15107. Stabilize/tune S3A committers; review correctness \u0026 docs.\nContributed by Steve Loughran.\n",
+      "commitDate": "30/08/18 6:49 AM",
+      "commitName": "5a0babf76550f63dad4c17173c4da2bf335c6532",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "17/05/18 11:08 AM",
+      "commitNameOld": "cc3600aabdca6e8b14c9fe02fe54073bf4ef7685",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 104.82,
+      "commitsBetweenForRepo": 775,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,11 @@\n   public void setupJob(JobContext context) throws IOException {\n     super.setupJob(context);\n     Path outputPath \u003d getOutputPath();\n     FileSystem fs \u003d getDestFS();\n     if (getConflictResolutionMode(context, fs.getConf())\n         \u003d\u003d ConflictResolution.FAIL\n         \u0026\u0026 fs.exists(outputPath)) {\n-      LOG.debug(\"Failing commit by task attempt {} to write\"\n-              + \" to existing output path {}\",\n-          context.getJobID(), getOutputPath());\n-      throw new PathExistsException(outputPath.toString(), E_DEST_EXISTS);\n+      throw failDestinationExists(outputPath,\n+          \"Setting job as \" + getRole());\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void setupJob(JobContext context) throws IOException {\n    super.setupJob(context);\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    if (getConflictResolutionMode(context, fs.getConf())\n        \u003d\u003d ConflictResolution.FAIL\n        \u0026\u0026 fs.exists(outputPath)) {\n      throw failDestinationExists(outputPath,\n          \"Setting job as \" + getRole());\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,13 @@\n+  public void setupJob(JobContext context) throws IOException {\n+    super.setupJob(context);\n+    Path outputPath \u003d getOutputPath();\n+    FileSystem fs \u003d getDestFS();\n+    if (getConflictResolutionMode(context, fs.getConf())\n+        \u003d\u003d ConflictResolution.FAIL\n+        \u0026\u0026 fs.exists(outputPath)) {\n+      LOG.debug(\"Failing commit by task attempt {} to write\"\n+              + \" to existing output path {}\",\n+          context.getJobID(), getOutputPath());\n+      throw new PathExistsException(outputPath.toString(), E_DEST_EXISTS);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void setupJob(JobContext context) throws IOException {\n    super.setupJob(context);\n    Path outputPath \u003d getOutputPath();\n    FileSystem fs \u003d getDestFS();\n    if (getConflictResolutionMode(context, fs.getConf())\n        \u003d\u003d ConflictResolution.FAIL\n        \u0026\u0026 fs.exists(outputPath)) {\n      LOG.debug(\"Failing commit by task attempt {} to write\"\n              + \" to existing output path {}\",\n          context.getJobID(), getOutputPath());\n      throw new PathExistsException(outputPath.toString(), E_DEST_EXISTS);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/DirectoryStagingCommitter.java"
+    }
+  }
+}

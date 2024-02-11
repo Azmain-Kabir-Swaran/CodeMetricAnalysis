@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FlowRunCoprocessor.java",
+  "functionName": "prePut",
+  "functionId": "prePut___e-ObserverContext__RegionCoprocessorEnvironment____put-Put__edit-WALEdit__durability-Durability",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/hadoop-yarn-server-timelineservice-hbase-server/hadoop-yarn-server-timelineservice-hbase-server-2/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/flow/FlowRunCoprocessor.java",
+  "functionStartLine": 102,
+  "functionEndLine": 138,
+  "numCommitsSeen": 3,
+  "timeTaken": 745,
+  "changeHistory": [
+    "55ba49dd071b66e72c47a1c41e88b9a5feddf53b"
+  ],
+  "changeHistoryShort": {
+    "55ba49dd071b66e72c47a1c41e88b9a5feddf53b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "55ba49dd071b66e72c47a1c41e88b9a5feddf53b": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-7346. Add a profile to allow optional compilation for ATSv2 with HBase-2.0. Contributed by Haibo Chen and Rohith.\n",
+      "commitDate": "05/03/18 10:25 PM",
+      "commitName": "55ba49dd071b66e72c47a1c41e88b9a5feddf53b",
+      "commitAuthor": "Rohith Sharma K S",
+      "diff": "@@ -0,0 +1,37 @@\n+  public void prePut(ObserverContext\u003cRegionCoprocessorEnvironment\u003e e, Put put,\n+                     WALEdit edit, Durability durability) throws IOException {\n+    Map\u003cString, byte[]\u003e attributes \u003d put.getAttributesMap();\n+    // Assumption is that all the cells in a put are the same operation.\n+    List\u003cTag\u003e tags \u003d new ArrayList\u003c\u003e();\n+    if ((attributes !\u003d null) \u0026\u0026 (attributes.size() \u003e 0)) {\n+      for (Map.Entry\u003cString, byte[]\u003e attribute : attributes.entrySet()) {\n+        Tag t \u003d HBaseTimelineServerUtils.getTagFromAttribute(attribute);\n+        if (t !\u003d null) {\n+          tags.add(t);\n+        }\n+      }\n+      byte[] tagByteArray \u003d\n+          HBaseTimelineServerUtils.convertTagListToByteArray(tags);\n+      NavigableMap\u003cbyte[], List\u003cCell\u003e\u003e newFamilyMap \u003d new TreeMap\u003c\u003e(\n+          Bytes.BYTES_COMPARATOR);\n+      for (Map.Entry\u003cbyte[], List\u003cCell\u003e\u003e entry : put.getFamilyCellMap()\n+          .entrySet()) {\n+        List\u003cCell\u003e newCells \u003d new ArrayList\u003c\u003e(entry.getValue().size());\n+        for (Cell cell : entry.getValue()) {\n+          // for each cell in the put add the tags\n+          // Assumption is that all the cells in\n+          // one put are the same operation\n+          // also, get a unique cell timestamp for non-metric cells\n+          // this way we don\u0027t inadvertently overwrite cell versions\n+          long cellTimestamp \u003d getCellTimestamp(cell.getTimestamp(), tags);\n+          newCells.add(CellUtil.createCell(CellUtil.cloneRow(cell),\n+              CellUtil.cloneFamily(cell), CellUtil.cloneQualifier(cell),\n+              cellTimestamp, KeyValue.Type.Put, CellUtil.cloneValue(cell),\n+              tagByteArray));\n+        }\n+        newFamilyMap.put(entry.getKey(), newCells);\n+      } // for each entry\n+      // Update the family map for the Put\n+      put.setFamilyCellMap(newFamilyMap);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void prePut(ObserverContext\u003cRegionCoprocessorEnvironment\u003e e, Put put,\n                     WALEdit edit, Durability durability) throws IOException {\n    Map\u003cString, byte[]\u003e attributes \u003d put.getAttributesMap();\n    // Assumption is that all the cells in a put are the same operation.\n    List\u003cTag\u003e tags \u003d new ArrayList\u003c\u003e();\n    if ((attributes !\u003d null) \u0026\u0026 (attributes.size() \u003e 0)) {\n      for (Map.Entry\u003cString, byte[]\u003e attribute : attributes.entrySet()) {\n        Tag t \u003d HBaseTimelineServerUtils.getTagFromAttribute(attribute);\n        if (t !\u003d null) {\n          tags.add(t);\n        }\n      }\n      byte[] tagByteArray \u003d\n          HBaseTimelineServerUtils.convertTagListToByteArray(tags);\n      NavigableMap\u003cbyte[], List\u003cCell\u003e\u003e newFamilyMap \u003d new TreeMap\u003c\u003e(\n          Bytes.BYTES_COMPARATOR);\n      for (Map.Entry\u003cbyte[], List\u003cCell\u003e\u003e entry : put.getFamilyCellMap()\n          .entrySet()) {\n        List\u003cCell\u003e newCells \u003d new ArrayList\u003c\u003e(entry.getValue().size());\n        for (Cell cell : entry.getValue()) {\n          // for each cell in the put add the tags\n          // Assumption is that all the cells in\n          // one put are the same operation\n          // also, get a unique cell timestamp for non-metric cells\n          // this way we don\u0027t inadvertently overwrite cell versions\n          long cellTimestamp \u003d getCellTimestamp(cell.getTimestamp(), tags);\n          newCells.add(CellUtil.createCell(CellUtil.cloneRow(cell),\n              CellUtil.cloneFamily(cell), CellUtil.cloneQualifier(cell),\n              cellTimestamp, KeyValue.Type.Put, CellUtil.cloneValue(cell),\n              tagByteArray));\n        }\n        newFamilyMap.put(entry.getKey(), newCells);\n      } // for each entry\n      // Update the family map for the Put\n      put.setFamilyCellMap(newFamilyMap);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/hadoop-yarn-server-timelineservice-hbase-server/hadoop-yarn-server-timelineservice-hbase-server-2/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/flow/FlowRunCoprocessor.java"
+    }
+  }
+}

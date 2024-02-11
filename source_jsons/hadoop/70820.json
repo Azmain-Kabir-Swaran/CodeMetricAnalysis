@@ -1,0 +1,292 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RemoteSASKeyGeneratorImpl.java",
+  "functionName": "initialize",
+  "functionId": "initialize___conf-Configuration",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+  "functionStartLine": 130,
+  "functionEndLine": 167,
+  "numCommitsSeen": 15,
+  "timeTaken": 4658,
+  "changeHistory": [
+    "2843c688bcc21c65eb3538ffb3caeaffe440eda8",
+    "b0e78ae085928c82ae63a05a29a628c2e289c0fc",
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329",
+    "8b5f2c372e70999f3ee0a0bd685a494e06bc3652",
+    "8e15e240597f821968e14893eabfea39815de207",
+    "52d7d5aa1a303cf70519a61487641211f4267c6f",
+    "6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f",
+    "e92a77099b91620cee84513cc879089907468075"
+  ],
+  "changeHistoryShort": {
+    "2843c688bcc21c65eb3538ffb3caeaffe440eda8": "Ybodychange",
+    "b0e78ae085928c82ae63a05a29a628c2e289c0fc": "Ybodychange",
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329": "Ybodychange",
+    "8b5f2c372e70999f3ee0a0bd685a494e06bc3652": "Ybodychange",
+    "8e15e240597f821968e14893eabfea39815de207": "Ymultichange(Yparameterchange,Yreturntypechange,Yexceptionschange,Ybodychange)",
+    "52d7d5aa1a303cf70519a61487641211f4267c6f": "Ymultichange(Yparameterchange,Ybodychange)",
+    "6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f": "Ymultichange(Yparameterchange,Ybodychange)",
+    "e92a77099b91620cee84513cc879089907468075": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2843c688bcc21c65eb3538ffb3caeaffe440eda8": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14642. wasb: add support for caching Authorization and SASKeys. Contributed by Sivaguru Sankaridurg.\n",
+      "commitDate": "19/07/17 12:13 AM",
+      "commitName": "2843c688bcc21c65eb3538ffb3caeaffe440eda8",
+      "commitAuthor": "Jitendra Pandey",
+      "commitDateOld": "17/07/17 2:27 AM",
+      "commitNameOld": "b0e78ae085928c82ae63a05a29a628c2e289c0fc",
+      "commitAuthorOld": "Jitendra Pandey",
+      "daysBetweenCommits": 1.91,
+      "commitsBetweenForRepo": 9,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,38 @@\n   public void initialize(Configuration conf) throws IOException {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n \n     this.retryPolicy \u003d RetryUtils.getMultipleLinearRandomRetry(conf,\n         SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_ENABLED_KEY, true,\n         SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_KEY,\n         SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_DEFAULT);\n \n     this.isKerberosSupportEnabled \u003d\n         conf.getBoolean(Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n     this.isSpnegoTokenCacheEnabled \u003d\n         conf.getBoolean(Constants.AZURE_ENABLE_SPNEGO_TOKEN_CACHE, true);\n     this.commaSeparatedUrls \u003d conf.getTrimmedStrings(KEY_CRED_SERVICE_URLS);\n     if (this.commaSeparatedUrls \u003d\u003d null || this.commaSeparatedUrls.length \u003c\u003d 0) {\n       throw new IOException(\n           KEY_CRED_SERVICE_URLS + \" config not set\" + \" in configuration.\");\n     }\n     if (isKerberosSupportEnabled \u0026\u0026 UserGroupInformation.isSecurityEnabled()) {\n       this.remoteCallHelper \u003d new SecureWasbRemoteCallHelper(retryPolicy, false,\n           isSpnegoTokenCacheEnabled);\n     } else {\n       this.remoteCallHelper \u003d new WasbRemoteCallHelper(retryPolicy);\n     }\n+\n+    /* Expire the cache entry five minutes before the actual saskey expiry, so that we never encounter a case\n+     * where a stale sas-key-entry is picked up from the cache; which is expired on use.\n+     */\n+    long sasKeyExpiryPeriodInMinutes \u003d getSasKeyExpiryPeriod() * HOURS_IN_DAY * MINUTES_IN_HOUR; // sas-expiry is in days, convert into mins\n+    long cacheEntryDurationInMinutes \u003d\n+        conf.getTimeDuration(SASKEY_CACHEENTRY_EXPIRY_PERIOD, sasKeyExpiryPeriodInMinutes, TimeUnit.MINUTES);\n+    cacheEntryDurationInMinutes \u003d (cacheEntryDurationInMinutes \u003e (sasKeyExpiryPeriodInMinutes - 5))\n+        ? (sasKeyExpiryPeriodInMinutes - 5)\n+        : cacheEntryDurationInMinutes;\n+    this.cache \u003d new CachingAuthorizer\u003c\u003e(cacheEntryDurationInMinutes, \"SASKEY\");\n+    this.cache.init(conf);\n     LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void initialize(Configuration conf) throws IOException {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n\n    this.retryPolicy \u003d RetryUtils.getMultipleLinearRandomRetry(conf,\n        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_ENABLED_KEY, true,\n        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_KEY,\n        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_DEFAULT);\n\n    this.isKerberosSupportEnabled \u003d\n        conf.getBoolean(Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    this.isSpnegoTokenCacheEnabled \u003d\n        conf.getBoolean(Constants.AZURE_ENABLE_SPNEGO_TOKEN_CACHE, true);\n    this.commaSeparatedUrls \u003d conf.getTrimmedStrings(KEY_CRED_SERVICE_URLS);\n    if (this.commaSeparatedUrls \u003d\u003d null || this.commaSeparatedUrls.length \u003c\u003d 0) {\n      throw new IOException(\n          KEY_CRED_SERVICE_URLS + \" config not set\" + \" in configuration.\");\n    }\n    if (isKerberosSupportEnabled \u0026\u0026 UserGroupInformation.isSecurityEnabled()) {\n      this.remoteCallHelper \u003d new SecureWasbRemoteCallHelper(retryPolicy, false,\n          isSpnegoTokenCacheEnabled);\n    } else {\n      this.remoteCallHelper \u003d new WasbRemoteCallHelper(retryPolicy);\n    }\n\n    /* Expire the cache entry five minutes before the actual saskey expiry, so that we never encounter a case\n     * where a stale sas-key-entry is picked up from the cache; which is expired on use.\n     */\n    long sasKeyExpiryPeriodInMinutes \u003d getSasKeyExpiryPeriod() * HOURS_IN_DAY * MINUTES_IN_HOUR; // sas-expiry is in days, convert into mins\n    long cacheEntryDurationInMinutes \u003d\n        conf.getTimeDuration(SASKEY_CACHEENTRY_EXPIRY_PERIOD, sasKeyExpiryPeriodInMinutes, TimeUnit.MINUTES);\n    cacheEntryDurationInMinutes \u003d (cacheEntryDurationInMinutes \u003e (sasKeyExpiryPeriodInMinutes - 5))\n        ? (sasKeyExpiryPeriodInMinutes - 5)\n        : cacheEntryDurationInMinutes;\n    this.cache \u003d new CachingAuthorizer\u003c\u003e(cacheEntryDurationInMinutes, \"SASKEY\");\n    this.cache.init(conf);\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+      "extendedDetails": {}
+    },
+    "b0e78ae085928c82ae63a05a29a628c2e289c0fc": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14640. Azure: Support affinity for service running on localhost and reuse SPNEGO hadoop.auth cookie for authorization, SASKey and delegation token generation. Contributed by Santhosh G Nayak.\n",
+      "commitDate": "17/07/17 2:27 AM",
+      "commitName": "b0e78ae085928c82ae63a05a29a628c2e289c0fc",
+      "commitAuthor": "Jitendra Pandey",
+      "commitDateOld": "30/06/17 4:53 PM",
+      "commitNameOld": "38996fdcf0987d1da00ce46f8284d8fcdce57329",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 16.4,
+      "commitsBetweenForRepo": 64,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,26 @@\n   public void initialize(Configuration conf) throws IOException {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n \n     this.retryPolicy \u003d RetryUtils.getMultipleLinearRandomRetry(conf,\n         SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_ENABLED_KEY, true,\n         SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_KEY,\n         SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_DEFAULT);\n \n     this.isKerberosSupportEnabled \u003d\n         conf.getBoolean(Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n+    this.isSpnegoTokenCacheEnabled \u003d\n+        conf.getBoolean(Constants.AZURE_ENABLE_SPNEGO_TOKEN_CACHE, true);\n     this.commaSeparatedUrls \u003d conf.getTrimmedStrings(KEY_CRED_SERVICE_URLS);\n     if (this.commaSeparatedUrls \u003d\u003d null || this.commaSeparatedUrls.length \u003c\u003d 0) {\n       throw new IOException(\n           KEY_CRED_SERVICE_URLS + \" config not set\" + \" in configuration.\");\n     }\n     if (isKerberosSupportEnabled \u0026\u0026 UserGroupInformation.isSecurityEnabled()) {\n-      this.remoteCallHelper \u003d new SecureWasbRemoteCallHelper(retryPolicy, false);\n+      this.remoteCallHelper \u003d new SecureWasbRemoteCallHelper(retryPolicy, false,\n+          isSpnegoTokenCacheEnabled);\n     } else {\n       this.remoteCallHelper \u003d new WasbRemoteCallHelper(retryPolicy);\n     }\n     LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void initialize(Configuration conf) throws IOException {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n\n    this.retryPolicy \u003d RetryUtils.getMultipleLinearRandomRetry(conf,\n        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_ENABLED_KEY, true,\n        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_KEY,\n        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_DEFAULT);\n\n    this.isKerberosSupportEnabled \u003d\n        conf.getBoolean(Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    this.isSpnegoTokenCacheEnabled \u003d\n        conf.getBoolean(Constants.AZURE_ENABLE_SPNEGO_TOKEN_CACHE, true);\n    this.commaSeparatedUrls \u003d conf.getTrimmedStrings(KEY_CRED_SERVICE_URLS);\n    if (this.commaSeparatedUrls \u003d\u003d null || this.commaSeparatedUrls.length \u003c\u003d 0) {\n      throw new IOException(\n          KEY_CRED_SERVICE_URLS + \" config not set\" + \" in configuration.\");\n    }\n    if (isKerberosSupportEnabled \u0026\u0026 UserGroupInformation.isSecurityEnabled()) {\n      this.remoteCallHelper \u003d new SecureWasbRemoteCallHelper(retryPolicy, false,\n          isSpnegoTokenCacheEnabled);\n    } else {\n      this.remoteCallHelper \u003d new WasbRemoteCallHelper(retryPolicy);\n    }\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+      "extendedDetails": {}
+    },
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14443. Azure: Support retry and client side failover for authorization, SASKey and delegation token generation. Contributed by Santhosh G Nayak\n",
+      "commitDate": "30/06/17 4:53 PM",
+      "commitName": "38996fdcf0987d1da00ce46f8284d8fcdce57329",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "29/06/17 9:22 AM",
+      "commitNameOld": "b08cc973964b4eb7e7a7445a440b19d3a0f3d4d5",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 1.31,
+      "commitsBetweenForRepo": 11,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,23 @@\n   public void initialize(Configuration conf) throws IOException {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    setDelegationToken();\n-    try {\n-      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n-    } catch (UnknownHostException e) {\n-      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n-      LOG.error(msg, e);\n-      throw new IOException(msg, e);\n-    }\n \n-    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n-      final String msg \u003d \"CredService Url not found in configuration to \"\n-          + \"initialize RemoteSASKeyGenerator\";\n-      LOG.error(msg);\n-      throw new IOException(msg);\n-    }\n+    this.retryPolicy \u003d RetryUtils.getMultipleLinearRandomRetry(conf,\n+        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_ENABLED_KEY, true,\n+        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_KEY,\n+        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_DEFAULT);\n \n-    remoteCallHelper \u003d new WasbRemoteCallHelper();\n-    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n-    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n-        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n+    this.isKerberosSupportEnabled \u003d\n+        conf.getBoolean(Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n+    this.commaSeparatedUrls \u003d conf.getTrimmedStrings(KEY_CRED_SERVICE_URLS);\n+    if (this.commaSeparatedUrls \u003d\u003d null || this.commaSeparatedUrls.length \u003c\u003d 0) {\n+      throw new IOException(\n+          KEY_CRED_SERVICE_URLS + \" config not set\" + \" in configuration.\");\n+    }\n+    if (isKerberosSupportEnabled \u0026\u0026 UserGroupInformation.isSecurityEnabled()) {\n+      this.remoteCallHelper \u003d new SecureWasbRemoteCallHelper(retryPolicy, false);\n+    } else {\n+      this.remoteCallHelper \u003d new WasbRemoteCallHelper(retryPolicy);\n+    }\n     LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void initialize(Configuration conf) throws IOException {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n\n    this.retryPolicy \u003d RetryUtils.getMultipleLinearRandomRetry(conf,\n        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_ENABLED_KEY, true,\n        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_KEY,\n        SAS_KEY_GENERATOR_HTTP_CLIENT_RETRY_POLICY_SPEC_DEFAULT);\n\n    this.isKerberosSupportEnabled \u003d\n        conf.getBoolean(Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    this.commaSeparatedUrls \u003d conf.getTrimmedStrings(KEY_CRED_SERVICE_URLS);\n    if (this.commaSeparatedUrls \u003d\u003d null || this.commaSeparatedUrls.length \u003c\u003d 0) {\n      throw new IOException(\n          KEY_CRED_SERVICE_URLS + \" config not set\" + \" in configuration.\");\n    }\n    if (isKerberosSupportEnabled \u0026\u0026 UserGroupInformation.isSecurityEnabled()) {\n      this.remoteCallHelper \u003d new SecureWasbRemoteCallHelper(retryPolicy, false);\n    } else {\n      this.remoteCallHelper \u003d new WasbRemoteCallHelper(retryPolicy);\n    }\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+      "extendedDetails": {}
+    },
+    "8b5f2c372e70999f3ee0a0bd685a494e06bc3652": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14351. Azure: RemoteWasbAuthorizerImpl and RemoteSASKeyGeneratorImpl should not use Kerberos interactive user cache. Contributed by Santhosh G Nayak\n",
+      "commitDate": "26/04/17 1:47 PM",
+      "commitName": "8b5f2c372e70999f3ee0a0bd685a494e06bc3652",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "20/03/17 4:31 PM",
+      "commitNameOld": "8e15e240597f821968e14893eabfea39815de207",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 36.89,
+      "commitsBetweenForRepo": 211,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,25 @@\n   public void initialize(Configuration conf) throws IOException {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    try {\n-      delegationToken \u003d SecurityUtils.getDelegationTokenFromCredentials();\n-    } catch (IOException e) {\n-      final String msg \u003d \"Error in fetching the WASB delegation token\";\n-      LOG.error(msg, e);\n-      throw new IOException(msg, e);\n-    }\n-\n+    setDelegationToken();\n     try {\n       credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n     } catch (UnknownHostException e) {\n       final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n       LOG.error(msg, e);\n       throw new IOException(msg, e);\n     }\n \n     if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n       final String msg \u003d \"CredService Url not found in configuration to \"\n           + \"initialize RemoteSASKeyGenerator\";\n       LOG.error(msg);\n       throw new IOException(msg);\n     }\n \n     remoteCallHelper \u003d new WasbRemoteCallHelper();\n     this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n     this.isKerberosSupportEnabled \u003d conf.getBoolean(\n         Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n     LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void initialize(Configuration conf) throws IOException {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    setDelegationToken();\n    try {\n      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n    } catch (UnknownHostException e) {\n      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n      LOG.error(msg, e);\n      throw new IOException(msg, e);\n    }\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      final String msg \u003d \"CredService Url not found in configuration to \"\n          + \"initialize RemoteSASKeyGenerator\";\n      LOG.error(msg);\n      throw new IOException(msg);\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+      "extendedDetails": {}
+    },
+    "8e15e240597f821968e14893eabfea39815de207": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-13945. Azure: Add Kerberos and Delegation token support to WASB client. Contributed by Santhosh G Nayak\n\nChange-Id: I39fb0a3b0491bf2160571366939a0502a0045429\n",
+      "commitDate": "20/03/17 4:31 PM",
+      "commitName": "8e15e240597f821968e14893eabfea39815de207",
+      "commitAuthor": "Mingliang Liu",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-13945. Azure: Add Kerberos and Delegation token support to WASB client. Contributed by Santhosh G Nayak\n\nChange-Id: I39fb0a3b0491bf2160571366939a0502a0045429\n",
+          "commitDate": "20/03/17 4:31 PM",
+          "commitName": "8e15e240597f821968e14893eabfea39815de207",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "06/03/17 5:10 PM",
+          "commitNameOld": "52d7d5aa1a303cf70519a61487641211f4267c6f",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 13.93,
+          "commitsBetweenForRepo": 80,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,32 @@\n-  public boolean initialize(Configuration conf, String delegationToken) {\n+  public void initialize(Configuration conf) throws IOException {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n-\n-    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n-      LOG.error(\"Delegation Token not provided for initialization\"\n-          + \" of RemoteSASKeyGenerator\");\n-      return false;\n+    try {\n+      delegationToken \u003d SecurityUtils.getDelegationTokenFromCredentials();\n+    } catch (IOException e) {\n+      final String msg \u003d \"Error in fetching the WASB delegation token\";\n+      LOG.error(msg, e);\n+      throw new IOException(msg, e);\n     }\n \n-    this.delegationToken \u003d delegationToken;\n+    try {\n+      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n+    } catch (UnknownHostException e) {\n+      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n+      LOG.error(msg, e);\n+      throw new IOException(msg, e);\n+    }\n \n     if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n-      LOG.error(\"CredService Url not found in configuration to initialize\"\n-          + \" RemoteSASKeyGenerator\");\n-      return false;\n+      final String msg \u003d \"CredService Url not found in configuration to \"\n+          + \"initialize RemoteSASKeyGenerator\";\n+      LOG.error(msg);\n+      throw new IOException(msg);\n     }\n \n     remoteCallHelper \u003d new WasbRemoteCallHelper();\n-    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n-    return true;\n+    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n+    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n+        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n+    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void initialize(Configuration conf) throws IOException {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    try {\n      delegationToken \u003d SecurityUtils.getDelegationTokenFromCredentials();\n    } catch (IOException e) {\n      final String msg \u003d \"Error in fetching the WASB delegation token\";\n      LOG.error(msg, e);\n      throw new IOException(msg, e);\n    }\n\n    try {\n      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n    } catch (UnknownHostException e) {\n      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n      LOG.error(msg, e);\n      throw new IOException(msg, e);\n    }\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      final String msg \u003d \"CredService Url not found in configuration to \"\n          + \"initialize RemoteSASKeyGenerator\";\n      LOG.error(msg);\n      throw new IOException(msg);\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+          "extendedDetails": {
+            "oldValue": "[conf-Configuration, delegationToken-String]",
+            "newValue": "[conf-Configuration]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-13945. Azure: Add Kerberos and Delegation token support to WASB client. Contributed by Santhosh G Nayak\n\nChange-Id: I39fb0a3b0491bf2160571366939a0502a0045429\n",
+          "commitDate": "20/03/17 4:31 PM",
+          "commitName": "8e15e240597f821968e14893eabfea39815de207",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "06/03/17 5:10 PM",
+          "commitNameOld": "52d7d5aa1a303cf70519a61487641211f4267c6f",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 13.93,
+          "commitsBetweenForRepo": 80,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,32 @@\n-  public boolean initialize(Configuration conf, String delegationToken) {\n+  public void initialize(Configuration conf) throws IOException {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n-\n-    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n-      LOG.error(\"Delegation Token not provided for initialization\"\n-          + \" of RemoteSASKeyGenerator\");\n-      return false;\n+    try {\n+      delegationToken \u003d SecurityUtils.getDelegationTokenFromCredentials();\n+    } catch (IOException e) {\n+      final String msg \u003d \"Error in fetching the WASB delegation token\";\n+      LOG.error(msg, e);\n+      throw new IOException(msg, e);\n     }\n \n-    this.delegationToken \u003d delegationToken;\n+    try {\n+      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n+    } catch (UnknownHostException e) {\n+      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n+      LOG.error(msg, e);\n+      throw new IOException(msg, e);\n+    }\n \n     if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n-      LOG.error(\"CredService Url not found in configuration to initialize\"\n-          + \" RemoteSASKeyGenerator\");\n-      return false;\n+      final String msg \u003d \"CredService Url not found in configuration to \"\n+          + \"initialize RemoteSASKeyGenerator\";\n+      LOG.error(msg);\n+      throw new IOException(msg);\n     }\n \n     remoteCallHelper \u003d new WasbRemoteCallHelper();\n-    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n-    return true;\n+    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n+    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n+        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n+    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void initialize(Configuration conf) throws IOException {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    try {\n      delegationToken \u003d SecurityUtils.getDelegationTokenFromCredentials();\n    } catch (IOException e) {\n      final String msg \u003d \"Error in fetching the WASB delegation token\";\n      LOG.error(msg, e);\n      throw new IOException(msg, e);\n    }\n\n    try {\n      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n    } catch (UnknownHostException e) {\n      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n      LOG.error(msg, e);\n      throw new IOException(msg, e);\n    }\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      final String msg \u003d \"CredService Url not found in configuration to \"\n          + \"initialize RemoteSASKeyGenerator\";\n      LOG.error(msg);\n      throw new IOException(msg);\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+          "extendedDetails": {
+            "oldValue": "boolean",
+            "newValue": "void"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-13945. Azure: Add Kerberos and Delegation token support to WASB client. Contributed by Santhosh G Nayak\n\nChange-Id: I39fb0a3b0491bf2160571366939a0502a0045429\n",
+          "commitDate": "20/03/17 4:31 PM",
+          "commitName": "8e15e240597f821968e14893eabfea39815de207",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "06/03/17 5:10 PM",
+          "commitNameOld": "52d7d5aa1a303cf70519a61487641211f4267c6f",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 13.93,
+          "commitsBetweenForRepo": 80,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,32 @@\n-  public boolean initialize(Configuration conf, String delegationToken) {\n+  public void initialize(Configuration conf) throws IOException {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n-\n-    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n-      LOG.error(\"Delegation Token not provided for initialization\"\n-          + \" of RemoteSASKeyGenerator\");\n-      return false;\n+    try {\n+      delegationToken \u003d SecurityUtils.getDelegationTokenFromCredentials();\n+    } catch (IOException e) {\n+      final String msg \u003d \"Error in fetching the WASB delegation token\";\n+      LOG.error(msg, e);\n+      throw new IOException(msg, e);\n     }\n \n-    this.delegationToken \u003d delegationToken;\n+    try {\n+      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n+    } catch (UnknownHostException e) {\n+      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n+      LOG.error(msg, e);\n+      throw new IOException(msg, e);\n+    }\n \n     if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n-      LOG.error(\"CredService Url not found in configuration to initialize\"\n-          + \" RemoteSASKeyGenerator\");\n-      return false;\n+      final String msg \u003d \"CredService Url not found in configuration to \"\n+          + \"initialize RemoteSASKeyGenerator\";\n+      LOG.error(msg);\n+      throw new IOException(msg);\n     }\n \n     remoteCallHelper \u003d new WasbRemoteCallHelper();\n-    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n-    return true;\n+    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n+    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n+        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n+    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void initialize(Configuration conf) throws IOException {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    try {\n      delegationToken \u003d SecurityUtils.getDelegationTokenFromCredentials();\n    } catch (IOException e) {\n      final String msg \u003d \"Error in fetching the WASB delegation token\";\n      LOG.error(msg, e);\n      throw new IOException(msg, e);\n    }\n\n    try {\n      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n    } catch (UnknownHostException e) {\n      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n      LOG.error(msg, e);\n      throw new IOException(msg, e);\n    }\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      final String msg \u003d \"CredService Url not found in configuration to \"\n          + \"initialize RemoteSASKeyGenerator\";\n      LOG.error(msg);\n      throw new IOException(msg);\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13945. Azure: Add Kerberos and Delegation token support to WASB client. Contributed by Santhosh G Nayak\n\nChange-Id: I39fb0a3b0491bf2160571366939a0502a0045429\n",
+          "commitDate": "20/03/17 4:31 PM",
+          "commitName": "8e15e240597f821968e14893eabfea39815de207",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "06/03/17 5:10 PM",
+          "commitNameOld": "52d7d5aa1a303cf70519a61487641211f4267c6f",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 13.93,
+          "commitsBetweenForRepo": 80,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,32 @@\n-  public boolean initialize(Configuration conf, String delegationToken) {\n+  public void initialize(Configuration conf) throws IOException {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n-\n-    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n-      LOG.error(\"Delegation Token not provided for initialization\"\n-          + \" of RemoteSASKeyGenerator\");\n-      return false;\n+    try {\n+      delegationToken \u003d SecurityUtils.getDelegationTokenFromCredentials();\n+    } catch (IOException e) {\n+      final String msg \u003d \"Error in fetching the WASB delegation token\";\n+      LOG.error(msg, e);\n+      throw new IOException(msg, e);\n     }\n \n-    this.delegationToken \u003d delegationToken;\n+    try {\n+      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n+    } catch (UnknownHostException e) {\n+      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n+      LOG.error(msg, e);\n+      throw new IOException(msg, e);\n+    }\n \n     if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n-      LOG.error(\"CredService Url not found in configuration to initialize\"\n-          + \" RemoteSASKeyGenerator\");\n-      return false;\n+      final String msg \u003d \"CredService Url not found in configuration to \"\n+          + \"initialize RemoteSASKeyGenerator\";\n+      LOG.error(msg);\n+      throw new IOException(msg);\n     }\n \n     remoteCallHelper \u003d new WasbRemoteCallHelper();\n-    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n-    return true;\n+    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n+    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n+        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n+    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void initialize(Configuration conf) throws IOException {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    try {\n      delegationToken \u003d SecurityUtils.getDelegationTokenFromCredentials();\n    } catch (IOException e) {\n      final String msg \u003d \"Error in fetching the WASB delegation token\";\n      LOG.error(msg, e);\n      throw new IOException(msg, e);\n    }\n\n    try {\n      credServiceUrl \u003d SecurityUtils.getCredServiceUrls(conf);\n    } catch (UnknownHostException e) {\n      final String msg \u003d \"Invalid CredService Url, configure it correctly\";\n      LOG.error(msg, e);\n      throw new IOException(msg, e);\n    }\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      final String msg \u003d \"CredService Url not found in configuration to \"\n          + \"initialize RemoteSASKeyGenerator\";\n      LOG.error(msg);\n      throw new IOException(msg);\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "52d7d5aa1a303cf70519a61487641211f4267c6f": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "Revert \"HADOOP-13930. Azure: Add Authorization support to WASB. Contributed by Sivaguru Sankaridurg and Dushyanth\"\n\nThis reverts commit 6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f.\n",
+      "commitDate": "06/03/17 5:10 PM",
+      "commitName": "52d7d5aa1a303cf70519a61487641211f4267c6f",
+      "commitAuthor": "Mingliang Liu",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "Revert \"HADOOP-13930. Azure: Add Authorization support to WASB. Contributed by Sivaguru Sankaridurg and Dushyanth\"\n\nThis reverts commit 6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f.\n",
+          "commitDate": "06/03/17 5:10 PM",
+          "commitName": "52d7d5aa1a303cf70519a61487641211f4267c6f",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "03/03/17 5:09 PM",
+          "commitNameOld": "6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 3.0,
+          "commitsBetweenForRepo": 13,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,40 +1,23 @@\n-  public boolean initialize(Configuration conf) {\n+  public boolean initialize(Configuration conf, String delegationToken) {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    Iterator\u003cToken\u003c? extends TokenIdentifier\u003e\u003e tokenIterator \u003d null;\n-    try {\n-      tokenIterator \u003d UserGroupInformation.getCurrentUser().getCredentials()\n-          .getAllTokens().iterator();\n-      while (tokenIterator.hasNext()) {\n-        Token\u003c? extends TokenIdentifier\u003e iteratedToken \u003d tokenIterator.next();\n-        if (iteratedToken.getKind().equals(WasbDelegationTokenIdentifier.TOKEN_KIND)) {\n-          delegationToken \u003d iteratedToken.encodeToUrlString();\n-        }\n-      }\n-    } catch (IOException e) {\n-      LOG.error(\"Error in fetching the WASB delegation token\");\n-    }\n+    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n \n-    try {\n-      credServiceUrl \u003d conf.get(Constants.KEY_CRED_SERVICE_URL, String\n-          .format(\"http://%s:%s\",\n-              InetAddress.getLocalHost().getCanonicalHostName(),\n-              Constants.DEFAULT_CRED_SERVICE_PORT));\n-    } catch (UnknownHostException e) {\n-      LOG.error(\"Invalid CredService Url, configure it correctly.\");\n+    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n+      LOG.error(\"Delegation Token not provided for initialization\"\n+          + \" of RemoteSASKeyGenerator\");\n       return false;\n     }\n \n+    this.delegationToken \u003d delegationToken;\n+\n     if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n       LOG.error(\"CredService Url not found in configuration to initialize\"\n           + \" RemoteSASKeyGenerator\");\n       return false;\n     }\n \n     remoteCallHelper \u003d new WasbRemoteCallHelper();\n-    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n-    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n-        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n-    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n+    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n     return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean initialize(Configuration conf, String delegationToken) {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n\n    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n      LOG.error(\"Delegation Token not provided for initialization\"\n          + \" of RemoteSASKeyGenerator\");\n      return false;\n    }\n\n    this.delegationToken \u003d delegationToken;\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      LOG.error(\"CredService Url not found in configuration to initialize\"\n          + \" RemoteSASKeyGenerator\");\n      return false;\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n    return true;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+          "extendedDetails": {
+            "oldValue": "[conf-Configuration]",
+            "newValue": "[conf-Configuration, delegationToken-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "Revert \"HADOOP-13930. Azure: Add Authorization support to WASB. Contributed by Sivaguru Sankaridurg and Dushyanth\"\n\nThis reverts commit 6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f.\n",
+          "commitDate": "06/03/17 5:10 PM",
+          "commitName": "52d7d5aa1a303cf70519a61487641211f4267c6f",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "03/03/17 5:09 PM",
+          "commitNameOld": "6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 3.0,
+          "commitsBetweenForRepo": 13,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,40 +1,23 @@\n-  public boolean initialize(Configuration conf) {\n+  public boolean initialize(Configuration conf, String delegationToken) {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    Iterator\u003cToken\u003c? extends TokenIdentifier\u003e\u003e tokenIterator \u003d null;\n-    try {\n-      tokenIterator \u003d UserGroupInformation.getCurrentUser().getCredentials()\n-          .getAllTokens().iterator();\n-      while (tokenIterator.hasNext()) {\n-        Token\u003c? extends TokenIdentifier\u003e iteratedToken \u003d tokenIterator.next();\n-        if (iteratedToken.getKind().equals(WasbDelegationTokenIdentifier.TOKEN_KIND)) {\n-          delegationToken \u003d iteratedToken.encodeToUrlString();\n-        }\n-      }\n-    } catch (IOException e) {\n-      LOG.error(\"Error in fetching the WASB delegation token\");\n-    }\n+    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n \n-    try {\n-      credServiceUrl \u003d conf.get(Constants.KEY_CRED_SERVICE_URL, String\n-          .format(\"http://%s:%s\",\n-              InetAddress.getLocalHost().getCanonicalHostName(),\n-              Constants.DEFAULT_CRED_SERVICE_PORT));\n-    } catch (UnknownHostException e) {\n-      LOG.error(\"Invalid CredService Url, configure it correctly.\");\n+    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n+      LOG.error(\"Delegation Token not provided for initialization\"\n+          + \" of RemoteSASKeyGenerator\");\n       return false;\n     }\n \n+    this.delegationToken \u003d delegationToken;\n+\n     if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n       LOG.error(\"CredService Url not found in configuration to initialize\"\n           + \" RemoteSASKeyGenerator\");\n       return false;\n     }\n \n     remoteCallHelper \u003d new WasbRemoteCallHelper();\n-    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n-    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n-        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n-    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n+    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n     return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean initialize(Configuration conf, String delegationToken) {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n\n    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n      LOG.error(\"Delegation Token not provided for initialization\"\n          + \" of RemoteSASKeyGenerator\");\n      return false;\n    }\n\n    this.delegationToken \u003d delegationToken;\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      LOG.error(\"CredService Url not found in configuration to initialize\"\n          + \" RemoteSASKeyGenerator\");\n      return false;\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n    return true;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-13930. Azure: Add Authorization support to WASB. Contributed by Sivaguru Sankaridurg and Dushyanth\n",
+      "commitDate": "03/03/17 5:09 PM",
+      "commitName": "6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f",
+      "commitAuthor": "Mingliang Liu",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-13930. Azure: Add Authorization support to WASB. Contributed by Sivaguru Sankaridurg and Dushyanth\n",
+          "commitDate": "03/03/17 5:09 PM",
+          "commitName": "6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "22/12/16 8:15 PM",
+          "commitNameOld": "e92a77099b91620cee84513cc879089907468075",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 70.87,
+          "commitsBetweenForRepo": 352,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,40 @@\n-  public boolean initialize(Configuration conf, String delegationToken) {\n+  public boolean initialize(Configuration conf) {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n-\n-    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n-      LOG.error(\"Delegation Token not provided for initialization\"\n-          + \" of RemoteSASKeyGenerator\");\n-      return false;\n+    Iterator\u003cToken\u003c? extends TokenIdentifier\u003e\u003e tokenIterator \u003d null;\n+    try {\n+      tokenIterator \u003d UserGroupInformation.getCurrentUser().getCredentials()\n+          .getAllTokens().iterator();\n+      while (tokenIterator.hasNext()) {\n+        Token\u003c? extends TokenIdentifier\u003e iteratedToken \u003d tokenIterator.next();\n+        if (iteratedToken.getKind().equals(WasbDelegationTokenIdentifier.TOKEN_KIND)) {\n+          delegationToken \u003d iteratedToken.encodeToUrlString();\n+        }\n+      }\n+    } catch (IOException e) {\n+      LOG.error(\"Error in fetching the WASB delegation token\");\n     }\n \n-    this.delegationToken \u003d delegationToken;\n+    try {\n+      credServiceUrl \u003d conf.get(Constants.KEY_CRED_SERVICE_URL, String\n+          .format(\"http://%s:%s\",\n+              InetAddress.getLocalHost().getCanonicalHostName(),\n+              Constants.DEFAULT_CRED_SERVICE_PORT));\n+    } catch (UnknownHostException e) {\n+      LOG.error(\"Invalid CredService Url, configure it correctly.\");\n+      return false;\n+    }\n \n     if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n       LOG.error(\"CredService Url not found in configuration to initialize\"\n           + \" RemoteSASKeyGenerator\");\n       return false;\n     }\n \n     remoteCallHelper \u003d new WasbRemoteCallHelper();\n-    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n+    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n+    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n+        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n+    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n     return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean initialize(Configuration conf) {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    Iterator\u003cToken\u003c? extends TokenIdentifier\u003e\u003e tokenIterator \u003d null;\n    try {\n      tokenIterator \u003d UserGroupInformation.getCurrentUser().getCredentials()\n          .getAllTokens().iterator();\n      while (tokenIterator.hasNext()) {\n        Token\u003c? extends TokenIdentifier\u003e iteratedToken \u003d tokenIterator.next();\n        if (iteratedToken.getKind().equals(WasbDelegationTokenIdentifier.TOKEN_KIND)) {\n          delegationToken \u003d iteratedToken.encodeToUrlString();\n        }\n      }\n    } catch (IOException e) {\n      LOG.error(\"Error in fetching the WASB delegation token\");\n    }\n\n    try {\n      credServiceUrl \u003d conf.get(Constants.KEY_CRED_SERVICE_URL, String\n          .format(\"http://%s:%s\",\n              InetAddress.getLocalHost().getCanonicalHostName(),\n              Constants.DEFAULT_CRED_SERVICE_PORT));\n    } catch (UnknownHostException e) {\n      LOG.error(\"Invalid CredService Url, configure it correctly.\");\n      return false;\n    }\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      LOG.error(\"CredService Url not found in configuration to initialize\"\n          + \" RemoteSASKeyGenerator\");\n      return false;\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n    return true;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+          "extendedDetails": {
+            "oldValue": "[conf-Configuration, delegationToken-String]",
+            "newValue": "[conf-Configuration]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13930. Azure: Add Authorization support to WASB. Contributed by Sivaguru Sankaridurg and Dushyanth\n",
+          "commitDate": "03/03/17 5:09 PM",
+          "commitName": "6b7cd62b8cf12616b13142f2eb2cfc2f25796f0f",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "22/12/16 8:15 PM",
+          "commitNameOld": "e92a77099b91620cee84513cc879089907468075",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 70.87,
+          "commitsBetweenForRepo": 352,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,40 @@\n-  public boolean initialize(Configuration conf, String delegationToken) {\n+  public boolean initialize(Configuration conf) {\n \n     LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n-    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n-\n-    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n-      LOG.error(\"Delegation Token not provided for initialization\"\n-          + \" of RemoteSASKeyGenerator\");\n-      return false;\n+    Iterator\u003cToken\u003c? extends TokenIdentifier\u003e\u003e tokenIterator \u003d null;\n+    try {\n+      tokenIterator \u003d UserGroupInformation.getCurrentUser().getCredentials()\n+          .getAllTokens().iterator();\n+      while (tokenIterator.hasNext()) {\n+        Token\u003c? extends TokenIdentifier\u003e iteratedToken \u003d tokenIterator.next();\n+        if (iteratedToken.getKind().equals(WasbDelegationTokenIdentifier.TOKEN_KIND)) {\n+          delegationToken \u003d iteratedToken.encodeToUrlString();\n+        }\n+      }\n+    } catch (IOException e) {\n+      LOG.error(\"Error in fetching the WASB delegation token\");\n     }\n \n-    this.delegationToken \u003d delegationToken;\n+    try {\n+      credServiceUrl \u003d conf.get(Constants.KEY_CRED_SERVICE_URL, String\n+          .format(\"http://%s:%s\",\n+              InetAddress.getLocalHost().getCanonicalHostName(),\n+              Constants.DEFAULT_CRED_SERVICE_PORT));\n+    } catch (UnknownHostException e) {\n+      LOG.error(\"Invalid CredService Url, configure it correctly.\");\n+      return false;\n+    }\n \n     if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n       LOG.error(\"CredService Url not found in configuration to initialize\"\n           + \" RemoteSASKeyGenerator\");\n       return false;\n     }\n \n     remoteCallHelper \u003d new WasbRemoteCallHelper();\n-    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n+    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n+    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n+        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n+    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n     return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean initialize(Configuration conf) {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    Iterator\u003cToken\u003c? extends TokenIdentifier\u003e\u003e tokenIterator \u003d null;\n    try {\n      tokenIterator \u003d UserGroupInformation.getCurrentUser().getCredentials()\n          .getAllTokens().iterator();\n      while (tokenIterator.hasNext()) {\n        Token\u003c? extends TokenIdentifier\u003e iteratedToken \u003d tokenIterator.next();\n        if (iteratedToken.getKind().equals(WasbDelegationTokenIdentifier.TOKEN_KIND)) {\n          delegationToken \u003d iteratedToken.encodeToUrlString();\n        }\n      }\n    } catch (IOException e) {\n      LOG.error(\"Error in fetching the WASB delegation token\");\n    }\n\n    try {\n      credServiceUrl \u003d conf.get(Constants.KEY_CRED_SERVICE_URL, String\n          .format(\"http://%s:%s\",\n              InetAddress.getLocalHost().getCanonicalHostName(),\n              Constants.DEFAULT_CRED_SERVICE_PORT));\n    } catch (UnknownHostException e) {\n      LOG.error(\"Invalid CredService Url, configure it correctly.\");\n      return false;\n    }\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      LOG.error(\"CredService Url not found in configuration to initialize\"\n          + \" RemoteSASKeyGenerator\");\n      return false;\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    this.isSecurityEnabled \u003d UserGroupInformation.isSecurityEnabled();\n    this.isKerberosSupportEnabled \u003d conf.getBoolean(\n        Constants.AZURE_KERBEROS_SUPPORT_PROPERTY_NAME, false);\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successful\");\n    return true;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e92a77099b91620cee84513cc879089907468075": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13863. Azure: Add a new SAS key mode for WASB. Contributed by Dushyanth\n",
+      "commitDate": "22/12/16 8:15 PM",
+      "commitName": "e92a77099b91620cee84513cc879089907468075",
+      "commitAuthor": "Mingliang Liu",
+      "diff": "@@ -0,0 +1,23 @@\n+  public boolean initialize(Configuration conf, String delegationToken) {\n+\n+    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n+    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n+\n+    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n+      LOG.error(\"Delegation Token not provided for initialization\"\n+          + \" of RemoteSASKeyGenerator\");\n+      return false;\n+    }\n+\n+    this.delegationToken \u003d delegationToken;\n+\n+    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n+      LOG.error(\"CredService Url not found in configuration to initialize\"\n+          + \" RemoteSASKeyGenerator\");\n+      return false;\n+    }\n+\n+    remoteCallHelper \u003d new WasbRemoteCallHelper();\n+    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n+    return true;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public boolean initialize(Configuration conf, String delegationToken) {\n\n    LOG.debug(\"Initializing RemoteSASKeyGeneratorImpl instance\");\n    credServiceUrl \u003d conf.get(KEY_CRED_SERVICE_URL);\n\n    if (delegationToken \u003d\u003d null || delegationToken.isEmpty()) {\n      LOG.error(\"Delegation Token not provided for initialization\"\n          + \" of RemoteSASKeyGenerator\");\n      return false;\n    }\n\n    this.delegationToken \u003d delegationToken;\n\n    if (credServiceUrl \u003d\u003d null || credServiceUrl.isEmpty()) {\n      LOG.error(\"CredService Url not found in configuration to initialize\"\n          + \" RemoteSASKeyGenerator\");\n      return false;\n    }\n\n    remoteCallHelper \u003d new WasbRemoteCallHelper();\n    LOG.debug(\"Initialization of RemoteSASKeyGenerator instance successfull\");\n    return true;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/RemoteSASKeyGeneratorImpl.java"
+    }
+  }
+}

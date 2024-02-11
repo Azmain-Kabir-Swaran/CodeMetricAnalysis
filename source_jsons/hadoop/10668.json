@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbstractFuture.java",
+  "functionName": "complete",
+  "functionId": "complete___future-AbstractFuture__?__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/AbstractFuture.java",
+  "functionStartLine": 854,
+  "functionEndLine": 893,
+  "numCommitsSeen": 4,
+  "timeTaken": 755,
+  "changeHistory": [
+    "d69a82c89c1e857a2a86ff614ae11fb5df993614"
+  ],
+  "changeHistoryShort": {
+    "d69a82c89c1e857a2a86ff614ae11fb5df993614": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d69a82c89c1e857a2a86ff614ae11fb5df993614": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11511. Support Timeout when checking single disk. Contributed by Hanisha Koneru.\n",
+      "commitDate": "15/03/17 6:01 PM",
+      "commitName": "d69a82c89c1e857a2a86ff614ae11fb5df993614",
+      "commitAuthor": "Hanisha Koneru",
+      "diff": "@@ -0,0 +1,40 @@\n+  private static void complete(AbstractFuture\u003c?\u003e future) {\n+    Listener next \u003d null;\n+    outer:\n+    while (true) {\n+      future.releaseWaiters();\n+      // We call this before the listeners in order to avoid needing to manage\n+      // a separate stack data structure for them. afterDone() should be\n+      // generally fast and only used for cleanup work... but in theory can\n+      // also be recursive and create StackOverflowErrors\n+      future.afterDone();\n+      // push the current set of listeners onto next\n+      next \u003d future.clearListeners(next);\n+      future \u003d null;\n+      while (next !\u003d null) {\n+        Listener curr \u003d next;\n+        next \u003d next.next;\n+        Runnable task \u003d curr.task;\n+        if (task instanceof SetFuture) {\n+          SetFuture\u003c?\u003e setFuture \u003d (SetFuture\u003c?\u003e) task;\n+          // We unwind setFuture specifically to avoid StackOverflowErrors in\n+          // the case of long chains of SetFutures\n+          // Handling this special case is important because there is no way\n+          // to pass an executor to setFuture, so a user couldn\u0027t break the\n+          // chain by doing this themselves.  It is also potentially common\n+          // if someone writes a recursive Futures.transformAsync transformer.\n+          future \u003d setFuture.owner;\n+          if (future.value \u003d\u003d setFuture) {\n+            Object valueToSet \u003d getFutureValue(setFuture.future);\n+            if (ATOMIC_HELPER.casValue(future, setFuture, valueToSet)) {\n+              continue outer;\n+            }\n+          }\n+          // other wise the future we were trying to set is already done.\n+        } else {\n+          executeListener(task, curr.executor);\n+        }\n+      }\n+      break;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void complete(AbstractFuture\u003c?\u003e future) {\n    Listener next \u003d null;\n    outer:\n    while (true) {\n      future.releaseWaiters();\n      // We call this before the listeners in order to avoid needing to manage\n      // a separate stack data structure for them. afterDone() should be\n      // generally fast and only used for cleanup work... but in theory can\n      // also be recursive and create StackOverflowErrors\n      future.afterDone();\n      // push the current set of listeners onto next\n      next \u003d future.clearListeners(next);\n      future \u003d null;\n      while (next !\u003d null) {\n        Listener curr \u003d next;\n        next \u003d next.next;\n        Runnable task \u003d curr.task;\n        if (task instanceof SetFuture) {\n          SetFuture\u003c?\u003e setFuture \u003d (SetFuture\u003c?\u003e) task;\n          // We unwind setFuture specifically to avoid StackOverflowErrors in\n          // the case of long chains of SetFutures\n          // Handling this special case is important because there is no way\n          // to pass an executor to setFuture, so a user couldn\u0027t break the\n          // chain by doing this themselves.  It is also potentially common\n          // if someone writes a recursive Futures.transformAsync transformer.\n          future \u003d setFuture.owner;\n          if (future.value \u003d\u003d setFuture) {\n            Object valueToSet \u003d getFutureValue(setFuture.future);\n            if (ATOMIC_HELPER.casValue(future, setFuture, valueToSet)) {\n              continue outer;\n            }\n          }\n          // other wise the future we were trying to set is already done.\n        } else {\n          executeListener(task, curr.executor);\n        }\n      }\n      break;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/AbstractFuture.java"
+    }
+  }
+}

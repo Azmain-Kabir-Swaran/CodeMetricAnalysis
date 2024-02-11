@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMContainerAllocator.java",
+  "functionName": "handleUpdatedNodes",
+  "functionId": "handleUpdatedNodes___response-AllocateResponse",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/rm/RMContainerAllocator.java",
+  "functionStartLine": 988,
+  "functionEndLine": 1025,
+  "numCommitsSeen": 106,
+  "timeTaken": 3017,
+  "changeHistory": [
+    "8b2880c0b62102fc5c8b6962752f72cb2c416a01",
+    "1bd345d6e3855ab330963efd32e0fac102e61d1a",
+    "eff9fa1aad7e22d445a11e4ba732b4d49cdaca65"
+  ],
+  "changeHistoryShort": {
+    "8b2880c0b62102fc5c8b6962752f72cb2c416a01": "Ybodychange",
+    "1bd345d6e3855ab330963efd32e0fac102e61d1a": "Yparameterchange",
+    "eff9fa1aad7e22d445a11e4ba732b4d49cdaca65": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8b2880c0b62102fc5c8b6962752f72cb2c416a01": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6513. MR job got hanged forever when one NM unstable for some time. (Varun Saxena via wangda)\n",
+      "commitDate": "14/04/16 11:00 AM",
+      "commitName": "8b2880c0b62102fc5c8b6962752f72cb2c416a01",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "11/01/16 8:53 PM",
+      "commitNameOld": "9e792da01419998c2ebfafd7161070150d85d3ac",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 93.55,
+      "commitsBetweenForRepo": 622,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,38 @@\n   private void handleUpdatedNodes(AllocateResponse response) {\n     // send event to the job about on updated nodes\n     List\u003cNodeReport\u003e updatedNodes \u003d response.getUpdatedNodes();\n     if (!updatedNodes.isEmpty()) {\n \n       // send event to the job to act upon completed tasks\n       eventHandler.handle(new JobUpdatedNodesEvent(getJob().getID(),\n           updatedNodes));\n \n       // act upon running tasks\n       HashSet\u003cNodeId\u003e unusableNodes \u003d new HashSet\u003cNodeId\u003e();\n       for (NodeReport nr : updatedNodes) {\n         NodeState nodeState \u003d nr.getNodeState();\n         if (nodeState.isUnusable()) {\n           unusableNodes.add(nr.getNodeId());\n         }\n       }\n       for (int i \u003d 0; i \u003c 2; ++i) {\n         HashMap\u003cTaskAttemptId, Container\u003e taskSet \u003d i \u003d\u003d 0 ? assignedRequests.maps\n             : assignedRequests.reduces;\n         // kill running containers\n         for (Map.Entry\u003cTaskAttemptId, Container\u003e entry : taskSet.entrySet()) {\n           TaskAttemptId tid \u003d entry.getKey();\n           NodeId taskAttemptNodeId \u003d entry.getValue().getNodeId();\n           if (unusableNodes.contains(taskAttemptNodeId)) {\n             LOG.info(\"Killing taskAttempt:\" + tid\n                 + \" because it is running on unusable node:\"\n                 + taskAttemptNodeId);\n+            // If map, reschedule next task attempt.\n+            boolean rescheduleNextAttempt \u003d (i \u003d\u003d 0) ? true : false;\n             eventHandler.handle(new TaskAttemptKillEvent(tid,\n                 \"TaskAttempt killed because it ran on unusable node\"\n-                    + taskAttemptNodeId));\n+                    + taskAttemptNodeId, rescheduleNextAttempt));\n           }\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void handleUpdatedNodes(AllocateResponse response) {\n    // send event to the job about on updated nodes\n    List\u003cNodeReport\u003e updatedNodes \u003d response.getUpdatedNodes();\n    if (!updatedNodes.isEmpty()) {\n\n      // send event to the job to act upon completed tasks\n      eventHandler.handle(new JobUpdatedNodesEvent(getJob().getID(),\n          updatedNodes));\n\n      // act upon running tasks\n      HashSet\u003cNodeId\u003e unusableNodes \u003d new HashSet\u003cNodeId\u003e();\n      for (NodeReport nr : updatedNodes) {\n        NodeState nodeState \u003d nr.getNodeState();\n        if (nodeState.isUnusable()) {\n          unusableNodes.add(nr.getNodeId());\n        }\n      }\n      for (int i \u003d 0; i \u003c 2; ++i) {\n        HashMap\u003cTaskAttemptId, Container\u003e taskSet \u003d i \u003d\u003d 0 ? assignedRequests.maps\n            : assignedRequests.reduces;\n        // kill running containers\n        for (Map.Entry\u003cTaskAttemptId, Container\u003e entry : taskSet.entrySet()) {\n          TaskAttemptId tid \u003d entry.getKey();\n          NodeId taskAttemptNodeId \u003d entry.getValue().getNodeId();\n          if (unusableNodes.contains(taskAttemptNodeId)) {\n            LOG.info(\"Killing taskAttempt:\" + tid\n                + \" because it is running on unusable node:\"\n                + taskAttemptNodeId);\n            // If map, reschedule next task attempt.\n            boolean rescheduleNextAttempt \u003d (i \u003d\u003d 0) ? true : false;\n            eventHandler.handle(new TaskAttemptKillEvent(tid,\n                \"TaskAttempt killed because it ran on unusable node\"\n                    + taskAttemptNodeId, rescheduleNextAttempt));\n          }\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/rm/RMContainerAllocator.java",
+      "extendedDetails": {}
+    },
+    "1bd345d6e3855ab330963efd32e0fac102e61d1a": {
+      "type": "Yparameterchange",
+      "commitMessage": "YARN-396. Rationalize AllocateResponse in RM Scheduler API. Contributed by Zhijie Shen.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1459040 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "20/03/13 1:44 PM",
+      "commitName": "1bd345d6e3855ab330963efd32e0fac102e61d1a",
+      "commitAuthor": "Hitesh Shah",
+      "commitDateOld": "21/02/13 3:56 AM",
+      "commitNameOld": "0b73dde6ce865ff94b483558ff0701de9932e211",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 27.37,
+      "commitsBetweenForRepo": 134,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,36 @@\n-  private void handleUpdatedNodes(AMResponse response) {\n+  private void handleUpdatedNodes(AllocateResponse response) {\n     // send event to the job about on updated nodes\n     List\u003cNodeReport\u003e updatedNodes \u003d response.getUpdatedNodes();\n     if (!updatedNodes.isEmpty()) {\n \n       // send event to the job to act upon completed tasks\n       eventHandler.handle(new JobUpdatedNodesEvent(getJob().getID(),\n           updatedNodes));\n \n       // act upon running tasks\n       HashSet\u003cNodeId\u003e unusableNodes \u003d new HashSet\u003cNodeId\u003e();\n       for (NodeReport nr : updatedNodes) {\n         NodeState nodeState \u003d nr.getNodeState();\n         if (nodeState.isUnusable()) {\n           unusableNodes.add(nr.getNodeId());\n         }\n       }\n       for (int i \u003d 0; i \u003c 2; ++i) {\n         HashMap\u003cTaskAttemptId, Container\u003e taskSet \u003d i \u003d\u003d 0 ? assignedRequests.maps\n             : assignedRequests.reduces;\n         // kill running containers\n         for (Map.Entry\u003cTaskAttemptId, Container\u003e entry : taskSet.entrySet()) {\n           TaskAttemptId tid \u003d entry.getKey();\n           NodeId taskAttemptNodeId \u003d entry.getValue().getNodeId();\n           if (unusableNodes.contains(taskAttemptNodeId)) {\n             LOG.info(\"Killing taskAttempt:\" + tid\n                 + \" because it is running on unusable node:\"\n                 + taskAttemptNodeId);\n             eventHandler.handle(new TaskAttemptKillEvent(tid,\n                 \"TaskAttempt killed because it ran on unusable node\"\n                     + taskAttemptNodeId));\n           }\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void handleUpdatedNodes(AllocateResponse response) {\n    // send event to the job about on updated nodes\n    List\u003cNodeReport\u003e updatedNodes \u003d response.getUpdatedNodes();\n    if (!updatedNodes.isEmpty()) {\n\n      // send event to the job to act upon completed tasks\n      eventHandler.handle(new JobUpdatedNodesEvent(getJob().getID(),\n          updatedNodes));\n\n      // act upon running tasks\n      HashSet\u003cNodeId\u003e unusableNodes \u003d new HashSet\u003cNodeId\u003e();\n      for (NodeReport nr : updatedNodes) {\n        NodeState nodeState \u003d nr.getNodeState();\n        if (nodeState.isUnusable()) {\n          unusableNodes.add(nr.getNodeId());\n        }\n      }\n      for (int i \u003d 0; i \u003c 2; ++i) {\n        HashMap\u003cTaskAttemptId, Container\u003e taskSet \u003d i \u003d\u003d 0 ? assignedRequests.maps\n            : assignedRequests.reduces;\n        // kill running containers\n        for (Map.Entry\u003cTaskAttemptId, Container\u003e entry : taskSet.entrySet()) {\n          TaskAttemptId tid \u003d entry.getKey();\n          NodeId taskAttemptNodeId \u003d entry.getValue().getNodeId();\n          if (unusableNodes.contains(taskAttemptNodeId)) {\n            LOG.info(\"Killing taskAttempt:\" + tid\n                + \" because it is running on unusable node:\"\n                + taskAttemptNodeId);\n            eventHandler.handle(new TaskAttemptKillEvent(tid,\n                \"TaskAttempt killed because it ran on unusable node\"\n                    + taskAttemptNodeId));\n          }\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/rm/RMContainerAllocator.java",
+      "extendedDetails": {
+        "oldValue": "[response-AMResponse]",
+        "newValue": "[response-AllocateResponse]"
+      }
+    },
+    "eff9fa1aad7e22d445a11e4ba732b4d49cdaca65": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-3921. MR AM should act on node health status changes. Contributed by Bikas Saha.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1349065 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "11/06/12 4:14 PM",
+      "commitName": "eff9fa1aad7e22d445a11e4ba732b4d49cdaca65",
+      "commitAuthor": "Siddharth Seth",
+      "diff": "@@ -0,0 +1,36 @@\n+  private void handleUpdatedNodes(AMResponse response) {\n+    // send event to the job about on updated nodes\n+    List\u003cNodeReport\u003e updatedNodes \u003d response.getUpdatedNodes();\n+    if (!updatedNodes.isEmpty()) {\n+\n+      // send event to the job to act upon completed tasks\n+      eventHandler.handle(new JobUpdatedNodesEvent(getJob().getID(),\n+          updatedNodes));\n+\n+      // act upon running tasks\n+      HashSet\u003cNodeId\u003e unusableNodes \u003d new HashSet\u003cNodeId\u003e();\n+      for (NodeReport nr : updatedNodes) {\n+        NodeState nodeState \u003d nr.getNodeState();\n+        if (nodeState.isUnusable()) {\n+          unusableNodes.add(nr.getNodeId());\n+        }\n+      }\n+      for (int i \u003d 0; i \u003c 2; ++i) {\n+        HashMap\u003cTaskAttemptId, Container\u003e taskSet \u003d i \u003d\u003d 0 ? assignedRequests.maps\n+            : assignedRequests.reduces;\n+        // kill running containers\n+        for (Map.Entry\u003cTaskAttemptId, Container\u003e entry : taskSet.entrySet()) {\n+          TaskAttemptId tid \u003d entry.getKey();\n+          NodeId taskAttemptNodeId \u003d entry.getValue().getNodeId();\n+          if (unusableNodes.contains(taskAttemptNodeId)) {\n+            LOG.info(\"Killing taskAttempt:\" + tid\n+                + \" because it is running on unusable node:\"\n+                + taskAttemptNodeId);\n+            eventHandler.handle(new TaskAttemptKillEvent(tid,\n+                \"TaskAttempt killed because it ran on unusable node\"\n+                    + taskAttemptNodeId));\n+          }\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void handleUpdatedNodes(AMResponse response) {\n    // send event to the job about on updated nodes\n    List\u003cNodeReport\u003e updatedNodes \u003d response.getUpdatedNodes();\n    if (!updatedNodes.isEmpty()) {\n\n      // send event to the job to act upon completed tasks\n      eventHandler.handle(new JobUpdatedNodesEvent(getJob().getID(),\n          updatedNodes));\n\n      // act upon running tasks\n      HashSet\u003cNodeId\u003e unusableNodes \u003d new HashSet\u003cNodeId\u003e();\n      for (NodeReport nr : updatedNodes) {\n        NodeState nodeState \u003d nr.getNodeState();\n        if (nodeState.isUnusable()) {\n          unusableNodes.add(nr.getNodeId());\n        }\n      }\n      for (int i \u003d 0; i \u003c 2; ++i) {\n        HashMap\u003cTaskAttemptId, Container\u003e taskSet \u003d i \u003d\u003d 0 ? assignedRequests.maps\n            : assignedRequests.reduces;\n        // kill running containers\n        for (Map.Entry\u003cTaskAttemptId, Container\u003e entry : taskSet.entrySet()) {\n          TaskAttemptId tid \u003d entry.getKey();\n          NodeId taskAttemptNodeId \u003d entry.getValue().getNodeId();\n          if (unusableNodes.contains(taskAttemptNodeId)) {\n            LOG.info(\"Killing taskAttempt:\" + tid\n                + \" because it is running on unusable node:\"\n                + taskAttemptNodeId);\n            eventHandler.handle(new TaskAttemptKillEvent(tid,\n                \"TaskAttempt killed because it ran on unusable node\"\n                    + taskAttemptNodeId));\n          }\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/rm/RMContainerAllocator.java"
+    }
+  }
+}

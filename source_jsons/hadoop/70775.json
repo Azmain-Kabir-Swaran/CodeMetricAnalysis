@@ -1,0 +1,100 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockBlobAppendStream.java",
+  "functionName": "write",
+  "functionId": "write___data-byte[](modifiers-final)__offset-int__length-int",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java",
+  "functionStartLine": 465,
+  "functionEndLine": 490,
+  "numCommitsSeen": 11,
+  "timeTaken": 1903,
+  "changeHistory": [
+    "13eda5000304099d1145631f9be13ce8a00b600d",
+    "8bc93db2e7c64830b6a662f28c8917a9eef4e7c9"
+  ],
+  "changeHistoryShort": {
+    "13eda5000304099d1145631f9be13ce8a00b600d": "Ymultichange(Ymodifierchange,Ybodychange,Yparametermetachange)",
+    "8bc93db2e7c64830b6a662f28c8917a9eef4e7c9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "13eda5000304099d1145631f9be13ce8a00b600d": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange,Yparametermetachange)",
+      "commitMessage": "HADOOP-14520. WASB: Block compaction for Azure Block Blobs.\nContributed by Georgi Chalakov\n",
+      "commitDate": "07/09/17 10:35 AM",
+      "commitName": "13eda5000304099d1145631f9be13ce8a00b600d",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-14520. WASB: Block compaction for Azure Block Blobs.\nContributed by Georgi Chalakov\n",
+          "commitDate": "07/09/17 10:35 AM",
+          "commitName": "13eda5000304099d1145631f9be13ce8a00b600d",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "03/04/17 8:13 PM",
+          "commitNameOld": "6eba79232f36b36e0196163adc8fe4219a6b6bf9",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 156.6,
+          "commitsBetweenForRepo": 957,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,9 +1,26 @@\n-  public void write(final byte[] data, final int offset, final int length)\n+  public synchronized void write(final byte[] data, int offset, int length)\n       throws IOException {\n+    Preconditions.checkArgument(data !\u003d null, \"null data\");\n \n     if (offset \u003c 0 || length \u003c 0 || length \u003e data.length - offset) {\n-      throw new IndexOutOfBoundsException(\"write API in append stream called with invalid arguments\");\n+      throw new IndexOutOfBoundsException();\n     }\n \n-    writeInternal(data, offset, length);\n+    if (closed) {\n+      throw new IOException(FSExceptionMessages.STREAM_IS_CLOSED);\n+    }\n+\n+    while (outBuffer.remaining() \u003c length) {\n+\n+      int remaining \u003d outBuffer.remaining();\n+      outBuffer.put(data, offset, remaining);\n+\n+      // upload payload to azure storage\n+      addBlockUploadCommand();\n+\n+      offset +\u003d remaining;\n+      length -\u003d remaining;\n+    }\n+\n+    outBuffer.put(data, offset, length);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void write(final byte[] data, int offset, int length)\n      throws IOException {\n    Preconditions.checkArgument(data !\u003d null, \"null data\");\n\n    if (offset \u003c 0 || length \u003c 0 || length \u003e data.length - offset) {\n      throw new IndexOutOfBoundsException();\n    }\n\n    if (closed) {\n      throw new IOException(FSExceptionMessages.STREAM_IS_CLOSED);\n    }\n\n    while (outBuffer.remaining() \u003c length) {\n\n      int remaining \u003d outBuffer.remaining();\n      outBuffer.put(data, offset, remaining);\n\n      // upload payload to azure storage\n      addBlockUploadCommand();\n\n      offset +\u003d remaining;\n      length -\u003d remaining;\n    }\n\n    outBuffer.put(data, offset, length);\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java",
+          "extendedDetails": {
+            "oldValue": "[public]",
+            "newValue": "[public, synchronized]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14520. WASB: Block compaction for Azure Block Blobs.\nContributed by Georgi Chalakov\n",
+          "commitDate": "07/09/17 10:35 AM",
+          "commitName": "13eda5000304099d1145631f9be13ce8a00b600d",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "03/04/17 8:13 PM",
+          "commitNameOld": "6eba79232f36b36e0196163adc8fe4219a6b6bf9",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 156.6,
+          "commitsBetweenForRepo": 957,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,9 +1,26 @@\n-  public void write(final byte[] data, final int offset, final int length)\n+  public synchronized void write(final byte[] data, int offset, int length)\n       throws IOException {\n+    Preconditions.checkArgument(data !\u003d null, \"null data\");\n \n     if (offset \u003c 0 || length \u003c 0 || length \u003e data.length - offset) {\n-      throw new IndexOutOfBoundsException(\"write API in append stream called with invalid arguments\");\n+      throw new IndexOutOfBoundsException();\n     }\n \n-    writeInternal(data, offset, length);\n+    if (closed) {\n+      throw new IOException(FSExceptionMessages.STREAM_IS_CLOSED);\n+    }\n+\n+    while (outBuffer.remaining() \u003c length) {\n+\n+      int remaining \u003d outBuffer.remaining();\n+      outBuffer.put(data, offset, remaining);\n+\n+      // upload payload to azure storage\n+      addBlockUploadCommand();\n+\n+      offset +\u003d remaining;\n+      length -\u003d remaining;\n+    }\n+\n+    outBuffer.put(data, offset, length);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void write(final byte[] data, int offset, int length)\n      throws IOException {\n    Preconditions.checkArgument(data !\u003d null, \"null data\");\n\n    if (offset \u003c 0 || length \u003c 0 || length \u003e data.length - offset) {\n      throw new IndexOutOfBoundsException();\n    }\n\n    if (closed) {\n      throw new IOException(FSExceptionMessages.STREAM_IS_CLOSED);\n    }\n\n    while (outBuffer.remaining() \u003c length) {\n\n      int remaining \u003d outBuffer.remaining();\n      outBuffer.put(data, offset, remaining);\n\n      // upload payload to azure storage\n      addBlockUploadCommand();\n\n      offset +\u003d remaining;\n      length -\u003d remaining;\n    }\n\n    outBuffer.put(data, offset, length);\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HADOOP-14520. WASB: Block compaction for Azure Block Blobs.\nContributed by Georgi Chalakov\n",
+          "commitDate": "07/09/17 10:35 AM",
+          "commitName": "13eda5000304099d1145631f9be13ce8a00b600d",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "03/04/17 8:13 PM",
+          "commitNameOld": "6eba79232f36b36e0196163adc8fe4219a6b6bf9",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 156.6,
+          "commitsBetweenForRepo": 957,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,9 +1,26 @@\n-  public void write(final byte[] data, final int offset, final int length)\n+  public synchronized void write(final byte[] data, int offset, int length)\n       throws IOException {\n+    Preconditions.checkArgument(data !\u003d null, \"null data\");\n \n     if (offset \u003c 0 || length \u003c 0 || length \u003e data.length - offset) {\n-      throw new IndexOutOfBoundsException(\"write API in append stream called with invalid arguments\");\n+      throw new IndexOutOfBoundsException();\n     }\n \n-    writeInternal(data, offset, length);\n+    if (closed) {\n+      throw new IOException(FSExceptionMessages.STREAM_IS_CLOSED);\n+    }\n+\n+    while (outBuffer.remaining() \u003c length) {\n+\n+      int remaining \u003d outBuffer.remaining();\n+      outBuffer.put(data, offset, remaining);\n+\n+      // upload payload to azure storage\n+      addBlockUploadCommand();\n+\n+      offset +\u003d remaining;\n+      length -\u003d remaining;\n+    }\n+\n+    outBuffer.put(data, offset, length);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void write(final byte[] data, int offset, int length)\n      throws IOException {\n    Preconditions.checkArgument(data !\u003d null, \"null data\");\n\n    if (offset \u003c 0 || length \u003c 0 || length \u003e data.length - offset) {\n      throw new IndexOutOfBoundsException();\n    }\n\n    if (closed) {\n      throw new IOException(FSExceptionMessages.STREAM_IS_CLOSED);\n    }\n\n    while (outBuffer.remaining() \u003c length) {\n\n      int remaining \u003d outBuffer.remaining();\n      outBuffer.put(data, offset, remaining);\n\n      // upload payload to azure storage\n      addBlockUploadCommand();\n\n      offset +\u003d remaining;\n      length -\u003d remaining;\n    }\n\n    outBuffer.put(data, offset, length);\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java",
+          "extendedDetails": {
+            "oldValue": "[data-byte[](modifiers-final), offset-int(modifiers-final), length-int(modifiers-final)]",
+            "newValue": "[data-byte[](modifiers-final), offset-int, length-int]"
+          }
+        }
+      ]
+    },
+    "8bc93db2e7c64830b6a662f28c8917a9eef4e7c9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12635. Adding Append API support for WASB. Contributed by Dushyanth.\n",
+      "commitDate": "18/01/16 9:08 AM",
+      "commitName": "8bc93db2e7c64830b6a662f28c8917a9eef4e7c9",
+      "commitAuthor": "cnauroth",
+      "diff": "@@ -0,0 +1,9 @@\n+  public void write(final byte[] data, final int offset, final int length)\n+      throws IOException {\n+\n+    if (offset \u003c 0 || length \u003c 0 || length \u003e data.length - offset) {\n+      throw new IndexOutOfBoundsException(\"write API in append stream called with invalid arguments\");\n+    }\n+\n+    writeInternal(data, offset, length);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void write(final byte[] data, final int offset, final int length)\n      throws IOException {\n\n    if (offset \u003c 0 || length \u003c 0 || length \u003e data.length - offset) {\n      throw new IndexOutOfBoundsException(\"write API in append stream called with invalid arguments\");\n    }\n\n    writeInternal(data, offset, length);\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java"
+    }
+  }
+}

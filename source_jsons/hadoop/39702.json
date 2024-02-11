@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LeafQueue.java",
+  "functionName": "updateApplicationPriority",
+  "functionId": "updateApplicationPriority___app-SchedulerApplication__FiCaSchedulerApp____newAppPriority-Priority",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/LeafQueue.java",
+  "functionStartLine": 2132,
+  "functionEndLine": 2152,
+  "numCommitsSeen": 176,
+  "timeTaken": 3503,
+  "changeHistory": [
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+    "19b3779ae7455230ed89971141b2667eae624aab",
+    "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f"
+  ],
+  "changeHistoryShort": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": "Ybodychange",
+    "19b3779ae7455230ed89971141b2667eae624aab": "Ybodychange",
+    "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "39b4a37e02e929a698fcf9e32f1f71bb6b977635": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9341.  Fixed enentrant lock usage in YARN project.\n            Contributed by Prabhu Joseph\n",
+      "commitDate": "07/03/19 1:47 PM",
+      "commitName": "39b4a37e02e929a698fcf9e32f1f71bb6b977635",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "04/03/19 9:10 PM",
+      "commitNameOld": "e40e2d6ad5cbe782c3a067229270738b501ed27e",
+      "commitAuthorOld": "Prabhu Joseph",
+      "daysBetweenCommits": 2.69,
+      "commitsBetweenForRepo": 39,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,21 @@\n   public void updateApplicationPriority(SchedulerApplication\u003cFiCaSchedulerApp\u003e app,\n       Priority newAppPriority) {\n+    writeLock.lock();\n     try {\n-      writeLock.lock();\n       FiCaSchedulerApp attempt \u003d app.getCurrentAppAttempt();\n       boolean isActive \u003d orderingPolicy.removeSchedulableEntity(attempt);\n       if (!isActive) {\n         pendingOrderingPolicy.removeSchedulableEntity(attempt);\n       }\n       // Update new priority in SchedulerApplication\n       attempt.setPriority(newAppPriority);\n \n       if (isActive) {\n         orderingPolicy.addSchedulableEntity(attempt);\n       } else {\n         pendingOrderingPolicy.addSchedulableEntity(attempt);\n       }\n     } finally {\n       writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void updateApplicationPriority(SchedulerApplication\u003cFiCaSchedulerApp\u003e app,\n      Priority newAppPriority) {\n    writeLock.lock();\n    try {\n      FiCaSchedulerApp attempt \u003d app.getCurrentAppAttempt();\n      boolean isActive \u003d orderingPolicy.removeSchedulableEntity(attempt);\n      if (!isActive) {\n        pendingOrderingPolicy.removeSchedulableEntity(attempt);\n      }\n      // Update new priority in SchedulerApplication\n      attempt.setPriority(newAppPriority);\n\n      if (isActive) {\n        orderingPolicy.addSchedulableEntity(attempt);\n      } else {\n        pendingOrderingPolicy.addSchedulableEntity(attempt);\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/LeafQueue.java",
+      "extendedDetails": {}
+    },
+    "19b3779ae7455230ed89971141b2667eae624aab": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-5802. updateApplicationPriority api in scheduler should ensure to re-insert app to correct ordering policy. Contributred by Bibin A Chundatt\n",
+      "commitDate": "04/11/16 3:37 AM",
+      "commitName": "19b3779ae7455230ed89971141b2667eae624aab",
+      "commitAuthor": "Sunil",
+      "commitDateOld": "31/10/16 3:18 PM",
+      "commitNameOld": "90dd3a8148468ac37a3f2173ad8d45e38bfcb0c9",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 3.51,
+      "commitsBetweenForRepo": 37,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,21 @@\n   public void updateApplicationPriority(SchedulerApplication\u003cFiCaSchedulerApp\u003e app,\n       Priority newAppPriority) {\n     try {\n       writeLock.lock();\n       FiCaSchedulerApp attempt \u003d app.getCurrentAppAttempt();\n-      getOrderingPolicy().removeSchedulableEntity(attempt);\n-\n+      boolean isActive \u003d orderingPolicy.removeSchedulableEntity(attempt);\n+      if (!isActive) {\n+        pendingOrderingPolicy.removeSchedulableEntity(attempt);\n+      }\n       // Update new priority in SchedulerApplication\n       attempt.setPriority(newAppPriority);\n \n-      getOrderingPolicy().addSchedulableEntity(attempt);\n+      if (isActive) {\n+        orderingPolicy.addSchedulableEntity(attempt);\n+      } else {\n+        pendingOrderingPolicy.addSchedulableEntity(attempt);\n+      }\n     } finally {\n       writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void updateApplicationPriority(SchedulerApplication\u003cFiCaSchedulerApp\u003e app,\n      Priority newAppPriority) {\n    try {\n      writeLock.lock();\n      FiCaSchedulerApp attempt \u003d app.getCurrentAppAttempt();\n      boolean isActive \u003d orderingPolicy.removeSchedulableEntity(attempt);\n      if (!isActive) {\n        pendingOrderingPolicy.removeSchedulableEntity(attempt);\n      }\n      // Update new priority in SchedulerApplication\n      attempt.setPriority(newAppPriority);\n\n      if (isActive) {\n        orderingPolicy.addSchedulableEntity(attempt);\n      } else {\n        pendingOrderingPolicy.addSchedulableEntity(attempt);\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/LeafQueue.java",
+      "extendedDetails": {}
+    },
+    "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3139. Improve locks in AbstractYarnScheduler/CapacityScheduler/FairScheduler. Contributed by Wangda Tan\n",
+      "commitDate": "04/10/16 5:23 PM",
+      "commitName": "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,15 @@\n+  public void updateApplicationPriority(SchedulerApplication\u003cFiCaSchedulerApp\u003e app,\n+      Priority newAppPriority) {\n+    try {\n+      writeLock.lock();\n+      FiCaSchedulerApp attempt \u003d app.getCurrentAppAttempt();\n+      getOrderingPolicy().removeSchedulableEntity(attempt);\n+\n+      // Update new priority in SchedulerApplication\n+      attempt.setPriority(newAppPriority);\n+\n+      getOrderingPolicy().addSchedulableEntity(attempt);\n+    } finally {\n+      writeLock.unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void updateApplicationPriority(SchedulerApplication\u003cFiCaSchedulerApp\u003e app,\n      Priority newAppPriority) {\n    try {\n      writeLock.lock();\n      FiCaSchedulerApp attempt \u003d app.getCurrentAppAttempt();\n      getOrderingPolicy().removeSchedulableEntity(attempt);\n\n      // Update new priority in SchedulerApplication\n      attempt.setPriority(newAppPriority);\n\n      getOrderingPolicy().addSchedulableEntity(attempt);\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/LeafQueue.java"
+    }
+  }
+}

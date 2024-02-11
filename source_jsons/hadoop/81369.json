@@ -1,0 +1,184 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NetUtils.java",
+  "functionName": "connect",
+  "functionId": "connect___socket-Socket__endpoint-SocketAddress__localAddr-SocketAddress__timeout-int",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/net/NetUtils.java",
+  "functionStartLine": 509,
+  "functionEndLine": 553,
+  "numCommitsSeen": 57,
+  "timeTaken": 1514,
+  "changeHistory": [
+    "5a0b74663951475f668c7c68b9902c2bb54dc861",
+    "950273bde4ccfc3721667898bbef39660fa0ad25",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+    "c59b4cd966eb71b2fa7c4d7fdb1f8d6f1df600bd",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36"
+  ],
+  "changeHistoryShort": {
+    "5a0b74663951475f668c7c68b9902c2bb54dc861": "Ybodychange",
+    "950273bde4ccfc3721667898bbef39660fa0ad25": "Ymultichange(Yparameterchange,Ybodychange)",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yfilerename",
+    "c59b4cd966eb71b2fa7c4d7fdb1f8d6f1df600bd": "Ybodychange",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5a0b74663951475f668c7c68b9902c2bb54dc861": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-4404. Create file failure when the machine of first attempted NameNode is down. Contributed by Todd Lipcon.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1442461 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/02/13 7:18 PM",
+      "commitName": "5a0b74663951475f668c7c68b9902c2bb54dc861",
+      "commitAuthor": "Aaron Myers",
+      "commitDateOld": "14/01/13 3:48 PM",
+      "commitNameOld": "6d807fcab144d8097cf559e5ac234db995819ba1",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 21.15,
+      "commitsBetweenForRepo": 102,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,41 +1,45 @@\n   public static void connect(Socket socket, \n                              SocketAddress endpoint,\n                              SocketAddress localAddr,\n                              int timeout) throws IOException {\n     if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n       throw new IllegalArgumentException(\"Illegal argument for connect()\");\n     }\n     \n     SocketChannel ch \u003d socket.getChannel();\n     \n     if (localAddr !\u003d null) {\n       Class localClass \u003d localAddr.getClass();\n       Class remoteClass \u003d endpoint.getClass();\n       Preconditions.checkArgument(localClass.equals(remoteClass),\n           \"Local address %s must be of same family as remote address %s.\",\n           localAddr, endpoint);\n       socket.bind(localAddr);\n     }\n \n-    if (ch \u003d\u003d null) {\n-      // let the default implementation handle it.\n-      socket.connect(endpoint, timeout);\n-    } else {\n-      SocketIOWithTimeout.connect(ch, endpoint, timeout);\n+    try {\n+      if (ch \u003d\u003d null) {\n+        // let the default implementation handle it.\n+        socket.connect(endpoint, timeout);\n+      } else {\n+        SocketIOWithTimeout.connect(ch, endpoint, timeout);\n+      }\n+    } catch (SocketTimeoutException ste) {\n+      throw new ConnectTimeoutException(ste.getMessage());\n     }\n \n     // There is a very rare case allowed by the TCP specification, such that\n     // if we are trying to connect to an endpoint on the local machine,\n     // and we end up choosing an ephemeral port equal to the destination port,\n     // we will actually end up getting connected to ourself (ie any data we\n     // send just comes right back). This is only possible if the target\n     // daemon is down, so we\u0027ll treat it like connection refused.\n     if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n         socket.getLocalAddress().equals(socket.getInetAddress())) {\n       LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n       socket.close();\n       throw new ConnectException(\n         \"Localhost targeted connection resulted in a loopback. \" +\n         \"No daemon is listening on the target port.\");\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void connect(Socket socket, \n                             SocketAddress endpoint,\n                             SocketAddress localAddr,\n                             int timeout) throws IOException {\n    if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n      throw new IllegalArgumentException(\"Illegal argument for connect()\");\n    }\n    \n    SocketChannel ch \u003d socket.getChannel();\n    \n    if (localAddr !\u003d null) {\n      Class localClass \u003d localAddr.getClass();\n      Class remoteClass \u003d endpoint.getClass();\n      Preconditions.checkArgument(localClass.equals(remoteClass),\n          \"Local address %s must be of same family as remote address %s.\",\n          localAddr, endpoint);\n      socket.bind(localAddr);\n    }\n\n    try {\n      if (ch \u003d\u003d null) {\n        // let the default implementation handle it.\n        socket.connect(endpoint, timeout);\n      } else {\n        SocketIOWithTimeout.connect(ch, endpoint, timeout);\n      }\n    } catch (SocketTimeoutException ste) {\n      throw new ConnectTimeoutException(ste.getMessage());\n    }\n\n    // There is a very rare case allowed by the TCP specification, such that\n    // if we are trying to connect to an endpoint on the local machine,\n    // and we end up choosing an ephemeral port equal to the destination port,\n    // we will actually end up getting connected to ourself (ie any data we\n    // send just comes right back). This is only possible if the target\n    // daemon is down, so we\u0027ll treat it like connection refused.\n    if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n        socket.getLocalAddress().equals(socket.getInetAddress())) {\n      LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n      socket.close();\n      throw new ConnectException(\n        \"Localhost targeted connection resulted in a loopback. \" +\n        \"No daemon is listening on the target port.\");\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/net/NetUtils.java",
+      "extendedDetails": {}
+    },
+    "950273bde4ccfc3721667898bbef39660fa0ad25": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-8210. Common side of HDFS-3148: The client should be able to use multiple local interfaces for data transfer. Contributed by Eli Collins\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1308457 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/04/12 11:49 AM",
+      "commitName": "950273bde4ccfc3721667898bbef39660fa0ad25",
+      "commitAuthor": "Eli Collins",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-8210. Common side of HDFS-3148: The client should be able to use multiple local interfaces for data transfer. Contributed by Eli Collins\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1308457 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "02/04/12 11:49 AM",
+          "commitName": "950273bde4ccfc3721667898bbef39660fa0ad25",
+          "commitAuthor": "Eli Collins",
+          "commitDateOld": "01/04/12 1:07 PM",
+          "commitNameOld": "78e3568340f225c33f919214f93e470e0e4871db",
+          "commitAuthorOld": "Eli Collins",
+          "daysBetweenCommits": 0.95,
+          "commitsBetweenForRepo": 6,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,41 @@\n   public static void connect(Socket socket, \n-                             SocketAddress endpoint, \n+                             SocketAddress endpoint,\n+                             SocketAddress localAddr,\n                              int timeout) throws IOException {\n     if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n       throw new IllegalArgumentException(\"Illegal argument for connect()\");\n     }\n     \n     SocketChannel ch \u003d socket.getChannel();\n     \n+    if (localAddr !\u003d null) {\n+      Class localClass \u003d localAddr.getClass();\n+      Class remoteClass \u003d endpoint.getClass();\n+      Preconditions.checkArgument(localClass.equals(remoteClass),\n+          \"Local address %s must be of same family as remote address %s.\",\n+          localAddr, endpoint);\n+      socket.bind(localAddr);\n+    }\n+\n     if (ch \u003d\u003d null) {\n       // let the default implementation handle it.\n       socket.connect(endpoint, timeout);\n     } else {\n       SocketIOWithTimeout.connect(ch, endpoint, timeout);\n     }\n \n     // There is a very rare case allowed by the TCP specification, such that\n     // if we are trying to connect to an endpoint on the local machine,\n     // and we end up choosing an ephemeral port equal to the destination port,\n     // we will actually end up getting connected to ourself (ie any data we\n     // send just comes right back). This is only possible if the target\n     // daemon is down, so we\u0027ll treat it like connection refused.\n     if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n         socket.getLocalAddress().equals(socket.getInetAddress())) {\n       LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n       socket.close();\n       throw new ConnectException(\n         \"Localhost targeted connection resulted in a loopback. \" +\n         \"No daemon is listening on the target port.\");\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void connect(Socket socket, \n                             SocketAddress endpoint,\n                             SocketAddress localAddr,\n                             int timeout) throws IOException {\n    if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n      throw new IllegalArgumentException(\"Illegal argument for connect()\");\n    }\n    \n    SocketChannel ch \u003d socket.getChannel();\n    \n    if (localAddr !\u003d null) {\n      Class localClass \u003d localAddr.getClass();\n      Class remoteClass \u003d endpoint.getClass();\n      Preconditions.checkArgument(localClass.equals(remoteClass),\n          \"Local address %s must be of same family as remote address %s.\",\n          localAddr, endpoint);\n      socket.bind(localAddr);\n    }\n\n    if (ch \u003d\u003d null) {\n      // let the default implementation handle it.\n      socket.connect(endpoint, timeout);\n    } else {\n      SocketIOWithTimeout.connect(ch, endpoint, timeout);\n    }\n\n    // There is a very rare case allowed by the TCP specification, such that\n    // if we are trying to connect to an endpoint on the local machine,\n    // and we end up choosing an ephemeral port equal to the destination port,\n    // we will actually end up getting connected to ourself (ie any data we\n    // send just comes right back). This is only possible if the target\n    // daemon is down, so we\u0027ll treat it like connection refused.\n    if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n        socket.getLocalAddress().equals(socket.getInetAddress())) {\n      LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n      socket.close();\n      throw new ConnectException(\n        \"Localhost targeted connection resulted in a loopback. \" +\n        \"No daemon is listening on the target port.\");\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/net/NetUtils.java",
+          "extendedDetails": {
+            "oldValue": "[socket-Socket, endpoint-SocketAddress, timeout-int]",
+            "newValue": "[socket-Socket, endpoint-SocketAddress, localAddr-SocketAddress, timeout-int]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-8210. Common side of HDFS-3148: The client should be able to use multiple local interfaces for data transfer. Contributed by Eli Collins\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1308457 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "02/04/12 11:49 AM",
+          "commitName": "950273bde4ccfc3721667898bbef39660fa0ad25",
+          "commitAuthor": "Eli Collins",
+          "commitDateOld": "01/04/12 1:07 PM",
+          "commitNameOld": "78e3568340f225c33f919214f93e470e0e4871db",
+          "commitAuthorOld": "Eli Collins",
+          "daysBetweenCommits": 0.95,
+          "commitsBetweenForRepo": 6,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,41 @@\n   public static void connect(Socket socket, \n-                             SocketAddress endpoint, \n+                             SocketAddress endpoint,\n+                             SocketAddress localAddr,\n                              int timeout) throws IOException {\n     if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n       throw new IllegalArgumentException(\"Illegal argument for connect()\");\n     }\n     \n     SocketChannel ch \u003d socket.getChannel();\n     \n+    if (localAddr !\u003d null) {\n+      Class localClass \u003d localAddr.getClass();\n+      Class remoteClass \u003d endpoint.getClass();\n+      Preconditions.checkArgument(localClass.equals(remoteClass),\n+          \"Local address %s must be of same family as remote address %s.\",\n+          localAddr, endpoint);\n+      socket.bind(localAddr);\n+    }\n+\n     if (ch \u003d\u003d null) {\n       // let the default implementation handle it.\n       socket.connect(endpoint, timeout);\n     } else {\n       SocketIOWithTimeout.connect(ch, endpoint, timeout);\n     }\n \n     // There is a very rare case allowed by the TCP specification, such that\n     // if we are trying to connect to an endpoint on the local machine,\n     // and we end up choosing an ephemeral port equal to the destination port,\n     // we will actually end up getting connected to ourself (ie any data we\n     // send just comes right back). This is only possible if the target\n     // daemon is down, so we\u0027ll treat it like connection refused.\n     if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n         socket.getLocalAddress().equals(socket.getInetAddress())) {\n       LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n       socket.close();\n       throw new ConnectException(\n         \"Localhost targeted connection resulted in a loopback. \" +\n         \"No daemon is listening on the target port.\");\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void connect(Socket socket, \n                             SocketAddress endpoint,\n                             SocketAddress localAddr,\n                             int timeout) throws IOException {\n    if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n      throw new IllegalArgumentException(\"Illegal argument for connect()\");\n    }\n    \n    SocketChannel ch \u003d socket.getChannel();\n    \n    if (localAddr !\u003d null) {\n      Class localClass \u003d localAddr.getClass();\n      Class remoteClass \u003d endpoint.getClass();\n      Preconditions.checkArgument(localClass.equals(remoteClass),\n          \"Local address %s must be of same family as remote address %s.\",\n          localAddr, endpoint);\n      socket.bind(localAddr);\n    }\n\n    if (ch \u003d\u003d null) {\n      // let the default implementation handle it.\n      socket.connect(endpoint, timeout);\n    } else {\n      SocketIOWithTimeout.connect(ch, endpoint, timeout);\n    }\n\n    // There is a very rare case allowed by the TCP specification, such that\n    // if we are trying to connect to an endpoint on the local machine,\n    // and we end up choosing an ephemeral port equal to the destination port,\n    // we will actually end up getting connected to ourself (ie any data we\n    // send just comes right back). This is only possible if the target\n    // daemon is down, so we\u0027ll treat it like connection refused.\n    if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n        socket.getLocalAddress().equals(socket.getInetAddress())) {\n      LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n      socket.close();\n      throw new ConnectException(\n        \"Localhost targeted connection resulted in a loopback. \" +\n        \"No daemon is listening on the target port.\");\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/net/NetUtils.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static void connect(Socket socket, \n                             SocketAddress endpoint, \n                             int timeout) throws IOException {\n    if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n      throw new IllegalArgumentException(\"Illegal argument for connect()\");\n    }\n    \n    SocketChannel ch \u003d socket.getChannel();\n    \n    if (ch \u003d\u003d null) {\n      // let the default implementation handle it.\n      socket.connect(endpoint, timeout);\n    } else {\n      SocketIOWithTimeout.connect(ch, endpoint, timeout);\n    }\n\n    // There is a very rare case allowed by the TCP specification, such that\n    // if we are trying to connect to an endpoint on the local machine,\n    // and we end up choosing an ephemeral port equal to the destination port,\n    // we will actually end up getting connected to ourself (ie any data we\n    // send just comes right back). This is only possible if the target\n    // daemon is down, so we\u0027ll treat it like connection refused.\n    if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n        socket.getLocalAddress().equals(socket.getInetAddress())) {\n      LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n      socket.close();\n      throw new ConnectException(\n        \"Localhost targeted connection resulted in a loopback. \" +\n        \"No daemon is listening on the target port.\");\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/net/NetUtils.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-common/src/main/java/org/apache/hadoop/net/NetUtils.java",
+        "newPath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/net/NetUtils.java"
+      }
+    },
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-6671. Use maven for hadoop common builds. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153184 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/08/11 9:37 AM",
+      "commitName": "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "01/08/11 3:53 PM",
+      "commitNameOld": "9bac807cedbcff34e1a144fb475eff267e5ed86d",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static void connect(Socket socket, \n                             SocketAddress endpoint, \n                             int timeout) throws IOException {\n    if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n      throw new IllegalArgumentException(\"Illegal argument for connect()\");\n    }\n    \n    SocketChannel ch \u003d socket.getChannel();\n    \n    if (ch \u003d\u003d null) {\n      // let the default implementation handle it.\n      socket.connect(endpoint, timeout);\n    } else {\n      SocketIOWithTimeout.connect(ch, endpoint, timeout);\n    }\n\n    // There is a very rare case allowed by the TCP specification, such that\n    // if we are trying to connect to an endpoint on the local machine,\n    // and we end up choosing an ephemeral port equal to the destination port,\n    // we will actually end up getting connected to ourself (ie any data we\n    // send just comes right back). This is only possible if the target\n    // daemon is down, so we\u0027ll treat it like connection refused.\n    if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n        socket.getLocalAddress().equals(socket.getInetAddress())) {\n      LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n      socket.close();\n      throw new ConnectException(\n        \"Localhost targeted connection resulted in a loopback. \" +\n        \"No daemon is listening on the target port.\");\n    }\n  }",
+      "path": "hadoop-common/src/main/java/org/apache/hadoop/net/NetUtils.java",
+      "extendedDetails": {
+        "oldPath": "common/src/java/org/apache/hadoop/net/NetUtils.java",
+        "newPath": "hadoop-common/src/main/java/org/apache/hadoop/net/NetUtils.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "11/06/11 9:13 PM",
+      "commitNameOld": "a285fb5effe9ba3be4ec5f942afaf5ddd1186151",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static void connect(Socket socket, \n                             SocketAddress endpoint, \n                             int timeout) throws IOException {\n    if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n      throw new IllegalArgumentException(\"Illegal argument for connect()\");\n    }\n    \n    SocketChannel ch \u003d socket.getChannel();\n    \n    if (ch \u003d\u003d null) {\n      // let the default implementation handle it.\n      socket.connect(endpoint, timeout);\n    } else {\n      SocketIOWithTimeout.connect(ch, endpoint, timeout);\n    }\n\n    // There is a very rare case allowed by the TCP specification, such that\n    // if we are trying to connect to an endpoint on the local machine,\n    // and we end up choosing an ephemeral port equal to the destination port,\n    // we will actually end up getting connected to ourself (ie any data we\n    // send just comes right back). This is only possible if the target\n    // daemon is down, so we\u0027ll treat it like connection refused.\n    if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n        socket.getLocalAddress().equals(socket.getInetAddress())) {\n      LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n      socket.close();\n      throw new ConnectException(\n        \"Localhost targeted connection resulted in a loopback. \" +\n        \"No daemon is listening on the target port.\");\n    }\n  }",
+      "path": "common/src/java/org/apache/hadoop/net/NetUtils.java",
+      "extendedDetails": {
+        "oldPath": "src/java/org/apache/hadoop/net/NetUtils.java",
+        "newPath": "common/src/java/org/apache/hadoop/net/NetUtils.java"
+      }
+    },
+    "c59b4cd966eb71b2fa7c4d7fdb1f8d6f1df600bd": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-6722. NetUtils.connect should check that it hasn\u0027t connected a socket to itself. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@939026 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "28/04/10 10:46 AM",
+      "commitName": "c59b4cd966eb71b2fa7c4d7fdb1f8d6f1df600bd",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "15/06/09 1:28 PM",
+      "commitNameOld": "bcd64325a11cb0dd5096ffc093d0ffa68c4fcc58",
+      "commitAuthorOld": "Owen O\u0027Malley",
+      "daysBetweenCommits": 316.89,
+      "commitsBetweenForRepo": 297,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,31 @@\n   public static void connect(Socket socket, \n                              SocketAddress endpoint, \n                              int timeout) throws IOException {\n     if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n       throw new IllegalArgumentException(\"Illegal argument for connect()\");\n     }\n     \n     SocketChannel ch \u003d socket.getChannel();\n     \n     if (ch \u003d\u003d null) {\n       // let the default implementation handle it.\n       socket.connect(endpoint, timeout);\n     } else {\n       SocketIOWithTimeout.connect(ch, endpoint, timeout);\n     }\n+\n+    // There is a very rare case allowed by the TCP specification, such that\n+    // if we are trying to connect to an endpoint on the local machine,\n+    // and we end up choosing an ephemeral port equal to the destination port,\n+    // we will actually end up getting connected to ourself (ie any data we\n+    // send just comes right back). This is only possible if the target\n+    // daemon is down, so we\u0027ll treat it like connection refused.\n+    if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n+        socket.getLocalAddress().equals(socket.getInetAddress())) {\n+      LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n+      socket.close();\n+      throw new ConnectException(\n+        \"Localhost targeted connection resulted in a loopback. \" +\n+        \"No daemon is listening on the target port.\");\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void connect(Socket socket, \n                             SocketAddress endpoint, \n                             int timeout) throws IOException {\n    if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n      throw new IllegalArgumentException(\"Illegal argument for connect()\");\n    }\n    \n    SocketChannel ch \u003d socket.getChannel();\n    \n    if (ch \u003d\u003d null) {\n      // let the default implementation handle it.\n      socket.connect(endpoint, timeout);\n    } else {\n      SocketIOWithTimeout.connect(ch, endpoint, timeout);\n    }\n\n    // There is a very rare case allowed by the TCP specification, such that\n    // if we are trying to connect to an endpoint on the local machine,\n    // and we end up choosing an ephemeral port equal to the destination port,\n    // we will actually end up getting connected to ourself (ie any data we\n    // send just comes right back). This is only possible if the target\n    // daemon is down, so we\u0027ll treat it like connection refused.\n    if (socket.getLocalPort() \u003d\u003d socket.getPort() \u0026\u0026\n        socket.getLocalAddress().equals(socket.getInetAddress())) {\n      LOG.info(\"Detected a loopback TCP socket, disconnecting it\");\n      socket.close();\n      throw new ConnectException(\n        \"Localhost targeted connection resulted in a loopback. \" +\n        \"No daemon is listening on the target port.\");\n    }\n  }",
+      "path": "src/java/org/apache/hadoop/net/NetUtils.java",
+      "extendedDetails": {}
+    },
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-4687 Moving src directories on branch\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/core/branches/HADOOP-4687/core@776174 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/05/09 9:20 PM",
+      "commitName": "5128a9a453d64bfe1ed978cf9ffed27985eeef36",
+      "commitAuthor": "Owen O\u0027Malley",
+      "diff": "@@ -0,0 +1,16 @@\n+  public static void connect(Socket socket, \n+                             SocketAddress endpoint, \n+                             int timeout) throws IOException {\n+    if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n+      throw new IllegalArgumentException(\"Illegal argument for connect()\");\n+    }\n+    \n+    SocketChannel ch \u003d socket.getChannel();\n+    \n+    if (ch \u003d\u003d null) {\n+      // let the default implementation handle it.\n+      socket.connect(endpoint, timeout);\n+    } else {\n+      SocketIOWithTimeout.connect(ch, endpoint, timeout);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void connect(Socket socket, \n                             SocketAddress endpoint, \n                             int timeout) throws IOException {\n    if (socket \u003d\u003d null || endpoint \u003d\u003d null || timeout \u003c 0) {\n      throw new IllegalArgumentException(\"Illegal argument for connect()\");\n    }\n    \n    SocketChannel ch \u003d socket.getChannel();\n    \n    if (ch \u003d\u003d null) {\n      // let the default implementation handle it.\n      socket.connect(endpoint, timeout);\n    } else {\n      SocketIOWithTimeout.connect(ch, endpoint, timeout);\n    }\n  }",
+      "path": "src/java/org/apache/hadoop/net/NetUtils.java"
+    }
+  }
+}

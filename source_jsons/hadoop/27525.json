@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TimelineCollector.java",
+  "functionName": "update",
+  "functionId": "update___incoming-TimelineEntity",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/collector/TimelineCollector.java",
+  "functionStartLine": 352,
+  "functionEndLine": 372,
+  "numCommitsSeen": 18,
+  "timeTaken": 911,
+  "changeHistory": [
+    "54e2b9e876fd91712c14ffbc4c49cd946f305aeb",
+    "39cce4e629aadb7fadf1fb14a23108f55b59eb21"
+  ],
+  "changeHistoryShort": {
+    "54e2b9e876fd91712c14ffbc4c49cd946f305aeb": "Ybodychange",
+    "39cce4e629aadb7fadf1fb14a23108f55b59eb21": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "54e2b9e876fd91712c14ffbc4c49cd946f305aeb": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6375 App level aggregation should not consider metric values reported in the previous aggregation cycle (Varun Saxena via Vrushali C)\n",
+      "commitDate": "04/05/17 3:25 PM",
+      "commitName": "54e2b9e876fd91712c14ffbc4c49cd946f305aeb",
+      "commitAuthor": "Vrushali Channapattan",
+      "commitDateOld": "27/04/17 2:31 AM",
+      "commitNameOld": "793bbf216dc6d44ea57c778037bd461513fa6078",
+      "commitAuthorOld": "Varun Saxena",
+      "daysBetweenCommits": 7.54,
+      "commitsBetweenForRepo": 50,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,21 @@\n     public void update(TimelineEntity incoming) {\n       String entityId \u003d incoming.getId();\n       for (TimelineMetric m : incoming.getMetrics()) {\n         // Skip if the metric does not need aggregation\n         if (m.getRealtimeAggregationOp() \u003d\u003d TimelineMetricOperation.NOP) {\n           continue;\n         }\n         // Update aggregateTable\n         Map\u003cString, TimelineMetric\u003e aggrRow \u003d aggregateTable.get(m);\n         if (aggrRow \u003d\u003d null) {\n-          Map\u003cString, TimelineMetric\u003e tempRow \u003d new ConcurrentHashMap\u003c\u003e();\n+          Map\u003cString, TimelineMetric\u003e tempRow \u003d new HashMap\u003c\u003e();\n           aggrRow \u003d aggregateTable.putIfAbsent(m, tempRow);\n           if (aggrRow \u003d\u003d null) {\n             aggrRow \u003d tempRow;\n           }\n         }\n-        aggrRow.put(entityId, m);\n+        synchronized (aggrRow) {\n+          aggrRow.put(entityId, m);\n+        }\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void update(TimelineEntity incoming) {\n      String entityId \u003d incoming.getId();\n      for (TimelineMetric m : incoming.getMetrics()) {\n        // Skip if the metric does not need aggregation\n        if (m.getRealtimeAggregationOp() \u003d\u003d TimelineMetricOperation.NOP) {\n          continue;\n        }\n        // Update aggregateTable\n        Map\u003cString, TimelineMetric\u003e aggrRow \u003d aggregateTable.get(m);\n        if (aggrRow \u003d\u003d null) {\n          Map\u003cString, TimelineMetric\u003e tempRow \u003d new HashMap\u003c\u003e();\n          aggrRow \u003d aggregateTable.putIfAbsent(m, tempRow);\n          if (aggrRow \u003d\u003d null) {\n            aggrRow \u003d tempRow;\n          }\n        }\n        synchronized (aggrRow) {\n          aggrRow.put(entityId, m);\n        }\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/collector/TimelineCollector.java",
+      "extendedDetails": {}
+    },
+    "39cce4e629aadb7fadf1fb14a23108f55b59eb21": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3816. [Aggregation] App-level aggregation and accumulation for YARN system metrics (Li Lu via sjlee)\n",
+      "commitDate": "10/07/16 8:45 AM",
+      "commitName": "39cce4e629aadb7fadf1fb14a23108f55b59eb21",
+      "commitAuthor": "Sangjin Lee",
+      "diff": "@@ -0,0 +1,19 @@\n+    public void update(TimelineEntity incoming) {\n+      String entityId \u003d incoming.getId();\n+      for (TimelineMetric m : incoming.getMetrics()) {\n+        // Skip if the metric does not need aggregation\n+        if (m.getRealtimeAggregationOp() \u003d\u003d TimelineMetricOperation.NOP) {\n+          continue;\n+        }\n+        // Update aggregateTable\n+        Map\u003cString, TimelineMetric\u003e aggrRow \u003d aggregateTable.get(m);\n+        if (aggrRow \u003d\u003d null) {\n+          Map\u003cString, TimelineMetric\u003e tempRow \u003d new ConcurrentHashMap\u003c\u003e();\n+          aggrRow \u003d aggregateTable.putIfAbsent(m, tempRow);\n+          if (aggrRow \u003d\u003d null) {\n+            aggrRow \u003d tempRow;\n+          }\n+        }\n+        aggrRow.put(entityId, m);\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void update(TimelineEntity incoming) {\n      String entityId \u003d incoming.getId();\n      for (TimelineMetric m : incoming.getMetrics()) {\n        // Skip if the metric does not need aggregation\n        if (m.getRealtimeAggregationOp() \u003d\u003d TimelineMetricOperation.NOP) {\n          continue;\n        }\n        // Update aggregateTable\n        Map\u003cString, TimelineMetric\u003e aggrRow \u003d aggregateTable.get(m);\n        if (aggrRow \u003d\u003d null) {\n          Map\u003cString, TimelineMetric\u003e tempRow \u003d new ConcurrentHashMap\u003c\u003e();\n          aggrRow \u003d aggregateTable.putIfAbsent(m, tempRow);\n          if (aggrRow \u003d\u003d null) {\n            aggrRow \u003d tempRow;\n          }\n        }\n        aggrRow.put(entityId, m);\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/collector/TimelineCollector.java"
+    }
+  }
+}

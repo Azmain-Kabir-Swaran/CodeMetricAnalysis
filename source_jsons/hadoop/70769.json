@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockBlobAppendStream.java",
+  "functionName": "execute",
+  "functionId": "execute",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java",
+  "functionStartLine": 193,
+  "functionEndLine": 193,
+  "numCommitsSeen": 7,
+  "timeTaken": 1635,
+  "changeHistory": [
+    "13eda5000304099d1145631f9be13ce8a00b600d"
+  ],
+  "changeHistoryShort": {
+    "13eda5000304099d1145631f9be13ce8a00b600d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "13eda5000304099d1145631f9be13ce8a00b600d": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14520. WASB: Block compaction for Azure Block Blobs.\nContributed by Georgi Chalakov\n",
+      "commitDate": "07/09/17 10:35 AM",
+      "commitName": "13eda5000304099d1145631f9be13ce8a00b600d",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,62 @@\n+    public void execute() throws InterruptedException, IOException {\n+\n+      if (committedBlobLength.get() \u003e\u003d getCommandBlobOffset()) {\n+        LOG.debug(\"commit already applied for {}\", key);\n+        return;\n+      }\n+\n+      if (lastBlock \u003d\u003d null) {\n+        LOG.debug(\"nothing to commit for {}\", key);\n+        return;\n+      }\n+\n+      LOG.debug(\"active commands: {} for {}\", activeBlockCommands.size(), key);\n+\n+      for (UploadCommand activeCommand : activeBlockCommands) {\n+        if (activeCommand.getCommandBlobOffset() \u003c getCommandBlobOffset()) {\n+          activeCommand.dump();\n+          activeCommand.awaitAsDependent();\n+        } else {\n+          break;\n+        }\n+      }\n+\n+      // stop all uploads until the block list is committed\n+      uploadingSemaphore.acquire(MAX_NUMBER_THREADS_IN_THREAD_POOL);\n+\n+      BlockEntry uncommittedBlock;\n+      do  {\n+        uncommittedBlock \u003d uncommittedBlockEntries.poll();\n+        blockEntries.add(uncommittedBlock);\n+      } while (uncommittedBlock !\u003d lastBlock);\n+\n+      if (blockEntries.size() \u003e activateCompactionBlockCount) {\n+        LOG.debug(\"Block compaction: activated with {} blocks for {}\",\n+            blockEntries.size(), key);\n+\n+        // Block compaction\n+        long startCompaction \u003d System.nanoTime();\n+        blockCompaction();\n+        LOG.debug(\"Block compaction finished for {} ms with {} blocks for {}\",\n+                TimeUnit.NANOSECONDS.toMillis(\n+                    System.nanoTime() - startCompaction),\n+                blockEntries.size(), key);\n+      }\n+\n+      writeBlockListRequestInternal();\n+\n+      uploadingSemaphore.release(MAX_NUMBER_THREADS_IN_THREAD_POOL);\n+\n+      // remove blocks previous commands\n+      for (Iterator\u003cUploadCommand\u003e it \u003d activeBlockCommands.iterator();\n+           it.hasNext();) {\n+        UploadCommand activeCommand \u003d it.next();\n+        if (activeCommand.getCommandBlobOffset() \u003c\u003d getCommandBlobOffset()) {\n+          it.remove();\n+        } else {\n+          break;\n+        }\n+      }\n+\n+      committedBlobLength.set(getCommandBlobOffset());\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void execute() throws InterruptedException, IOException {\n\n      if (committedBlobLength.get() \u003e\u003d getCommandBlobOffset()) {\n        LOG.debug(\"commit already applied for {}\", key);\n        return;\n      }\n\n      if (lastBlock \u003d\u003d null) {\n        LOG.debug(\"nothing to commit for {}\", key);\n        return;\n      }\n\n      LOG.debug(\"active commands: {} for {}\", activeBlockCommands.size(), key);\n\n      for (UploadCommand activeCommand : activeBlockCommands) {\n        if (activeCommand.getCommandBlobOffset() \u003c getCommandBlobOffset()) {\n          activeCommand.dump();\n          activeCommand.awaitAsDependent();\n        } else {\n          break;\n        }\n      }\n\n      // stop all uploads until the block list is committed\n      uploadingSemaphore.acquire(MAX_NUMBER_THREADS_IN_THREAD_POOL);\n\n      BlockEntry uncommittedBlock;\n      do  {\n        uncommittedBlock \u003d uncommittedBlockEntries.poll();\n        blockEntries.add(uncommittedBlock);\n      } while (uncommittedBlock !\u003d lastBlock);\n\n      if (blockEntries.size() \u003e activateCompactionBlockCount) {\n        LOG.debug(\"Block compaction: activated with {} blocks for {}\",\n            blockEntries.size(), key);\n\n        // Block compaction\n        long startCompaction \u003d System.nanoTime();\n        blockCompaction();\n        LOG.debug(\"Block compaction finished for {} ms with {} blocks for {}\",\n                TimeUnit.NANOSECONDS.toMillis(\n                    System.nanoTime() - startCompaction),\n                blockEntries.size(), key);\n      }\n\n      writeBlockListRequestInternal();\n\n      uploadingSemaphore.release(MAX_NUMBER_THREADS_IN_THREAD_POOL);\n\n      // remove blocks previous commands\n      for (Iterator\u003cUploadCommand\u003e it \u003d activeBlockCommands.iterator();\n           it.hasNext();) {\n        UploadCommand activeCommand \u003d it.next();\n        if (activeCommand.getCommandBlobOffset() \u003c\u003d getCommandBlobOffset()) {\n          it.remove();\n        } else {\n          break;\n        }\n      }\n\n      committedBlobLength.set(getCommandBlobOffset());\n    }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/BlockBlobAppendStream.java"
+    }
+  }
+}

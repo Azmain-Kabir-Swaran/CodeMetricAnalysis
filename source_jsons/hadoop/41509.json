@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FairScheduler.java",
+  "functionName": "preValidateMoveApplication",
+  "functionId": "preValidateMoveApplication___appId-ApplicationId__newQueue-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java",
+  "functionStartLine": 1805,
+  "functionEndLine": 1826,
+  "numCommitsSeen": 226,
+  "timeTaken": 3695,
+  "changeHistory": [
+    "2bba329c141dea17a1a9f7112f7155e11264ccfd",
+    "ea2c6c8c9a55813a19b3dbd0d29747d6a7739030",
+    "563480dccd0136d82730f4228f1df44449ed5822"
+  ],
+  "changeHistoryShort": {
+    "2bba329c141dea17a1a9f7112f7155e11264ccfd": "Ybodychange",
+    "ea2c6c8c9a55813a19b3dbd0d29747d6a7739030": "Ybodychange",
+    "563480dccd0136d82730f4228f1df44449ed5822": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2bba329c141dea17a1a9f7112f7155e11264ccfd": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8994. Fix race condition between move app and queue cleanup in Fair Scheduler. (Contributed by Wilfred Spiegelenburg)\n",
+      "commitDate": "05/12/18 2:38 PM",
+      "commitName": "2bba329c141dea17a1a9f7112f7155e11264ccfd",
+      "commitAuthor": "Haibo Chen",
+      "commitDateOld": "08/11/18 4:02 PM",
+      "commitNameOld": "524a7523c427b55273133078898ae3535897bada",
+      "commitAuthorOld": "Haibo Chen",
+      "daysBetweenCommits": 26.94,
+      "commitsBetweenForRepo": 183,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,22 @@\n   public void preValidateMoveApplication(ApplicationId appId, String newQueue)\n       throws YarnException {\n     writeLock.lock();\n     try {\n       SchedulerApplication\u003cFSAppAttempt\u003e app \u003d applications.get(appId);\n       if (app \u003d\u003d null) {\n         throw new YarnException(\"App to be moved \" + appId + \" not found.\");\n       }\n \n-      FSAppAttempt attempt \u003d app.getCurrentAppAttempt();\n-      // To serialize with FairScheduler#allocate, synchronize on app attempt\n-\n-      attempt.getWriteLock().lock();\n-      try {\n-        FSLeafQueue oldQueue \u003d (FSLeafQueue) app.getQueue();\n-        String destQueueName \u003d handleMoveToPlanQueue(newQueue);\n-        FSLeafQueue targetQueue \u003d queueMgr.getLeafQueue(destQueueName, false);\n-        if (targetQueue \u003d\u003d null) {\n-          throw new YarnException(\"Target queue \" + newQueue\n-              + \" not found or is not a leaf queue.\");\n-        }\n-\n-        if (oldQueue.isRunnableApp(attempt)) {\n-          verifyMoveDoesNotViolateConstraints(attempt, oldQueue, targetQueue);\n-        }\n-      } finally {\n-        attempt.getWriteLock().unlock();\n+      // Do not register the app on the new queue: lots of things can still\n+      // change between this check and the real move and unregistering the move\n+      // becomes a problem.\n+      String destQueueName \u003d handleMoveToPlanQueue(newQueue);\n+      FSLeafQueue targetQueue \u003d queueMgr.getLeafQueue(destQueueName, false);\n+      if (targetQueue \u003d\u003d null) {\n+        throw new YarnException(\"Target queue \" + newQueue\n+            + \" not found or is not a leaf queue.\");\n       }\n     } finally {\n       writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void preValidateMoveApplication(ApplicationId appId, String newQueue)\n      throws YarnException {\n    writeLock.lock();\n    try {\n      SchedulerApplication\u003cFSAppAttempt\u003e app \u003d applications.get(appId);\n      if (app \u003d\u003d null) {\n        throw new YarnException(\"App to be moved \" + appId + \" not found.\");\n      }\n\n      // Do not register the app on the new queue: lots of things can still\n      // change between this check and the real move and unregistering the move\n      // becomes a problem.\n      String destQueueName \u003d handleMoveToPlanQueue(newQueue);\n      FSLeafQueue targetQueue \u003d queueMgr.getLeafQueue(destQueueName, false);\n      if (targetQueue \u003d\u003d null) {\n        throw new YarnException(\"Target queue \" + newQueue\n            + \" not found or is not a leaf queue.\");\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java",
+      "extendedDetails": {}
+    },
+    "ea2c6c8c9a55813a19b3dbd0d29747d6a7739030": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7133. Clean up lock-try order in fair scheduler. (Szilard Nemeth via Haibo Chen)\n",
+      "commitDate": "24/07/18 12:46 PM",
+      "commitName": "ea2c6c8c9a55813a19b3dbd0d29747d6a7739030",
+      "commitAuthor": "Haibo Chen",
+      "commitDateOld": "11/06/18 11:12 AM",
+      "commitNameOld": "c190ac2be88e574b3322cdc73a7c0af0cef708b2",
+      "commitAuthorOld": "Haibo Chen",
+      "daysBetweenCommits": 43.07,
+      "commitsBetweenForRepo": 266,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,32 @@\n   public void preValidateMoveApplication(ApplicationId appId, String newQueue)\n       throws YarnException {\n+    writeLock.lock();\n     try {\n-      writeLock.lock();\n       SchedulerApplication\u003cFSAppAttempt\u003e app \u003d applications.get(appId);\n       if (app \u003d\u003d null) {\n         throw new YarnException(\"App to be moved \" + appId + \" not found.\");\n       }\n \n       FSAppAttempt attempt \u003d app.getCurrentAppAttempt();\n       // To serialize with FairScheduler#allocate, synchronize on app attempt\n \n+      attempt.getWriteLock().lock();\n       try {\n-        attempt.getWriteLock().lock();\n         FSLeafQueue oldQueue \u003d (FSLeafQueue) app.getQueue();\n         String destQueueName \u003d handleMoveToPlanQueue(newQueue);\n         FSLeafQueue targetQueue \u003d queueMgr.getLeafQueue(destQueueName, false);\n         if (targetQueue \u003d\u003d null) {\n           throw new YarnException(\"Target queue \" + newQueue\n               + \" not found or is not a leaf queue.\");\n         }\n \n         if (oldQueue.isRunnableApp(attempt)) {\n           verifyMoveDoesNotViolateConstraints(attempt, oldQueue, targetQueue);\n         }\n       } finally {\n         attempt.getWriteLock().unlock();\n       }\n     } finally {\n       writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void preValidateMoveApplication(ApplicationId appId, String newQueue)\n      throws YarnException {\n    writeLock.lock();\n    try {\n      SchedulerApplication\u003cFSAppAttempt\u003e app \u003d applications.get(appId);\n      if (app \u003d\u003d null) {\n        throw new YarnException(\"App to be moved \" + appId + \" not found.\");\n      }\n\n      FSAppAttempt attempt \u003d app.getCurrentAppAttempt();\n      // To serialize with FairScheduler#allocate, synchronize on app attempt\n\n      attempt.getWriteLock().lock();\n      try {\n        FSLeafQueue oldQueue \u003d (FSLeafQueue) app.getQueue();\n        String destQueueName \u003d handleMoveToPlanQueue(newQueue);\n        FSLeafQueue targetQueue \u003d queueMgr.getLeafQueue(destQueueName, false);\n        if (targetQueue \u003d\u003d null) {\n          throw new YarnException(\"Target queue \" + newQueue\n              + \" not found or is not a leaf queue.\");\n        }\n\n        if (oldQueue.isRunnableApp(attempt)) {\n          verifyMoveDoesNotViolateConstraints(attempt, oldQueue, targetQueue);\n        }\n      } finally {\n        attempt.getWriteLock().unlock();\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java",
+      "extendedDetails": {}
+    },
+    "563480dccd0136d82730f4228f1df44449ed5822": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5932. Retrospect moveApplicationToQueue in align with YARN-5611. Contributed by Sunil G.\n",
+      "commitDate": "06/12/16 9:09 PM",
+      "commitName": "563480dccd0136d82730f4228f1df44449ed5822",
+      "commitAuthor": "Rohith Sharma K S",
+      "diff": "@@ -0,0 +1,32 @@\n+  public void preValidateMoveApplication(ApplicationId appId, String newQueue)\n+      throws YarnException {\n+    try {\n+      writeLock.lock();\n+      SchedulerApplication\u003cFSAppAttempt\u003e app \u003d applications.get(appId);\n+      if (app \u003d\u003d null) {\n+        throw new YarnException(\"App to be moved \" + appId + \" not found.\");\n+      }\n+\n+      FSAppAttempt attempt \u003d app.getCurrentAppAttempt();\n+      // To serialize with FairScheduler#allocate, synchronize on app attempt\n+\n+      try {\n+        attempt.getWriteLock().lock();\n+        FSLeafQueue oldQueue \u003d (FSLeafQueue) app.getQueue();\n+        String destQueueName \u003d handleMoveToPlanQueue(newQueue);\n+        FSLeafQueue targetQueue \u003d queueMgr.getLeafQueue(destQueueName, false);\n+        if (targetQueue \u003d\u003d null) {\n+          throw new YarnException(\"Target queue \" + newQueue\n+              + \" not found or is not a leaf queue.\");\n+        }\n+\n+        if (oldQueue.isRunnableApp(attempt)) {\n+          verifyMoveDoesNotViolateConstraints(attempt, oldQueue, targetQueue);\n+        }\n+      } finally {\n+        attempt.getWriteLock().unlock();\n+      }\n+    } finally {\n+      writeLock.unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void preValidateMoveApplication(ApplicationId appId, String newQueue)\n      throws YarnException {\n    try {\n      writeLock.lock();\n      SchedulerApplication\u003cFSAppAttempt\u003e app \u003d applications.get(appId);\n      if (app \u003d\u003d null) {\n        throw new YarnException(\"App to be moved \" + appId + \" not found.\");\n      }\n\n      FSAppAttempt attempt \u003d app.getCurrentAppAttempt();\n      // To serialize with FairScheduler#allocate, synchronize on app attempt\n\n      try {\n        attempt.getWriteLock().lock();\n        FSLeafQueue oldQueue \u003d (FSLeafQueue) app.getQueue();\n        String destQueueName \u003d handleMoveToPlanQueue(newQueue);\n        FSLeafQueue targetQueue \u003d queueMgr.getLeafQueue(destQueueName, false);\n        if (targetQueue \u003d\u003d null) {\n          throw new YarnException(\"Target queue \" + newQueue\n              + \" not found or is not a leaf queue.\");\n        }\n\n        if (oldQueue.isRunnableApp(attempt)) {\n          verifyMoveDoesNotViolateConstraints(attempt, oldQueue, targetQueue);\n        }\n      } finally {\n        attempt.getWriteLock().unlock();\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairScheduler.java"
+    }
+  }
+}

@@ -1,0 +1,148 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbstractNativeRawDecoder.java",
+  "functionName": "doDecode",
+  "functionId": "doDecode___decodingState-ByteBufferDecodingState",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/erasurecode/rawcoder/AbstractNativeRawDecoder.java",
+  "functionStartLine": 48,
+  "functionEndLine": 78,
+  "numCommitsSeen": 4,
+  "timeTaken": 2554,
+  "changeHistory": [
+    "18201b882a38ad875358c5d23c09b0ef903c2f91",
+    "31ebccc96238136560f4210bdf6766fe18e0650c",
+    "34ccaa8367f048ed9f56038efe7b3202c436b6e6"
+  ],
+  "changeHistoryShort": {
+    "18201b882a38ad875358c5d23c09b0ef903c2f91": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "31ebccc96238136560f4210bdf6766fe18e0650c": "Ymultichange(Ymodifierchange,Yexceptionschange,Ybodychange)",
+    "34ccaa8367f048ed9f56038efe7b3202c436b6e6": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "18201b882a38ad875358c5d23c09b0ef903c2f91": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HADOOP-15499. Performance severe drops when running RawErasureCoderBenchmark with NativeRSRawErasureCoder. Contributed by Sammi Chen.\n",
+      "commitDate": "10/06/18 10:53 PM",
+      "commitName": "18201b882a38ad875358c5d23c09b0ef903c2f91",
+      "commitAuthor": "Sammi Chen",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-15499. Performance severe drops when running RawErasureCoderBenchmark with NativeRSRawErasureCoder. Contributed by Sammi Chen.\n",
+          "commitDate": "10/06/18 10:53 PM",
+          "commitName": "18201b882a38ad875358c5d23c09b0ef903c2f91",
+          "commitAuthor": "Sammi Chen",
+          "commitDateOld": "16/10/17 7:44 PM",
+          "commitNameOld": "31ebccc96238136560f4210bdf6766fe18e0650c",
+          "commitAuthorOld": "Lei Xu",
+          "daysBetweenCommits": 237.13,
+          "commitsBetweenForRepo": 2258,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,31 @@\n-  protected synchronized void doDecode(ByteBufferDecodingState decodingState)\n+  protected void doDecode(ByteBufferDecodingState decodingState)\n       throws IOException {\n-    if (nativeCoder \u003d\u003d 0) {\n-      throw new IOException(String.format(\"%s closed\",\n-          getClass().getSimpleName()));\n-    }\n-    int[] inputOffsets \u003d new int[decodingState.inputs.length];\n-    int[] outputOffsets \u003d new int[decodingState.outputs.length];\n-\n-    ByteBuffer buffer;\n-    for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n-      buffer \u003d decodingState.inputs[i];\n-      if (buffer !\u003d null) {\n-        inputOffsets[i] \u003d buffer.position();\n+    decoderLock.readLock().lock();\n+    try {\n+      if (nativeCoder \u003d\u003d 0) {\n+        throw new IOException(String.format(\"%s closed\",\n+            getClass().getSimpleName()));\n       }\n-    }\n+      int[] inputOffsets \u003d new int[decodingState.inputs.length];\n+      int[] outputOffsets \u003d new int[decodingState.outputs.length];\n \n-    for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n-      buffer \u003d decodingState.outputs[i];\n-      outputOffsets[i] \u003d buffer.position();\n-    }\n+      ByteBuffer buffer;\n+      for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n+        buffer \u003d decodingState.inputs[i];\n+        if (buffer !\u003d null) {\n+          inputOffsets[i] \u003d buffer.position();\n+        }\n+      }\n \n-    performDecodeImpl(decodingState.inputs, inputOffsets,\n-        decodingState.decodeLength, decodingState.erasedIndexes,\n-        decodingState.outputs, outputOffsets);\n+      for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n+        buffer \u003d decodingState.outputs[i];\n+        outputOffsets[i] \u003d buffer.position();\n+      }\n+\n+      performDecodeImpl(decodingState.inputs, inputOffsets,\n+          decodingState.decodeLength, decodingState.erasedIndexes,\n+          decodingState.outputs, outputOffsets);\n+    } finally {\n+      decoderLock.readLock().unlock();\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected void doDecode(ByteBufferDecodingState decodingState)\n      throws IOException {\n    decoderLock.readLock().lock();\n    try {\n      if (nativeCoder \u003d\u003d 0) {\n        throw new IOException(String.format(\"%s closed\",\n            getClass().getSimpleName()));\n      }\n      int[] inputOffsets \u003d new int[decodingState.inputs.length];\n      int[] outputOffsets \u003d new int[decodingState.outputs.length];\n\n      ByteBuffer buffer;\n      for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n        buffer \u003d decodingState.inputs[i];\n        if (buffer !\u003d null) {\n          inputOffsets[i] \u003d buffer.position();\n        }\n      }\n\n      for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n        buffer \u003d decodingState.outputs[i];\n        outputOffsets[i] \u003d buffer.position();\n      }\n\n      performDecodeImpl(decodingState.inputs, inputOffsets,\n          decodingState.decodeLength, decodingState.erasedIndexes,\n          decodingState.outputs, outputOffsets);\n    } finally {\n      decoderLock.readLock().unlock();\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/erasurecode/rawcoder/AbstractNativeRawDecoder.java",
+          "extendedDetails": {
+            "oldValue": "[protected, synchronized]",
+            "newValue": "[protected]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15499. Performance severe drops when running RawErasureCoderBenchmark with NativeRSRawErasureCoder. Contributed by Sammi Chen.\n",
+          "commitDate": "10/06/18 10:53 PM",
+          "commitName": "18201b882a38ad875358c5d23c09b0ef903c2f91",
+          "commitAuthor": "Sammi Chen",
+          "commitDateOld": "16/10/17 7:44 PM",
+          "commitNameOld": "31ebccc96238136560f4210bdf6766fe18e0650c",
+          "commitAuthorOld": "Lei Xu",
+          "daysBetweenCommits": 237.13,
+          "commitsBetweenForRepo": 2258,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,31 @@\n-  protected synchronized void doDecode(ByteBufferDecodingState decodingState)\n+  protected void doDecode(ByteBufferDecodingState decodingState)\n       throws IOException {\n-    if (nativeCoder \u003d\u003d 0) {\n-      throw new IOException(String.format(\"%s closed\",\n-          getClass().getSimpleName()));\n-    }\n-    int[] inputOffsets \u003d new int[decodingState.inputs.length];\n-    int[] outputOffsets \u003d new int[decodingState.outputs.length];\n-\n-    ByteBuffer buffer;\n-    for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n-      buffer \u003d decodingState.inputs[i];\n-      if (buffer !\u003d null) {\n-        inputOffsets[i] \u003d buffer.position();\n+    decoderLock.readLock().lock();\n+    try {\n+      if (nativeCoder \u003d\u003d 0) {\n+        throw new IOException(String.format(\"%s closed\",\n+            getClass().getSimpleName()));\n       }\n-    }\n+      int[] inputOffsets \u003d new int[decodingState.inputs.length];\n+      int[] outputOffsets \u003d new int[decodingState.outputs.length];\n \n-    for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n-      buffer \u003d decodingState.outputs[i];\n-      outputOffsets[i] \u003d buffer.position();\n-    }\n+      ByteBuffer buffer;\n+      for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n+        buffer \u003d decodingState.inputs[i];\n+        if (buffer !\u003d null) {\n+          inputOffsets[i] \u003d buffer.position();\n+        }\n+      }\n \n-    performDecodeImpl(decodingState.inputs, inputOffsets,\n-        decodingState.decodeLength, decodingState.erasedIndexes,\n-        decodingState.outputs, outputOffsets);\n+      for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n+        buffer \u003d decodingState.outputs[i];\n+        outputOffsets[i] \u003d buffer.position();\n+      }\n+\n+      performDecodeImpl(decodingState.inputs, inputOffsets,\n+          decodingState.decodeLength, decodingState.erasedIndexes,\n+          decodingState.outputs, outputOffsets);\n+    } finally {\n+      decoderLock.readLock().unlock();\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected void doDecode(ByteBufferDecodingState decodingState)\n      throws IOException {\n    decoderLock.readLock().lock();\n    try {\n      if (nativeCoder \u003d\u003d 0) {\n        throw new IOException(String.format(\"%s closed\",\n            getClass().getSimpleName()));\n      }\n      int[] inputOffsets \u003d new int[decodingState.inputs.length];\n      int[] outputOffsets \u003d new int[decodingState.outputs.length];\n\n      ByteBuffer buffer;\n      for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n        buffer \u003d decodingState.inputs[i];\n        if (buffer !\u003d null) {\n          inputOffsets[i] \u003d buffer.position();\n        }\n      }\n\n      for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n        buffer \u003d decodingState.outputs[i];\n        outputOffsets[i] \u003d buffer.position();\n      }\n\n      performDecodeImpl(decodingState.inputs, inputOffsets,\n          decodingState.decodeLength, decodingState.erasedIndexes,\n          decodingState.outputs, outputOffsets);\n    } finally {\n      decoderLock.readLock().unlock();\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/erasurecode/rawcoder/AbstractNativeRawDecoder.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "31ebccc96238136560f4210bdf6766fe18e0650c": {
+      "type": "Ymultichange(Ymodifierchange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-12613. Native EC coder should implement release() as idempotent function. (Lei (Eddy) Xu)\n",
+      "commitDate": "16/10/17 7:44 PM",
+      "commitName": "31ebccc96238136560f4210bdf6766fe18e0650c",
+      "commitAuthor": "Lei Xu",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-12613. Native EC coder should implement release() as idempotent function. (Lei (Eddy) Xu)\n",
+          "commitDate": "16/10/17 7:44 PM",
+          "commitName": "31ebccc96238136560f4210bdf6766fe18e0650c",
+          "commitAuthor": "Lei Xu",
+          "commitDateOld": "26/06/17 1:26 AM",
+          "commitNameOld": "379f19a2c768ac3cf668ad28ce6419ca56a01b07",
+          "commitAuthorOld": "Kai Zheng",
+          "daysBetweenCommits": 112.76,
+          "commitsBetweenForRepo": 891,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,26 @@\n-  protected void doDecode(ByteBufferDecodingState decodingState) {\n+  protected synchronized void doDecode(ByteBufferDecodingState decodingState)\n+      throws IOException {\n+    if (nativeCoder \u003d\u003d 0) {\n+      throw new IOException(String.format(\"%s closed\",\n+          getClass().getSimpleName()));\n+    }\n     int[] inputOffsets \u003d new int[decodingState.inputs.length];\n     int[] outputOffsets \u003d new int[decodingState.outputs.length];\n \n     ByteBuffer buffer;\n     for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n       buffer \u003d decodingState.inputs[i];\n       if (buffer !\u003d null) {\n         inputOffsets[i] \u003d buffer.position();\n       }\n     }\n \n     for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n       buffer \u003d decodingState.outputs[i];\n       outputOffsets[i] \u003d buffer.position();\n     }\n \n     performDecodeImpl(decodingState.inputs, inputOffsets,\n         decodingState.decodeLength, decodingState.erasedIndexes,\n         decodingState.outputs, outputOffsets);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected synchronized void doDecode(ByteBufferDecodingState decodingState)\n      throws IOException {\n    if (nativeCoder \u003d\u003d 0) {\n      throw new IOException(String.format(\"%s closed\",\n          getClass().getSimpleName()));\n    }\n    int[] inputOffsets \u003d new int[decodingState.inputs.length];\n    int[] outputOffsets \u003d new int[decodingState.outputs.length];\n\n    ByteBuffer buffer;\n    for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n      buffer \u003d decodingState.inputs[i];\n      if (buffer !\u003d null) {\n        inputOffsets[i] \u003d buffer.position();\n      }\n    }\n\n    for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n      buffer \u003d decodingState.outputs[i];\n      outputOffsets[i] \u003d buffer.position();\n    }\n\n    performDecodeImpl(decodingState.inputs, inputOffsets,\n        decodingState.decodeLength, decodingState.erasedIndexes,\n        decodingState.outputs, outputOffsets);\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/erasurecode/rawcoder/AbstractNativeRawDecoder.java",
+          "extendedDetails": {
+            "oldValue": "[protected]",
+            "newValue": "[protected, synchronized]"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-12613. Native EC coder should implement release() as idempotent function. (Lei (Eddy) Xu)\n",
+          "commitDate": "16/10/17 7:44 PM",
+          "commitName": "31ebccc96238136560f4210bdf6766fe18e0650c",
+          "commitAuthor": "Lei Xu",
+          "commitDateOld": "26/06/17 1:26 AM",
+          "commitNameOld": "379f19a2c768ac3cf668ad28ce6419ca56a01b07",
+          "commitAuthorOld": "Kai Zheng",
+          "daysBetweenCommits": 112.76,
+          "commitsBetweenForRepo": 891,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,26 @@\n-  protected void doDecode(ByteBufferDecodingState decodingState) {\n+  protected synchronized void doDecode(ByteBufferDecodingState decodingState)\n+      throws IOException {\n+    if (nativeCoder \u003d\u003d 0) {\n+      throw new IOException(String.format(\"%s closed\",\n+          getClass().getSimpleName()));\n+    }\n     int[] inputOffsets \u003d new int[decodingState.inputs.length];\n     int[] outputOffsets \u003d new int[decodingState.outputs.length];\n \n     ByteBuffer buffer;\n     for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n       buffer \u003d decodingState.inputs[i];\n       if (buffer !\u003d null) {\n         inputOffsets[i] \u003d buffer.position();\n       }\n     }\n \n     for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n       buffer \u003d decodingState.outputs[i];\n       outputOffsets[i] \u003d buffer.position();\n     }\n \n     performDecodeImpl(decodingState.inputs, inputOffsets,\n         decodingState.decodeLength, decodingState.erasedIndexes,\n         decodingState.outputs, outputOffsets);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected synchronized void doDecode(ByteBufferDecodingState decodingState)\n      throws IOException {\n    if (nativeCoder \u003d\u003d 0) {\n      throw new IOException(String.format(\"%s closed\",\n          getClass().getSimpleName()));\n    }\n    int[] inputOffsets \u003d new int[decodingState.inputs.length];\n    int[] outputOffsets \u003d new int[decodingState.outputs.length];\n\n    ByteBuffer buffer;\n    for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n      buffer \u003d decodingState.inputs[i];\n      if (buffer !\u003d null) {\n        inputOffsets[i] \u003d buffer.position();\n      }\n    }\n\n    for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n      buffer \u003d decodingState.outputs[i];\n      outputOffsets[i] \u003d buffer.position();\n    }\n\n    performDecodeImpl(decodingState.inputs, inputOffsets,\n        decodingState.decodeLength, decodingState.erasedIndexes,\n        decodingState.outputs, outputOffsets);\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/erasurecode/rawcoder/AbstractNativeRawDecoder.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-12613. Native EC coder should implement release() as idempotent function. (Lei (Eddy) Xu)\n",
+          "commitDate": "16/10/17 7:44 PM",
+          "commitName": "31ebccc96238136560f4210bdf6766fe18e0650c",
+          "commitAuthor": "Lei Xu",
+          "commitDateOld": "26/06/17 1:26 AM",
+          "commitNameOld": "379f19a2c768ac3cf668ad28ce6419ca56a01b07",
+          "commitAuthorOld": "Kai Zheng",
+          "daysBetweenCommits": 112.76,
+          "commitsBetweenForRepo": 891,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,26 @@\n-  protected void doDecode(ByteBufferDecodingState decodingState) {\n+  protected synchronized void doDecode(ByteBufferDecodingState decodingState)\n+      throws IOException {\n+    if (nativeCoder \u003d\u003d 0) {\n+      throw new IOException(String.format(\"%s closed\",\n+          getClass().getSimpleName()));\n+    }\n     int[] inputOffsets \u003d new int[decodingState.inputs.length];\n     int[] outputOffsets \u003d new int[decodingState.outputs.length];\n \n     ByteBuffer buffer;\n     for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n       buffer \u003d decodingState.inputs[i];\n       if (buffer !\u003d null) {\n         inputOffsets[i] \u003d buffer.position();\n       }\n     }\n \n     for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n       buffer \u003d decodingState.outputs[i];\n       outputOffsets[i] \u003d buffer.position();\n     }\n \n     performDecodeImpl(decodingState.inputs, inputOffsets,\n         decodingState.decodeLength, decodingState.erasedIndexes,\n         decodingState.outputs, outputOffsets);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected synchronized void doDecode(ByteBufferDecodingState decodingState)\n      throws IOException {\n    if (nativeCoder \u003d\u003d 0) {\n      throw new IOException(String.format(\"%s closed\",\n          getClass().getSimpleName()));\n    }\n    int[] inputOffsets \u003d new int[decodingState.inputs.length];\n    int[] outputOffsets \u003d new int[decodingState.outputs.length];\n\n    ByteBuffer buffer;\n    for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n      buffer \u003d decodingState.inputs[i];\n      if (buffer !\u003d null) {\n        inputOffsets[i] \u003d buffer.position();\n      }\n    }\n\n    for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n      buffer \u003d decodingState.outputs[i];\n      outputOffsets[i] \u003d buffer.position();\n    }\n\n    performDecodeImpl(decodingState.inputs, inputOffsets,\n        decodingState.decodeLength, decodingState.erasedIndexes,\n        decodingState.outputs, outputOffsets);\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/erasurecode/rawcoder/AbstractNativeRawDecoder.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "34ccaa8367f048ed9f56038efe7b3202c436b6e6": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-11540. Raw Reed-Solomon coder using Intel ISA-L library. Contributed by Kai Zheng\n",
+      "commitDate": "31/07/16 3:34 PM",
+      "commitName": "34ccaa8367f048ed9f56038efe7b3202c436b6e6",
+      "commitAuthor": "Kai Zheng",
+      "diff": "@@ -0,0 +1,21 @@\n+  protected void doDecode(ByteBufferDecodingState decodingState) {\n+    int[] inputOffsets \u003d new int[decodingState.inputs.length];\n+    int[] outputOffsets \u003d new int[decodingState.outputs.length];\n+\n+    ByteBuffer buffer;\n+    for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n+      buffer \u003d decodingState.inputs[i];\n+      if (buffer !\u003d null) {\n+        inputOffsets[i] \u003d buffer.position();\n+      }\n+    }\n+\n+    for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n+      buffer \u003d decodingState.outputs[i];\n+      outputOffsets[i] \u003d buffer.position();\n+    }\n+\n+    performDecodeImpl(decodingState.inputs, inputOffsets,\n+        decodingState.decodeLength, decodingState.erasedIndexes,\n+        decodingState.outputs, outputOffsets);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void doDecode(ByteBufferDecodingState decodingState) {\n    int[] inputOffsets \u003d new int[decodingState.inputs.length];\n    int[] outputOffsets \u003d new int[decodingState.outputs.length];\n\n    ByteBuffer buffer;\n    for (int i \u003d 0; i \u003c decodingState.inputs.length; ++i) {\n      buffer \u003d decodingState.inputs[i];\n      if (buffer !\u003d null) {\n        inputOffsets[i] \u003d buffer.position();\n      }\n    }\n\n    for (int i \u003d 0; i \u003c decodingState.outputs.length; ++i) {\n      buffer \u003d decodingState.outputs[i];\n      outputOffsets[i] \u003d buffer.position();\n    }\n\n    performDecodeImpl(decodingState.inputs, inputOffsets,\n        decodingState.decodeLength, decodingState.erasedIndexes,\n        decodingState.outputs, outputOffsets);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/erasurecode/rawcoder/AbstractNativeRawDecoder.java"
+    }
+  }
+}

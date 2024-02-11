@@ -1,0 +1,255 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SnapshotManager.java",
+  "functionName": "diff",
+  "functionId": "diff___iip-INodesInPath(modifiers-final)__snapshotPath-String(modifiers-final)__from-String(modifiers-final)__to-String(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+  "functionStartLine": 479,
+  "functionEndLine": 505,
+  "numCommitsSeen": 184,
+  "timeTaken": 4602,
+  "changeHistory": [
+    "075dd45a24398dcdcddd60da995f0dc152eee321",
+    "475c6b4978045d55d1ebcea69cc9a2f24355aca2",
+    "76a621ffd2d66bf012a554f4400091a92a5b473e",
+    "bdf3de9f6b377b6bfeaa95faadd12e7b29ece5dc",
+    "a5ae562d700a668ed5acc2c148f8cca459a9c9f7",
+    "24d96cbcdb80a2de4ada7aa70056a481da24fcc5",
+    "2372e394dd99d69d396327d5a5e172953a8b8c6a",
+    "66ea187228c899cadf23d10c7032c8efe1aa0df4"
+  ],
+  "changeHistoryShort": {
+    "075dd45a24398dcdcddd60da995f0dc152eee321": "Ymultichange(Yparameterchange,Ybodychange)",
+    "475c6b4978045d55d1ebcea69cc9a2f24355aca2": "Ymultichange(Yparameterchange,Ybodychange)",
+    "76a621ffd2d66bf012a554f4400091a92a5b473e": "Ybodychange",
+    "bdf3de9f6b377b6bfeaa95faadd12e7b29ece5dc": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "a5ae562d700a668ed5acc2c148f8cca459a9c9f7": "Ybodychange",
+    "24d96cbcdb80a2de4ada7aa70056a481da24fcc5": "Yreturntypechange",
+    "2372e394dd99d69d396327d5a5e172953a8b8c6a": "Ybodychange",
+    "66ea187228c899cadf23d10c7032c8efe1aa0df4": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "075dd45a24398dcdcddd60da995f0dc152eee321": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-12544. SnapshotDiff - support diff generation on any snapshot root descendant directory.\n",
+      "commitDate": "25/10/17 10:54 AM",
+      "commitName": "075dd45a24398dcdcddd60da995f0dc152eee321",
+      "commitAuthor": "Manoj Govindassamy",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-12544. SnapshotDiff - support diff generation on any snapshot root descendant directory.\n",
+          "commitDate": "25/10/17 10:54 AM",
+          "commitName": "075dd45a24398dcdcddd60da995f0dc152eee321",
+          "commitAuthor": "Manoj Govindassamy",
+          "commitDateOld": "29/08/17 4:57 PM",
+          "commitNameOld": "cf93d60d3f032000e5b78a08d320793d78799f3d",
+          "commitAuthorOld": "Yongjun Zhang",
+          "daysBetweenCommits": 56.75,
+          "commitsBetweenForRepo": 529,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,27 @@\n   public SnapshotDiffReport diff(final INodesInPath iip,\n-      final String snapshotRootPath, final String from,\n+      final String snapshotPath, final String from,\n       final String to) throws IOException {\n     // Find the source root directory path where the snapshots were taken.\n     // All the check for path has been included in the valueOf method.\n-    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(iip);\n+    INodeDirectory snapshotRootDir;\n+    if (this.snapshotDiffAllowSnapRootDescendant) {\n+      snapshotRootDir \u003d getSnapshottableAncestorDir(iip);\n+    } else {\n+      snapshotRootDir \u003d getSnapshottableRoot(iip);\n+    }\n+    Preconditions.checkNotNull(snapshotRootDir);\n+    INodeDirectory snapshotDescendantDir \u003d INodeDirectory.valueOf(\n+        iip.getLastINode(), snapshotPath);\n \n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n-      return new SnapshotDiffReport(snapshotRootPath, from, to,\n+      return new SnapshotDiffReport(snapshotPath, from, to,\n           Collections.\u003cDiffReportEntry\u003e emptyList());\n     }\n-    final SnapshotDiffInfo diffs \u003d snapshotRoot\n-        .getDirectorySnapshottableFeature().computeDiff(snapshotRoot, from, to);\n+    final SnapshotDiffInfo diffs \u003d snapshotRootDir\n+        .getDirectorySnapshottableFeature().computeDiff(\n+            snapshotRootDir, snapshotDescendantDir, from, to);\n     return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n-        snapshotRootPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n+        snapshotPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public SnapshotDiffReport diff(final INodesInPath iip,\n      final String snapshotPath, final String from,\n      final String to) throws IOException {\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    INodeDirectory snapshotRootDir;\n    if (this.snapshotDiffAllowSnapRootDescendant) {\n      snapshotRootDir \u003d getSnapshottableAncestorDir(iip);\n    } else {\n      snapshotRootDir \u003d getSnapshottableRoot(iip);\n    }\n    Preconditions.checkNotNull(snapshotRootDir);\n    INodeDirectory snapshotDescendantDir \u003d INodeDirectory.valueOf(\n        iip.getLastINode(), snapshotPath);\n\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return new SnapshotDiffReport(snapshotPath, from, to,\n          Collections.\u003cDiffReportEntry\u003e emptyList());\n    }\n    final SnapshotDiffInfo diffs \u003d snapshotRootDir\n        .getDirectorySnapshottableFeature().computeDiff(\n            snapshotRootDir, snapshotDescendantDir, from, to);\n    return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n        snapshotPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+          "extendedDetails": {
+            "oldValue": "[iip-INodesInPath(modifiers-final), snapshotRootPath-String(modifiers-final), from-String(modifiers-final), to-String(modifiers-final)]",
+            "newValue": "[iip-INodesInPath(modifiers-final), snapshotPath-String(modifiers-final), from-String(modifiers-final), to-String(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-12544. SnapshotDiff - support diff generation on any snapshot root descendant directory.\n",
+          "commitDate": "25/10/17 10:54 AM",
+          "commitName": "075dd45a24398dcdcddd60da995f0dc152eee321",
+          "commitAuthor": "Manoj Govindassamy",
+          "commitDateOld": "29/08/17 4:57 PM",
+          "commitNameOld": "cf93d60d3f032000e5b78a08d320793d78799f3d",
+          "commitAuthorOld": "Yongjun Zhang",
+          "daysBetweenCommits": 56.75,
+          "commitsBetweenForRepo": 529,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,27 @@\n   public SnapshotDiffReport diff(final INodesInPath iip,\n-      final String snapshotRootPath, final String from,\n+      final String snapshotPath, final String from,\n       final String to) throws IOException {\n     // Find the source root directory path where the snapshots were taken.\n     // All the check for path has been included in the valueOf method.\n-    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(iip);\n+    INodeDirectory snapshotRootDir;\n+    if (this.snapshotDiffAllowSnapRootDescendant) {\n+      snapshotRootDir \u003d getSnapshottableAncestorDir(iip);\n+    } else {\n+      snapshotRootDir \u003d getSnapshottableRoot(iip);\n+    }\n+    Preconditions.checkNotNull(snapshotRootDir);\n+    INodeDirectory snapshotDescendantDir \u003d INodeDirectory.valueOf(\n+        iip.getLastINode(), snapshotPath);\n \n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n-      return new SnapshotDiffReport(snapshotRootPath, from, to,\n+      return new SnapshotDiffReport(snapshotPath, from, to,\n           Collections.\u003cDiffReportEntry\u003e emptyList());\n     }\n-    final SnapshotDiffInfo diffs \u003d snapshotRoot\n-        .getDirectorySnapshottableFeature().computeDiff(snapshotRoot, from, to);\n+    final SnapshotDiffInfo diffs \u003d snapshotRootDir\n+        .getDirectorySnapshottableFeature().computeDiff(\n+            snapshotRootDir, snapshotDescendantDir, from, to);\n     return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n-        snapshotRootPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n+        snapshotPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public SnapshotDiffReport diff(final INodesInPath iip,\n      final String snapshotPath, final String from,\n      final String to) throws IOException {\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    INodeDirectory snapshotRootDir;\n    if (this.snapshotDiffAllowSnapRootDescendant) {\n      snapshotRootDir \u003d getSnapshottableAncestorDir(iip);\n    } else {\n      snapshotRootDir \u003d getSnapshottableRoot(iip);\n    }\n    Preconditions.checkNotNull(snapshotRootDir);\n    INodeDirectory snapshotDescendantDir \u003d INodeDirectory.valueOf(\n        iip.getLastINode(), snapshotPath);\n\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return new SnapshotDiffReport(snapshotPath, from, to,\n          Collections.\u003cDiffReportEntry\u003e emptyList());\n    }\n    final SnapshotDiffInfo diffs \u003d snapshotRootDir\n        .getDirectorySnapshottableFeature().computeDiff(\n            snapshotRootDir, snapshotDescendantDir, from, to);\n    return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n        snapshotPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "475c6b4978045d55d1ebcea69cc9a2f24355aca2": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-7474. Avoid resolving path in FSPermissionChecker. Contributed by Jing Zhao.\n",
+      "commitDate": "05/12/14 2:17 PM",
+      "commitName": "475c6b4978045d55d1ebcea69cc9a2f24355aca2",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-7474. Avoid resolving path in FSPermissionChecker. Contributed by Jing Zhao.\n",
+          "commitDate": "05/12/14 2:17 PM",
+          "commitName": "475c6b4978045d55d1ebcea69cc9a2f24355aca2",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "07/07/14 5:08 PM",
+          "commitNameOld": "76a621ffd2d66bf012a554f4400091a92a5b473e",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 150.92,
+          "commitsBetweenForRepo": 1409,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,18 @@\n-  public SnapshotDiffReport diff(final String path, final String from,\n+  public SnapshotDiffReport diff(final INodesInPath iip,\n+      final String snapshotRootPath, final String from,\n       final String to) throws IOException {\n     // Find the source root directory path where the snapshots were taken.\n     // All the check for path has been included in the valueOf method.\n-    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(path);\n+    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(iip);\n \n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n-      return new SnapshotDiffReport(path, from, to,\n+      return new SnapshotDiffReport(snapshotRootPath, from, to,\n           Collections.\u003cDiffReportEntry\u003e emptyList());\n     }\n     final SnapshotDiffInfo diffs \u003d snapshotRoot\n         .getDirectorySnapshottableFeature().computeDiff(snapshotRoot, from, to);\n     return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n-        path, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n+        snapshotRootPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public SnapshotDiffReport diff(final INodesInPath iip,\n      final String snapshotRootPath, final String from,\n      final String to) throws IOException {\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(iip);\n\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return new SnapshotDiffReport(snapshotRootPath, from, to,\n          Collections.\u003cDiffReportEntry\u003e emptyList());\n    }\n    final SnapshotDiffInfo diffs \u003d snapshotRoot\n        .getDirectorySnapshottableFeature().computeDiff(snapshotRoot, from, to);\n    return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n        snapshotRootPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+          "extendedDetails": {
+            "oldValue": "[path-String(modifiers-final), from-String(modifiers-final), to-String(modifiers-final)]",
+            "newValue": "[iip-INodesInPath(modifiers-final), snapshotRootPath-String(modifiers-final), from-String(modifiers-final), to-String(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7474. Avoid resolving path in FSPermissionChecker. Contributed by Jing Zhao.\n",
+          "commitDate": "05/12/14 2:17 PM",
+          "commitName": "475c6b4978045d55d1ebcea69cc9a2f24355aca2",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "07/07/14 5:08 PM",
+          "commitNameOld": "76a621ffd2d66bf012a554f4400091a92a5b473e",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 150.92,
+          "commitsBetweenForRepo": 1409,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,18 @@\n-  public SnapshotDiffReport diff(final String path, final String from,\n+  public SnapshotDiffReport diff(final INodesInPath iip,\n+      final String snapshotRootPath, final String from,\n       final String to) throws IOException {\n     // Find the source root directory path where the snapshots were taken.\n     // All the check for path has been included in the valueOf method.\n-    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(path);\n+    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(iip);\n \n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n-      return new SnapshotDiffReport(path, from, to,\n+      return new SnapshotDiffReport(snapshotRootPath, from, to,\n           Collections.\u003cDiffReportEntry\u003e emptyList());\n     }\n     final SnapshotDiffInfo diffs \u003d snapshotRoot\n         .getDirectorySnapshottableFeature().computeDiff(snapshotRoot, from, to);\n     return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n-        path, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n+        snapshotRootPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public SnapshotDiffReport diff(final INodesInPath iip,\n      final String snapshotRootPath, final String from,\n      final String to) throws IOException {\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(iip);\n\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return new SnapshotDiffReport(snapshotRootPath, from, to,\n          Collections.\u003cDiffReportEntry\u003e emptyList());\n    }\n    final SnapshotDiffInfo diffs \u003d snapshotRoot\n        .getDirectorySnapshottableFeature().computeDiff(snapshotRoot, from, to);\n    return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n        snapshotRootPath, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "76a621ffd2d66bf012a554f4400091a92a5b473e": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6609. Use DirectorySnapshottableFeature to represent a snapshottable directory. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1608631 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/07/14 5:08 PM",
+      "commitName": "76a621ffd2d66bf012a554f4400091a92a5b473e",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "24/06/14 12:59 PM",
+      "commitNameOld": "bdf3de9f6b377b6bfeaa95faadd12e7b29ece5dc",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 13.17,
+      "commitsBetweenForRepo": 75,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,17 @@\n   public SnapshotDiffReport diff(final String path, final String from,\n       final String to) throws IOException {\n+    // Find the source root directory path where the snapshots were taken.\n+    // All the check for path has been included in the valueOf method.\n+    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(path);\n+\n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n       return new SnapshotDiffReport(path, from, to,\n           Collections.\u003cDiffReportEntry\u003e emptyList());\n     }\n-\n-    // Find the source root directory path where the snapshots were taken.\n-    // All the check for path has been included in the valueOf method.\n-    INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n-    final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n-        .valueOf(inodesInPath.getLastINode(), path);\n-\n-    final SnapshotDiffInfo diffs \u003d snapshotRoot.computeDiff(from, to);\n+    final SnapshotDiffInfo diffs \u003d snapshotRoot\n+        .getDirectorySnapshottableFeature().computeDiff(snapshotRoot, from, to);\n     return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n         path, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public SnapshotDiffReport diff(final String path, final String from,\n      final String to) throws IOException {\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    final INodeDirectory snapshotRoot \u003d getSnapshottableRoot(path);\n\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return new SnapshotDiffReport(path, from, to,\n          Collections.\u003cDiffReportEntry\u003e emptyList());\n    }\n    final SnapshotDiffInfo diffs \u003d snapshotRoot\n        .getDirectorySnapshottableFeature().computeDiff(snapshotRoot, from, to);\n    return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n        path, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+      "extendedDetails": {}
+    },
+    "bdf3de9f6b377b6bfeaa95faadd12e7b29ece5dc": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-6593. Move SnapshotDiffInfo out of INodeDirectorySnapshottable. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1605169 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/06/14 12:59 PM",
+      "commitName": "bdf3de9f6b377b6bfeaa95faadd12e7b29ece5dc",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-6593. Move SnapshotDiffInfo out of INodeDirectorySnapshottable. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1605169 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "24/06/14 12:59 PM",
+          "commitName": "bdf3de9f6b377b6bfeaa95faadd12e7b29ece5dc",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "13/05/14 6:15 PM",
+          "commitNameOld": "97f58955a6045b373ab73653bf26ab5922b00cf3",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 41.78,
+          "commitsBetweenForRepo": 251,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,19 @@\n-  public SnapshotDiffInfo diff(final String path, final String from,\n+  public SnapshotDiffReport diff(final String path, final String from,\n       final String to) throws IOException {\n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n-      return null;\n+      return new SnapshotDiffReport(path, from, to,\n+          Collections.\u003cDiffReportEntry\u003e emptyList());\n     }\n \n     // Find the source root directory path where the snapshots were taken.\n     // All the check for path has been included in the valueOf method.\n     INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n     final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n         .valueOf(inodesInPath.getLastINode(), path);\n-    \n-    return snapshotRoot.computeDiff(from, to);\n+\n+    final SnapshotDiffInfo diffs \u003d snapshotRoot.computeDiff(from, to);\n+    return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n+        path, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public SnapshotDiffReport diff(final String path, final String from,\n      final String to) throws IOException {\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return new SnapshotDiffReport(path, from, to,\n          Collections.\u003cDiffReportEntry\u003e emptyList());\n    }\n\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n    final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n        .valueOf(inodesInPath.getLastINode(), path);\n\n    final SnapshotDiffInfo diffs \u003d snapshotRoot.computeDiff(from, to);\n    return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n        path, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+          "extendedDetails": {
+            "oldValue": "SnapshotDiffInfo",
+            "newValue": "SnapshotDiffReport"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6593. Move SnapshotDiffInfo out of INodeDirectorySnapshottable. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1605169 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "24/06/14 12:59 PM",
+          "commitName": "bdf3de9f6b377b6bfeaa95faadd12e7b29ece5dc",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "13/05/14 6:15 PM",
+          "commitNameOld": "97f58955a6045b373ab73653bf26ab5922b00cf3",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 41.78,
+          "commitsBetweenForRepo": 251,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,19 @@\n-  public SnapshotDiffInfo diff(final String path, final String from,\n+  public SnapshotDiffReport diff(final String path, final String from,\n       final String to) throws IOException {\n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n-      return null;\n+      return new SnapshotDiffReport(path, from, to,\n+          Collections.\u003cDiffReportEntry\u003e emptyList());\n     }\n \n     // Find the source root directory path where the snapshots were taken.\n     // All the check for path has been included in the valueOf method.\n     INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n     final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n         .valueOf(inodesInPath.getLastINode(), path);\n-    \n-    return snapshotRoot.computeDiff(from, to);\n+\n+    final SnapshotDiffInfo diffs \u003d snapshotRoot.computeDiff(from, to);\n+    return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n+        path, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public SnapshotDiffReport diff(final String path, final String from,\n      final String to) throws IOException {\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return new SnapshotDiffReport(path, from, to,\n          Collections.\u003cDiffReportEntry\u003e emptyList());\n    }\n\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n    final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n        .valueOf(inodesInPath.getLastINode(), path);\n\n    final SnapshotDiffInfo diffs \u003d snapshotRoot.computeDiff(from, to);\n    return diffs !\u003d null ? diffs.generateReport() : new SnapshotDiffReport(\n        path, from, to, Collections.\u003cDiffReportEntry\u003e emptyList());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "a5ae562d700a668ed5acc2c148f8cca459a9c9f7": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-4650. When passing two non-existing snapshot names to snapshotDiff, it returns success if the names are the same.  Contributed by Jing Zhao\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-2802@1476408 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "26/04/13 2:30 PM",
+      "commitName": "a5ae562d700a668ed5acc2c148f8cca459a9c9f7",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "23/04/13 7:11 PM",
+      "commitNameOld": "3a812e9f3ae66cfa525faceb5af9085a4cc37232",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 2.81,
+      "commitsBetweenForRepo": 24,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,16 @@\n   public SnapshotDiffInfo diff(final String path, final String from,\n       final String to) throws IOException {\n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n       return null;\n     }\n-    // if the start point is equal to the end point, return null\n-    if (from.equals(to)) {\n-      return null;\n-    }\n \n     // Find the source root directory path where the snapshots were taken.\n     // All the check for path has been included in the valueOf method.\n     INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n     final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n         .valueOf(inodesInPath.getLastINode(), path);\n     \n     return snapshotRoot.computeDiff(from, to);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public SnapshotDiffInfo diff(final String path, final String from,\n      final String to) throws IOException {\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return null;\n    }\n\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n    final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n        .valueOf(inodesInPath.getLastINode(), path);\n    \n    return snapshotRoot.computeDiff(from, to);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+      "extendedDetails": {}
+    },
+    "24d96cbcdb80a2de4ada7aa70056a481da24fcc5": {
+      "type": "Yreturntypechange",
+      "commitMessage": "HDFS-4414. Add support for getting snapshot diff from DistributedFileSystem. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-2802@1441808 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/02/13 12:39 PM",
+      "commitName": "24d96cbcdb80a2de4ada7aa70056a481da24fcc5",
+      "commitAuthor": "Suresh Srinivas",
+      "commitDateOld": "31/01/13 1:35 PM",
+      "commitNameOld": "2710e961e564bdde6b6c58635b957e15292d3b95",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 1.96,
+      "commitsBetweenForRepo": 2,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,20 @@\n-  public SnapshotDiffReport diff(final String path, final String from,\n+  public SnapshotDiffInfo diff(final String path, final String from,\n       final String to) throws IOException {\n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n       return null;\n     }\n     // if the start point is equal to the end point, return null\n     if (from.equals(to)) {\n       return null;\n     }\n \n     // Find the source root directory path where the snapshots were taken.\n     // All the check for path has been included in the valueOf method.\n     INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n     final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n         .valueOf(inodesInPath.getLastINode(), path);\n     \n     return snapshotRoot.computeDiff(from, to);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public SnapshotDiffInfo diff(final String path, final String from,\n      final String to) throws IOException {\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return null;\n    }\n    // if the start point is equal to the end point, return null\n    if (from.equals(to)) {\n      return null;\n    }\n\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n    final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n        .valueOf(inodesInPath.getLastINode(), path);\n    \n    return snapshotRoot.computeDiff(from, to);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+      "extendedDetails": {
+        "oldValue": "SnapshotDiffReport",
+        "newValue": "SnapshotDiffInfo"
+      }
+    },
+    "2372e394dd99d69d396327d5a5e172953a8b8c6a": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-4189. Renames the getMutableXxx methods to getXxx4Write and fix a bug that some getExistingPathINodes calls should be getINodesInPath4Write.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-2802@1441193 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "31/01/13 1:13 PM",
+      "commitName": "2372e394dd99d69d396327d5a5e172953a8b8c6a",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "29/01/13 1:31 PM",
+      "commitNameOld": "66ea187228c899cadf23d10c7032c8efe1aa0df4",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 1.99,
+      "commitsBetweenForRepo": 4,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,20 @@\n   public SnapshotDiffReport diff(final String path, final String from,\n       final String to) throws IOException {\n     if ((from \u003d\u003d null || from.isEmpty())\n         \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n       // both fromSnapshot and toSnapshot indicate the current tree\n       return null;\n     }\n     // if the start point is equal to the end point, return null\n     if (from.equals(to)) {\n       return null;\n     }\n \n     // Find the source root directory path where the snapshots were taken.\n     // All the check for path has been included in the valueOf method.\n-    INodesInPath inodesInPath \u003d fsdir.getMutableINodesInPath(path.toString());\n+    INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n     final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n         .valueOf(inodesInPath.getLastINode(), path);\n     \n     return snapshotRoot.computeDiff(from, to);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public SnapshotDiffReport diff(final String path, final String from,\n      final String to) throws IOException {\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return null;\n    }\n    // if the start point is equal to the end point, return null\n    if (from.equals(to)) {\n      return null;\n    }\n\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    INodesInPath inodesInPath \u003d fsdir.getINodesInPath4Write(path.toString());\n    final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n        .valueOf(inodesInPath.getLastINode(), path);\n    \n    return snapshotRoot.computeDiff(from, to);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java",
+      "extendedDetails": {}
+    },
+    "66ea187228c899cadf23d10c7032c8efe1aa0df4": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-4131. Add capability to namenode to get snapshot diff. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-2802@1440152 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "29/01/13 1:31 PM",
+      "commitName": "66ea187228c899cadf23d10c7032c8efe1aa0df4",
+      "commitAuthor": "Suresh Srinivas",
+      "diff": "@@ -0,0 +1,20 @@\n+  public SnapshotDiffReport diff(final String path, final String from,\n+      final String to) throws IOException {\n+    if ((from \u003d\u003d null || from.isEmpty())\n+        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n+      // both fromSnapshot and toSnapshot indicate the current tree\n+      return null;\n+    }\n+    // if the start point is equal to the end point, return null\n+    if (from.equals(to)) {\n+      return null;\n+    }\n+\n+    // Find the source root directory path where the snapshots were taken.\n+    // All the check for path has been included in the valueOf method.\n+    INodesInPath inodesInPath \u003d fsdir.getMutableINodesInPath(path.toString());\n+    final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n+        .valueOf(inodesInPath.getLastINode(), path);\n+    \n+    return snapshotRoot.computeDiff(from, to);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public SnapshotDiffReport diff(final String path, final String from,\n      final String to) throws IOException {\n    if ((from \u003d\u003d null || from.isEmpty())\n        \u0026\u0026 (to \u003d\u003d null || to.isEmpty())) {\n      // both fromSnapshot and toSnapshot indicate the current tree\n      return null;\n    }\n    // if the start point is equal to the end point, return null\n    if (from.equals(to)) {\n      return null;\n    }\n\n    // Find the source root directory path where the snapshots were taken.\n    // All the check for path has been included in the valueOf method.\n    INodesInPath inodesInPath \u003d fsdir.getMutableINodesInPath(path.toString());\n    final INodeDirectorySnapshottable snapshotRoot \u003d INodeDirectorySnapshottable\n        .valueOf(inodesInPath.getLastINode(), path);\n    \n    return snapshotRoot.computeDiff(from, to);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/snapshot/SnapshotManager.java"
+    }
+  }
+}

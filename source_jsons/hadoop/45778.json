@@ -1,0 +1,75 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LogAggregationTFileController.java",
+  "functionName": "postWrite",
+  "functionId": "postWrite___record-LogAggregationFileControllerContext(modifiers-final)",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/filecontroller/tfile/LogAggregationTFileController.java",
+  "functionStartLine": 114,
+  "functionEndLine": 159,
+  "numCommitsSeen": 13,
+  "timeTaken": 2415,
+  "changeHistory": [
+    "1fcbe7cf5f2f7c609cd4158912f151848268ca9e",
+    "91cc070d67533ebb3325b982eba2135e0d175a82",
+    "c2cb7ea1ef6532020b69031dbd18b0f9b8369f0f"
+  ],
+  "changeHistoryShort": {
+    "1fcbe7cf5f2f7c609cd4158912f151848268ca9e": "Ybodychange",
+    "91cc070d67533ebb3325b982eba2135e0d175a82": "Ymovefromfile",
+    "c2cb7ea1ef6532020b69031dbd18b0f9b8369f0f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1fcbe7cf5f2f7c609cd4158912f151848268ca9e": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7124. LogAggregationTFileController deletes/renames while file is open. Contributed by Jason Lowe.\n",
+      "commitDate": "16/10/17 1:57 PM",
+      "commitName": "1fcbe7cf5f2f7c609cd4158912f151848268ca9e",
+      "commitAuthor": "Junping Du",
+      "commitDateOld": "29/09/17 4:42 PM",
+      "commitNameOld": "ec2ae3060a807c8754826af2135a68c08b2e4f13",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 16.88,
+      "commitsBetweenForRepo": 130,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,43 +1,46 @@\n   public void postWrite(final LogAggregationFileControllerContext record)\n       throws Exception {\n     // Before upload logs, make sure the number of existing logs\n     // is smaller than the configured NM log aggregation retention size.\n     if (record.isUploadedLogsInThisCycle() \u0026\u0026\n         record.isLogAggregationInRolling()) {\n       cleanOldLogs(record.getRemoteNodeLogFileForApp(), record.getNodeId(),\n           record.getUserUgi());\n       record.increcleanupOldLogTimes();\n     }\n \n+    // close the writer before the file is renamed or deleted\n+    closeWriter();\n+\n     final Path renamedPath \u003d record.getRollingMonitorInterval() \u003c\u003d 0\n         ? record.getRemoteNodeLogFileForApp() : new Path(\n             record.getRemoteNodeLogFileForApp().getParent(),\n             record.getRemoteNodeLogFileForApp().getName() + \"_\"\n             + record.getLogUploadTimeStamp());\n     final boolean rename \u003d record.isUploadedLogsInThisCycle();\n     try {\n       record.getUserUgi().doAs(new PrivilegedExceptionAction\u003cObject\u003e() {\n         @Override\n         public Object run() throws Exception {\n           FileSystem remoteFS \u003d record.getRemoteNodeLogFileForApp()\n               .getFileSystem(conf);\n           if (rename) {\n             remoteFS.rename(record.getRemoteNodeTmpLogFileForApp(),\n                 renamedPath);\n           } else {\n             remoteFS.delete(record.getRemoteNodeTmpLogFileForApp(), false);\n           }\n           return null;\n         }\n       });\n     } catch (Exception e) {\n       LOG.error(\n           \"Failed to move temporary log file to final location: [\"\n           + record.getRemoteNodeTmpLogFileForApp() + \"] to [\"\n           + renamedPath + \"]\", e);\n       throw new Exception(\"Log uploaded failed for Application: \"\n           + record.getAppId() + \" in NodeManager: \"\n           + LogAggregationUtils.getNodeString(record.getNodeId()) + \" at \"\n           + Times.format(record.getLogUploadTimeStamp()) + \"\\n\");\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void postWrite(final LogAggregationFileControllerContext record)\n      throws Exception {\n    // Before upload logs, make sure the number of existing logs\n    // is smaller than the configured NM log aggregation retention size.\n    if (record.isUploadedLogsInThisCycle() \u0026\u0026\n        record.isLogAggregationInRolling()) {\n      cleanOldLogs(record.getRemoteNodeLogFileForApp(), record.getNodeId(),\n          record.getUserUgi());\n      record.increcleanupOldLogTimes();\n    }\n\n    // close the writer before the file is renamed or deleted\n    closeWriter();\n\n    final Path renamedPath \u003d record.getRollingMonitorInterval() \u003c\u003d 0\n        ? record.getRemoteNodeLogFileForApp() : new Path(\n            record.getRemoteNodeLogFileForApp().getParent(),\n            record.getRemoteNodeLogFileForApp().getName() + \"_\"\n            + record.getLogUploadTimeStamp());\n    final boolean rename \u003d record.isUploadedLogsInThisCycle();\n    try {\n      record.getUserUgi().doAs(new PrivilegedExceptionAction\u003cObject\u003e() {\n        @Override\n        public Object run() throws Exception {\n          FileSystem remoteFS \u003d record.getRemoteNodeLogFileForApp()\n              .getFileSystem(conf);\n          if (rename) {\n            remoteFS.rename(record.getRemoteNodeTmpLogFileForApp(),\n                renamedPath);\n          } else {\n            remoteFS.delete(record.getRemoteNodeTmpLogFileForApp(), false);\n          }\n          return null;\n        }\n      });\n    } catch (Exception e) {\n      LOG.error(\n          \"Failed to move temporary log file to final location: [\"\n          + record.getRemoteNodeTmpLogFileForApp() + \"] to [\"\n          + renamedPath + \"]\", e);\n      throw new Exception(\"Log uploaded failed for Application: \"\n          + record.getAppId() + \" in NodeManager: \"\n          + LogAggregationUtils.getNodeString(record.getNodeId()) + \" at \"\n          + Times.format(record.getLogUploadTimeStamp()) + \"\\n\");\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/filecontroller/tfile/LogAggregationTFileController.java",
+      "extendedDetails": {}
+    },
+    "91cc070d67533ebb3325b982eba2135e0d175a82": {
+      "type": "Ymovefromfile",
+      "commitMessage": "YARN-6877. Create an abstract log reader for extendability. Contributed by Xuan Gong.\n",
+      "commitDate": "31/08/17 4:41 PM",
+      "commitName": "91cc070d67533ebb3325b982eba2135e0d175a82",
+      "commitAuthor": "Junping Du",
+      "commitDateOld": "31/08/17 3:05 PM",
+      "commitNameOld": "bac4e8cca8b54405f5e37b90e545b93bbadee0f4",
+      "commitAuthorOld": "Subru Krishnan",
+      "daysBetweenCommits": 0.07,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void postWrite(final LogAggregationFileControllerContext record)\n      throws Exception {\n    // Before upload logs, make sure the number of existing logs\n    // is smaller than the configured NM log aggregation retention size.\n    if (record.isUploadedLogsInThisCycle() \u0026\u0026\n        record.isLogAggregationInRolling()) {\n      cleanOldLogs(record.getRemoteNodeLogFileForApp(), record.getNodeId(),\n          record.getUserUgi());\n      record.increcleanupOldLogTimes();\n    }\n\n    final Path renamedPath \u003d record.getRollingMonitorInterval() \u003c\u003d 0\n        ? record.getRemoteNodeLogFileForApp() : new Path(\n            record.getRemoteNodeLogFileForApp().getParent(),\n            record.getRemoteNodeLogFileForApp().getName() + \"_\"\n            + record.getLogUploadTimeStamp());\n    final boolean rename \u003d record.isUploadedLogsInThisCycle();\n    try {\n      record.getUserUgi().doAs(new PrivilegedExceptionAction\u003cObject\u003e() {\n        @Override\n        public Object run() throws Exception {\n          FileSystem remoteFS \u003d record.getRemoteNodeLogFileForApp()\n              .getFileSystem(conf);\n          if (rename) {\n            remoteFS.rename(record.getRemoteNodeTmpLogFileForApp(),\n                renamedPath);\n          } else {\n            remoteFS.delete(record.getRemoteNodeTmpLogFileForApp(), false);\n          }\n          return null;\n        }\n      });\n    } catch (Exception e) {\n      LOG.error(\n          \"Failed to move temporary log file to final location: [\"\n          + record.getRemoteNodeTmpLogFileForApp() + \"] to [\"\n          + renamedPath + \"]\", e);\n      throw new Exception(\"Log uploaded failed for Application: \"\n          + record.getAppId() + \" in NodeManager: \"\n          + LogAggregationUtils.getNodeString(record.getNodeId()) + \" at \"\n          + Times.format(record.getLogUploadTimeStamp()) + \"\\n\");\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/filecontroller/tfile/LogAggregationTFileController.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/filecontroller/LogAggregationTFileController.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/filecontroller/tfile/LogAggregationTFileController.java",
+        "oldMethodName": "postWrite",
+        "newMethodName": "postWrite"
+      }
+    },
+    "c2cb7ea1ef6532020b69031dbd18b0f9b8369f0f": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6876. Create an abstract log writer for extendability. Contributed by Xuan Gong.\n",
+      "commitDate": "24/08/17 1:36 PM",
+      "commitName": "c2cb7ea1ef6532020b69031dbd18b0f9b8369f0f",
+      "commitAuthor": "Junping Du",
+      "diff": "@@ -0,0 +1,43 @@\n+  public void postWrite(final LogAggregationFileControllerContext record)\n+      throws Exception {\n+    // Before upload logs, make sure the number of existing logs\n+    // is smaller than the configured NM log aggregation retention size.\n+    if (record.isUploadedLogsInThisCycle() \u0026\u0026\n+        record.isLogAggregationInRolling()) {\n+      cleanOldLogs(record.getRemoteNodeLogFileForApp(), record.getNodeId(),\n+          record.getUserUgi());\n+      record.increcleanupOldLogTimes();\n+    }\n+\n+    final Path renamedPath \u003d record.getRollingMonitorInterval() \u003c\u003d 0\n+        ? record.getRemoteNodeLogFileForApp() : new Path(\n+            record.getRemoteNodeLogFileForApp().getParent(),\n+            record.getRemoteNodeLogFileForApp().getName() + \"_\"\n+            + record.getLogUploadTimeStamp());\n+    final boolean rename \u003d record.isUploadedLogsInThisCycle();\n+    try {\n+      record.getUserUgi().doAs(new PrivilegedExceptionAction\u003cObject\u003e() {\n+        @Override\n+        public Object run() throws Exception {\n+          FileSystem remoteFS \u003d record.getRemoteNodeLogFileForApp()\n+              .getFileSystem(conf);\n+          if (rename) {\n+            remoteFS.rename(record.getRemoteNodeTmpLogFileForApp(),\n+                renamedPath);\n+          } else {\n+            remoteFS.delete(record.getRemoteNodeTmpLogFileForApp(), false);\n+          }\n+          return null;\n+        }\n+      });\n+    } catch (Exception e) {\n+      LOG.error(\n+          \"Failed to move temporary log file to final location: [\"\n+          + record.getRemoteNodeTmpLogFileForApp() + \"] to [\"\n+          + renamedPath + \"]\", e);\n+      throw new Exception(\"Log uploaded failed for Application: \"\n+          + record.getAppId() + \" in NodeManager: \"\n+          + LogAggregationUtils.getNodeString(record.getNodeId()) + \" at \"\n+          + Times.format(record.getLogUploadTimeStamp()) + \"\\n\");\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void postWrite(final LogAggregationFileControllerContext record)\n      throws Exception {\n    // Before upload logs, make sure the number of existing logs\n    // is smaller than the configured NM log aggregation retention size.\n    if (record.isUploadedLogsInThisCycle() \u0026\u0026\n        record.isLogAggregationInRolling()) {\n      cleanOldLogs(record.getRemoteNodeLogFileForApp(), record.getNodeId(),\n          record.getUserUgi());\n      record.increcleanupOldLogTimes();\n    }\n\n    final Path renamedPath \u003d record.getRollingMonitorInterval() \u003c\u003d 0\n        ? record.getRemoteNodeLogFileForApp() : new Path(\n            record.getRemoteNodeLogFileForApp().getParent(),\n            record.getRemoteNodeLogFileForApp().getName() + \"_\"\n            + record.getLogUploadTimeStamp());\n    final boolean rename \u003d record.isUploadedLogsInThisCycle();\n    try {\n      record.getUserUgi().doAs(new PrivilegedExceptionAction\u003cObject\u003e() {\n        @Override\n        public Object run() throws Exception {\n          FileSystem remoteFS \u003d record.getRemoteNodeLogFileForApp()\n              .getFileSystem(conf);\n          if (rename) {\n            remoteFS.rename(record.getRemoteNodeTmpLogFileForApp(),\n                renamedPath);\n          } else {\n            remoteFS.delete(record.getRemoteNodeTmpLogFileForApp(), false);\n          }\n          return null;\n        }\n      });\n    } catch (Exception e) {\n      LOG.error(\n          \"Failed to move temporary log file to final location: [\"\n          + record.getRemoteNodeTmpLogFileForApp() + \"] to [\"\n          + renamedPath + \"]\", e);\n      throw new Exception(\"Log uploaded failed for Application: \"\n          + record.getAppId() + \" in NodeManager: \"\n          + LogAggregationUtils.getNodeString(record.getNodeId()) + \" at \"\n          + Times.format(record.getLogUploadTimeStamp()) + \"\\n\");\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/filecontroller/LogAggregationTFileController.java"
+    }
+  }
+}

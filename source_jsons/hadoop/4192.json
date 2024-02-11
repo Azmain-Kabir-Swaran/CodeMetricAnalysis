@@ -1,0 +1,68 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StripedBlockUtil.java",
+  "functionName": "mergeRangesForInternalBlocks",
+  "functionId": "mergeRangesForInternalBlocks___ecPolicy-ErasureCodingPolicy__ranges-VerticalRange[]__blockGroup-LocatedStripedBlock__cellSize-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/util/StripedBlockUtil.java",
+  "functionStartLine": 517,
+  "functionEndLine": 551,
+  "numCommitsSeen": 33,
+  "timeTaken": 1947,
+  "changeHistory": [
+    "382967be51052d59e31d8d05713645b8d3c2325b"
+  ],
+  "changeHistoryShort": {
+    "382967be51052d59e31d8d05713645b8d3c2325b": "Ymultichange(Yparameterchange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "382967be51052d59e31d8d05713645b8d3c2325b": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-14373. EC : Decoding is failing when block group last incomplete cell fall in to AlignedStripe. Contributed by Surendra Singh Lilhore.\n",
+      "commitDate": "07/10/19 11:44 AM",
+      "commitName": "382967be51052d59e31d8d05713645b8d3c2325b",
+      "commitAuthor": "Surendra Singh Lilhore",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-14373. EC : Decoding is failing when block group last incomplete cell fall in to AlignedStripe. Contributed by Surendra Singh Lilhore.\n",
+          "commitDate": "07/10/19 11:44 AM",
+          "commitName": "382967be51052d59e31d8d05713645b8d3c2325b",
+          "commitAuthor": "Surendra Singh Lilhore",
+          "commitDateOld": "11/01/19 10:54 AM",
+          "commitNameOld": "fb8932a727f757b2e9c1c61a18145878d0eb77bd",
+          "commitAuthorOld": "Giovanni Matteo Fumarola",
+          "daysBetweenCommits": 268.99,
+          "commitsBetweenForRepo": 2111,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,35 @@\n   private static AlignedStripe[] mergeRangesForInternalBlocks(\n-      ErasureCodingPolicy ecPolicy, VerticalRange[] ranges) {\n+      ErasureCodingPolicy ecPolicy, VerticalRange[] ranges,\n+      LocatedStripedBlock blockGroup, int cellSize) {\n     int dataBlkNum \u003d ecPolicy.getNumDataUnits();\n     int parityBlkNum \u003d ecPolicy.getNumParityUnits();\n     List\u003cAlignedStripe\u003e stripes \u003d new ArrayList\u003c\u003e();\n     SortedSet\u003cLong\u003e stripePoints \u003d new TreeSet\u003c\u003e();\n     for (VerticalRange r : ranges) {\n       if (r !\u003d null) {\n         stripePoints.add(r.offsetInBlock);\n         stripePoints.add(r.offsetInBlock + r.spanInBlock);\n       }\n     }\n \n+    // Add block group last cell offset in stripePoints if it is fall in to read\n+    // offset range.\n+    int lastCellIdxInBG \u003d (int) (blockGroup.getBlockSize() / cellSize);\n+    int idxInInternalBlk \u003d lastCellIdxInBG / ecPolicy.getNumDataUnits();\n+    long lastCellEndOffset \u003d (idxInInternalBlk * (long)cellSize)\n+        + (blockGroup.getBlockSize() % cellSize);\n+    if (stripePoints.first() \u003c lastCellEndOffset\n+        \u0026\u0026 stripePoints.last() \u003e lastCellEndOffset) {\n+      stripePoints.add(lastCellEndOffset);\n+    }\n+\n     long prev \u003d -1;\n     for (long point : stripePoints) {\n       if (prev \u003e\u003d 0) {\n         stripes.add(new AlignedStripe(prev, point - prev,\n             dataBlkNum + parityBlkNum));\n       }\n       prev \u003d point;\n     }\n     return stripes.toArray(new AlignedStripe[stripes.size()]);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static AlignedStripe[] mergeRangesForInternalBlocks(\n      ErasureCodingPolicy ecPolicy, VerticalRange[] ranges,\n      LocatedStripedBlock blockGroup, int cellSize) {\n    int dataBlkNum \u003d ecPolicy.getNumDataUnits();\n    int parityBlkNum \u003d ecPolicy.getNumParityUnits();\n    List\u003cAlignedStripe\u003e stripes \u003d new ArrayList\u003c\u003e();\n    SortedSet\u003cLong\u003e stripePoints \u003d new TreeSet\u003c\u003e();\n    for (VerticalRange r : ranges) {\n      if (r !\u003d null) {\n        stripePoints.add(r.offsetInBlock);\n        stripePoints.add(r.offsetInBlock + r.spanInBlock);\n      }\n    }\n\n    // Add block group last cell offset in stripePoints if it is fall in to read\n    // offset range.\n    int lastCellIdxInBG \u003d (int) (blockGroup.getBlockSize() / cellSize);\n    int idxInInternalBlk \u003d lastCellIdxInBG / ecPolicy.getNumDataUnits();\n    long lastCellEndOffset \u003d (idxInInternalBlk * (long)cellSize)\n        + (blockGroup.getBlockSize() % cellSize);\n    if (stripePoints.first() \u003c lastCellEndOffset\n        \u0026\u0026 stripePoints.last() \u003e lastCellEndOffset) {\n      stripePoints.add(lastCellEndOffset);\n    }\n\n    long prev \u003d -1;\n    for (long point : stripePoints) {\n      if (prev \u003e\u003d 0) {\n        stripes.add(new AlignedStripe(prev, point - prev,\n            dataBlkNum + parityBlkNum));\n      }\n      prev \u003d point;\n    }\n    return stripes.toArray(new AlignedStripe[stripes.size()]);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/util/StripedBlockUtil.java",
+          "extendedDetails": {
+            "oldValue": "[ecPolicy-ErasureCodingPolicy, ranges-VerticalRange[]]",
+            "newValue": "[ecPolicy-ErasureCodingPolicy, ranges-VerticalRange[], blockGroup-LocatedStripedBlock, cellSize-int]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-14373. EC : Decoding is failing when block group last incomplete cell fall in to AlignedStripe. Contributed by Surendra Singh Lilhore.\n",
+          "commitDate": "07/10/19 11:44 AM",
+          "commitName": "382967be51052d59e31d8d05713645b8d3c2325b",
+          "commitAuthor": "Surendra Singh Lilhore",
+          "commitDateOld": "11/01/19 10:54 AM",
+          "commitNameOld": "fb8932a727f757b2e9c1c61a18145878d0eb77bd",
+          "commitAuthorOld": "Giovanni Matteo Fumarola",
+          "daysBetweenCommits": 268.99,
+          "commitsBetweenForRepo": 2111,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,35 @@\n   private static AlignedStripe[] mergeRangesForInternalBlocks(\n-      ErasureCodingPolicy ecPolicy, VerticalRange[] ranges) {\n+      ErasureCodingPolicy ecPolicy, VerticalRange[] ranges,\n+      LocatedStripedBlock blockGroup, int cellSize) {\n     int dataBlkNum \u003d ecPolicy.getNumDataUnits();\n     int parityBlkNum \u003d ecPolicy.getNumParityUnits();\n     List\u003cAlignedStripe\u003e stripes \u003d new ArrayList\u003c\u003e();\n     SortedSet\u003cLong\u003e stripePoints \u003d new TreeSet\u003c\u003e();\n     for (VerticalRange r : ranges) {\n       if (r !\u003d null) {\n         stripePoints.add(r.offsetInBlock);\n         stripePoints.add(r.offsetInBlock + r.spanInBlock);\n       }\n     }\n \n+    // Add block group last cell offset in stripePoints if it is fall in to read\n+    // offset range.\n+    int lastCellIdxInBG \u003d (int) (blockGroup.getBlockSize() / cellSize);\n+    int idxInInternalBlk \u003d lastCellIdxInBG / ecPolicy.getNumDataUnits();\n+    long lastCellEndOffset \u003d (idxInInternalBlk * (long)cellSize)\n+        + (blockGroup.getBlockSize() % cellSize);\n+    if (stripePoints.first() \u003c lastCellEndOffset\n+        \u0026\u0026 stripePoints.last() \u003e lastCellEndOffset) {\n+      stripePoints.add(lastCellEndOffset);\n+    }\n+\n     long prev \u003d -1;\n     for (long point : stripePoints) {\n       if (prev \u003e\u003d 0) {\n         stripes.add(new AlignedStripe(prev, point - prev,\n             dataBlkNum + parityBlkNum));\n       }\n       prev \u003d point;\n     }\n     return stripes.toArray(new AlignedStripe[stripes.size()]);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static AlignedStripe[] mergeRangesForInternalBlocks(\n      ErasureCodingPolicy ecPolicy, VerticalRange[] ranges,\n      LocatedStripedBlock blockGroup, int cellSize) {\n    int dataBlkNum \u003d ecPolicy.getNumDataUnits();\n    int parityBlkNum \u003d ecPolicy.getNumParityUnits();\n    List\u003cAlignedStripe\u003e stripes \u003d new ArrayList\u003c\u003e();\n    SortedSet\u003cLong\u003e stripePoints \u003d new TreeSet\u003c\u003e();\n    for (VerticalRange r : ranges) {\n      if (r !\u003d null) {\n        stripePoints.add(r.offsetInBlock);\n        stripePoints.add(r.offsetInBlock + r.spanInBlock);\n      }\n    }\n\n    // Add block group last cell offset in stripePoints if it is fall in to read\n    // offset range.\n    int lastCellIdxInBG \u003d (int) (blockGroup.getBlockSize() / cellSize);\n    int idxInInternalBlk \u003d lastCellIdxInBG / ecPolicy.getNumDataUnits();\n    long lastCellEndOffset \u003d (idxInInternalBlk * (long)cellSize)\n        + (blockGroup.getBlockSize() % cellSize);\n    if (stripePoints.first() \u003c lastCellEndOffset\n        \u0026\u0026 stripePoints.last() \u003e lastCellEndOffset) {\n      stripePoints.add(lastCellEndOffset);\n    }\n\n    long prev \u003d -1;\n    for (long point : stripePoints) {\n      if (prev \u003e\u003d 0) {\n        stripes.add(new AlignedStripe(prev, point - prev,\n            dataBlkNum + parityBlkNum));\n      }\n      prev \u003d point;\n    }\n    return stripes.toArray(new AlignedStripe[stripes.size()]);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/util/StripedBlockUtil.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

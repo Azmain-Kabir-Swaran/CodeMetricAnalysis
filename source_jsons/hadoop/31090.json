@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FederationInterceptorREST.java",
+  "functionName": "getNode",
+  "functionId": "getNode___subClusters-Collection__SubClusterInfo____nodeId-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/FederationInterceptorREST.java",
+  "functionStartLine": 857,
+  "functionEndLine": 898,
+  "numCommitsSeen": 20,
+  "timeTaken": 1558,
+  "changeHistory": [
+    "7536488bbd919b619f037442e6395154f579aaac"
+  ],
+  "changeHistoryShort": {
+    "7536488bbd919b619f037442e6395154f579aaac": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7536488bbd919b619f037442e6395154f579aaac": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-996. REST API support for node resource configuration. Contributed by Inigo Goiri.\n",
+      "commitDate": "11/02/19 3:27 PM",
+      "commitName": "7536488bbd919b619f037442e6395154f579aaac",
+      "commitAuthor": "Giovanni Matteo Fumarola",
+      "diff": "@@ -0,0 +1,42 @@\n+  private Map\u003cSubClusterInfo, NodeInfo\u003e getNode(\n+      Collection\u003cSubClusterInfo\u003e subClusters, String nodeId) {\n+\n+    // Send the requests in parallel\n+    CompletionService\u003cNodeInfo\u003e compSvc \u003d\n+        new ExecutorCompletionService\u003cNodeInfo\u003e(this.threadpool);\n+    final Map\u003cSubClusterInfo, Future\u003cNodeInfo\u003e\u003e futures \u003d new HashMap\u003c\u003e();\n+    for (final SubClusterInfo subcluster : subClusters) {\n+      final SubClusterId subclusterId \u003d subcluster.getSubClusterId();\n+      Future\u003cNodeInfo\u003e result \u003d compSvc.submit(() -\u003e {\n+        try {\n+          DefaultRequestInterceptorREST interceptor \u003d\n+              getOrCreateInterceptorForSubCluster(\n+                  subclusterId, subcluster.getRMWebServiceAddress());\n+          return interceptor.getNode(nodeId);\n+        } catch (Exception e) {\n+          LOG.error(\"Subcluster {} failed to return nodeInfo.\",\n+              subclusterId);\n+          return null;\n+        }\n+      });\n+      futures.put(subcluster, result);\n+    }\n+\n+    // Collect the results\n+    final Map\u003cSubClusterInfo, NodeInfo\u003e results \u003d new HashMap\u003c\u003e();\n+    for (Entry\u003cSubClusterInfo, Future\u003cNodeInfo\u003e\u003e entry : futures.entrySet()) {\n+      try {\n+        final Future\u003cNodeInfo\u003e future \u003d entry.getValue();\n+        final NodeInfo nodeInfo \u003d future.get();\n+        // Check if the node was found in this SubCluster\n+        if (nodeInfo !\u003d null) {\n+          SubClusterInfo subcluster \u003d entry.getKey();\n+          results.put(subcluster, nodeInfo);\n+        }\n+      } catch (Throwable e) {\n+        LOG.warn(\"Failed to get node report \", e);\n+      }\n+    }\n+\n+    return results;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Map\u003cSubClusterInfo, NodeInfo\u003e getNode(\n      Collection\u003cSubClusterInfo\u003e subClusters, String nodeId) {\n\n    // Send the requests in parallel\n    CompletionService\u003cNodeInfo\u003e compSvc \u003d\n        new ExecutorCompletionService\u003cNodeInfo\u003e(this.threadpool);\n    final Map\u003cSubClusterInfo, Future\u003cNodeInfo\u003e\u003e futures \u003d new HashMap\u003c\u003e();\n    for (final SubClusterInfo subcluster : subClusters) {\n      final SubClusterId subclusterId \u003d subcluster.getSubClusterId();\n      Future\u003cNodeInfo\u003e result \u003d compSvc.submit(() -\u003e {\n        try {\n          DefaultRequestInterceptorREST interceptor \u003d\n              getOrCreateInterceptorForSubCluster(\n                  subclusterId, subcluster.getRMWebServiceAddress());\n          return interceptor.getNode(nodeId);\n        } catch (Exception e) {\n          LOG.error(\"Subcluster {} failed to return nodeInfo.\",\n              subclusterId);\n          return null;\n        }\n      });\n      futures.put(subcluster, result);\n    }\n\n    // Collect the results\n    final Map\u003cSubClusterInfo, NodeInfo\u003e results \u003d new HashMap\u003c\u003e();\n    for (Entry\u003cSubClusterInfo, Future\u003cNodeInfo\u003e\u003e entry : futures.entrySet()) {\n      try {\n        final Future\u003cNodeInfo\u003e future \u003d entry.getValue();\n        final NodeInfo nodeInfo \u003d future.get();\n        // Check if the node was found in this SubCluster\n        if (nodeInfo !\u003d null) {\n          SubClusterInfo subcluster \u003d entry.getKey();\n          results.put(subcluster, nodeInfo);\n        }\n      } catch (Throwable e) {\n        LOG.warn(\"Failed to get node report \", e);\n      }\n    }\n\n    return results;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/FederationInterceptorREST.java"
+    }
+  }
+}

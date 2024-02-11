@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileIoProvider.java",
+  "functionName": "transferToSocketFully",
+  "functionId": "transferToSocketFully___volume-FsVolumeSpi(annotations-@Nullable)__sockOut-SocketOutputStream__fileCh-FileChannel__position-long__count-int__waitTime-LongWritable__transferTime-LongWritable",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FileIoProvider.java",
+  "functionStartLine": 271,
+  "functionEndLine": 288,
+  "numCommitsSeen": 12,
+  "timeTaken": 2869,
+  "changeHistory": [
+    "5dd859a8a0d038ff04acbb96741a215d6a0e8c29",
+    "4046794a5365f80f9fa002e3889e41c6d29e13a8",
+    "603f3ef1386048111940b66f3a0750ab84d0588f",
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389"
+  ],
+  "changeHistoryShort": {
+    "5dd859a8a0d038ff04acbb96741a215d6a0e8c29": "Ybodychange",
+    "4046794a5365f80f9fa002e3889e41c6d29e13a8": "Ybodychange",
+    "603f3ef1386048111940b66f3a0750ab84d0588f": "Ybodychange",
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5dd859a8a0d038ff04acbb96741a215d6a0e8c29": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14836. FileIoProvider should not increase FileIoErrors metric in datanode volume metric. Contributed by Aiphago.\n\nReviewed-by: He Xiaoqiao \u003chexiaoqiao@apache.org\u003e\n",
+      "commitDate": "18/09/19 9:34 AM",
+      "commitName": "5dd859a8a0d038ff04acbb96741a215d6a0e8c29",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "30/10/18 10:43 PM",
+      "commitNameOld": "fac9f91b2944cee641049fffcafa6b65e0cf68f2",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 322.45,
+      "commitsBetweenForRepo": 2401,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,18 @@\n   public void transferToSocketFully(\n       @Nullable FsVolumeSpi volume, SocketOutputStream sockOut,\n       FileChannel fileCh, long position, int count,\n       LongWritable waitTime, LongWritable transferTime) throws IOException {\n     final long begin \u003d profilingEventHook.beforeFileIo(volume, TRANSFER, count);\n     try {\n       faultInjectorEventHook.beforeFileIo(volume, TRANSFER, count);\n       sockOut.transferToFully(fileCh, position, count,\n           waitTime, transferTime);\n       profilingEventHook.afterFileIo(volume, TRANSFER, begin, count);\n     } catch (Exception e) {\n-      onFailure(volume, begin);\n+      String em \u003d e.getMessage();\n+      if (!em.startsWith(\"Broken pipe\") \u0026\u0026 !em.startsWith(\"Connection reset\")) {\n+        onFailure(volume, begin);\n+      }\n       throw e;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void transferToSocketFully(\n      @Nullable FsVolumeSpi volume, SocketOutputStream sockOut,\n      FileChannel fileCh, long position, int count,\n      LongWritable waitTime, LongWritable transferTime) throws IOException {\n    final long begin \u003d profilingEventHook.beforeFileIo(volume, TRANSFER, count);\n    try {\n      faultInjectorEventHook.beforeFileIo(volume, TRANSFER, count);\n      sockOut.transferToFully(fileCh, position, count,\n          waitTime, transferTime);\n      profilingEventHook.afterFileIo(volume, TRANSFER, begin, count);\n    } catch (Exception e) {\n      String em \u003d e.getMessage();\n      if (!em.startsWith(\"Broken pipe\") \u0026\u0026 !em.startsWith(\"Connection reset\")) {\n        onFailure(volume, begin);\n      }\n      throw e;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FileIoProvider.java",
+      "extendedDetails": {}
+    },
+    "4046794a5365f80f9fa002e3889e41c6d29e13a8": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11299. Support multiple Datanode File IO hooks. Contributed by Hanisha Koneru.\n",
+      "commitDate": "10/01/17 10:43 AM",
+      "commitName": "4046794a5365f80f9fa002e3889e41c6d29e13a8",
+      "commitAuthor": "Arpit Agarwal",
+      "commitDateOld": "28/12/16 10:08 PM",
+      "commitNameOld": "603f3ef1386048111940b66f3a0750ab84d0588f",
+      "commitAuthorOld": "Xiaoyu Yao",
+      "daysBetweenCommits": 12.52,
+      "commitsBetweenForRepo": 54,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,15 @@\n   public void transferToSocketFully(\n       @Nullable FsVolumeSpi volume, SocketOutputStream sockOut,\n       FileChannel fileCh, long position, int count,\n       LongWritable waitTime, LongWritable transferTime) throws IOException {\n-    final long begin \u003d eventHooks.beforeFileIo(volume, TRANSFER, count);\n+    final long begin \u003d profilingEventHook.beforeFileIo(volume, TRANSFER, count);\n     try {\n+      faultInjectorEventHook.beforeFileIo(volume, TRANSFER, count);\n       sockOut.transferToFully(fileCh, position, count,\n           waitTime, transferTime);\n-      eventHooks.afterFileIo(volume, TRANSFER, begin, count);\n+      profilingEventHook.afterFileIo(volume, TRANSFER, begin, count);\n     } catch (Exception e) {\n-      eventHooks.onFailure(datanode, volume, TRANSFER, e, begin);\n+      onFailure(volume, begin);\n       throw e;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void transferToSocketFully(\n      @Nullable FsVolumeSpi volume, SocketOutputStream sockOut,\n      FileChannel fileCh, long position, int count,\n      LongWritable waitTime, LongWritable transferTime) throws IOException {\n    final long begin \u003d profilingEventHook.beforeFileIo(volume, TRANSFER, count);\n    try {\n      faultInjectorEventHook.beforeFileIo(volume, TRANSFER, count);\n      sockOut.transferToFully(fileCh, position, count,\n          waitTime, transferTime);\n      profilingEventHook.afterFileIo(volume, TRANSFER, begin, count);\n    } catch (Exception e) {\n      onFailure(volume, begin);\n      throw e;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FileIoProvider.java",
+      "extendedDetails": {}
+    },
+    "603f3ef1386048111940b66f3a0750ab84d0588f": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11274. Datanode should only check the failed volume upon IO errors. Contributed by Xiaoyu Yao.\n",
+      "commitDate": "28/12/16 10:08 PM",
+      "commitName": "603f3ef1386048111940b66f3a0750ab84d0588f",
+      "commitAuthor": "Xiaoyu Yao",
+      "commitDateOld": "14/12/16 11:18 AM",
+      "commitNameOld": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 14.45,
+      "commitsBetweenForRepo": 60,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,14 @@\n   public void transferToSocketFully(\n       @Nullable FsVolumeSpi volume, SocketOutputStream sockOut,\n       FileChannel fileCh, long position, int count,\n       LongWritable waitTime, LongWritable transferTime) throws IOException {\n     final long begin \u003d eventHooks.beforeFileIo(volume, TRANSFER, count);\n     try {\n       sockOut.transferToFully(fileCh, position, count,\n           waitTime, transferTime);\n       eventHooks.afterFileIo(volume, TRANSFER, begin, count);\n     } catch (Exception e) {\n-      eventHooks.onFailure(volume, TRANSFER, e, begin);\n+      eventHooks.onFailure(datanode, volume, TRANSFER, e, begin);\n       throw e;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void transferToSocketFully(\n      @Nullable FsVolumeSpi volume, SocketOutputStream sockOut,\n      FileChannel fileCh, long position, int count,\n      LongWritable waitTime, LongWritable transferTime) throws IOException {\n    final long begin \u003d eventHooks.beforeFileIo(volume, TRANSFER, count);\n    try {\n      sockOut.transferToFully(fileCh, position, count,\n          waitTime, transferTime);\n      eventHooks.afterFileIo(volume, TRANSFER, begin, count);\n    } catch (Exception e) {\n      eventHooks.onFailure(datanode, volume, TRANSFER, e, begin);\n      throw e;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FileIoProvider.java",
+      "extendedDetails": {}
+    },
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10958. Add instrumentation hooks around Datanode disk IO.\n",
+      "commitDate": "14/12/16 11:18 AM",
+      "commitName": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+      "commitAuthor": "Arpit Agarwal",
+      "diff": "@@ -0,0 +1,14 @@\n+  public void transferToSocketFully(\n+      @Nullable FsVolumeSpi volume, SocketOutputStream sockOut,\n+      FileChannel fileCh, long position, int count,\n+      LongWritable waitTime, LongWritable transferTime) throws IOException {\n+    final long begin \u003d eventHooks.beforeFileIo(volume, TRANSFER, count);\n+    try {\n+      sockOut.transferToFully(fileCh, position, count,\n+          waitTime, transferTime);\n+      eventHooks.afterFileIo(volume, TRANSFER, begin, count);\n+    } catch (Exception e) {\n+      eventHooks.onFailure(volume, TRANSFER, e, begin);\n+      throw e;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void transferToSocketFully(\n      @Nullable FsVolumeSpi volume, SocketOutputStream sockOut,\n      FileChannel fileCh, long position, int count,\n      LongWritable waitTime, LongWritable transferTime) throws IOException {\n    final long begin \u003d eventHooks.beforeFileIo(volume, TRANSFER, count);\n    try {\n      sockOut.transferToFully(fileCh, position, count,\n          waitTime, transferTime);\n      eventHooks.afterFileIo(volume, TRANSFER, begin, count);\n    } catch (Exception e) {\n      eventHooks.onFailure(volume, TRANSFER, e, begin);\n      throw e;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FileIoProvider.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSNamesystem.java",
+  "functionName": "getNamespaceEditsDirs",
+  "functionId": "getNamespaceEditsDirs___conf-Configuration__includeShared-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java",
+  "functionStartLine": 1641,
+  "functionEndLine": 1684,
+  "numCommitsSeen": 873,
+  "timeTaken": 44805,
+  "changeHistory": [
+    "1a75ec82885e45baf4d5cd56d6c738d8e68d8bc7"
+  ],
+  "changeHistoryShort": {
+    "1a75ec82885e45baf4d5cd56d6c738d8e68d8bc7": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1a75ec82885e45baf4d5cd56d6c738d8e68d8bc7": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-2731. Add command to bootstrap the Standby Node\u0027s name directories from the Active NameNode. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1299807 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/03/12 12:41 PM",
+      "commitName": "1a75ec82885e45baf4d5cd56d6c738d8e68d8bc7",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,44 @@\n+  public static List\u003cURI\u003e getNamespaceEditsDirs(Configuration conf,\n+      boolean includeShared)\n+      throws IOException {\n+    // Use a LinkedHashSet so that order is maintained while we de-dup\n+    // the entries.\n+    LinkedHashSet\u003cURI\u003e editsDirs \u003d new LinkedHashSet\u003cURI\u003e();\n+    \n+    if (includeShared) {\n+      List\u003cURI\u003e sharedDirs \u003d getSharedEditsDirs(conf);\n+  \n+      // Fail until multiple shared edits directories are supported (HDFS-2782)\n+      if (sharedDirs.size() \u003e 1) {\n+        throw new IOException(\n+            \"Multiple shared edits directories are not yet supported\");\n+      }\n+  \n+      // First add the shared edits dirs. It\u0027s critical that the shared dirs\n+      // are added first, since JournalSet syncs them in the order they are listed,\n+      // and we need to make sure all edits are in place in the shared storage\n+      // before they are replicated locally. See HDFS-2874.\n+      for (URI dir : sharedDirs) {\n+        if (!editsDirs.add(dir)) {\n+          LOG.warn(\"Edits URI \" + dir + \" listed multiple times in \" + \n+              DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \". Ignoring duplicates.\");\n+        }\n+      }\n+    }    \n+    // Now add the non-shared dirs.\n+    for (URI dir : getStorageDirs(conf, DFS_NAMENODE_EDITS_DIR_KEY)) {\n+      if (!editsDirs.add(dir)) {\n+        LOG.warn(\"Edits URI \" + dir + \" listed multiple times in \" + \n+            DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \" and \" +\n+            DFS_NAMENODE_EDITS_DIR_KEY + \". Ignoring duplicates.\");\n+      }\n+    }\n+\n+    if (editsDirs.isEmpty()) {\n+      // If this is the case, no edit dirs have been explicitly configured.\n+      // Image dirs are to be used for edits too.\n+      return Lists.newArrayList(getNamespaceDirs(conf));\n+    } else {\n+      return Lists.newArrayList(editsDirs);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static List\u003cURI\u003e getNamespaceEditsDirs(Configuration conf,\n      boolean includeShared)\n      throws IOException {\n    // Use a LinkedHashSet so that order is maintained while we de-dup\n    // the entries.\n    LinkedHashSet\u003cURI\u003e editsDirs \u003d new LinkedHashSet\u003cURI\u003e();\n    \n    if (includeShared) {\n      List\u003cURI\u003e sharedDirs \u003d getSharedEditsDirs(conf);\n  \n      // Fail until multiple shared edits directories are supported (HDFS-2782)\n      if (sharedDirs.size() \u003e 1) {\n        throw new IOException(\n            \"Multiple shared edits directories are not yet supported\");\n      }\n  \n      // First add the shared edits dirs. It\u0027s critical that the shared dirs\n      // are added first, since JournalSet syncs them in the order they are listed,\n      // and we need to make sure all edits are in place in the shared storage\n      // before they are replicated locally. See HDFS-2874.\n      for (URI dir : sharedDirs) {\n        if (!editsDirs.add(dir)) {\n          LOG.warn(\"Edits URI \" + dir + \" listed multiple times in \" + \n              DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \". Ignoring duplicates.\");\n        }\n      }\n    }    \n    // Now add the non-shared dirs.\n    for (URI dir : getStorageDirs(conf, DFS_NAMENODE_EDITS_DIR_KEY)) {\n      if (!editsDirs.add(dir)) {\n        LOG.warn(\"Edits URI \" + dir + \" listed multiple times in \" + \n            DFS_NAMENODE_SHARED_EDITS_DIR_KEY + \" and \" +\n            DFS_NAMENODE_EDITS_DIR_KEY + \". Ignoring duplicates.\");\n      }\n    }\n\n    if (editsDirs.isEmpty()) {\n      // If this is the case, no edit dirs have been explicitly configured.\n      // Image dirs are to be used for edits too.\n      return Lists.newArrayList(getNamespaceDirs(conf));\n    } else {\n      return Lists.newArrayList(editsDirs);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystem.java"
+    }
+  }
+}

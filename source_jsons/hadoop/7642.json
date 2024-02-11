@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ReencryptionHandler.java",
+  "functionName": "reencryptEncryptionZone",
+  "functionId": "reencryptEncryptionZone___zoneId-long(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ReencryptionHandler.java",
+  "functionStartLine": 384,
+  "functionEndLine": 427,
+  "numCommitsSeen": 10,
+  "timeTaken": 2989,
+  "changeHistory": [
+    "f89594f0b80e8efffdcb887daa4a18a2b0a228b3",
+    "248d9b6fff648cdb02581d458556b6f7c090ef1a",
+    "1000a2af04b24c123a3b08168f36b4e90420cab7"
+  ],
+  "changeHistoryShort": {
+    "f89594f0b80e8efffdcb887daa4a18a2b0a228b3": "Ybodychange",
+    "248d9b6fff648cdb02581d458556b6f7c090ef1a": "Ybodychange",
+    "1000a2af04b24c123a3b08168f36b4e90420cab7": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f89594f0b80e8efffdcb887daa4a18a2b0a228b3": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13328. Abstract ReencryptionHandler recursive logic in separate class. Contributed by Surendra Singh Lilhore.\n",
+      "commitDate": "10/04/18 11:05 AM",
+      "commitName": "f89594f0b80e8efffdcb887daa4a18a2b0a228b3",
+      "commitAuthor": "Rakesh Radhakrishnan",
+      "commitDateOld": "08/02/18 10:55 AM",
+      "commitNameOld": "996796f1048369e0f307f935ba01af64cc751a85",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 60.96,
+      "commitsBetweenForRepo": 509,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,43 +1,44 @@\n   void reencryptEncryptionZone(final long zoneId)\n       throws IOException, InterruptedException {\n     throttleTimerAll.reset().start();\n     throttleTimerLocked.reset();\n     final INode zoneNode;\n     final ZoneReencryptionStatus zs;\n \n-    readLock();\n+    traverser.readLock();\n     try {\n       zoneNode \u003d dir.getInode(zoneId);\n       // start re-encrypting the zone from the beginning\n       if (zoneNode \u003d\u003d null) {\n         LOG.info(\"Directory with id {} removed during re-encrypt, skipping\",\n             zoneId);\n         return;\n       }\n       if (!zoneNode.isDirectory()) {\n         LOG.info(\"Cannot re-encrypt directory with id {} because it\u0027s not a\"\n             + \" directory.\", zoneId);\n         return;\n       }\n \n       zs \u003d getReencryptionStatus().getZoneStatus(zoneId);\n       assert zs !\u003d null;\n       // Only costly log FullPathName here once, and use id elsewhere.\n       LOG.info(\"Re-encrypting zone {}(id\u003d{})\", zoneNode.getFullPathName(),\n           zoneId);\n       if (zs.getLastCheckpointFile() \u003d\u003d null) {\n         // new re-encryption\n-        reencryptDir(zoneNode.asDirectory(), zoneId, HdfsFileStatus.EMPTY_NAME,\n-            zs.getEzKeyVersionName());\n+        traverser.traverseDir(zoneNode.asDirectory(), zoneId,\n+            HdfsFileStatus.EMPTY_NAME,\n+            new ZoneTraverseInfo(zs.getEzKeyVersionName()));\n       } else {\n         // resuming from a past re-encryption\n         restoreFromLastProcessedFile(zoneId, zs);\n       }\n       // save the last batch and mark complete\n-      submitCurrentBatch(zoneId);\n+      traverser.submitCurrentBatch(zoneId);\n       LOG.info(\"Submission completed of zone {} for re-encryption.\", zoneId);\n       reencryptionUpdater.markZoneSubmissionDone(zoneId);\n     } finally {\n-      readUnlock();\n+      traverser.readUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void reencryptEncryptionZone(final long zoneId)\n      throws IOException, InterruptedException {\n    throttleTimerAll.reset().start();\n    throttleTimerLocked.reset();\n    final INode zoneNode;\n    final ZoneReencryptionStatus zs;\n\n    traverser.readLock();\n    try {\n      zoneNode \u003d dir.getInode(zoneId);\n      // start re-encrypting the zone from the beginning\n      if (zoneNode \u003d\u003d null) {\n        LOG.info(\"Directory with id {} removed during re-encrypt, skipping\",\n            zoneId);\n        return;\n      }\n      if (!zoneNode.isDirectory()) {\n        LOG.info(\"Cannot re-encrypt directory with id {} because it\u0027s not a\"\n            + \" directory.\", zoneId);\n        return;\n      }\n\n      zs \u003d getReencryptionStatus().getZoneStatus(zoneId);\n      assert zs !\u003d null;\n      // Only costly log FullPathName here once, and use id elsewhere.\n      LOG.info(\"Re-encrypting zone {}(id\u003d{})\", zoneNode.getFullPathName(),\n          zoneId);\n      if (zs.getLastCheckpointFile() \u003d\u003d null) {\n        // new re-encryption\n        traverser.traverseDir(zoneNode.asDirectory(), zoneId,\n            HdfsFileStatus.EMPTY_NAME,\n            new ZoneTraverseInfo(zs.getEzKeyVersionName()));\n      } else {\n        // resuming from a past re-encryption\n        restoreFromLastProcessedFile(zoneId, zs);\n      }\n      // save the last batch and mark complete\n      traverser.submitCurrentBatch(zoneId);\n      LOG.info(\"Submission completed of zone {} for re-encryption.\", zoneId);\n      reencryptionUpdater.markZoneSubmissionDone(zoneId);\n    } finally {\n      traverser.readUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ReencryptionHandler.java",
+      "extendedDetails": {}
+    },
+    "248d9b6fff648cdb02581d458556b6f7c090ef1a": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12518. Re-encryption should handle task cancellation and progress better.\n",
+      "commitDate": "20/10/17 4:25 PM",
+      "commitName": "248d9b6fff648cdb02581d458556b6f7c090ef1a",
+      "commitAuthor": "Xiao Chen",
+      "commitDateOld": "23/08/17 5:06 PM",
+      "commitNameOld": "1000a2af04b24c123a3b08168f36b4e90420cab7",
+      "commitAuthorOld": "Xiao Chen",
+      "daysBetweenCommits": 57.97,
+      "commitsBetweenForRepo": 544,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,44 +1,43 @@\n   void reencryptEncryptionZone(final long zoneId)\n       throws IOException, InterruptedException {\n     throttleTimerAll.reset().start();\n     throttleTimerLocked.reset();\n     final INode zoneNode;\n     final ZoneReencryptionStatus zs;\n \n     readLock();\n     try {\n-      getReencryptionStatus().markZoneStarted(zoneId);\n       zoneNode \u003d dir.getInode(zoneId);\n       // start re-encrypting the zone from the beginning\n       if (zoneNode \u003d\u003d null) {\n         LOG.info(\"Directory with id {} removed during re-encrypt, skipping\",\n             zoneId);\n         return;\n       }\n       if (!zoneNode.isDirectory()) {\n         LOG.info(\"Cannot re-encrypt directory with id {} because it\u0027s not a\"\n             + \" directory.\", zoneId);\n         return;\n       }\n \n       zs \u003d getReencryptionStatus().getZoneStatus(zoneId);\n       assert zs !\u003d null;\n       // Only costly log FullPathName here once, and use id elsewhere.\n       LOG.info(\"Re-encrypting zone {}(id\u003d{})\", zoneNode.getFullPathName(),\n           zoneId);\n       if (zs.getLastCheckpointFile() \u003d\u003d null) {\n         // new re-encryption\n         reencryptDir(zoneNode.asDirectory(), zoneId, HdfsFileStatus.EMPTY_NAME,\n             zs.getEzKeyVersionName());\n       } else {\n         // resuming from a past re-encryption\n         restoreFromLastProcessedFile(zoneId, zs);\n       }\n       // save the last batch and mark complete\n       submitCurrentBatch(zoneId);\n       LOG.info(\"Submission completed of zone {} for re-encryption.\", zoneId);\n       reencryptionUpdater.markZoneSubmissionDone(zoneId);\n     } finally {\n       readUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void reencryptEncryptionZone(final long zoneId)\n      throws IOException, InterruptedException {\n    throttleTimerAll.reset().start();\n    throttleTimerLocked.reset();\n    final INode zoneNode;\n    final ZoneReencryptionStatus zs;\n\n    readLock();\n    try {\n      zoneNode \u003d dir.getInode(zoneId);\n      // start re-encrypting the zone from the beginning\n      if (zoneNode \u003d\u003d null) {\n        LOG.info(\"Directory with id {} removed during re-encrypt, skipping\",\n            zoneId);\n        return;\n      }\n      if (!zoneNode.isDirectory()) {\n        LOG.info(\"Cannot re-encrypt directory with id {} because it\u0027s not a\"\n            + \" directory.\", zoneId);\n        return;\n      }\n\n      zs \u003d getReencryptionStatus().getZoneStatus(zoneId);\n      assert zs !\u003d null;\n      // Only costly log FullPathName here once, and use id elsewhere.\n      LOG.info(\"Re-encrypting zone {}(id\u003d{})\", zoneNode.getFullPathName(),\n          zoneId);\n      if (zs.getLastCheckpointFile() \u003d\u003d null) {\n        // new re-encryption\n        reencryptDir(zoneNode.asDirectory(), zoneId, HdfsFileStatus.EMPTY_NAME,\n            zs.getEzKeyVersionName());\n      } else {\n        // resuming from a past re-encryption\n        restoreFromLastProcessedFile(zoneId, zs);\n      }\n      // save the last batch and mark complete\n      submitCurrentBatch(zoneId);\n      LOG.info(\"Submission completed of zone {} for re-encryption.\", zoneId);\n      reencryptionUpdater.markZoneSubmissionDone(zoneId);\n    } finally {\n      readUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ReencryptionHandler.java",
+      "extendedDetails": {}
+    },
+    "1000a2af04b24c123a3b08168f36b4e90420cab7": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10899. Add functionality to re-encrypt EDEKs.\n",
+      "commitDate": "23/08/17 5:06 PM",
+      "commitName": "1000a2af04b24c123a3b08168f36b4e90420cab7",
+      "commitAuthor": "Xiao Chen",
+      "diff": "@@ -0,0 +1,44 @@\n+  void reencryptEncryptionZone(final long zoneId)\n+      throws IOException, InterruptedException {\n+    throttleTimerAll.reset().start();\n+    throttleTimerLocked.reset();\n+    final INode zoneNode;\n+    final ZoneReencryptionStatus zs;\n+\n+    readLock();\n+    try {\n+      getReencryptionStatus().markZoneStarted(zoneId);\n+      zoneNode \u003d dir.getInode(zoneId);\n+      // start re-encrypting the zone from the beginning\n+      if (zoneNode \u003d\u003d null) {\n+        LOG.info(\"Directory with id {} removed during re-encrypt, skipping\",\n+            zoneId);\n+        return;\n+      }\n+      if (!zoneNode.isDirectory()) {\n+        LOG.info(\"Cannot re-encrypt directory with id {} because it\u0027s not a\"\n+            + \" directory.\", zoneId);\n+        return;\n+      }\n+\n+      zs \u003d getReencryptionStatus().getZoneStatus(zoneId);\n+      assert zs !\u003d null;\n+      // Only costly log FullPathName here once, and use id elsewhere.\n+      LOG.info(\"Re-encrypting zone {}(id\u003d{})\", zoneNode.getFullPathName(),\n+          zoneId);\n+      if (zs.getLastCheckpointFile() \u003d\u003d null) {\n+        // new re-encryption\n+        reencryptDir(zoneNode.asDirectory(), zoneId, HdfsFileStatus.EMPTY_NAME,\n+            zs.getEzKeyVersionName());\n+      } else {\n+        // resuming from a past re-encryption\n+        restoreFromLastProcessedFile(zoneId, zs);\n+      }\n+      // save the last batch and mark complete\n+      submitCurrentBatch(zoneId);\n+      LOG.info(\"Submission completed of zone {} for re-encryption.\", zoneId);\n+      reencryptionUpdater.markZoneSubmissionDone(zoneId);\n+    } finally {\n+      readUnlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void reencryptEncryptionZone(final long zoneId)\n      throws IOException, InterruptedException {\n    throttleTimerAll.reset().start();\n    throttleTimerLocked.reset();\n    final INode zoneNode;\n    final ZoneReencryptionStatus zs;\n\n    readLock();\n    try {\n      getReencryptionStatus().markZoneStarted(zoneId);\n      zoneNode \u003d dir.getInode(zoneId);\n      // start re-encrypting the zone from the beginning\n      if (zoneNode \u003d\u003d null) {\n        LOG.info(\"Directory with id {} removed during re-encrypt, skipping\",\n            zoneId);\n        return;\n      }\n      if (!zoneNode.isDirectory()) {\n        LOG.info(\"Cannot re-encrypt directory with id {} because it\u0027s not a\"\n            + \" directory.\", zoneId);\n        return;\n      }\n\n      zs \u003d getReencryptionStatus().getZoneStatus(zoneId);\n      assert zs !\u003d null;\n      // Only costly log FullPathName here once, and use id elsewhere.\n      LOG.info(\"Re-encrypting zone {}(id\u003d{})\", zoneNode.getFullPathName(),\n          zoneId);\n      if (zs.getLastCheckpointFile() \u003d\u003d null) {\n        // new re-encryption\n        reencryptDir(zoneNode.asDirectory(), zoneId, HdfsFileStatus.EMPTY_NAME,\n            zs.getEzKeyVersionName());\n      } else {\n        // resuming from a past re-encryption\n        restoreFromLastProcessedFile(zoneId, zs);\n      }\n      // save the last batch and mark complete\n      submitCurrentBatch(zoneId);\n      LOG.info(\"Submission completed of zone {} for re-encryption.\", zoneId);\n      reencryptionUpdater.markZoneSubmissionDone(zoneId);\n    } finally {\n      readUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ReencryptionHandler.java"
+    }
+  }
+}

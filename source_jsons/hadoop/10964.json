@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockSender.java",
+  "functionName": "getPartialChunkChecksumForFinalized",
+  "functionId": "getPartialChunkChecksumForFinalized___finalized-FinalizedReplica",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockSender.java",
+  "functionStartLine": 441,
+  "functionEndLine": 470,
+  "numCommitsSeen": 65,
+  "timeTaken": 1912,
+  "changeHistory": [
+    "2021f4bdce3b27c46edaad198f0007a26a8a1391"
+  ],
+  "changeHistoryShort": {
+    "2021f4bdce3b27c46edaad198f0007a26a8a1391": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2021f4bdce3b27c46edaad198f0007a26a8a1391": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11187. Optimize disk access for last partial chunk checksum of Finalized replica. Contributed by Wei-Chiu Chuang.\n",
+      "commitDate": "02/02/18 5:18 PM",
+      "commitName": "2021f4bdce3b27c46edaad198f0007a26a8a1391",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "diff": "@@ -0,0 +1,30 @@\n+  private ChunkChecksum getPartialChunkChecksumForFinalized(\n+      FinalizedReplica finalized) throws IOException {\n+    // There are a number of places in the code base where a finalized replica\n+    // object is created. If last partial checksum is loaded whenever a\n+    // finalized replica is created, it would increase latency in DataNode\n+    // initialization. Therefore, the last partial chunk checksum is loaded\n+    // lazily.\n+\n+    // Load last checksum in case the replica is being written concurrently\n+    final long replicaVisibleLength \u003d replica.getVisibleLength();\n+    if (replicaVisibleLength % CHUNK_SIZE !\u003d 0 \u0026\u0026\n+        finalized.getLastPartialChunkChecksum() \u003d\u003d null) {\n+      // the finalized replica does not have precomputed last partial\n+      // chunk checksum. Recompute now.\n+      try {\n+        finalized.loadLastPartialChunkChecksum();\n+        return new ChunkChecksum(finalized.getVisibleLength(),\n+            finalized.getLastPartialChunkChecksum());\n+      } catch (FileNotFoundException e) {\n+        // meta file is lost. Continue anyway to preserve existing behavior.\n+        DataNode.LOG.warn(\n+            \"meta file \" + finalized.getMetaFile() + \" is missing!\");\n+        return null;\n+      }\n+    } else {\n+      // If the checksum is null, BlockSender will use on-disk checksum.\n+      return new ChunkChecksum(finalized.getVisibleLength(),\n+          finalized.getLastPartialChunkChecksum());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private ChunkChecksum getPartialChunkChecksumForFinalized(\n      FinalizedReplica finalized) throws IOException {\n    // There are a number of places in the code base where a finalized replica\n    // object is created. If last partial checksum is loaded whenever a\n    // finalized replica is created, it would increase latency in DataNode\n    // initialization. Therefore, the last partial chunk checksum is loaded\n    // lazily.\n\n    // Load last checksum in case the replica is being written concurrently\n    final long replicaVisibleLength \u003d replica.getVisibleLength();\n    if (replicaVisibleLength % CHUNK_SIZE !\u003d 0 \u0026\u0026\n        finalized.getLastPartialChunkChecksum() \u003d\u003d null) {\n      // the finalized replica does not have precomputed last partial\n      // chunk checksum. Recompute now.\n      try {\n        finalized.loadLastPartialChunkChecksum();\n        return new ChunkChecksum(finalized.getVisibleLength(),\n            finalized.getLastPartialChunkChecksum());\n      } catch (FileNotFoundException e) {\n        // meta file is lost. Continue anyway to preserve existing behavior.\n        DataNode.LOG.warn(\n            \"meta file \" + finalized.getMetaFile() + \" is missing!\");\n        return null;\n      }\n    } else {\n      // If the checksum is null, BlockSender will use on-disk checksum.\n      return new ChunkChecksum(finalized.getVisibleLength(),\n          finalized.getLastPartialChunkChecksum());\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockSender.java"
+    }
+  }
+}

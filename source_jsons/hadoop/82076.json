@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "HostsFileReader.java",
+  "functionName": "refresh",
+  "functionId": "refresh___includesFile-String__excludesFile-String",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/HostsFileReader.java",
+  "functionStartLine": 190,
+  "functionEndLine": 193,
+  "numCommitsSeen": 27,
+  "timeTaken": 2635,
+  "changeHistory": [
+    "27642367ef3409a9ca93747c6c2cc279c087a4c0",
+    "d87a63a9019d74a1c338c724e050952843a153e5",
+    "0da69c324dee9baab0f0b9700db1cc5b623f8421",
+    "feb90ffcca536e7deac50976b8a8774450fe089f"
+  ],
+  "changeHistoryShort": {
+    "27642367ef3409a9ca93747c6c2cc279c087a4c0": "Ybodychange",
+    "d87a63a9019d74a1c338c724e050952843a153e5": "Ymultichange(Yparameterchange,Ybodychange)",
+    "0da69c324dee9baab0f0b9700db1cc5b623f8421": "Ybodychange",
+    "feb90ffcca536e7deac50976b8a8774450fe089f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "27642367ef3409a9ca93747c6c2cc279c087a4c0": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9011. Race condition during decommissioning. Contributed by Peter Bacsko\n",
+      "commitDate": "18/11/19 7:29 AM",
+      "commitName": "27642367ef3409a9ca93747c6c2cc279c087a4c0",
+      "commitAuthor": "Szilard Nemeth",
+      "commitDateOld": "02/05/19 12:58 PM",
+      "commitNameOld": "7a3188d054481b9bd563e337901e93476303ce7f",
+      "commitAuthorOld": "Giovanni Matteo Fumarola",
+      "daysBetweenCommits": 199.81,
+      "commitsBetweenForRepo": 1447,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,4 @@\n   public void refresh(String includesFile, String excludesFile)\n       throws IOException {\n-    LOG.info(\"Refreshing hosts (include/exclude) list\");\n-    HostDetails oldDetails \u003d current.get();\n-    Set\u003cString\u003e newIncludes \u003d oldDetails.includes;\n-    Map\u003cString, Integer\u003e newExcludes \u003d oldDetails.excludes;\n-    if (includesFile !\u003d null \u0026\u0026 !includesFile.isEmpty()) {\n-      newIncludes \u003d new HashSet\u003c\u003e();\n-      readFileToSet(\"included\", includesFile, newIncludes);\n-      newIncludes \u003d Collections.unmodifiableSet(newIncludes);\n-    }\n-    if (excludesFile !\u003d null \u0026\u0026 !excludesFile.isEmpty()) {\n-      newExcludes \u003d new HashMap\u003c\u003e();\n-      readFileToMap(\"excluded\", excludesFile, newExcludes);\n-      newExcludes \u003d Collections.unmodifiableMap(newExcludes);\n-    }\n-    HostDetails newDetails \u003d new HostDetails(includesFile, newIncludes,\n-        excludesFile, newExcludes);\n-    current.set(newDetails);\n+    refreshInternal(includesFile, excludesFile, false);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void refresh(String includesFile, String excludesFile)\n      throws IOException {\n    refreshInternal(includesFile, excludesFile, false);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/HostsFileReader.java",
+      "extendedDetails": {}
+    },
+    "d87a63a9019d74a1c338c724e050952843a153e5": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-14412. HostsFileReader#getHostDetails is very expensive on large clusters. Contributed by Jason Lowe.\n",
+      "commitDate": "16/05/17 7:57 PM",
+      "commitName": "d87a63a9019d74a1c338c724e050952843a153e5",
+      "commitAuthor": "Rohith Sharma K S",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-14412. HostsFileReader#getHostDetails is very expensive on large clusters. Contributed by Jason Lowe.\n",
+          "commitDate": "16/05/17 7:57 PM",
+          "commitName": "d87a63a9019d74a1c338c724e050952843a153e5",
+          "commitAuthor": "Rohith Sharma K S",
+          "commitDateOld": "18/08/16 7:27 AM",
+          "commitNameOld": "0da69c324dee9baab0f0b9700db1cc5b623f8421",
+          "commitAuthorOld": "Junping Du",
+          "daysBetweenCommits": 271.52,
+          "commitsBetweenForRepo": 1655,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,20 @@\n-  public void refresh(String includeFiles, String excludeFiles)\n+  public void refresh(String includesFile, String excludesFile)\n       throws IOException {\n     LOG.info(\"Refreshing hosts (include/exclude) list\");\n-    this.writeLock.lock();\n-    try {\n-      // update instance variables\n-      updateFileNames(includeFiles, excludeFiles);\n-      Set\u003cString\u003e newIncludes \u003d new HashSet\u003cString\u003e();\n-      Map\u003cString, Integer\u003e newExcludes \u003d new HashMap\u003cString, Integer\u003e();\n-      boolean switchIncludes \u003d false;\n-      boolean switchExcludes \u003d false;\n-      if (includeFiles !\u003d null \u0026\u0026 !includeFiles.isEmpty()) {\n-        readFileToSet(\"included\", includeFiles, newIncludes);\n-        switchIncludes \u003d true;\n-      }\n-      if (excludeFiles !\u003d null \u0026\u0026 !excludeFiles.isEmpty()) {\n-        readFileToMap(\"excluded\", excludeFiles, newExcludes);\n-        switchExcludes \u003d true;\n-      }\n-\n-      if (switchIncludes) {\n-        // switch the new hosts that are to be included\n-        includes \u003d newIncludes;\n-      }\n-      if (switchExcludes) {\n-        // switch the excluded hosts\n-        excludes \u003d newExcludes;\n-      }\n-    } finally {\n-      this.writeLock.unlock();\n+    HostDetails oldDetails \u003d current.get();\n+    Set\u003cString\u003e newIncludes \u003d oldDetails.includes;\n+    Map\u003cString, Integer\u003e newExcludes \u003d oldDetails.excludes;\n+    if (includesFile !\u003d null \u0026\u0026 !includesFile.isEmpty()) {\n+      newIncludes \u003d new HashSet\u003c\u003e();\n+      readFileToSet(\"included\", includesFile, newIncludes);\n+      newIncludes \u003d Collections.unmodifiableSet(newIncludes);\n     }\n+    if (excludesFile !\u003d null \u0026\u0026 !excludesFile.isEmpty()) {\n+      newExcludes \u003d new HashMap\u003c\u003e();\n+      readFileToMap(\"excluded\", excludesFile, newExcludes);\n+      newExcludes \u003d Collections.unmodifiableMap(newExcludes);\n+    }\n+    HostDetails newDetails \u003d new HostDetails(includesFile, newIncludes,\n+        excludesFile, newExcludes);\n+    current.set(newDetails);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void refresh(String includesFile, String excludesFile)\n      throws IOException {\n    LOG.info(\"Refreshing hosts (include/exclude) list\");\n    HostDetails oldDetails \u003d current.get();\n    Set\u003cString\u003e newIncludes \u003d oldDetails.includes;\n    Map\u003cString, Integer\u003e newExcludes \u003d oldDetails.excludes;\n    if (includesFile !\u003d null \u0026\u0026 !includesFile.isEmpty()) {\n      newIncludes \u003d new HashSet\u003c\u003e();\n      readFileToSet(\"included\", includesFile, newIncludes);\n      newIncludes \u003d Collections.unmodifiableSet(newIncludes);\n    }\n    if (excludesFile !\u003d null \u0026\u0026 !excludesFile.isEmpty()) {\n      newExcludes \u003d new HashMap\u003c\u003e();\n      readFileToMap(\"excluded\", excludesFile, newExcludes);\n      newExcludes \u003d Collections.unmodifiableMap(newExcludes);\n    }\n    HostDetails newDetails \u003d new HostDetails(includesFile, newIncludes,\n        excludesFile, newExcludes);\n    current.set(newDetails);\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/HostsFileReader.java",
+          "extendedDetails": {
+            "oldValue": "[includeFiles-String, excludeFiles-String]",
+            "newValue": "[includesFile-String, excludesFile-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14412. HostsFileReader#getHostDetails is very expensive on large clusters. Contributed by Jason Lowe.\n",
+          "commitDate": "16/05/17 7:57 PM",
+          "commitName": "d87a63a9019d74a1c338c724e050952843a153e5",
+          "commitAuthor": "Rohith Sharma K S",
+          "commitDateOld": "18/08/16 7:27 AM",
+          "commitNameOld": "0da69c324dee9baab0f0b9700db1cc5b623f8421",
+          "commitAuthorOld": "Junping Du",
+          "daysBetweenCommits": 271.52,
+          "commitsBetweenForRepo": 1655,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,20 @@\n-  public void refresh(String includeFiles, String excludeFiles)\n+  public void refresh(String includesFile, String excludesFile)\n       throws IOException {\n     LOG.info(\"Refreshing hosts (include/exclude) list\");\n-    this.writeLock.lock();\n-    try {\n-      // update instance variables\n-      updateFileNames(includeFiles, excludeFiles);\n-      Set\u003cString\u003e newIncludes \u003d new HashSet\u003cString\u003e();\n-      Map\u003cString, Integer\u003e newExcludes \u003d new HashMap\u003cString, Integer\u003e();\n-      boolean switchIncludes \u003d false;\n-      boolean switchExcludes \u003d false;\n-      if (includeFiles !\u003d null \u0026\u0026 !includeFiles.isEmpty()) {\n-        readFileToSet(\"included\", includeFiles, newIncludes);\n-        switchIncludes \u003d true;\n-      }\n-      if (excludeFiles !\u003d null \u0026\u0026 !excludeFiles.isEmpty()) {\n-        readFileToMap(\"excluded\", excludeFiles, newExcludes);\n-        switchExcludes \u003d true;\n-      }\n-\n-      if (switchIncludes) {\n-        // switch the new hosts that are to be included\n-        includes \u003d newIncludes;\n-      }\n-      if (switchExcludes) {\n-        // switch the excluded hosts\n-        excludes \u003d newExcludes;\n-      }\n-    } finally {\n-      this.writeLock.unlock();\n+    HostDetails oldDetails \u003d current.get();\n+    Set\u003cString\u003e newIncludes \u003d oldDetails.includes;\n+    Map\u003cString, Integer\u003e newExcludes \u003d oldDetails.excludes;\n+    if (includesFile !\u003d null \u0026\u0026 !includesFile.isEmpty()) {\n+      newIncludes \u003d new HashSet\u003c\u003e();\n+      readFileToSet(\"included\", includesFile, newIncludes);\n+      newIncludes \u003d Collections.unmodifiableSet(newIncludes);\n     }\n+    if (excludesFile !\u003d null \u0026\u0026 !excludesFile.isEmpty()) {\n+      newExcludes \u003d new HashMap\u003c\u003e();\n+      readFileToMap(\"excluded\", excludesFile, newExcludes);\n+      newExcludes \u003d Collections.unmodifiableMap(newExcludes);\n+    }\n+    HostDetails newDetails \u003d new HostDetails(includesFile, newIncludes,\n+        excludesFile, newExcludes);\n+    current.set(newDetails);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void refresh(String includesFile, String excludesFile)\n      throws IOException {\n    LOG.info(\"Refreshing hosts (include/exclude) list\");\n    HostDetails oldDetails \u003d current.get();\n    Set\u003cString\u003e newIncludes \u003d oldDetails.includes;\n    Map\u003cString, Integer\u003e newExcludes \u003d oldDetails.excludes;\n    if (includesFile !\u003d null \u0026\u0026 !includesFile.isEmpty()) {\n      newIncludes \u003d new HashSet\u003c\u003e();\n      readFileToSet(\"included\", includesFile, newIncludes);\n      newIncludes \u003d Collections.unmodifiableSet(newIncludes);\n    }\n    if (excludesFile !\u003d null \u0026\u0026 !excludesFile.isEmpty()) {\n      newExcludes \u003d new HashMap\u003c\u003e();\n      readFileToMap(\"excluded\", excludesFile, newExcludes);\n      newExcludes \u003d Collections.unmodifiableMap(newExcludes);\n    }\n    HostDetails newDetails \u003d new HostDetails(includesFile, newIncludes,\n        excludesFile, newExcludes);\n    current.set(newDetails);\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/HostsFileReader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "0da69c324dee9baab0f0b9700db1cc5b623f8421": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4676. Automatic and Asynchronous Decommissioning Nodes Status Tracking. Contributed by Diniel Zhi.\n(cherry picked from commit d464483bf7f0b3e3be3ba32cd6c3eee546747ab5)\n\nConflicts:\n\n\thadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/ResourceTrackerService.java\n\thadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmnode/RMNode.java\n\thadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmnode/RMNodeImpl.java\n",
+      "commitDate": "18/08/16 7:27 AM",
+      "commitName": "0da69c324dee9baab0f0b9700db1cc5b623f8421",
+      "commitAuthor": "Junping Du",
+      "commitDateOld": "01/08/16 1:35 AM",
+      "commitNameOld": "770b5eb2db686275df445be9280e76cc3710ffdc",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 17.24,
+      "commitsBetweenForRepo": 137,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,32 @@\n   public void refresh(String includeFiles, String excludeFiles)\n       throws IOException {\n     LOG.info(\"Refreshing hosts (include/exclude) list\");\n     this.writeLock.lock();\n     try {\n       // update instance variables\n       updateFileNames(includeFiles, excludeFiles);\n       Set\u003cString\u003e newIncludes \u003d new HashSet\u003cString\u003e();\n-      Set\u003cString\u003e newExcludes \u003d new HashSet\u003cString\u003e();\n+      Map\u003cString, Integer\u003e newExcludes \u003d new HashMap\u003cString, Integer\u003e();\n       boolean switchIncludes \u003d false;\n       boolean switchExcludes \u003d false;\n       if (includeFiles !\u003d null \u0026\u0026 !includeFiles.isEmpty()) {\n         readFileToSet(\"included\", includeFiles, newIncludes);\n         switchIncludes \u003d true;\n       }\n       if (excludeFiles !\u003d null \u0026\u0026 !excludeFiles.isEmpty()) {\n-        readFileToSet(\"excluded\", excludeFiles, newExcludes);\n+        readFileToMap(\"excluded\", excludeFiles, newExcludes);\n         switchExcludes \u003d true;\n       }\n \n       if (switchIncludes) {\n         // switch the new hosts that are to be included\n         includes \u003d newIncludes;\n       }\n       if (switchExcludes) {\n         // switch the excluded hosts\n         excludes \u003d newExcludes;\n       }\n     } finally {\n       this.writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void refresh(String includeFiles, String excludeFiles)\n      throws IOException {\n    LOG.info(\"Refreshing hosts (include/exclude) list\");\n    this.writeLock.lock();\n    try {\n      // update instance variables\n      updateFileNames(includeFiles, excludeFiles);\n      Set\u003cString\u003e newIncludes \u003d new HashSet\u003cString\u003e();\n      Map\u003cString, Integer\u003e newExcludes \u003d new HashMap\u003cString, Integer\u003e();\n      boolean switchIncludes \u003d false;\n      boolean switchExcludes \u003d false;\n      if (includeFiles !\u003d null \u0026\u0026 !includeFiles.isEmpty()) {\n        readFileToSet(\"included\", includeFiles, newIncludes);\n        switchIncludes \u003d true;\n      }\n      if (excludeFiles !\u003d null \u0026\u0026 !excludeFiles.isEmpty()) {\n        readFileToMap(\"excluded\", excludeFiles, newExcludes);\n        switchExcludes \u003d true;\n      }\n\n      if (switchIncludes) {\n        // switch the new hosts that are to be included\n        includes \u003d newIncludes;\n      }\n      if (switchExcludes) {\n        // switch the excluded hosts\n        excludes \u003d newExcludes;\n      }\n    } finally {\n      this.writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/HostsFileReader.java",
+      "extendedDetails": {}
+    },
+    "feb90ffcca536e7deac50976b8a8774450fe089f": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4002. Make ResourceTrackerService#nodeHeartbeat more concurrent. Contributed by Rohith Sharma K S \u0026 Zhiguo Hong\n",
+      "commitDate": "19/05/16 1:01 PM",
+      "commitName": "feb90ffcca536e7deac50976b8a8774450fe089f",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,32 @@\n+  public void refresh(String includeFiles, String excludeFiles)\n+      throws IOException {\n+    LOG.info(\"Refreshing hosts (include/exclude) list\");\n+    this.writeLock.lock();\n+    try {\n+      // update instance variables\n+      updateFileNames(includeFiles, excludeFiles);\n+      Set\u003cString\u003e newIncludes \u003d new HashSet\u003cString\u003e();\n+      Set\u003cString\u003e newExcludes \u003d new HashSet\u003cString\u003e();\n+      boolean switchIncludes \u003d false;\n+      boolean switchExcludes \u003d false;\n+      if (includeFiles !\u003d null \u0026\u0026 !includeFiles.isEmpty()) {\n+        readFileToSet(\"included\", includeFiles, newIncludes);\n+        switchIncludes \u003d true;\n+      }\n+      if (excludeFiles !\u003d null \u0026\u0026 !excludeFiles.isEmpty()) {\n+        readFileToSet(\"excluded\", excludeFiles, newExcludes);\n+        switchExcludes \u003d true;\n+      }\n+\n+      if (switchIncludes) {\n+        // switch the new hosts that are to be included\n+        includes \u003d newIncludes;\n+      }\n+      if (switchExcludes) {\n+        // switch the excluded hosts\n+        excludes \u003d newExcludes;\n+      }\n+    } finally {\n+      this.writeLock.unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void refresh(String includeFiles, String excludeFiles)\n      throws IOException {\n    LOG.info(\"Refreshing hosts (include/exclude) list\");\n    this.writeLock.lock();\n    try {\n      // update instance variables\n      updateFileNames(includeFiles, excludeFiles);\n      Set\u003cString\u003e newIncludes \u003d new HashSet\u003cString\u003e();\n      Set\u003cString\u003e newExcludes \u003d new HashSet\u003cString\u003e();\n      boolean switchIncludes \u003d false;\n      boolean switchExcludes \u003d false;\n      if (includeFiles !\u003d null \u0026\u0026 !includeFiles.isEmpty()) {\n        readFileToSet(\"included\", includeFiles, newIncludes);\n        switchIncludes \u003d true;\n      }\n      if (excludeFiles !\u003d null \u0026\u0026 !excludeFiles.isEmpty()) {\n        readFileToSet(\"excluded\", excludeFiles, newExcludes);\n        switchExcludes \u003d true;\n      }\n\n      if (switchIncludes) {\n        // switch the new hosts that are to be included\n        includes \u003d newIncludes;\n      }\n      if (switchExcludes) {\n        // switch the excluded hosts\n        excludes \u003d newExcludes;\n      }\n    } finally {\n      this.writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/HostsFileReader.java"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RouterAdminServer.java",
+  "functionName": "isQuotaUpdated",
+  "functionId": "isQuotaUpdated___request-UpdateMountTableEntryRequest__oldEntry-MountTable",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterAdminServer.java",
+  "functionStartLine": 384,
+  "functionEndLine": 410,
+  "numCommitsSeen": 41,
+  "timeTaken": 2125,
+  "changeHistory": [
+    "aa938662f9cca7abd83a7c1be15c0636ae4344f1",
+    "05704754a0a3af97311fe99792763cbb34608192"
+  ],
+  "changeHistoryShort": {
+    "aa938662f9cca7abd83a7c1be15c0636ae4344f1": "Ymultichange(Yparameterchange,Ybodychange)",
+    "05704754a0a3af97311fe99792763cbb34608192": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "aa938662f9cca7abd83a7c1be15c0636ae4344f1": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-14833. RBF: Router Update Doesn\u0027t Sync Quota. Contributed by Ayush Saxena.\n",
+      "commitDate": "20/09/19 9:23 PM",
+      "commitName": "aa938662f9cca7abd83a7c1be15c0636ae4344f1",
+      "commitAuthor": "Ayush Saxena",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-14833. RBF: Router Update Doesn\u0027t Sync Quota. Contributed by Ayush Saxena.\n",
+          "commitDate": "20/09/19 9:23 PM",
+          "commitName": "aa938662f9cca7abd83a7c1be15c0636ae4344f1",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "04/09/19 2:39 AM",
+          "commitNameOld": "05704754a0a3af97311fe99792763cbb34608192",
+          "commitAuthorOld": "Surendra Singh Lilhore",
+          "daysBetweenCommits": 16.78,
+          "commitsBetweenForRepo": 143,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,27 @@\n   private boolean isQuotaUpdated(UpdateMountTableEntryRequest request,\n-      MountTable mountTable) throws IOException {\n-    long nsQuota \u003d -1;\n-    long ssQuota \u003d -1;\n-\n-    String path \u003d request.getEntry().getSourcePath();\n-    if (this.router.getSubclusterResolver() instanceof MountTableResolver) {\n-      MountTableResolver mResolver \u003d (MountTableResolver) this.router\n-          .getSubclusterResolver();\n-      MountTable entry \u003d mResolver.getMountPoint(path);\n-      if (entry !\u003d null) {\n-        RouterQuotaUsage preQuota \u003d entry.getQuota();\n-        nsQuota \u003d preQuota.getQuota();\n-        ssQuota \u003d preQuota.getSpaceQuota();\n+      MountTable oldEntry) throws IOException {\n+    if (oldEntry !\u003d null) {\n+      MountTable updateEntry \u003d request.getEntry();\n+      // If locations are changed, the new destinations need to be in sync with\n+      // the mount quota.\n+      if (!oldEntry.getDestinations().equals(updateEntry.getDestinations())) {\n+        return true;\n       }\n-    }\n-    RouterQuotaUsage mountQuota \u003d mountTable.getQuota();\n-    if (nsQuota !\u003d mountQuota.getQuota()\n-        || ssQuota !\u003d mountQuota.getSpaceQuota()) {\n+      // Previous quota.\n+      RouterQuotaUsage preQuota \u003d oldEntry.getQuota();\n+      long nsQuota \u003d preQuota.getQuota();\n+      long ssQuota \u003d preQuota.getSpaceQuota();\n+      // New quota\n+      RouterQuotaUsage mountQuota \u003d updateEntry.getQuota();\n+      // If there is change in quota, the new quota needs to be synchronized.\n+      if (nsQuota !\u003d mountQuota.getQuota()\n+          || ssQuota !\u003d mountQuota.getSpaceQuota()) {\n+        return true;\n+      }\n+      return false;\n+    } else {\n+      // If old entry is not available, sync quota always, since we can\u0027t\n+      // conclude no change in quota.\n       return true;\n     }\n-\n-    return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean isQuotaUpdated(UpdateMountTableEntryRequest request,\n      MountTable oldEntry) throws IOException {\n    if (oldEntry !\u003d null) {\n      MountTable updateEntry \u003d request.getEntry();\n      // If locations are changed, the new destinations need to be in sync with\n      // the mount quota.\n      if (!oldEntry.getDestinations().equals(updateEntry.getDestinations())) {\n        return true;\n      }\n      // Previous quota.\n      RouterQuotaUsage preQuota \u003d oldEntry.getQuota();\n      long nsQuota \u003d preQuota.getQuota();\n      long ssQuota \u003d preQuota.getSpaceQuota();\n      // New quota\n      RouterQuotaUsage mountQuota \u003d updateEntry.getQuota();\n      // If there is change in quota, the new quota needs to be synchronized.\n      if (nsQuota !\u003d mountQuota.getQuota()\n          || ssQuota !\u003d mountQuota.getSpaceQuota()) {\n        return true;\n      }\n      return false;\n    } else {\n      // If old entry is not available, sync quota always, since we can\u0027t\n      // conclude no change in quota.\n      return true;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterAdminServer.java",
+          "extendedDetails": {
+            "oldValue": "[request-UpdateMountTableEntryRequest, mountTable-MountTable]",
+            "newValue": "[request-UpdateMountTableEntryRequest, oldEntry-MountTable]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-14833. RBF: Router Update Doesn\u0027t Sync Quota. Contributed by Ayush Saxena.\n",
+          "commitDate": "20/09/19 9:23 PM",
+          "commitName": "aa938662f9cca7abd83a7c1be15c0636ae4344f1",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "04/09/19 2:39 AM",
+          "commitNameOld": "05704754a0a3af97311fe99792763cbb34608192",
+          "commitAuthorOld": "Surendra Singh Lilhore",
+          "daysBetweenCommits": 16.78,
+          "commitsBetweenForRepo": 143,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,27 @@\n   private boolean isQuotaUpdated(UpdateMountTableEntryRequest request,\n-      MountTable mountTable) throws IOException {\n-    long nsQuota \u003d -1;\n-    long ssQuota \u003d -1;\n-\n-    String path \u003d request.getEntry().getSourcePath();\n-    if (this.router.getSubclusterResolver() instanceof MountTableResolver) {\n-      MountTableResolver mResolver \u003d (MountTableResolver) this.router\n-          .getSubclusterResolver();\n-      MountTable entry \u003d mResolver.getMountPoint(path);\n-      if (entry !\u003d null) {\n-        RouterQuotaUsage preQuota \u003d entry.getQuota();\n-        nsQuota \u003d preQuota.getQuota();\n-        ssQuota \u003d preQuota.getSpaceQuota();\n+      MountTable oldEntry) throws IOException {\n+    if (oldEntry !\u003d null) {\n+      MountTable updateEntry \u003d request.getEntry();\n+      // If locations are changed, the new destinations need to be in sync with\n+      // the mount quota.\n+      if (!oldEntry.getDestinations().equals(updateEntry.getDestinations())) {\n+        return true;\n       }\n-    }\n-    RouterQuotaUsage mountQuota \u003d mountTable.getQuota();\n-    if (nsQuota !\u003d mountQuota.getQuota()\n-        || ssQuota !\u003d mountQuota.getSpaceQuota()) {\n+      // Previous quota.\n+      RouterQuotaUsage preQuota \u003d oldEntry.getQuota();\n+      long nsQuota \u003d preQuota.getQuota();\n+      long ssQuota \u003d preQuota.getSpaceQuota();\n+      // New quota\n+      RouterQuotaUsage mountQuota \u003d updateEntry.getQuota();\n+      // If there is change in quota, the new quota needs to be synchronized.\n+      if (nsQuota !\u003d mountQuota.getQuota()\n+          || ssQuota !\u003d mountQuota.getSpaceQuota()) {\n+        return true;\n+      }\n+      return false;\n+    } else {\n+      // If old entry is not available, sync quota always, since we can\u0027t\n+      // conclude no change in quota.\n       return true;\n     }\n-\n-    return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean isQuotaUpdated(UpdateMountTableEntryRequest request,\n      MountTable oldEntry) throws IOException {\n    if (oldEntry !\u003d null) {\n      MountTable updateEntry \u003d request.getEntry();\n      // If locations are changed, the new destinations need to be in sync with\n      // the mount quota.\n      if (!oldEntry.getDestinations().equals(updateEntry.getDestinations())) {\n        return true;\n      }\n      // Previous quota.\n      RouterQuotaUsage preQuota \u003d oldEntry.getQuota();\n      long nsQuota \u003d preQuota.getQuota();\n      long ssQuota \u003d preQuota.getSpaceQuota();\n      // New quota\n      RouterQuotaUsage mountQuota \u003d updateEntry.getQuota();\n      // If there is change in quota, the new quota needs to be synchronized.\n      if (nsQuota !\u003d mountQuota.getQuota()\n          || ssQuota !\u003d mountQuota.getSpaceQuota()) {\n        return true;\n      }\n      return false;\n    } else {\n      // If old entry is not available, sync quota always, since we can\u0027t\n      // conclude no change in quota.\n      return true;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterAdminServer.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "05704754a0a3af97311fe99792763cbb34608192": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-14777. RBF: Set ReadOnly is failing for mount Table but actually readonly succeed to set. Contributed by Ranith Sardar.\n",
+      "commitDate": "04/09/19 2:39 AM",
+      "commitName": "05704754a0a3af97311fe99792763cbb34608192",
+      "commitAuthor": "Surendra Singh Lilhore",
+      "diff": "@@ -0,0 +1,24 @@\n+  private boolean isQuotaUpdated(UpdateMountTableEntryRequest request,\n+      MountTable mountTable) throws IOException {\n+    long nsQuota \u003d -1;\n+    long ssQuota \u003d -1;\n+\n+    String path \u003d request.getEntry().getSourcePath();\n+    if (this.router.getSubclusterResolver() instanceof MountTableResolver) {\n+      MountTableResolver mResolver \u003d (MountTableResolver) this.router\n+          .getSubclusterResolver();\n+      MountTable entry \u003d mResolver.getMountPoint(path);\n+      if (entry !\u003d null) {\n+        RouterQuotaUsage preQuota \u003d entry.getQuota();\n+        nsQuota \u003d preQuota.getQuota();\n+        ssQuota \u003d preQuota.getSpaceQuota();\n+      }\n+    }\n+    RouterQuotaUsage mountQuota \u003d mountTable.getQuota();\n+    if (nsQuota !\u003d mountQuota.getQuota()\n+        || ssQuota !\u003d mountQuota.getSpaceQuota()) {\n+      return true;\n+    }\n+\n+    return false;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean isQuotaUpdated(UpdateMountTableEntryRequest request,\n      MountTable mountTable) throws IOException {\n    long nsQuota \u003d -1;\n    long ssQuota \u003d -1;\n\n    String path \u003d request.getEntry().getSourcePath();\n    if (this.router.getSubclusterResolver() instanceof MountTableResolver) {\n      MountTableResolver mResolver \u003d (MountTableResolver) this.router\n          .getSubclusterResolver();\n      MountTable entry \u003d mResolver.getMountPoint(path);\n      if (entry !\u003d null) {\n        RouterQuotaUsage preQuota \u003d entry.getQuota();\n        nsQuota \u003d preQuota.getQuota();\n        ssQuota \u003d preQuota.getSpaceQuota();\n      }\n    }\n    RouterQuotaUsage mountQuota \u003d mountTable.getQuota();\n    if (nsQuota !\u003d mountQuota.getQuota()\n        || ssQuota !\u003d mountQuota.getSpaceQuota()) {\n      return true;\n    }\n\n    return false;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterAdminServer.java"
+    }
+  }
+}

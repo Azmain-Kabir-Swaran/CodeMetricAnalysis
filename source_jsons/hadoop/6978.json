@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSDirectory.java",
+  "functionName": "addEncryptionZone",
+  "functionId": "addEncryptionZone___inode-INodeWithAdditionalFields__xaf-XAttrFeature",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+  "functionStartLine": 1480,
+  "functionEndLine": 1507,
+  "numCommitsSeen": 321,
+  "timeTaken": 2628,
+  "changeHistory": [
+    "1000a2af04b24c123a3b08168f36b4e90420cab7",
+    "9b8e50b424d060e16c1175b1811e7abc476e2468"
+  ],
+  "changeHistoryShort": {
+    "1000a2af04b24c123a3b08168f36b4e90420cab7": "Ybodychange",
+    "9b8e50b424d060e16c1175b1811e7abc476e2468": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1000a2af04b24c123a3b08168f36b4e90420cab7": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10899. Add functionality to re-encrypt EDEKs.\n",
+      "commitDate": "23/08/17 5:06 PM",
+      "commitName": "1000a2af04b24c123a3b08168f36b4e90420cab7",
+      "commitAuthor": "Xiao Chen",
+      "commitDateOld": "02/08/17 12:12 PM",
+      "commitNameOld": "12e44e7bdaf53d3720a89d32f0cc2717241bd6b2",
+      "commitAuthorOld": "Chris Douglas",
+      "daysBetweenCommits": 21.2,
+      "commitsBetweenForRepo": 128,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,28 @@\n   private void addEncryptionZone(INodeWithAdditionalFields inode,\n       XAttrFeature xaf) {\n     if (xaf \u003d\u003d null) {\n       return;\n     }\n     XAttr xattr \u003d xaf.getXAttr(CRYPTO_XATTR_ENCRYPTION_ZONE);\n     if (xattr \u003d\u003d null) {\n       return;\n     }\n     try {\n       final HdfsProtos.ZoneEncryptionInfoProto ezProto \u003d\n-          HdfsProtos.ZoneEncryptionInfoProto.parseFrom(\n-              xattr.getValue());\n+          HdfsProtos.ZoneEncryptionInfoProto.parseFrom(xattr.getValue());\n       ezManager.unprotectedAddEncryptionZone(inode.getId(),\n           PBHelperClient.convert(ezProto.getSuite()),\n           PBHelperClient.convert(ezProto.getCryptoProtocolVersion()),\n           ezProto.getKeyName());\n+      if (ezProto.hasReencryptionProto()) {\n+        final ReencryptionInfoProto reProto \u003d ezProto.getReencryptionProto();\n+        // inodes parents may not be loaded if this is done during fsimage\n+        // loading so cannot set full path now. Pass in null to indicate that.\n+        ezManager.getReencryptionStatus()\n+            .updateZoneStatus(inode.getId(), null, reProto);\n+      }\n     } catch (InvalidProtocolBufferException e) {\n       NameNode.LOG.warn(\"Error parsing protocol buffer of \" +\n           \"EZ XAttr \" + xattr.getName() + \" dir:\" + inode.getFullPathName());\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void addEncryptionZone(INodeWithAdditionalFields inode,\n      XAttrFeature xaf) {\n    if (xaf \u003d\u003d null) {\n      return;\n    }\n    XAttr xattr \u003d xaf.getXAttr(CRYPTO_XATTR_ENCRYPTION_ZONE);\n    if (xattr \u003d\u003d null) {\n      return;\n    }\n    try {\n      final HdfsProtos.ZoneEncryptionInfoProto ezProto \u003d\n          HdfsProtos.ZoneEncryptionInfoProto.parseFrom(xattr.getValue());\n      ezManager.unprotectedAddEncryptionZone(inode.getId(),\n          PBHelperClient.convert(ezProto.getSuite()),\n          PBHelperClient.convert(ezProto.getCryptoProtocolVersion()),\n          ezProto.getKeyName());\n      if (ezProto.hasReencryptionProto()) {\n        final ReencryptionInfoProto reProto \u003d ezProto.getReencryptionProto();\n        // inodes parents may not be loaded if this is done during fsimage\n        // loading so cannot set full path now. Pass in null to indicate that.\n        ezManager.getReencryptionStatus()\n            .updateZoneStatus(inode.getId(), null, reProto);\n      }\n    } catch (InvalidProtocolBufferException e) {\n      NameNode.LOG.warn(\"Error parsing protocol buffer of \" +\n          \"EZ XAttr \" + xattr.getName() + \" dir:\" + inode.getFullPathName());\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+      "extendedDetails": {}
+    },
+    "9b8e50b424d060e16c1175b1811e7abc476e2468": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9470. Encryption zone on root not loaded from fsimage after NN restart. Xiao Chen via wang.\n",
+      "commitDate": "30/11/15 2:32 PM",
+      "commitName": "9b8e50b424d060e16c1175b1811e7abc476e2468",
+      "commitAuthor": "Andrew Wang",
+      "diff": "@@ -0,0 +1,22 @@\n+  private void addEncryptionZone(INodeWithAdditionalFields inode,\n+      XAttrFeature xaf) {\n+    if (xaf \u003d\u003d null) {\n+      return;\n+    }\n+    XAttr xattr \u003d xaf.getXAttr(CRYPTO_XATTR_ENCRYPTION_ZONE);\n+    if (xattr \u003d\u003d null) {\n+      return;\n+    }\n+    try {\n+      final HdfsProtos.ZoneEncryptionInfoProto ezProto \u003d\n+          HdfsProtos.ZoneEncryptionInfoProto.parseFrom(\n+              xattr.getValue());\n+      ezManager.unprotectedAddEncryptionZone(inode.getId(),\n+          PBHelperClient.convert(ezProto.getSuite()),\n+          PBHelperClient.convert(ezProto.getCryptoProtocolVersion()),\n+          ezProto.getKeyName());\n+    } catch (InvalidProtocolBufferException e) {\n+      NameNode.LOG.warn(\"Error parsing protocol buffer of \" +\n+          \"EZ XAttr \" + xattr.getName() + \" dir:\" + inode.getFullPathName());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void addEncryptionZone(INodeWithAdditionalFields inode,\n      XAttrFeature xaf) {\n    if (xaf \u003d\u003d null) {\n      return;\n    }\n    XAttr xattr \u003d xaf.getXAttr(CRYPTO_XATTR_ENCRYPTION_ZONE);\n    if (xattr \u003d\u003d null) {\n      return;\n    }\n    try {\n      final HdfsProtos.ZoneEncryptionInfoProto ezProto \u003d\n          HdfsProtos.ZoneEncryptionInfoProto.parseFrom(\n              xattr.getValue());\n      ezManager.unprotectedAddEncryptionZone(inode.getId(),\n          PBHelperClient.convert(ezProto.getSuite()),\n          PBHelperClient.convert(ezProto.getCryptoProtocolVersion()),\n          ezProto.getKeyName());\n    } catch (InvalidProtocolBufferException e) {\n      NameNode.LOG.warn(\"Error parsing protocol buffer of \" +\n          \"EZ XAttr \" + xattr.getName() + \" dir:\" + inode.getFullPathName());\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java"
+    }
+  }
+}

@@ -1,0 +1,272 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AUtils.java",
+  "functionName": "initConnectionSettings",
+  "functionId": "initConnectionSettings___conf-Configuration__awsConf-ClientConfiguration",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+  "functionStartLine": 1286,
+  "functionEndLine": 1316,
+  "numCommitsSeen": 55,
+  "timeTaken": 6376,
+  "changeHistory": [
+    "839054754b84b9731d2122096882582df6ff4b36",
+    "55ce454ce4f1b1eaa9f041f3b0fb69a9fcc56894",
+    "309501c6fa1073f3cfd7e535a4207dbfb21165f9",
+    "b067f8acaa79b1230336900a5c62ba465b2adb28",
+    "da9a39eed138210de29b59b90c449b28da1c04f9",
+    "621b43e254afaff708cd6fc4698b29628f6abc33",
+    "d152557cf7f4d2288524c222fcbaf152bdc038b0"
+  ],
+  "changeHistoryShort": {
+    "839054754b84b9731d2122096882582df6ff4b36": "Ybodychange",
+    "55ce454ce4f1b1eaa9f041f3b0fb69a9fcc56894": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "309501c6fa1073f3cfd7e535a4207dbfb21165f9": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "b067f8acaa79b1230336900a5c62ba465b2adb28": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "da9a39eed138210de29b59b90c449b28da1c04f9": "Ymultichange(Ymovefromfile,Ymodifierchange)",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Ymovefromfile",
+    "d152557cf7f4d2288524c222fcbaf152bdc038b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "839054754b84b9731d2122096882582df6ff4b36": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16792: Make S3 client request timeout configurable.\n\nContributed by Mustafa Iman.\n\nThis adds a new configuration option fs.s3a.connection.request.timeout\nto declare the time out on HTTP requests to the AWS service;\n0 means no timeout.\nMeasured in seconds; the usual time suffixes are all supported\n\nImportant: this is the maximum duration of any AWS service call,\nincluding upload and copy operations. If non-zero, it must be larger\nthan the time to upload multi-megabyte blocks to S3 from the client,\nand to rename many-GB files. Use with care.\n\nChange-Id: I407745341068b702bf8f401fb96450a9f987c51c\n",
+      "commitDate": "24/01/20 5:37 AM",
+      "commitName": "839054754b84b9731d2122096882582df6ff4b36",
+      "commitAuthor": "Mustafa Iman",
+      "commitDateOld": "12/11/19 10:17 AM",
+      "commitNameOld": "990063d2af0a37e9474949f33128805e34c3f016",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 72.81,
+      "commitsBetweenForRepo": 265,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,31 @@\n   public static void initConnectionSettings(Configuration conf,\n       ClientConfiguration awsConf) throws IOException {\n     awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n         DEFAULT_MAXIMUM_CONNECTIONS, 1));\n     initProtocolSettings(conf, awsConf);\n     awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n         DEFAULT_MAX_ERROR_RETRIES, 0));\n     awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n         DEFAULT_ESTABLISH_TIMEOUT, 0));\n     awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n         DEFAULT_SOCKET_TIMEOUT, 0));\n     int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n         DEFAULT_SOCKET_SEND_BUFFER, 2048);\n     int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n         DEFAULT_SOCKET_RECV_BUFFER, 2048);\n+    long requestTimeoutMillis \u003d conf.getTimeDuration(REQUEST_TIMEOUT,\n+        DEFAULT_REQUEST_TIMEOUT, TimeUnit.SECONDS, TimeUnit.MILLISECONDS);\n+\n+    if (requestTimeoutMillis \u003e Integer.MAX_VALUE) {\n+      LOG.debug(\"Request timeout is too high({} ms). Setting to {} ms instead\",\n+          requestTimeoutMillis, Integer.MAX_VALUE);\n+      requestTimeoutMillis \u003d Integer.MAX_VALUE;\n+    }\n+    awsConf.setRequestTimeout((int) requestTimeoutMillis);\n     awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n     String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n     if (!signerOverride.isEmpty()) {\n      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n       awsConf.setSignerOverride(signerOverride);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) throws IOException {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    initProtocolSettings(conf, awsConf);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    long requestTimeoutMillis \u003d conf.getTimeDuration(REQUEST_TIMEOUT,\n        DEFAULT_REQUEST_TIMEOUT, TimeUnit.SECONDS, TimeUnit.MILLISECONDS);\n\n    if (requestTimeoutMillis \u003e Integer.MAX_VALUE) {\n      LOG.debug(\"Request timeout is too high({} ms). Setting to {} ms instead\",\n          requestTimeoutMillis, Integer.MAX_VALUE);\n      requestTimeoutMillis \u003d Integer.MAX_VALUE;\n    }\n    awsConf.setRequestTimeout((int) requestTimeoutMillis);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+      "extendedDetails": {}
+    },
+    "55ce454ce4f1b1eaa9f041f3b0fb69a9fcc56894": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-16371: Option to disable GCM for SSL connections when running on Java 8.\n\nContributed by Sahil Takiar.\n\nThis moves the SSLSocketFactoryEx class from hadoop-azure into hadoop-common\nas the DelegatingSSLSocketFactory and binds the S3A connector to it so that\nit can avoid using those HTTPS algorithms which are underperformant on Java 8.\n\nChange-Id: Ie9e6ac24deac1aa05e136e08899620efa7d22abd\n",
+      "commitDate": "17/09/19 3:32 AM",
+      "commitName": "55ce454ce4f1b1eaa9f041f3b0fb69a9fcc56894",
+      "commitAuthor": "Sahil Takiar",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-16371: Option to disable GCM for SSL connections when running on Java 8.\n\nContributed by Sahil Takiar.\n\nThis moves the SSLSocketFactoryEx class from hadoop-azure into hadoop-common\nas the DelegatingSSLSocketFactory and binds the S3A connector to it so that\nit can avoid using those HTTPS algorithms which are underperformant on Java 8.\n\nChange-Id: Ie9e6ac24deac1aa05e136e08899620efa7d22abd\n",
+          "commitDate": "17/09/19 3:32 AM",
+          "commitName": "55ce454ce4f1b1eaa9f041f3b0fb69a9fcc56894",
+          "commitAuthor": "Sahil Takiar",
+          "commitDateOld": "25/06/19 1:47 AM",
+          "commitNameOld": "366f3deec5ff00a8a375336c2cd6f97e0926ea1a",
+          "commitAuthorOld": "kkori",
+          "daysBetweenCommits": 84.07,
+          "commitsBetweenForRepo": 670,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,22 @@\n   public static void initConnectionSettings(Configuration conf,\n-      ClientConfiguration awsConf) {\n+      ClientConfiguration awsConf) throws IOException {\n     awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n         DEFAULT_MAXIMUM_CONNECTIONS, 1));\n-    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n-        DEFAULT_SECURE_CONNECTIONS);\n-    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n+    initProtocolSettings(conf, awsConf);\n     awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n         DEFAULT_MAX_ERROR_RETRIES, 0));\n     awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n         DEFAULT_ESTABLISH_TIMEOUT, 0));\n     awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n         DEFAULT_SOCKET_TIMEOUT, 0));\n     int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n         DEFAULT_SOCKET_SEND_BUFFER, 2048);\n     int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n         DEFAULT_SOCKET_RECV_BUFFER, 2048);\n     awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n     String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n     if (!signerOverride.isEmpty()) {\n      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n       awsConf.setSignerOverride(signerOverride);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) throws IOException {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    initProtocolSettings(conf, awsConf);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16371: Option to disable GCM for SSL connections when running on Java 8.\n\nContributed by Sahil Takiar.\n\nThis moves the SSLSocketFactoryEx class from hadoop-azure into hadoop-common\nas the DelegatingSSLSocketFactory and binds the S3A connector to it so that\nit can avoid using those HTTPS algorithms which are underperformant on Java 8.\n\nChange-Id: Ie9e6ac24deac1aa05e136e08899620efa7d22abd\n",
+          "commitDate": "17/09/19 3:32 AM",
+          "commitName": "55ce454ce4f1b1eaa9f041f3b0fb69a9fcc56894",
+          "commitAuthor": "Sahil Takiar",
+          "commitDateOld": "25/06/19 1:47 AM",
+          "commitNameOld": "366f3deec5ff00a8a375336c2cd6f97e0926ea1a",
+          "commitAuthorOld": "kkori",
+          "daysBetweenCommits": 84.07,
+          "commitsBetweenForRepo": 670,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,22 @@\n   public static void initConnectionSettings(Configuration conf,\n-      ClientConfiguration awsConf) {\n+      ClientConfiguration awsConf) throws IOException {\n     awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n         DEFAULT_MAXIMUM_CONNECTIONS, 1));\n-    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n-        DEFAULT_SECURE_CONNECTIONS);\n-    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n+    initProtocolSettings(conf, awsConf);\n     awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n         DEFAULT_MAX_ERROR_RETRIES, 0));\n     awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n         DEFAULT_ESTABLISH_TIMEOUT, 0));\n     awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n         DEFAULT_SOCKET_TIMEOUT, 0));\n     int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n         DEFAULT_SOCKET_SEND_BUFFER, 2048);\n     int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n         DEFAULT_SOCKET_RECV_BUFFER, 2048);\n     awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n     String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n     if (!signerOverride.isEmpty()) {\n      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n       awsConf.setSignerOverride(signerOverride);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) throws IOException {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    initProtocolSettings(conf, awsConf);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "309501c6fa1073f3cfd7e535a4207dbfb21165f9": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "Revert \"HADOOP-16050: s3a SSL connections should use OpenSSL\"\n\nThis reverts commit b067f8acaa79b1230336900a5c62ba465b2adb28.\n\nChange-Id: I584b050a56c0e6f70b11fa3f7db00d5ac46e7dd8\n",
+      "commitDate": "05/06/19 5:54 AM",
+      "commitName": "309501c6fa1073f3cfd7e535a4207dbfb21165f9",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "Revert \"HADOOP-16050: s3a SSL connections should use OpenSSL\"\n\nThis reverts commit b067f8acaa79b1230336900a5c62ba465b2adb28.\n\nChange-Id: I584b050a56c0e6f70b11fa3f7db00d5ac46e7dd8\n",
+          "commitDate": "05/06/19 5:54 AM",
+          "commitName": "309501c6fa1073f3cfd7e535a4207dbfb21165f9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "19/05/19 2:29 PM",
+          "commitNameOld": "a36274d69947648dbe82721220cc5240ec5d396d",
+          "commitAuthorOld": "Ben Roling",
+          "daysBetweenCommits": 16.64,
+          "commitsBetweenForRepo": 120,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,24 @@\n   public static void initConnectionSettings(Configuration conf,\n-      ClientConfiguration awsConf) throws IOException {\n+      ClientConfiguration awsConf) {\n     awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n         DEFAULT_MAXIMUM_CONNECTIONS, 1));\n-    initProtocolSettings(conf, awsConf);\n+    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n+        DEFAULT_SECURE_CONNECTIONS);\n+    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n     awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n         DEFAULT_MAX_ERROR_RETRIES, 0));\n     awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n         DEFAULT_ESTABLISH_TIMEOUT, 0));\n     awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n         DEFAULT_SOCKET_TIMEOUT, 0));\n     int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n         DEFAULT_SOCKET_SEND_BUFFER, 2048);\n     int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n         DEFAULT_SOCKET_RECV_BUFFER, 2048);\n     awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n     String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n     if (!signerOverride.isEmpty()) {\n      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n       awsConf.setSignerOverride(signerOverride);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n        DEFAULT_SECURE_CONNECTIONS);\n    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {
+            "oldValue": "[IOException]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "Revert \"HADOOP-16050: s3a SSL connections should use OpenSSL\"\n\nThis reverts commit b067f8acaa79b1230336900a5c62ba465b2adb28.\n\nChange-Id: I584b050a56c0e6f70b11fa3f7db00d5ac46e7dd8\n",
+          "commitDate": "05/06/19 5:54 AM",
+          "commitName": "309501c6fa1073f3cfd7e535a4207dbfb21165f9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "19/05/19 2:29 PM",
+          "commitNameOld": "a36274d69947648dbe82721220cc5240ec5d396d",
+          "commitAuthorOld": "Ben Roling",
+          "daysBetweenCommits": 16.64,
+          "commitsBetweenForRepo": 120,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,24 @@\n   public static void initConnectionSettings(Configuration conf,\n-      ClientConfiguration awsConf) throws IOException {\n+      ClientConfiguration awsConf) {\n     awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n         DEFAULT_MAXIMUM_CONNECTIONS, 1));\n-    initProtocolSettings(conf, awsConf);\n+    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n+        DEFAULT_SECURE_CONNECTIONS);\n+    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n     awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n         DEFAULT_MAX_ERROR_RETRIES, 0));\n     awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n         DEFAULT_ESTABLISH_TIMEOUT, 0));\n     awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n         DEFAULT_SOCKET_TIMEOUT, 0));\n     int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n         DEFAULT_SOCKET_SEND_BUFFER, 2048);\n     int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n         DEFAULT_SOCKET_RECV_BUFFER, 2048);\n     awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n     String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n     if (!signerOverride.isEmpty()) {\n      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n       awsConf.setSignerOverride(signerOverride);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n        DEFAULT_SECURE_CONNECTIONS);\n    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "b067f8acaa79b1230336900a5c62ba465b2adb28": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-16050: s3a SSL connections should use OpenSSL\n\n(cherry picked from commit aebf229c175dfa19fff3b31e9e67596f6c6124fa)\n",
+      "commitDate": "16/05/19 7:57 AM",
+      "commitName": "b067f8acaa79b1230336900a5c62ba465b2adb28",
+      "commitAuthor": "Sahil Takiar",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-16050: s3a SSL connections should use OpenSSL\n\n(cherry picked from commit aebf229c175dfa19fff3b31e9e67596f6c6124fa)\n",
+          "commitDate": "16/05/19 7:57 AM",
+          "commitName": "b067f8acaa79b1230336900a5c62ba465b2adb28",
+          "commitAuthor": "Sahil Takiar",
+          "commitDateOld": "04/04/19 1:14 PM",
+          "commitNameOld": "215ffc792ef4be599e9434ee64f958744d2508f1",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 41.78,
+          "commitsBetweenForRepo": 225,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,22 @@\n   public static void initConnectionSettings(Configuration conf,\n-      ClientConfiguration awsConf) {\n+      ClientConfiguration awsConf) throws IOException {\n     awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n         DEFAULT_MAXIMUM_CONNECTIONS, 1));\n-    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n-        DEFAULT_SECURE_CONNECTIONS);\n-    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n+    initProtocolSettings(conf, awsConf);\n     awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n         DEFAULT_MAX_ERROR_RETRIES, 0));\n     awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n         DEFAULT_ESTABLISH_TIMEOUT, 0));\n     awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n         DEFAULT_SOCKET_TIMEOUT, 0));\n     int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n         DEFAULT_SOCKET_SEND_BUFFER, 2048);\n     int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n         DEFAULT_SOCKET_RECV_BUFFER, 2048);\n     awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n     String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n     if (!signerOverride.isEmpty()) {\n      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n       awsConf.setSignerOverride(signerOverride);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) throws IOException {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    initProtocolSettings(conf, awsConf);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16050: s3a SSL connections should use OpenSSL\n\n(cherry picked from commit aebf229c175dfa19fff3b31e9e67596f6c6124fa)\n",
+          "commitDate": "16/05/19 7:57 AM",
+          "commitName": "b067f8acaa79b1230336900a5c62ba465b2adb28",
+          "commitAuthor": "Sahil Takiar",
+          "commitDateOld": "04/04/19 1:14 PM",
+          "commitNameOld": "215ffc792ef4be599e9434ee64f958744d2508f1",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 41.78,
+          "commitsBetweenForRepo": 225,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,22 @@\n   public static void initConnectionSettings(Configuration conf,\n-      ClientConfiguration awsConf) {\n+      ClientConfiguration awsConf) throws IOException {\n     awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n         DEFAULT_MAXIMUM_CONNECTIONS, 1));\n-    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n-        DEFAULT_SECURE_CONNECTIONS);\n-    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n+    initProtocolSettings(conf, awsConf);\n     awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n         DEFAULT_MAX_ERROR_RETRIES, 0));\n     awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n         DEFAULT_ESTABLISH_TIMEOUT, 0));\n     awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n         DEFAULT_SOCKET_TIMEOUT, 0));\n     int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n         DEFAULT_SOCKET_SEND_BUFFER, 2048);\n     int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n         DEFAULT_SOCKET_RECV_BUFFER, 2048);\n     awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n     String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n     if (!signerOverride.isEmpty()) {\n      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n       awsConf.setSignerOverride(signerOverride);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) throws IOException {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    initProtocolSettings(conf, awsConf);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "da9a39eed138210de29b59b90c449b28da1c04f9": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange)",
+      "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+      "commitDate": "08/08/18 10:57 PM",
+      "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+          "commitDate": "08/08/18 10:57 PM",
+          "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "08/08/18 4:47 PM",
+          "commitNameOld": "d81cd3611a449bcd7970ff2f1392a5e868e28f7e",
+          "commitAuthorOld": "Hanisha Koneru",
+          "daysBetweenCommits": 0.26,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,24 @@\n-  private static void initConnectionSettings(Configuration conf,\n+  public static void initConnectionSettings(Configuration conf,\n       ClientConfiguration awsConf) {\n     awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n         DEFAULT_MAXIMUM_CONNECTIONS, 1));\n     boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n         DEFAULT_SECURE_CONNECTIONS);\n     awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n     awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n         DEFAULT_MAX_ERROR_RETRIES, 0));\n     awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n         DEFAULT_ESTABLISH_TIMEOUT, 0));\n     awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n         DEFAULT_SOCKET_TIMEOUT, 0));\n     int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n         DEFAULT_SOCKET_SEND_BUFFER, 2048);\n     int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n         DEFAULT_SOCKET_RECV_BUFFER, 2048);\n     awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n     String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n     if (!signerOverride.isEmpty()) {\n-      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n+     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n       awsConf.setSignerOverride(signerOverride);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n        DEFAULT_SECURE_CONNECTIONS);\n    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+            "newPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+            "oldMethodName": "initConnectionSettings",
+            "newMethodName": "initConnectionSettings"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+          "commitDate": "08/08/18 10:57 PM",
+          "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "08/08/18 4:47 PM",
+          "commitNameOld": "d81cd3611a449bcd7970ff2f1392a5e868e28f7e",
+          "commitAuthorOld": "Hanisha Koneru",
+          "daysBetweenCommits": 0.26,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,24 @@\n-  private static void initConnectionSettings(Configuration conf,\n+  public static void initConnectionSettings(Configuration conf,\n       ClientConfiguration awsConf) {\n     awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n         DEFAULT_MAXIMUM_CONNECTIONS, 1));\n     boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n         DEFAULT_SECURE_CONNECTIONS);\n     awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n     awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n         DEFAULT_MAX_ERROR_RETRIES, 0));\n     awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n         DEFAULT_ESTABLISH_TIMEOUT, 0));\n     awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n         DEFAULT_SOCKET_TIMEOUT, 0));\n     int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n         DEFAULT_SOCKET_SEND_BUFFER, 2048);\n     int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n         DEFAULT_SOCKET_RECV_BUFFER, 2048);\n     awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n     String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n     if (!signerOverride.isEmpty()) {\n-      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n+     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n       awsConf.setSignerOverride(signerOverride);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n        DEFAULT_SECURE_CONNECTIONS);\n    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n     LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+          "extendedDetails": {
+            "oldValue": "[private, static]",
+            "newValue": "[public, static]"
+          }
+        }
+      ]
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Ymovefromfile",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "01/09/17 2:48 AM",
+      "commitNameOld": "7a96033b15580a01a2867fa3cab9c1e409dbaafd",
+      "commitAuthorOld": "Kai Zheng",
+      "daysBetweenCommits": 0.14,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,24 @@\n-    private static void initConnectionSettings(Configuration conf,\n-        ClientConfiguration awsConf) {\n-      awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n-          DEFAULT_MAXIMUM_CONNECTIONS, 1));\n-      boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n-          DEFAULT_SECURE_CONNECTIONS);\n-      awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n-      awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n-          DEFAULT_MAX_ERROR_RETRIES, 0));\n-      awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n-          DEFAULT_ESTABLISH_TIMEOUT, 0));\n-      awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n-          DEFAULT_SOCKET_TIMEOUT, 0));\n-      int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n-          DEFAULT_SOCKET_SEND_BUFFER, 2048);\n-      int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n-          DEFAULT_SOCKET_RECV_BUFFER, 2048);\n-      awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n-      String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n-      if (!signerOverride.isEmpty()) {\n-        LOG.debug(\"Signer override \u003d {}\", signerOverride);\n-        awsConf.setSignerOverride(signerOverride);\n-      }\n-    }\n\\ No newline at end of file\n+  private static void initConnectionSettings(Configuration conf,\n+      ClientConfiguration awsConf) {\n+    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n+        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n+    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n+        DEFAULT_SECURE_CONNECTIONS);\n+    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n+    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n+        DEFAULT_MAX_ERROR_RETRIES, 0));\n+    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n+        DEFAULT_ESTABLISH_TIMEOUT, 0));\n+    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n+        DEFAULT_SOCKET_TIMEOUT, 0));\n+    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n+        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n+    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n+        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n+    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n+    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n+    if (!signerOverride.isEmpty()) {\n+      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n+      awsConf.setSignerOverride(signerOverride);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void initConnectionSettings(Configuration conf,\n      ClientConfiguration awsConf) {\n    awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n        DEFAULT_MAXIMUM_CONNECTIONS, 1));\n    boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n        DEFAULT_SECURE_CONNECTIONS);\n    awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n    awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n        DEFAULT_MAX_ERROR_RETRIES, 0));\n    awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n        DEFAULT_ESTABLISH_TIMEOUT, 0));\n    awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n        DEFAULT_SOCKET_TIMEOUT, 0));\n    int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n        DEFAULT_SOCKET_SEND_BUFFER, 2048);\n    int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n        DEFAULT_SOCKET_RECV_BUFFER, 2048);\n    awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n    String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n    if (!signerOverride.isEmpty()) {\n      LOG.debug(\"Signer override \u003d {}\", signerOverride);\n      awsConf.setSignerOverride(signerOverride);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ClientFactory.java",
+        "newPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+        "oldMethodName": "initConnectionSettings",
+        "newMethodName": "initConnectionSettings"
+      }
+    },
+    "d152557cf7f4d2288524c222fcbaf152bdc038b0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13447. Refactor S3AFileSystem to support introduction of separate metadata repository and tests. Contributed by Chris Nauroth.\n",
+      "commitDate": "06/09/16 9:36 AM",
+      "commitName": "d152557cf7f4d2288524c222fcbaf152bdc038b0",
+      "commitAuthor": "Chris Nauroth",
+      "diff": "@@ -0,0 +1,24 @@\n+    private static void initConnectionSettings(Configuration conf,\n+        ClientConfiguration awsConf) {\n+      awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n+          DEFAULT_MAXIMUM_CONNECTIONS, 1));\n+      boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n+          DEFAULT_SECURE_CONNECTIONS);\n+      awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n+      awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n+          DEFAULT_MAX_ERROR_RETRIES, 0));\n+      awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n+          DEFAULT_ESTABLISH_TIMEOUT, 0));\n+      awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n+          DEFAULT_SOCKET_TIMEOUT, 0));\n+      int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n+          DEFAULT_SOCKET_SEND_BUFFER, 2048);\n+      int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n+          DEFAULT_SOCKET_RECV_BUFFER, 2048);\n+      awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n+      String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n+      if (!signerOverride.isEmpty()) {\n+        LOG.debug(\"Signer override \u003d {}\", signerOverride);\n+        awsConf.setSignerOverride(signerOverride);\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private static void initConnectionSettings(Configuration conf,\n        ClientConfiguration awsConf) {\n      awsConf.setMaxConnections(intOption(conf, MAXIMUM_CONNECTIONS,\n          DEFAULT_MAXIMUM_CONNECTIONS, 1));\n      boolean secureConnections \u003d conf.getBoolean(SECURE_CONNECTIONS,\n          DEFAULT_SECURE_CONNECTIONS);\n      awsConf.setProtocol(secureConnections ?  Protocol.HTTPS : Protocol.HTTP);\n      awsConf.setMaxErrorRetry(intOption(conf, MAX_ERROR_RETRIES,\n          DEFAULT_MAX_ERROR_RETRIES, 0));\n      awsConf.setConnectionTimeout(intOption(conf, ESTABLISH_TIMEOUT,\n          DEFAULT_ESTABLISH_TIMEOUT, 0));\n      awsConf.setSocketTimeout(intOption(conf, SOCKET_TIMEOUT,\n          DEFAULT_SOCKET_TIMEOUT, 0));\n      int sockSendBuffer \u003d intOption(conf, SOCKET_SEND_BUFFER,\n          DEFAULT_SOCKET_SEND_BUFFER, 2048);\n      int sockRecvBuffer \u003d intOption(conf, SOCKET_RECV_BUFFER,\n          DEFAULT_SOCKET_RECV_BUFFER, 2048);\n      awsConf.setSocketBufferSizeHints(sockSendBuffer, sockRecvBuffer);\n      String signerOverride \u003d conf.getTrimmed(SIGNING_ALGORITHM, \"\");\n      if (!signerOverride.isEmpty()) {\n        LOG.debug(\"Signer override \u003d {}\", signerOverride);\n        awsConf.setSignerOverride(signerOverride);\n      }\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ClientFactory.java"
+    }
+  }
+}

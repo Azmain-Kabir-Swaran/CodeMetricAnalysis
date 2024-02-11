@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "MRAppMaster.java",
+  "functionName": "parsePreviousJobHistory",
+  "functionId": "parsePreviousJobHistory",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/MRAppMaster.java",
+  "functionStartLine": 1430,
+  "functionEndLine": 1473,
+  "numCommitsSeen": 124,
+  "timeTaken": 2462,
+  "changeHistory": [
+    "6a1c41111edcdc58c846fc50e53554fbba230171"
+  ],
+  "changeHistoryShort": {
+    "6a1c41111edcdc58c846fc50e53554fbba230171": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6a1c41111edcdc58c846fc50e53554fbba230171": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-5079. Changes job recovery to restore state directly from job history, instaed of simulating state machine events. Contributed by Jason Lowe and Robert Parker.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1466767 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/04/13 9:52 PM",
+      "commitName": "6a1c41111edcdc58c846fc50e53554fbba230171",
+      "commitAuthor": "Siddharth Seth",
+      "diff": "@@ -0,0 +1,44 @@\n+  private void parsePreviousJobHistory() throws IOException {\n+    FSDataInputStream in \u003d getPreviousJobHistoryStream(getConfig(),\n+        appAttemptID);\n+    JobHistoryParser parser \u003d new JobHistoryParser(in);\n+    JobInfo jobInfo \u003d parser.parse();\n+    Exception parseException \u003d parser.getParseException();\n+    if (parseException !\u003d null) {\n+      LOG.info(\"Got an error parsing job-history file\" +\n+          \", ignoring incomplete events.\", parseException);\n+    }\n+    Map\u003corg.apache.hadoop.mapreduce.TaskID, TaskInfo\u003e taskInfos \u003d jobInfo\n+        .getAllTasks();\n+    for (TaskInfo taskInfo : taskInfos.values()) {\n+      if (TaskState.SUCCEEDED.toString().equals(taskInfo.getTaskStatus())) {\n+        Iterator\u003cEntry\u003cTaskAttemptID, TaskAttemptInfo\u003e\u003e taskAttemptIterator \u003d\n+            taskInfo.getAllTaskAttempts().entrySet().iterator();\n+        while (taskAttemptIterator.hasNext()) {\n+          Map.Entry\u003cTaskAttemptID, TaskAttemptInfo\u003e currentEntry \u003d taskAttemptIterator.next();\n+          if (!jobInfo.getAllCompletedTaskAttempts().containsKey(currentEntry.getKey())) {\n+            taskAttemptIterator.remove();\n+          }\n+        }\n+        completedTasksFromPreviousRun\n+            .put(TypeConverter.toYarn(taskInfo.getTaskId()), taskInfo);\n+        LOG.info(\"Read from history task \"\n+            + TypeConverter.toYarn(taskInfo.getTaskId()));\n+      }\n+    }\n+    LOG.info(\"Read completed tasks from history \"\n+        + completedTasksFromPreviousRun.size());\n+    recoveredJobStartTime \u003d jobInfo.getLaunchTime();\n+\n+    // recover AMInfos\n+    List\u003cJobHistoryParser.AMInfo\u003e jhAmInfoList \u003d jobInfo.getAMInfos();\n+    if (jhAmInfoList !\u003d null) {\n+      for (JobHistoryParser.AMInfo jhAmInfo : jhAmInfoList) {\n+        AMInfo amInfo \u003d MRBuilderUtils.newAMInfo(jhAmInfo.getAppAttemptId(),\n+            jhAmInfo.getStartTime(), jhAmInfo.getContainerId(),\n+            jhAmInfo.getNodeManagerHost(), jhAmInfo.getNodeManagerPort(),\n+            jhAmInfo.getNodeManagerHttpPort());\n+        amInfos.add(amInfo);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void parsePreviousJobHistory() throws IOException {\n    FSDataInputStream in \u003d getPreviousJobHistoryStream(getConfig(),\n        appAttemptID);\n    JobHistoryParser parser \u003d new JobHistoryParser(in);\n    JobInfo jobInfo \u003d parser.parse();\n    Exception parseException \u003d parser.getParseException();\n    if (parseException !\u003d null) {\n      LOG.info(\"Got an error parsing job-history file\" +\n          \", ignoring incomplete events.\", parseException);\n    }\n    Map\u003corg.apache.hadoop.mapreduce.TaskID, TaskInfo\u003e taskInfos \u003d jobInfo\n        .getAllTasks();\n    for (TaskInfo taskInfo : taskInfos.values()) {\n      if (TaskState.SUCCEEDED.toString().equals(taskInfo.getTaskStatus())) {\n        Iterator\u003cEntry\u003cTaskAttemptID, TaskAttemptInfo\u003e\u003e taskAttemptIterator \u003d\n            taskInfo.getAllTaskAttempts().entrySet().iterator();\n        while (taskAttemptIterator.hasNext()) {\n          Map.Entry\u003cTaskAttemptID, TaskAttemptInfo\u003e currentEntry \u003d taskAttemptIterator.next();\n          if (!jobInfo.getAllCompletedTaskAttempts().containsKey(currentEntry.getKey())) {\n            taskAttemptIterator.remove();\n          }\n        }\n        completedTasksFromPreviousRun\n            .put(TypeConverter.toYarn(taskInfo.getTaskId()), taskInfo);\n        LOG.info(\"Read from history task \"\n            + TypeConverter.toYarn(taskInfo.getTaskId()));\n      }\n    }\n    LOG.info(\"Read completed tasks from history \"\n        + completedTasksFromPreviousRun.size());\n    recoveredJobStartTime \u003d jobInfo.getLaunchTime();\n\n    // recover AMInfos\n    List\u003cJobHistoryParser.AMInfo\u003e jhAmInfoList \u003d jobInfo.getAMInfos();\n    if (jhAmInfoList !\u003d null) {\n      for (JobHistoryParser.AMInfo jhAmInfo : jhAmInfoList) {\n        AMInfo amInfo \u003d MRBuilderUtils.newAMInfo(jhAmInfo.getAppAttemptId(),\n            jhAmInfo.getStartTime(), jhAmInfo.getContainerId(),\n            jhAmInfo.getNodeManagerHost(), jhAmInfo.getNodeManagerPort(),\n            jhAmInfo.getNodeManagerHttpPort());\n        amInfos.add(amInfo);\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/MRAppMaster.java"
+    }
+  }
+}

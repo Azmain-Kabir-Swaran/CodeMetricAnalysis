@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSHAAdmin.java",
+  "functionName": "runCmd",
+  "functionId": "runCmd___argv-String[]",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSHAAdmin.java",
+  "functionStartLine": 145,
+  "functionEndLine": 222,
+  "numCommitsSeen": 18,
+  "timeTaken": 1875,
+  "changeHistory": [
+    "1defe3a65af5faf5117978f4f2cf6a24d17a2e76",
+    "bd4c99bece56d1671c6f89eff8a529f4e7ac2933",
+    "9a3e29208740da94d0cca5bb1c8163bea60d1387",
+    "7b913180be9cb8f5aaded964179d6313add2f13f"
+  ],
+  "changeHistoryShort": {
+    "1defe3a65af5faf5117978f4f2cf6a24d17a2e76": "Ybodychange",
+    "bd4c99bece56d1671c6f89eff8a529f4e7ac2933": "Ybodychange",
+    "9a3e29208740da94d0cca5bb1c8163bea60d1387": "Ybodychange",
+    "7b913180be9cb8f5aaded964179d6313add2f13f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1defe3a65af5faf5117978f4f2cf6a24d17a2e76": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16753. Refactor HAAdmin. Contributed by Xieming Li.\n",
+      "commitDate": "20/01/20 5:58 PM",
+      "commitName": "1defe3a65af5faf5117978f4f2cf6a24d17a2e76",
+      "commitAuthor": "Akira Ajisaka",
+      "commitDateOld": "06/09/18 2:48 PM",
+      "commitNameOld": "eca1a4bfe952fc184fe90dde50bac9b0e5293568",
+      "commitAuthorOld": "Giovanni Matteo Fumarola",
+      "daysBetweenCommits": 501.17,
+      "commitsBetweenForRepo": 3538,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,78 @@\n   protected int runCmd(String[] argv) throws Exception {\n-    if (argv.length \u003c 1) {\n-      printUsage(errOut);\n+\n+    if(argv.length \u003c 1){\n+      printUsage(errOut, USAGE_DFS_MERGED);\n       return -1;\n     }\n \n     int i \u003d 0;\n     String cmd \u003d argv[i++];\n-\n+    //Process \"-ns\" Option\n     if (\"-ns\".equals(cmd)) {\n       if (i \u003d\u003d argv.length) {\n         errOut.println(\"Missing nameservice ID\");\n-        printUsage(errOut);\n+        printUsage(errOut, USAGE_DFS_MERGED);\n         return -1;\n       }\n       nameserviceId \u003d argv[i++];\n       if (i \u003e\u003d argv.length) {\n         errOut.println(\"Missing command\");\n-        printUsage(errOut);\n+        printUsage(errOut, USAGE_DFS_MERGED);\n         return -1;\n       }\n       argv \u003d Arrays.copyOfRange(argv, i, argv.length);\n+      cmd \u003d argv[0];\n     }\n \n-    return super.runCmd(argv);\n+    if (!checkParameterValidity(argv)){\n+      return -1;\n+    }\n+\n+    /*\n+       \"-help\" command has to to be handled here because it should\n+       be supported both by HAAdmin and DFSHAAdmin but it is contained in\n+       USAGE_DFS_ONLY\n+    */\n+    if (\"-help\".equals(cmd)){\n+      return help(argv, USAGE_DFS_MERGED);\n+    }\n+\n+    if (!USAGE_DFS_ONLY.containsKey(cmd)) {\n+      return super.runCmd(argv);\n+    }\n+\n+    Options opts \u003d new Options();\n+    // Add command-specific options\n+    if (\"-failover\".equals(cmd)) {\n+      addFailoverCliOpts(opts);\n+    }\n+    // Mutative commands take FORCEMANUAL option\n+    if (\"-transitionToObserver\".equals(cmd) ||\n+        \"-failover\".equals(cmd)) {\n+      opts.addOption(FORCEMANUAL, false,\n+          \"force manual control even if auto-failover is enabled\");\n+    }\n+    CommandLine cmdLine \u003d parseOpts(cmd, opts, argv, USAGE_DFS_MERGED);\n+    if (cmdLine \u003d\u003d null) {\n+      return -1;\n+    }\n+\n+    if (cmdLine.hasOption(FORCEMANUAL)) {\n+      if (!confirmForceManual()) {\n+        LOG.error(\"Aborted\");\n+        return -1;\n+      }\n+      // Instruct the NNs to honor this request even if they\u0027re\n+      // configured for manual failover.\n+      setRequestSource(RequestSource.REQUEST_BY_USER_FORCED);\n+    }\n+\n+    if (\"-transitionToObserver\".equals(cmd)) {\n+      return transitionToObserver(cmdLine);\n+    } else if (\"-failover\".equals(cmd)) {\n+      return failover(cmdLine);\n+    } else {\n+      // This line should not be reached\n+      throw new AssertionError(\"Should not get here, command: \" + cmd);\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected int runCmd(String[] argv) throws Exception {\n\n    if(argv.length \u003c 1){\n      printUsage(errOut, USAGE_DFS_MERGED);\n      return -1;\n    }\n\n    int i \u003d 0;\n    String cmd \u003d argv[i++];\n    //Process \"-ns\" Option\n    if (\"-ns\".equals(cmd)) {\n      if (i \u003d\u003d argv.length) {\n        errOut.println(\"Missing nameservice ID\");\n        printUsage(errOut, USAGE_DFS_MERGED);\n        return -1;\n      }\n      nameserviceId \u003d argv[i++];\n      if (i \u003e\u003d argv.length) {\n        errOut.println(\"Missing command\");\n        printUsage(errOut, USAGE_DFS_MERGED);\n        return -1;\n      }\n      argv \u003d Arrays.copyOfRange(argv, i, argv.length);\n      cmd \u003d argv[0];\n    }\n\n    if (!checkParameterValidity(argv)){\n      return -1;\n    }\n\n    /*\n       \"-help\" command has to to be handled here because it should\n       be supported both by HAAdmin and DFSHAAdmin but it is contained in\n       USAGE_DFS_ONLY\n    */\n    if (\"-help\".equals(cmd)){\n      return help(argv, USAGE_DFS_MERGED);\n    }\n\n    if (!USAGE_DFS_ONLY.containsKey(cmd)) {\n      return super.runCmd(argv);\n    }\n\n    Options opts \u003d new Options();\n    // Add command-specific options\n    if (\"-failover\".equals(cmd)) {\n      addFailoverCliOpts(opts);\n    }\n    // Mutative commands take FORCEMANUAL option\n    if (\"-transitionToObserver\".equals(cmd) ||\n        \"-failover\".equals(cmd)) {\n      opts.addOption(FORCEMANUAL, false,\n          \"force manual control even if auto-failover is enabled\");\n    }\n    CommandLine cmdLine \u003d parseOpts(cmd, opts, argv, USAGE_DFS_MERGED);\n    if (cmdLine \u003d\u003d null) {\n      return -1;\n    }\n\n    if (cmdLine.hasOption(FORCEMANUAL)) {\n      if (!confirmForceManual()) {\n        LOG.error(\"Aborted\");\n        return -1;\n      }\n      // Instruct the NNs to honor this request even if they\u0027re\n      // configured for manual failover.\n      setRequestSource(RequestSource.REQUEST_BY_USER_FORCED);\n    }\n\n    if (\"-transitionToObserver\".equals(cmd)) {\n      return transitionToObserver(cmdLine);\n    } else if (\"-failover\".equals(cmd)) {\n      return failover(cmdLine);\n    } else {\n      // This line should not be reached\n      throw new AssertionError(\"Should not get here, command: \" + cmd);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSHAAdmin.java",
+      "extendedDetails": {}
+    },
+    "bd4c99bece56d1671c6f89eff8a529f4e7ac2933": {
+      "type": "Ybodychange",
+      "commitMessage": "Revert HDFS-7808.\n",
+      "commitDate": "08/04/15 3:59 PM",
+      "commitName": "bd4c99bece56d1671c6f89eff8a529f4e7ac2933",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "18/02/15 3:15 PM",
+      "commitNameOld": "9a3e29208740da94d0cca5bb1c8163bea60d1387",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 48.99,
+      "commitsBetweenForRepo": 420,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,7 +1,26 @@\n   protected int runCmd(String[] argv) throws Exception {\n     if (argv.length \u003c 1) {\n       printUsage(errOut);\n       return -1;\n     }\n+\n+    int i \u003d 0;\n+    String cmd \u003d argv[i++];\n+\n+    if (\"-ns\".equals(cmd)) {\n+      if (i \u003d\u003d argv.length) {\n+        errOut.println(\"Missing nameservice ID\");\n+        printUsage(errOut);\n+        return -1;\n+      }\n+      nameserviceId \u003d argv[i++];\n+      if (i \u003e\u003d argv.length) {\n+        errOut.println(\"Missing command\");\n+        printUsage(errOut);\n+        return -1;\n+      }\n+      argv \u003d Arrays.copyOfRange(argv, i, argv.length);\n+    }\n+\n     return super.runCmd(argv);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected int runCmd(String[] argv) throws Exception {\n    if (argv.length \u003c 1) {\n      printUsage(errOut);\n      return -1;\n    }\n\n    int i \u003d 0;\n    String cmd \u003d argv[i++];\n\n    if (\"-ns\".equals(cmd)) {\n      if (i \u003d\u003d argv.length) {\n        errOut.println(\"Missing nameservice ID\");\n        printUsage(errOut);\n        return -1;\n      }\n      nameserviceId \u003d argv[i++];\n      if (i \u003e\u003d argv.length) {\n        errOut.println(\"Missing command\");\n        printUsage(errOut);\n        return -1;\n      }\n      argv \u003d Arrays.copyOfRange(argv, i, argv.length);\n    }\n\n    return super.runCmd(argv);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSHAAdmin.java",
+      "extendedDetails": {}
+    },
+    "9a3e29208740da94d0cca5bb1c8163bea60d1387": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7808. Remove obsolete -ns options in in DFSHAAdmin.java. Contributed by Arshad Mohammad.\n",
+      "commitDate": "18/02/15 3:15 PM",
+      "commitName": "9a3e29208740da94d0cca5bb1c8163bea60d1387",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "03/11/14 1:27 PM",
+      "commitNameOld": "237890feabc809ade4e7542039634e04219d0bcb",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 107.07,
+      "commitsBetweenForRepo": 825,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,7 @@\n   protected int runCmd(String[] argv) throws Exception {\n     if (argv.length \u003c 1) {\n       printUsage(errOut);\n       return -1;\n     }\n-\n-    int i \u003d 0;\n-    String cmd \u003d argv[i++];\n-\n-    if (\"-ns\".equals(cmd)) {\n-      if (i \u003d\u003d argv.length) {\n-        errOut.println(\"Missing nameservice ID\");\n-        printUsage(errOut);\n-        return -1;\n-      }\n-      nameserviceId \u003d argv[i++];\n-      if (i \u003e\u003d argv.length) {\n-        errOut.println(\"Missing command\");\n-        printUsage(errOut);\n-        return -1;\n-      }\n-      argv \u003d Arrays.copyOfRange(argv, i, argv.length);\n-    }\n-    \n     return super.runCmd(argv);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected int runCmd(String[] argv) throws Exception {\n    if (argv.length \u003c 1) {\n      printUsage(errOut);\n      return -1;\n    }\n    return super.runCmd(argv);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSHAAdmin.java",
+      "extendedDetails": {}
+    },
+    "7b913180be9cb8f5aaded964179d6313add2f13f": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-2808. HA: haadmin should use namenode ids. Contributed by Eli Collins\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-1623@1240600 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/02/12 12:12 PM",
+      "commitName": "7b913180be9cb8f5aaded964179d6313add2f13f",
+      "commitAuthor": "Eli Collins",
+      "diff": "@@ -0,0 +1,26 @@\n+  protected int runCmd(String[] argv) throws Exception {\n+    if (argv.length \u003c 1) {\n+      printUsage(errOut);\n+      return -1;\n+    }\n+\n+    int i \u003d 0;\n+    String cmd \u003d argv[i++];\n+\n+    if (\"-ns\".equals(cmd)) {\n+      if (i \u003d\u003d argv.length) {\n+        errOut.println(\"Missing nameservice ID\");\n+        printUsage(errOut);\n+        return -1;\n+      }\n+      nameserviceId \u003d argv[i++];\n+      if (i \u003e\u003d argv.length) {\n+        errOut.println(\"Missing command\");\n+        printUsage(errOut);\n+        return -1;\n+      }\n+      argv \u003d Arrays.copyOfRange(argv, i, argv.length);\n+    }\n+    \n+    return super.runCmd(argv);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected int runCmd(String[] argv) throws Exception {\n    if (argv.length \u003c 1) {\n      printUsage(errOut);\n      return -1;\n    }\n\n    int i \u003d 0;\n    String cmd \u003d argv[i++];\n\n    if (\"-ns\".equals(cmd)) {\n      if (i \u003d\u003d argv.length) {\n        errOut.println(\"Missing nameservice ID\");\n        printUsage(errOut);\n        return -1;\n      }\n      nameserviceId \u003d argv[i++];\n      if (i \u003e\u003d argv.length) {\n        errOut.println(\"Missing command\");\n        printUsage(errOut);\n        return -1;\n      }\n      argv \u003d Arrays.copyOfRange(argv, i, argv.length);\n    }\n    \n    return super.runCmd(argv);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSHAAdmin.java"
+    }
+  }
+}

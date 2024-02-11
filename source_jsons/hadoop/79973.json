@@ -1,0 +1,223 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RawLocalFileSystem.java",
+  "functionName": "loadPermissionInfoByNonNativeIO",
+  "functionId": "loadPermissionInfoByNonNativeIO",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+  "functionStartLine": 750,
+  "functionEndLine": 796,
+  "numCommitsSeen": 123,
+  "timeTaken": 3448,
+  "changeHistory": [
+    "f9d195dfe9cc2c3e4659c3475319ac7c937b5c44",
+    "58fb83d98299bfeb2de9899140e2cb626b9f8327",
+    "f065f5829282e98dcf3bcb09b7cfc50734bd524f",
+    "638801cce16fc1dc3259c541dc30a599faaddda1",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36"
+  ],
+  "changeHistoryShort": {
+    "f9d195dfe9cc2c3e4659c3475319ac7c937b5c44": "Ymultichange(Yrename,Ymodifierchange,Ybodychange)",
+    "58fb83d98299bfeb2de9899140e2cb626b9f8327": "Ybodychange",
+    "f065f5829282e98dcf3bcb09b7cfc50734bd524f": "Ybodychange",
+    "638801cce16fc1dc3259c541dc30a599faaddda1": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yfilerename",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f9d195dfe9cc2c3e4659c3475319ac7c937b5c44": {
+      "type": "Ymultichange(Yrename,Ymodifierchange,Ybodychange)",
+      "commitMessage": "HADOOP-14600. LocatedFileStatus constructor forces RawLocalFS to exec a process to get the permissions. Contributed by Ping Liu\n",
+      "commitDate": "01/12/17 10:12 PM",
+      "commitName": "f9d195dfe9cc2c3e4659c3475319ac7c937b5c44",
+      "commitAuthor": "Chris Douglas",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HADOOP-14600. LocatedFileStatus constructor forces RawLocalFS to exec a process to get the permissions. Contributed by Ping Liu\n",
+          "commitDate": "01/12/17 10:12 PM",
+          "commitName": "f9d195dfe9cc2c3e4659c3475319ac7c937b5c44",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "22/06/17 6:28 PM",
+          "commitNameOld": "092ebdf885468a2bf79cbfb168286b7cddc4a0db",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 162.2,
+          "commitsBetweenForRepo": 1259,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,47 +1,47 @@\n-    private void loadPermissionInfo() {\n+    void loadPermissionInfoByNonNativeIO() {\n       IOException e \u003d null;\n       try {\n-        String output \u003d FileUtil.execCommand(new File(getPath().toUri()), \n+        String output \u003d FileUtil.execCommand(new File(getPath().toUri()),\n             Shell.getGetPermissionCommand());\n         StringTokenizer t \u003d\n             new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n         //expected format\n         //-rw-------    1 username groupname ...\n         String permission \u003d t.nextToken();\n         if (permission.length() \u003e FsPermission.MAX_PERMISSION_LENGTH) {\n           //files with ACLs might have a \u0027+\u0027\n           permission \u003d permission.substring(0,\n             FsPermission.MAX_PERMISSION_LENGTH);\n         }\n         setPermission(FsPermission.valueOf(permission));\n         t.nextToken();\n \n         String owner \u003d t.nextToken();\n+        String group \u003d t.nextToken();\n         // If on windows domain, token format is DOMAIN\\\\user and we want to\n         // extract only the user name\n+        // same as to the group name\n         if (Shell.WINDOWS) {\n-          int i \u003d owner.indexOf(\u0027\\\\\u0027);\n-          if (i !\u003d -1)\n-            owner \u003d owner.substring(i + 1);\n+          owner \u003d removeDomain(owner);\n+          group \u003d removeDomain(group);\n         }\n         setOwner(owner);\n-\n-        setGroup(t.nextToken());\n+        setGroup(group);\n       } catch (Shell.ExitCodeException ioe) {\n         if (ioe.getExitCode() !\u003d 1) {\n           e \u003d ioe;\n         } else {\n           setPermission(null);\n           setOwner(null);\n           setGroup(null);\n         }\n       } catch (IOException ioe) {\n         e \u003d ioe;\n       } finally {\n         if (e !\u003d null) {\n           throw new RuntimeException(\"Error while running command to get \" +\n                                      \"file permissions : \" + \n                                      StringUtils.stringifyException(e));\n         }\n       }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    void loadPermissionInfoByNonNativeIO() {\n      IOException e \u003d null;\n      try {\n        String output \u003d FileUtil.execCommand(new File(getPath().toUri()),\n            Shell.getGetPermissionCommand());\n        StringTokenizer t \u003d\n            new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        if (permission.length() \u003e FsPermission.MAX_PERMISSION_LENGTH) {\n          //files with ACLs might have a \u0027+\u0027\n          permission \u003d permission.substring(0,\n            FsPermission.MAX_PERMISSION_LENGTH);\n        }\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n\n        String owner \u003d t.nextToken();\n        String group \u003d t.nextToken();\n        // If on windows domain, token format is DOMAIN\\\\user and we want to\n        // extract only the user name\n        // same as to the group name\n        if (Shell.WINDOWS) {\n          owner \u003d removeDomain(owner);\n          group \u003d removeDomain(group);\n        }\n        setOwner(owner);\n        setGroup(group);\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "loadPermissionInfo",
+            "newValue": "loadPermissionInfoByNonNativeIO"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-14600. LocatedFileStatus constructor forces RawLocalFS to exec a process to get the permissions. Contributed by Ping Liu\n",
+          "commitDate": "01/12/17 10:12 PM",
+          "commitName": "f9d195dfe9cc2c3e4659c3475319ac7c937b5c44",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "22/06/17 6:28 PM",
+          "commitNameOld": "092ebdf885468a2bf79cbfb168286b7cddc4a0db",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 162.2,
+          "commitsBetweenForRepo": 1259,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,47 +1,47 @@\n-    private void loadPermissionInfo() {\n+    void loadPermissionInfoByNonNativeIO() {\n       IOException e \u003d null;\n       try {\n-        String output \u003d FileUtil.execCommand(new File(getPath().toUri()), \n+        String output \u003d FileUtil.execCommand(new File(getPath().toUri()),\n             Shell.getGetPermissionCommand());\n         StringTokenizer t \u003d\n             new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n         //expected format\n         //-rw-------    1 username groupname ...\n         String permission \u003d t.nextToken();\n         if (permission.length() \u003e FsPermission.MAX_PERMISSION_LENGTH) {\n           //files with ACLs might have a \u0027+\u0027\n           permission \u003d permission.substring(0,\n             FsPermission.MAX_PERMISSION_LENGTH);\n         }\n         setPermission(FsPermission.valueOf(permission));\n         t.nextToken();\n \n         String owner \u003d t.nextToken();\n+        String group \u003d t.nextToken();\n         // If on windows domain, token format is DOMAIN\\\\user and we want to\n         // extract only the user name\n+        // same as to the group name\n         if (Shell.WINDOWS) {\n-          int i \u003d owner.indexOf(\u0027\\\\\u0027);\n-          if (i !\u003d -1)\n-            owner \u003d owner.substring(i + 1);\n+          owner \u003d removeDomain(owner);\n+          group \u003d removeDomain(group);\n         }\n         setOwner(owner);\n-\n-        setGroup(t.nextToken());\n+        setGroup(group);\n       } catch (Shell.ExitCodeException ioe) {\n         if (ioe.getExitCode() !\u003d 1) {\n           e \u003d ioe;\n         } else {\n           setPermission(null);\n           setOwner(null);\n           setGroup(null);\n         }\n       } catch (IOException ioe) {\n         e \u003d ioe;\n       } finally {\n         if (e !\u003d null) {\n           throw new RuntimeException(\"Error while running command to get \" +\n                                      \"file permissions : \" + \n                                      StringUtils.stringifyException(e));\n         }\n       }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    void loadPermissionInfoByNonNativeIO() {\n      IOException e \u003d null;\n      try {\n        String output \u003d FileUtil.execCommand(new File(getPath().toUri()),\n            Shell.getGetPermissionCommand());\n        StringTokenizer t \u003d\n            new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        if (permission.length() \u003e FsPermission.MAX_PERMISSION_LENGTH) {\n          //files with ACLs might have a \u0027+\u0027\n          permission \u003d permission.substring(0,\n            FsPermission.MAX_PERMISSION_LENGTH);\n        }\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n\n        String owner \u003d t.nextToken();\n        String group \u003d t.nextToken();\n        // If on windows domain, token format is DOMAIN\\\\user and we want to\n        // extract only the user name\n        // same as to the group name\n        if (Shell.WINDOWS) {\n          owner \u003d removeDomain(owner);\n          group \u003d removeDomain(group);\n        }\n        setOwner(owner);\n        setGroup(group);\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14600. LocatedFileStatus constructor forces RawLocalFS to exec a process to get the permissions. Contributed by Ping Liu\n",
+          "commitDate": "01/12/17 10:12 PM",
+          "commitName": "f9d195dfe9cc2c3e4659c3475319ac7c937b5c44",
+          "commitAuthor": "Chris Douglas",
+          "commitDateOld": "22/06/17 6:28 PM",
+          "commitNameOld": "092ebdf885468a2bf79cbfb168286b7cddc4a0db",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 162.2,
+          "commitsBetweenForRepo": 1259,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,47 +1,47 @@\n-    private void loadPermissionInfo() {\n+    void loadPermissionInfoByNonNativeIO() {\n       IOException e \u003d null;\n       try {\n-        String output \u003d FileUtil.execCommand(new File(getPath().toUri()), \n+        String output \u003d FileUtil.execCommand(new File(getPath().toUri()),\n             Shell.getGetPermissionCommand());\n         StringTokenizer t \u003d\n             new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n         //expected format\n         //-rw-------    1 username groupname ...\n         String permission \u003d t.nextToken();\n         if (permission.length() \u003e FsPermission.MAX_PERMISSION_LENGTH) {\n           //files with ACLs might have a \u0027+\u0027\n           permission \u003d permission.substring(0,\n             FsPermission.MAX_PERMISSION_LENGTH);\n         }\n         setPermission(FsPermission.valueOf(permission));\n         t.nextToken();\n \n         String owner \u003d t.nextToken();\n+        String group \u003d t.nextToken();\n         // If on windows domain, token format is DOMAIN\\\\user and we want to\n         // extract only the user name\n+        // same as to the group name\n         if (Shell.WINDOWS) {\n-          int i \u003d owner.indexOf(\u0027\\\\\u0027);\n-          if (i !\u003d -1)\n-            owner \u003d owner.substring(i + 1);\n+          owner \u003d removeDomain(owner);\n+          group \u003d removeDomain(group);\n         }\n         setOwner(owner);\n-\n-        setGroup(t.nextToken());\n+        setGroup(group);\n       } catch (Shell.ExitCodeException ioe) {\n         if (ioe.getExitCode() !\u003d 1) {\n           e \u003d ioe;\n         } else {\n           setPermission(null);\n           setOwner(null);\n           setGroup(null);\n         }\n       } catch (IOException ioe) {\n         e \u003d ioe;\n       } finally {\n         if (e !\u003d null) {\n           throw new RuntimeException(\"Error while running command to get \" +\n                                      \"file permissions : \" + \n                                      StringUtils.stringifyException(e));\n         }\n       }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    void loadPermissionInfoByNonNativeIO() {\n      IOException e \u003d null;\n      try {\n        String output \u003d FileUtil.execCommand(new File(getPath().toUri()),\n            Shell.getGetPermissionCommand());\n        StringTokenizer t \u003d\n            new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        if (permission.length() \u003e FsPermission.MAX_PERMISSION_LENGTH) {\n          //files with ACLs might have a \u0027+\u0027\n          permission \u003d permission.substring(0,\n            FsPermission.MAX_PERMISSION_LENGTH);\n        }\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n\n        String owner \u003d t.nextToken();\n        String group \u003d t.nextToken();\n        // If on windows domain, token format is DOMAIN\\\\user and we want to\n        // extract only the user name\n        // same as to the group name\n        if (Shell.WINDOWS) {\n          owner \u003d removeDomain(owner);\n          group \u003d removeDomain(group);\n        }\n        setOwner(owner);\n        setGroup(group);\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "58fb83d98299bfeb2de9899140e2cb626b9f8327": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10354. TestWebHDFS fails after merge of HDFS-4685 to trunk. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1570655 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "21/02/14 10:42 AM",
+      "commitName": "58fb83d98299bfeb2de9899140e2cb626b9f8327",
+      "commitAuthor": "Chris Nauroth",
+      "commitDateOld": "27/01/14 10:09 AM",
+      "commitNameOld": "ad240d6b3a9c9efb17c6bf73a51295dedf5c34de",
+      "commitAuthorOld": "",
+      "daysBetweenCommits": 25.02,
+      "commitsBetweenForRepo": 234,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,42 +1,47 @@\n     private void loadPermissionInfo() {\n       IOException e \u003d null;\n       try {\n         String output \u003d FileUtil.execCommand(new File(getPath().toUri()), \n             Shell.getGetPermissionCommand());\n         StringTokenizer t \u003d\n             new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n         //expected format\n         //-rw-------    1 username groupname ...\n         String permission \u003d t.nextToken();\n+        if (permission.length() \u003e FsPermission.MAX_PERMISSION_LENGTH) {\n+          //files with ACLs might have a \u0027+\u0027\n+          permission \u003d permission.substring(0,\n+            FsPermission.MAX_PERMISSION_LENGTH);\n+        }\n         setPermission(FsPermission.valueOf(permission));\n         t.nextToken();\n \n         String owner \u003d t.nextToken();\n         // If on windows domain, token format is DOMAIN\\\\user and we want to\n         // extract only the user name\n         if (Shell.WINDOWS) {\n           int i \u003d owner.indexOf(\u0027\\\\\u0027);\n           if (i !\u003d -1)\n             owner \u003d owner.substring(i + 1);\n         }\n         setOwner(owner);\n \n         setGroup(t.nextToken());\n       } catch (Shell.ExitCodeException ioe) {\n         if (ioe.getExitCode() !\u003d 1) {\n           e \u003d ioe;\n         } else {\n           setPermission(null);\n           setOwner(null);\n           setGroup(null);\n         }\n       } catch (IOException ioe) {\n         e \u003d ioe;\n       } finally {\n         if (e !\u003d null) {\n           throw new RuntimeException(\"Error while running command to get \" +\n                                      \"file permissions : \" + \n                                      StringUtils.stringifyException(e));\n         }\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private void loadPermissionInfo() {\n      IOException e \u003d null;\n      try {\n        String output \u003d FileUtil.execCommand(new File(getPath().toUri()), \n            Shell.getGetPermissionCommand());\n        StringTokenizer t \u003d\n            new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        if (permission.length() \u003e FsPermission.MAX_PERMISSION_LENGTH) {\n          //files with ACLs might have a \u0027+\u0027\n          permission \u003d permission.substring(0,\n            FsPermission.MAX_PERMISSION_LENGTH);\n        }\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n\n        String owner \u003d t.nextToken();\n        // If on windows domain, token format is DOMAIN\\\\user and we want to\n        // extract only the user name\n        if (Shell.WINDOWS) {\n          int i \u003d owner.indexOf(\u0027\\\\\u0027);\n          if (i !\u003d -1)\n            owner \u003d owner.substring(i + 1);\n        }\n        setOwner(owner);\n\n        setGroup(t.nextToken());\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {}
+    },
+    "f065f5829282e98dcf3bcb09b7cfc50734bd524f": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10220. Add ACL indicator bit to FsPermission. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-4685@1557293 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/01/14 4:36 PM",
+      "commitName": "f065f5829282e98dcf3bcb09b7cfc50734bd524f",
+      "commitAuthor": "Chris Nauroth",
+      "commitDateOld": "02/12/13 9:28 AM",
+      "commitNameOld": "08d6213083891eb7e1661d1b5f56121161868a9e",
+      "commitAuthorOld": "Colin McCabe",
+      "daysBetweenCommits": 39.3,
+      "commitsBetweenForRepo": 199,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,45 +1,42 @@\n     private void loadPermissionInfo() {\n       IOException e \u003d null;\n       try {\n         String output \u003d FileUtil.execCommand(new File(getPath().toUri()), \n             Shell.getGetPermissionCommand());\n         StringTokenizer t \u003d\n             new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n         //expected format\n         //-rw-------    1 username groupname ...\n         String permission \u003d t.nextToken();\n-        if (permission.length() \u003e 10) { //files with ACLs might have a \u0027+\u0027\n-          permission \u003d permission.substring(0, 10);\n-        }\n         setPermission(FsPermission.valueOf(permission));\n         t.nextToken();\n \n         String owner \u003d t.nextToken();\n         // If on windows domain, token format is DOMAIN\\\\user and we want to\n         // extract only the user name\n         if (Shell.WINDOWS) {\n           int i \u003d owner.indexOf(\u0027\\\\\u0027);\n           if (i !\u003d -1)\n             owner \u003d owner.substring(i + 1);\n         }\n         setOwner(owner);\n \n         setGroup(t.nextToken());\n       } catch (Shell.ExitCodeException ioe) {\n         if (ioe.getExitCode() !\u003d 1) {\n           e \u003d ioe;\n         } else {\n           setPermission(null);\n           setOwner(null);\n           setGroup(null);\n         }\n       } catch (IOException ioe) {\n         e \u003d ioe;\n       } finally {\n         if (e !\u003d null) {\n           throw new RuntimeException(\"Error while running command to get \" +\n                                      \"file permissions : \" + \n                                      StringUtils.stringifyException(e));\n         }\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private void loadPermissionInfo() {\n      IOException e \u003d null;\n      try {\n        String output \u003d FileUtil.execCommand(new File(getPath().toUri()), \n            Shell.getGetPermissionCommand());\n        StringTokenizer t \u003d\n            new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n\n        String owner \u003d t.nextToken();\n        // If on windows domain, token format is DOMAIN\\\\user and we want to\n        // extract only the user name\n        if (Shell.WINDOWS) {\n          int i \u003d owner.indexOf(\u0027\\\\\u0027);\n          if (i !\u003d -1)\n            owner \u003d owner.substring(i + 1);\n        }\n        setOwner(owner);\n\n        setGroup(t.nextToken());\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {}
+    },
+    "638801cce16fc1dc3259c541dc30a599faaddda1": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-8952. Enhancements to support Hadoop on Windows Server and Windows Azure environments. Contributed by Ivan Mitic, Chuan Liu, Ramya Sunil, Bikas Saha, Kanna Karanam, John Gordon, Brandon Li, Chris Nauroth, David Lao, Sumadhur Reddy Bolli, Arpit Agarwal, Ahmed El Baz, Mike Liddell, Jing Zhao, Thejas Nair, Steve Maine, Ganeshan Iyer, Raja Aluri, Giridharan Kesavan, Ramya Bharathi Nimmagadda.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1453486 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/03/13 11:15 AM",
+      "commitName": "638801cce16fc1dc3259c541dc30a599faaddda1",
+      "commitAuthor": "Suresh Srinivas",
+      "commitDateOld": "19/12/12 3:14 AM",
+      "commitNameOld": "834e9410444ff45028b77a33500b03852190407d",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 77.33,
+      "commitsBetweenForRepo": 323,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,45 @@\n     private void loadPermissionInfo() {\n       IOException e \u003d null;\n       try {\n-        StringTokenizer t \u003d new StringTokenizer(\n-            execCommand(new File(getPath().toUri()), \n-                        Shell.getGET_PERMISSION_COMMAND()));\n+        String output \u003d FileUtil.execCommand(new File(getPath().toUri()), \n+            Shell.getGetPermissionCommand());\n+        StringTokenizer t \u003d\n+            new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n         //expected format\n         //-rw-------    1 username groupname ...\n         String permission \u003d t.nextToken();\n         if (permission.length() \u003e 10) { //files with ACLs might have a \u0027+\u0027\n           permission \u003d permission.substring(0, 10);\n         }\n         setPermission(FsPermission.valueOf(permission));\n         t.nextToken();\n-        setOwner(t.nextToken());\n+\n+        String owner \u003d t.nextToken();\n+        // If on windows domain, token format is DOMAIN\\\\user and we want to\n+        // extract only the user name\n+        if (Shell.WINDOWS) {\n+          int i \u003d owner.indexOf(\u0027\\\\\u0027);\n+          if (i !\u003d -1)\n+            owner \u003d owner.substring(i + 1);\n+        }\n+        setOwner(owner);\n+\n         setGroup(t.nextToken());\n       } catch (Shell.ExitCodeException ioe) {\n         if (ioe.getExitCode() !\u003d 1) {\n           e \u003d ioe;\n         } else {\n           setPermission(null);\n           setOwner(null);\n           setGroup(null);\n         }\n       } catch (IOException ioe) {\n         e \u003d ioe;\n       } finally {\n         if (e !\u003d null) {\n           throw new RuntimeException(\"Error while running command to get \" +\n                                      \"file permissions : \" + \n                                      StringUtils.stringifyException(e));\n         }\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private void loadPermissionInfo() {\n      IOException e \u003d null;\n      try {\n        String output \u003d FileUtil.execCommand(new File(getPath().toUri()), \n            Shell.getGetPermissionCommand());\n        StringTokenizer t \u003d\n            new StringTokenizer(output, Shell.TOKEN_SEPARATOR_REGEX);\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        if (permission.length() \u003e 10) { //files with ACLs might have a \u0027+\u0027\n          permission \u003d permission.substring(0, 10);\n        }\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n\n        String owner \u003d t.nextToken();\n        // If on windows domain, token format is DOMAIN\\\\user and we want to\n        // extract only the user name\n        if (Shell.WINDOWS) {\n          int i \u003d owner.indexOf(\u0027\\\\\u0027);\n          if (i !\u003d -1)\n            owner \u003d owner.substring(i + 1);\n        }\n        setOwner(owner);\n\n        setGroup(t.nextToken());\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    private void loadPermissionInfo() {\n      IOException e \u003d null;\n      try {\n        StringTokenizer t \u003d new StringTokenizer(\n            execCommand(new File(getPath().toUri()), \n                        Shell.getGET_PERMISSION_COMMAND()));\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        if (permission.length() \u003e 10) { //files with ACLs might have a \u0027+\u0027\n          permission \u003d permission.substring(0, 10);\n        }\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n        setOwner(t.nextToken());\n        setGroup(t.nextToken());\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+        "newPath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java"
+      }
+    },
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-6671. Use maven for hadoop common builds. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153184 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/08/11 9:37 AM",
+      "commitName": "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "01/08/11 3:53 PM",
+      "commitNameOld": "9bac807cedbcff34e1a144fb475eff267e5ed86d",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    private void loadPermissionInfo() {\n      IOException e \u003d null;\n      try {\n        StringTokenizer t \u003d new StringTokenizer(\n            execCommand(new File(getPath().toUri()), \n                        Shell.getGET_PERMISSION_COMMAND()));\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        if (permission.length() \u003e 10) { //files with ACLs might have a \u0027+\u0027\n          permission \u003d permission.substring(0, 10);\n        }\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n        setOwner(t.nextToken());\n        setGroup(t.nextToken());\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+      "path": "hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {
+        "oldPath": "common/src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+        "newPath": "hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "11/06/11 9:13 PM",
+      "commitNameOld": "a285fb5effe9ba3be4ec5f942afaf5ddd1186151",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    private void loadPermissionInfo() {\n      IOException e \u003d null;\n      try {\n        StringTokenizer t \u003d new StringTokenizer(\n            execCommand(new File(getPath().toUri()), \n                        Shell.getGET_PERMISSION_COMMAND()));\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        if (permission.length() \u003e 10) { //files with ACLs might have a \u0027+\u0027\n          permission \u003d permission.substring(0, 10);\n        }\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n        setOwner(t.nextToken());\n        setGroup(t.nextToken());\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+      "path": "common/src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {
+        "oldPath": "src/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+        "newPath": "common/src/java/org/apache/hadoop/fs/RawLocalFileSystem.java"
+      }
+    },
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-4687 Moving src directories on branch\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/core/branches/HADOOP-4687/core@776174 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/05/09 9:20 PM",
+      "commitName": "5128a9a453d64bfe1ed978cf9ffed27985eeef36",
+      "commitAuthor": "Owen O\u0027Malley",
+      "diff": "@@ -0,0 +1,34 @@\n+    private void loadPermissionInfo() {\n+      IOException e \u003d null;\n+      try {\n+        StringTokenizer t \u003d new StringTokenizer(\n+            execCommand(new File(getPath().toUri()), \n+                        Shell.getGET_PERMISSION_COMMAND()));\n+        //expected format\n+        //-rw-------    1 username groupname ...\n+        String permission \u003d t.nextToken();\n+        if (permission.length() \u003e 10) { //files with ACLs might have a \u0027+\u0027\n+          permission \u003d permission.substring(0, 10);\n+        }\n+        setPermission(FsPermission.valueOf(permission));\n+        t.nextToken();\n+        setOwner(t.nextToken());\n+        setGroup(t.nextToken());\n+      } catch (Shell.ExitCodeException ioe) {\n+        if (ioe.getExitCode() !\u003d 1) {\n+          e \u003d ioe;\n+        } else {\n+          setPermission(null);\n+          setOwner(null);\n+          setGroup(null);\n+        }\n+      } catch (IOException ioe) {\n+        e \u003d ioe;\n+      } finally {\n+        if (e !\u003d null) {\n+          throw new RuntimeException(\"Error while running command to get \" +\n+                                     \"file permissions : \" + \n+                                     StringUtils.stringifyException(e));\n+        }\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private void loadPermissionInfo() {\n      IOException e \u003d null;\n      try {\n        StringTokenizer t \u003d new StringTokenizer(\n            execCommand(new File(getPath().toUri()), \n                        Shell.getGET_PERMISSION_COMMAND()));\n        //expected format\n        //-rw-------    1 username groupname ...\n        String permission \u003d t.nextToken();\n        if (permission.length() \u003e 10) { //files with ACLs might have a \u0027+\u0027\n          permission \u003d permission.substring(0, 10);\n        }\n        setPermission(FsPermission.valueOf(permission));\n        t.nextToken();\n        setOwner(t.nextToken());\n        setGroup(t.nextToken());\n      } catch (Shell.ExitCodeException ioe) {\n        if (ioe.getExitCode() !\u003d 1) {\n          e \u003d ioe;\n        } else {\n          setPermission(null);\n          setOwner(null);\n          setGroup(null);\n        }\n      } catch (IOException ioe) {\n        e \u003d ioe;\n      } finally {\n        if (e !\u003d null) {\n          throw new RuntimeException(\"Error while running command to get \" +\n                                     \"file permissions : \" + \n                                     StringUtils.stringifyException(e));\n        }\n      }\n    }",
+      "path": "src/java/org/apache/hadoop/fs/RawLocalFileSystem.java"
+    }
+  }
+}

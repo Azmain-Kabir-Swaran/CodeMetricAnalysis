@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AMRMClientUtils.java",
+  "functionName": "createRMProxy",
+  "functionId": "createRMProxy___configuration-Configuration(modifiers-final)__protocol-Class__T__(modifiers-final)__user-UserGroupInformation__token-Token__? extends TokenIdentifier__(modifiers-final)",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/AMRMClientUtils.java",
+  "functionStartLine": 80,
+  "functionEndLine": 108,
+  "numCommitsSeen": 8,
+  "timeTaken": 1709,
+  "changeHistory": [
+    "3159bffce23abf35754da2d7d51de7d8c2631ae3",
+    "17ba74be29193ac15474f73baaaf4e647a95078b",
+    "859aa1f9d621d07693825e610bdc0149f7a2770a"
+  ],
+  "changeHistoryShort": {
+    "3159bffce23abf35754da2d7d51de7d8c2631ae3": "Yfilerename",
+    "17ba74be29193ac15474f73baaaf4e647a95078b": "Ybodychange",
+    "859aa1f9d621d07693825e610bdc0149f7a2770a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "3159bffce23abf35754da2d7d51de7d8c2631ae3": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-7900. [AMRMProxy] AMRMClientRelayer for stateful FederationInterceptor. (Botong Huang via asuresh)\n",
+      "commitDate": "17/05/18 8:00 PM",
+      "commitName": "3159bffce23abf35754da2d7d51de7d8c2631ae3",
+      "commitAuthor": "Arun Suresh",
+      "commitDateOld": "17/05/18 7:43 PM",
+      "commitNameOld": "f749517cc78fc761cecff21e8b7f65fb719bfca2",
+      "commitAuthorOld": "Yiqun Lin",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static \u003cT\u003e T createRMProxy(final Configuration configuration,\n      final Class\u003cT\u003e protocol, UserGroupInformation user,\n      final Token\u003c? extends TokenIdentifier\u003e token) throws IOException {\n    try {\n      String rmClusterId \u003d configuration.get(YarnConfiguration.RM_CLUSTER_ID,\n          YarnConfiguration.DEFAULT_RM_CLUSTER_ID);\n      LOG.info(\"Creating RMProxy to RM {} for protocol {} for user {}\",\n          rmClusterId, protocol.getSimpleName(), user);\n      if (token !\u003d null) {\n        // preserve the token service sent by the RM when adding the token\n        // to ensure we replace the previous token setup by the RM.\n        // Afterwards we can update the service address for the RPC layer.\n        // Same as YarnServerSecurityUtils.updateAMRMToken()\n        user.addToken(token);\n        token.setService(ClientRMProxy.getAMRMTokenService(configuration));\n        setAuthModeInConf(configuration);\n      }\n      final T proxyConnection \u003d user.doAs(new PrivilegedExceptionAction\u003cT\u003e() {\n        @Override\n        public T run() throws Exception {\n          return ClientRMProxy.createRMProxy(configuration, protocol);\n        }\n      });\n      return proxyConnection;\n\n    } catch (InterruptedException e) {\n      throw new YarnRuntimeException(e);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/AMRMClientUtils.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/utils/AMRMClientUtils.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/AMRMClientUtils.java"
+      }
+    },
+    "17ba74be29193ac15474f73baaaf4e647a95078b": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7630. Fix AMRMToken rollover handling in AMRMProxy. Contributed by Botong Huang.\n",
+      "commitDate": "14/12/17 2:03 PM",
+      "commitName": "17ba74be29193ac15474f73baaaf4e647a95078b",
+      "commitAuthor": "Subru Krishnan",
+      "commitDateOld": "17/11/17 5:39 PM",
+      "commitNameOld": "d5f66888b8d767ee6706fab9950c194a1bf26d32",
+      "commitAuthorOld": "Subru Krishnan",
+      "daysBetweenCommits": 26.85,
+      "commitsBetweenForRepo": 140,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,29 @@\n   public static \u003cT\u003e T createRMProxy(final Configuration configuration,\n       final Class\u003cT\u003e protocol, UserGroupInformation user,\n       final Token\u003c? extends TokenIdentifier\u003e token) throws IOException {\n     try {\n       String rmClusterId \u003d configuration.get(YarnConfiguration.RM_CLUSTER_ID,\n           YarnConfiguration.DEFAULT_RM_CLUSTER_ID);\n       LOG.info(\"Creating RMProxy to RM {} for protocol {} for user {}\",\n           rmClusterId, protocol.getSimpleName(), user);\n       if (token !\u003d null) {\n-        token.setService(ClientRMProxy.getAMRMTokenService(configuration));\n+        // preserve the token service sent by the RM when adding the token\n+        // to ensure we replace the previous token setup by the RM.\n+        // Afterwards we can update the service address for the RPC layer.\n+        // Same as YarnServerSecurityUtils.updateAMRMToken()\n         user.addToken(token);\n+        token.setService(ClientRMProxy.getAMRMTokenService(configuration));\n         setAuthModeInConf(configuration);\n       }\n       final T proxyConnection \u003d user.doAs(new PrivilegedExceptionAction\u003cT\u003e() {\n         @Override\n         public T run() throws Exception {\n           return ClientRMProxy.createRMProxy(configuration, protocol);\n         }\n       });\n       return proxyConnection;\n \n     } catch (InterruptedException e) {\n       throw new YarnRuntimeException(e);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static \u003cT\u003e T createRMProxy(final Configuration configuration,\n      final Class\u003cT\u003e protocol, UserGroupInformation user,\n      final Token\u003c? extends TokenIdentifier\u003e token) throws IOException {\n    try {\n      String rmClusterId \u003d configuration.get(YarnConfiguration.RM_CLUSTER_ID,\n          YarnConfiguration.DEFAULT_RM_CLUSTER_ID);\n      LOG.info(\"Creating RMProxy to RM {} for protocol {} for user {}\",\n          rmClusterId, protocol.getSimpleName(), user);\n      if (token !\u003d null) {\n        // preserve the token service sent by the RM when adding the token\n        // to ensure we replace the previous token setup by the RM.\n        // Afterwards we can update the service address for the RPC layer.\n        // Same as YarnServerSecurityUtils.updateAMRMToken()\n        user.addToken(token);\n        token.setService(ClientRMProxy.getAMRMTokenService(configuration));\n        setAuthModeInConf(configuration);\n      }\n      final T proxyConnection \u003d user.doAs(new PrivilegedExceptionAction\u003cT\u003e() {\n        @Override\n        public T run() throws Exception {\n          return ClientRMProxy.createRMProxy(configuration, protocol);\n        }\n      });\n      return proxyConnection;\n\n    } catch (InterruptedException e) {\n      throw new YarnRuntimeException(e);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/utils/AMRMClientUtils.java",
+      "extendedDetails": {}
+    },
+    "859aa1f9d621d07693825e610bdc0149f7a2770a": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5531. UnmanagedAM pool manager for federating application across clusters. (Botong Huang via Subru).\n\n(cherry picked from commit 73bb2102ce4b82b3a3bed91319f7c8f067ddc3e8)\n",
+      "commitDate": "01/08/17 5:28 PM",
+      "commitName": "859aa1f9d621d07693825e610bdc0149f7a2770a",
+      "commitAuthor": "Subru Krishnan",
+      "diff": "@@ -0,0 +1,25 @@\n+  public static \u003cT\u003e T createRMProxy(final Configuration configuration,\n+      final Class\u003cT\u003e protocol, UserGroupInformation user,\n+      final Token\u003c? extends TokenIdentifier\u003e token) throws IOException {\n+    try {\n+      String rmClusterId \u003d configuration.get(YarnConfiguration.RM_CLUSTER_ID,\n+          YarnConfiguration.DEFAULT_RM_CLUSTER_ID);\n+      LOG.info(\"Creating RMProxy to RM {} for protocol {} for user {}\",\n+          rmClusterId, protocol.getSimpleName(), user);\n+      if (token !\u003d null) {\n+        token.setService(ClientRMProxy.getAMRMTokenService(configuration));\n+        user.addToken(token);\n+        setAuthModeInConf(configuration);\n+      }\n+      final T proxyConnection \u003d user.doAs(new PrivilegedExceptionAction\u003cT\u003e() {\n+        @Override\n+        public T run() throws Exception {\n+          return ClientRMProxy.createRMProxy(configuration, protocol);\n+        }\n+      });\n+      return proxyConnection;\n+\n+    } catch (InterruptedException e) {\n+      throw new YarnRuntimeException(e);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static \u003cT\u003e T createRMProxy(final Configuration configuration,\n      final Class\u003cT\u003e protocol, UserGroupInformation user,\n      final Token\u003c? extends TokenIdentifier\u003e token) throws IOException {\n    try {\n      String rmClusterId \u003d configuration.get(YarnConfiguration.RM_CLUSTER_ID,\n          YarnConfiguration.DEFAULT_RM_CLUSTER_ID);\n      LOG.info(\"Creating RMProxy to RM {} for protocol {} for user {}\",\n          rmClusterId, protocol.getSimpleName(), user);\n      if (token !\u003d null) {\n        token.setService(ClientRMProxy.getAMRMTokenService(configuration));\n        user.addToken(token);\n        setAuthModeInConf(configuration);\n      }\n      final T proxyConnection \u003d user.doAs(new PrivilegedExceptionAction\u003cT\u003e() {\n        @Override\n        public T run() throws Exception {\n          return ClientRMProxy.createRMProxy(configuration, protocol);\n        }\n      });\n      return proxyConnection;\n\n    } catch (InterruptedException e) {\n      throw new YarnRuntimeException(e);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/utils/AMRMClientUtils.java"
+    }
+  }
+}

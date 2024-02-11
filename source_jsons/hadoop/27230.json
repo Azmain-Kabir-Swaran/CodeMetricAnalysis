@@ -1,0 +1,207 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileSystemTimelineReaderImpl.java",
+  "functionName": "getEntity",
+  "functionId": "getEntity___context-TimelineReaderContext__dataToRetrieve-TimelineDataToRetrieve",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java",
+  "functionStartLine": 388,
+  "functionEndLine": 411,
+  "numCommitsSeen": 36,
+  "timeTaken": 3228,
+  "changeHistory": [
+    "bca928d3c7b88f39e9bc1784889596f0b00964d4",
+    "56142171b9528646f26072e022902549a16c8f27",
+    "9cb1287e9b8425f91de925f411c3c2a8fa9fe2a3",
+    "8ef546c1ee9fce0b171813547253374d268566ba",
+    "1f710484e5b8ab4d5c67379c012004e8a4242d15",
+    "451c13b1de1e42394a4c92888192da9a9519d9ac",
+    "2d59bc4458eaeba6e5b98709340db6f0f1204b59"
+  ],
+  "changeHistoryShort": {
+    "bca928d3c7b88f39e9bc1784889596f0b00964d4": "Ybodychange",
+    "56142171b9528646f26072e022902549a16c8f27": "Ybodychange",
+    "9cb1287e9b8425f91de925f411c3c2a8fa9fe2a3": "Ymultichange(Yparameterchange,Ybodychange)",
+    "8ef546c1ee9fce0b171813547253374d268566ba": "Ymultichange(Yparameterchange,Ybodychange)",
+    "1f710484e5b8ab4d5c67379c012004e8a4242d15": "Yparameterchange",
+    "451c13b1de1e42394a4c92888192da9a9519d9ac": "Ybodychange",
+    "2d59bc4458eaeba6e5b98709340db6f0f1204b59": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "bca928d3c7b88f39e9bc1784889596f0b00964d4": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3879 [Storage implementation] Create HDFS backing storage implementation for ATS reads. Contributed by Abhishek Modi.\n",
+      "commitDate": "11/10/18 9:14 PM",
+      "commitName": "bca928d3c7b88f39e9bc1784889596f0b00964d4",
+      "commitAuthor": "Vrushali C",
+      "commitDateOld": "29/08/17 10:59 PM",
+      "commitNameOld": "4481561e4a3433197dd8e73f38856eef84f0fd03",
+      "commitAuthorOld": "Sangjin Lee",
+      "daysBetweenCommits": 407.93,
+      "commitsBetweenForRepo": 3724,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,24 @@\n   public TimelineEntity getEntity(TimelineReaderContext context,\n       TimelineDataToRetrieve dataToRetrieve) throws IOException {\n-    String flowRunPath \u003d getFlowRunPath(context.getUserId(),\n+    String flowRunPathStr \u003d getFlowRunPath(context.getUserId(),\n         context.getClusterId(), context.getFlowName(), context.getFlowRunId(),\n         context.getAppId());\n-    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n-        context.getClusterId() + File.separator + flowRunPath + File.separator +\n-        context.getAppId() + File.separator + context.getEntityType());\n-    File entityFile \u003d new File(\n-        dir, context.getEntityId() + TIMELINE_SERVICE_STORAGE_EXTENSION);\n+    Path clusterIdPath \u003d new Path(entitiesPath, context.getClusterId());\n+    Path flowRunPath \u003d new Path(clusterIdPath, flowRunPathStr);\n+    Path appIdPath \u003d new Path(flowRunPath, context.getAppId());\n+    Path entityTypePath \u003d new Path(appIdPath, context.getEntityType());\n+    Path entityFilePath \u003d new Path(entityTypePath,\n+            context.getEntityId() + TIMELINE_SERVICE_STORAGE_EXTENSION);\n+\n     try (BufferedReader reader \u003d\n              new BufferedReader(new InputStreamReader(\n-                 new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n+                 fs.open(entityFilePath), Charset.forName(\"UTF-8\")))) {\n       TimelineEntity entity \u003d readEntityFromFile(reader);\n       return createEntityToBeReturned(\n           entity, dataToRetrieve.getFieldsToRetrieve());\n     } catch (FileNotFoundException e) {\n       LOG.info(\"Cannot find entity {id:\" + context.getEntityId() + \" , type:\" +\n           context.getEntityType() + \"}. Will send HTTP 404 in response.\");\n       return null;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public TimelineEntity getEntity(TimelineReaderContext context,\n      TimelineDataToRetrieve dataToRetrieve) throws IOException {\n    String flowRunPathStr \u003d getFlowRunPath(context.getUserId(),\n        context.getClusterId(), context.getFlowName(), context.getFlowRunId(),\n        context.getAppId());\n    Path clusterIdPath \u003d new Path(entitiesPath, context.getClusterId());\n    Path flowRunPath \u003d new Path(clusterIdPath, flowRunPathStr);\n    Path appIdPath \u003d new Path(flowRunPath, context.getAppId());\n    Path entityTypePath \u003d new Path(appIdPath, context.getEntityType());\n    Path entityFilePath \u003d new Path(entityTypePath,\n            context.getEntityId() + TIMELINE_SERVICE_STORAGE_EXTENSION);\n\n    try (BufferedReader reader \u003d\n             new BufferedReader(new InputStreamReader(\n                 fs.open(entityFilePath), Charset.forName(\"UTF-8\")))) {\n      TimelineEntity entity \u003d readEntityFromFile(reader);\n      return createEntityToBeReturned(\n          entity, dataToRetrieve.getFieldsToRetrieve());\n    } catch (FileNotFoundException e) {\n      LOG.info(\"Cannot find entity {id:\" + context.getEntityId() + \" , type:\" +\n          context.getEntityType() + \"}. Will send HTTP 404 in response.\");\n      return null;\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java",
+      "extendedDetails": {}
+    },
+    "56142171b9528646f26072e022902549a16c8f27": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-5359. FileSystemTimelineReader/Writer uses unix-specific default storage path (Sangjin Lee via Varun Saxena)\n",
+      "commitDate": "13/07/16 8:45 AM",
+      "commitName": "56142171b9528646f26072e022902549a16c8f27",
+      "commitAuthor": "Varun Saxena",
+      "commitDateOld": "10/07/16 8:46 AM",
+      "commitNameOld": "0a9b085f052b5ebaf319bec7609c77d7f1684a4a",
+      "commitAuthorOld": "Li Lu",
+      "daysBetweenCommits": 3.0,
+      "commitsBetweenForRepo": 32,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,22 @@\n   public TimelineEntity getEntity(TimelineReaderContext context,\n       TimelineDataToRetrieve dataToRetrieve) throws IOException {\n     String flowRunPath \u003d getFlowRunPath(context.getUserId(),\n         context.getClusterId(), context.getFlowName(), context.getFlowRunId(),\n         context.getAppId());\n     File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n-        context.getClusterId() + \"/\" + flowRunPath + \"/\" + context.getAppId() +\n-        \"/\" + context.getEntityType());\n+        context.getClusterId() + File.separator + flowRunPath + File.separator +\n+        context.getAppId() + File.separator + context.getEntityType());\n     File entityFile \u003d new File(\n         dir, context.getEntityId() + TIMELINE_SERVICE_STORAGE_EXTENSION);\n     try (BufferedReader reader \u003d\n              new BufferedReader(new InputStreamReader(\n                  new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n       TimelineEntity entity \u003d readEntityFromFile(reader);\n       return createEntityToBeReturned(\n           entity, dataToRetrieve.getFieldsToRetrieve());\n     } catch (FileNotFoundException e) {\n       LOG.info(\"Cannot find entity {id:\" + context.getEntityId() + \" , type:\" +\n           context.getEntityType() + \"}. Will send HTTP 404 in response.\");\n       return null;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public TimelineEntity getEntity(TimelineReaderContext context,\n      TimelineDataToRetrieve dataToRetrieve) throws IOException {\n    String flowRunPath \u003d getFlowRunPath(context.getUserId(),\n        context.getClusterId(), context.getFlowName(), context.getFlowRunId(),\n        context.getAppId());\n    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n        context.getClusterId() + File.separator + flowRunPath + File.separator +\n        context.getAppId() + File.separator + context.getEntityType());\n    File entityFile \u003d new File(\n        dir, context.getEntityId() + TIMELINE_SERVICE_STORAGE_EXTENSION);\n    try (BufferedReader reader \u003d\n             new BufferedReader(new InputStreamReader(\n                 new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n      TimelineEntity entity \u003d readEntityFromFile(reader);\n      return createEntityToBeReturned(\n          entity, dataToRetrieve.getFieldsToRetrieve());\n    } catch (FileNotFoundException e) {\n      LOG.info(\"Cannot find entity {id:\" + context.getEntityId() + \" , type:\" +\n          context.getEntityType() + \"}. Will send HTTP 404 in response.\");\n      return null;\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java",
+      "extendedDetails": {}
+    },
+    "9cb1287e9b8425f91de925f411c3c2a8fa9fe2a3": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-4446. Refactor reader API for better extensibility (Varun Saxena via sjlee)\n",
+      "commitDate": "10/07/16 8:45 AM",
+      "commitName": "9cb1287e9b8425f91de925f411c3c2a8fa9fe2a3",
+      "commitAuthor": "Sangjin Lee",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-4446. Refactor reader API for better extensibility (Varun Saxena via sjlee)\n",
+          "commitDate": "10/07/16 8:45 AM",
+          "commitName": "9cb1287e9b8425f91de925f411c3c2a8fa9fe2a3",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "10/07/16 8:45 AM",
+          "commitNameOld": "6934b05c7117a12286fb2ba7a47f75e227cacb22",
+          "commitAuthorOld": "Naganarasimha",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 3,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,22 @@\n-  public TimelineEntity getEntity(String userId, String clusterId,\n-      String flowName, Long flowRunId, String appId, String entityType,\n-      String entityId, TimelineFilterList confsToRetrieve,\n-      TimelineFilterList metricsToRetrieve, EnumSet\u003cField\u003e fieldsToRetrieve)\n-      throws IOException {\n-    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowName,\n-        flowRunId, appId);\n+  public TimelineEntity getEntity(TimelineReaderContext context,\n+      TimelineDataToRetrieve dataToRetrieve) throws IOException {\n+    String flowRunPath \u003d getFlowRunPath(context.getUserId(),\n+        context.getClusterId(), context.getFlowName(), context.getFlowRunId(),\n+        context.getAppId());\n     File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n-        clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n-    File entityFile \u003d\n-        new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n+        context.getClusterId() + \"/\" + flowRunPath + \"/\" + context.getAppId() +\n+        \"/\" + context.getEntityType());\n+    File entityFile \u003d new File(\n+        dir, context.getEntityId() + TIMELINE_SERVICE_STORAGE_EXTENSION);\n     try (BufferedReader reader \u003d\n              new BufferedReader(new InputStreamReader(\n                  new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n       TimelineEntity entity \u003d readEntityFromFile(reader);\n-      return createEntityToBeReturned(entity, fieldsToRetrieve);\n+      return createEntityToBeReturned(\n+          entity, dataToRetrieve.getFieldsToRetrieve());\n     } catch (FileNotFoundException e) {\n-      LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n-          \"}. Will send HTTP 404 in response.\");\n+      LOG.info(\"Cannot find entity {id:\" + context.getEntityId() + \" , type:\" +\n+          context.getEntityType() + \"}. Will send HTTP 404 in response.\");\n       return null;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public TimelineEntity getEntity(TimelineReaderContext context,\n      TimelineDataToRetrieve dataToRetrieve) throws IOException {\n    String flowRunPath \u003d getFlowRunPath(context.getUserId(),\n        context.getClusterId(), context.getFlowName(), context.getFlowRunId(),\n        context.getAppId());\n    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n        context.getClusterId() + \"/\" + flowRunPath + \"/\" + context.getAppId() +\n        \"/\" + context.getEntityType());\n    File entityFile \u003d new File(\n        dir, context.getEntityId() + TIMELINE_SERVICE_STORAGE_EXTENSION);\n    try (BufferedReader reader \u003d\n             new BufferedReader(new InputStreamReader(\n                 new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n      TimelineEntity entity \u003d readEntityFromFile(reader);\n      return createEntityToBeReturned(\n          entity, dataToRetrieve.getFieldsToRetrieve());\n    } catch (FileNotFoundException e) {\n      LOG.info(\"Cannot find entity {id:\" + context.getEntityId() + \" , type:\" +\n          context.getEntityType() + \"}. Will send HTTP 404 in response.\");\n      return null;\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java",
+          "extendedDetails": {
+            "oldValue": "[userId-String, clusterId-String, flowName-String, flowRunId-Long, appId-String, entityType-String, entityId-String, confsToRetrieve-TimelineFilterList, metricsToRetrieve-TimelineFilterList, fieldsToRetrieve-EnumSet\u003cField\u003e]",
+            "newValue": "[context-TimelineReaderContext, dataToRetrieve-TimelineDataToRetrieve]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-4446. Refactor reader API for better extensibility (Varun Saxena via sjlee)\n",
+          "commitDate": "10/07/16 8:45 AM",
+          "commitName": "9cb1287e9b8425f91de925f411c3c2a8fa9fe2a3",
+          "commitAuthor": "Sangjin Lee",
+          "commitDateOld": "10/07/16 8:45 AM",
+          "commitNameOld": "6934b05c7117a12286fb2ba7a47f75e227cacb22",
+          "commitAuthorOld": "Naganarasimha",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 3,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,22 @@\n-  public TimelineEntity getEntity(String userId, String clusterId,\n-      String flowName, Long flowRunId, String appId, String entityType,\n-      String entityId, TimelineFilterList confsToRetrieve,\n-      TimelineFilterList metricsToRetrieve, EnumSet\u003cField\u003e fieldsToRetrieve)\n-      throws IOException {\n-    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowName,\n-        flowRunId, appId);\n+  public TimelineEntity getEntity(TimelineReaderContext context,\n+      TimelineDataToRetrieve dataToRetrieve) throws IOException {\n+    String flowRunPath \u003d getFlowRunPath(context.getUserId(),\n+        context.getClusterId(), context.getFlowName(), context.getFlowRunId(),\n+        context.getAppId());\n     File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n-        clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n-    File entityFile \u003d\n-        new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n+        context.getClusterId() + \"/\" + flowRunPath + \"/\" + context.getAppId() +\n+        \"/\" + context.getEntityType());\n+    File entityFile \u003d new File(\n+        dir, context.getEntityId() + TIMELINE_SERVICE_STORAGE_EXTENSION);\n     try (BufferedReader reader \u003d\n              new BufferedReader(new InputStreamReader(\n                  new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n       TimelineEntity entity \u003d readEntityFromFile(reader);\n-      return createEntityToBeReturned(entity, fieldsToRetrieve);\n+      return createEntityToBeReturned(\n+          entity, dataToRetrieve.getFieldsToRetrieve());\n     } catch (FileNotFoundException e) {\n-      LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n-          \"}. Will send HTTP 404 in response.\");\n+      LOG.info(\"Cannot find entity {id:\" + context.getEntityId() + \" , type:\" +\n+          context.getEntityType() + \"}. Will send HTTP 404 in response.\");\n       return null;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public TimelineEntity getEntity(TimelineReaderContext context,\n      TimelineDataToRetrieve dataToRetrieve) throws IOException {\n    String flowRunPath \u003d getFlowRunPath(context.getUserId(),\n        context.getClusterId(), context.getFlowName(), context.getFlowRunId(),\n        context.getAppId());\n    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n        context.getClusterId() + \"/\" + flowRunPath + \"/\" + context.getAppId() +\n        \"/\" + context.getEntityType());\n    File entityFile \u003d new File(\n        dir, context.getEntityId() + TIMELINE_SERVICE_STORAGE_EXTENSION);\n    try (BufferedReader reader \u003d\n             new BufferedReader(new InputStreamReader(\n                 new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n      TimelineEntity entity \u003d readEntityFromFile(reader);\n      return createEntityToBeReturned(\n          entity, dataToRetrieve.getFieldsToRetrieve());\n    } catch (FileNotFoundException e) {\n      LOG.info(\"Cannot find entity {id:\" + context.getEntityId() + \" , type:\" +\n          context.getEntityType() + \"}. Will send HTTP 404 in response.\");\n      return null;\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "8ef546c1ee9fce0b171813547253374d268566ba": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-4445. Unify the term flowId and flowName in timeline v2 codebase.\nContributed by Zhan Zhang.\n",
+      "commitDate": "10/07/16 8:45 AM",
+      "commitName": "8ef546c1ee9fce0b171813547253374d268566ba",
+      "commitAuthor": "Li Lu",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-4445. Unify the term flowId and flowName in timeline v2 codebase.\nContributed by Zhan Zhang.\n",
+          "commitDate": "10/07/16 8:45 AM",
+          "commitName": "8ef546c1ee9fce0b171813547253374d268566ba",
+          "commitAuthor": "Li Lu",
+          "commitDateOld": "10/07/16 8:45 AM",
+          "commitNameOld": "1f710484e5b8ab4d5c67379c012004e8a4242d15",
+          "commitAuthorOld": "Sangjin Lee",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 6,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,22 @@\n   public TimelineEntity getEntity(String userId, String clusterId,\n-      String flowId, Long flowRunId, String appId, String entityType,\n+      String flowName, Long flowRunId, String appId, String entityType,\n       String entityId, TimelineFilterList confsToRetrieve,\n       TimelineFilterList metricsToRetrieve, EnumSet\u003cField\u003e fieldsToRetrieve)\n       throws IOException {\n-    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowId,\n+    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowName,\n         flowRunId, appId);\n     File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n         clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n     File entityFile \u003d\n         new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n     try (BufferedReader reader \u003d\n              new BufferedReader(new InputStreamReader(\n                  new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n       TimelineEntity entity \u003d readEntityFromFile(reader);\n       return createEntityToBeReturned(entity, fieldsToRetrieve);\n     } catch (FileNotFoundException e) {\n       LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n           \"}. Will send HTTP 404 in response.\");\n       return null;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public TimelineEntity getEntity(String userId, String clusterId,\n      String flowName, Long flowRunId, String appId, String entityType,\n      String entityId, TimelineFilterList confsToRetrieve,\n      TimelineFilterList metricsToRetrieve, EnumSet\u003cField\u003e fieldsToRetrieve)\n      throws IOException {\n    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowName,\n        flowRunId, appId);\n    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n        clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n    File entityFile \u003d\n        new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n    try (BufferedReader reader \u003d\n             new BufferedReader(new InputStreamReader(\n                 new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n      TimelineEntity entity \u003d readEntityFromFile(reader);\n      return createEntityToBeReturned(entity, fieldsToRetrieve);\n    } catch (FileNotFoundException e) {\n      LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n          \"}. Will send HTTP 404 in response.\");\n      return null;\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java",
+          "extendedDetails": {
+            "oldValue": "[userId-String, clusterId-String, flowId-String, flowRunId-Long, appId-String, entityType-String, entityId-String, confsToRetrieve-TimelineFilterList, metricsToRetrieve-TimelineFilterList, fieldsToRetrieve-EnumSet\u003cField\u003e]",
+            "newValue": "[userId-String, clusterId-String, flowName-String, flowRunId-Long, appId-String, entityType-String, entityId-String, confsToRetrieve-TimelineFilterList, metricsToRetrieve-TimelineFilterList, fieldsToRetrieve-EnumSet\u003cField\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-4445. Unify the term flowId and flowName in timeline v2 codebase.\nContributed by Zhan Zhang.\n",
+          "commitDate": "10/07/16 8:45 AM",
+          "commitName": "8ef546c1ee9fce0b171813547253374d268566ba",
+          "commitAuthor": "Li Lu",
+          "commitDateOld": "10/07/16 8:45 AM",
+          "commitNameOld": "1f710484e5b8ab4d5c67379c012004e8a4242d15",
+          "commitAuthorOld": "Sangjin Lee",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 6,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,22 @@\n   public TimelineEntity getEntity(String userId, String clusterId,\n-      String flowId, Long flowRunId, String appId, String entityType,\n+      String flowName, Long flowRunId, String appId, String entityType,\n       String entityId, TimelineFilterList confsToRetrieve,\n       TimelineFilterList metricsToRetrieve, EnumSet\u003cField\u003e fieldsToRetrieve)\n       throws IOException {\n-    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowId,\n+    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowName,\n         flowRunId, appId);\n     File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n         clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n     File entityFile \u003d\n         new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n     try (BufferedReader reader \u003d\n              new BufferedReader(new InputStreamReader(\n                  new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n       TimelineEntity entity \u003d readEntityFromFile(reader);\n       return createEntityToBeReturned(entity, fieldsToRetrieve);\n     } catch (FileNotFoundException e) {\n       LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n           \"}. Will send HTTP 404 in response.\");\n       return null;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public TimelineEntity getEntity(String userId, String clusterId,\n      String flowName, Long flowRunId, String appId, String entityType,\n      String entityId, TimelineFilterList confsToRetrieve,\n      TimelineFilterList metricsToRetrieve, EnumSet\u003cField\u003e fieldsToRetrieve)\n      throws IOException {\n    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowName,\n        flowRunId, appId);\n    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n        clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n    File entityFile \u003d\n        new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n    try (BufferedReader reader \u003d\n             new BufferedReader(new InputStreamReader(\n                 new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n      TimelineEntity entity \u003d readEntityFromFile(reader);\n      return createEntityToBeReturned(entity, fieldsToRetrieve);\n    } catch (FileNotFoundException e) {\n      LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n          \"}. Will send HTTP 404 in response.\");\n      return null;\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "1f710484e5b8ab4d5c67379c012004e8a4242d15": {
+      "type": "Yparameterchange",
+      "commitMessage": "YARN-3862. Support for fetching specific configs and metrics based on prefixes (Varun Saxena via sjlee)\n",
+      "commitDate": "10/07/16 8:45 AM",
+      "commitName": "1f710484e5b8ab4d5c67379c012004e8a4242d15",
+      "commitAuthor": "Sangjin Lee",
+      "commitDateOld": "10/07/16 8:45 AM",
+      "commitNameOld": "b51d0fef56a59b15489f5b932025718b4e9613d2",
+      "commitAuthorOld": "Sangjin Lee",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 7,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,22 @@\n   public TimelineEntity getEntity(String userId, String clusterId,\n       String flowId, Long flowRunId, String appId, String entityType,\n-      String entityId, EnumSet\u003cField\u003e fieldsToRetrieve) throws IOException {\n+      String entityId, TimelineFilterList confsToRetrieve,\n+      TimelineFilterList metricsToRetrieve, EnumSet\u003cField\u003e fieldsToRetrieve)\n+      throws IOException {\n     String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowId,\n         flowRunId, appId);\n     File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n         clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n     File entityFile \u003d\n         new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n     try (BufferedReader reader \u003d\n              new BufferedReader(new InputStreamReader(\n                  new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n       TimelineEntity entity \u003d readEntityFromFile(reader);\n       return createEntityToBeReturned(entity, fieldsToRetrieve);\n     } catch (FileNotFoundException e) {\n       LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n           \"}. Will send HTTP 404 in response.\");\n       return null;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public TimelineEntity getEntity(String userId, String clusterId,\n      String flowId, Long flowRunId, String appId, String entityType,\n      String entityId, TimelineFilterList confsToRetrieve,\n      TimelineFilterList metricsToRetrieve, EnumSet\u003cField\u003e fieldsToRetrieve)\n      throws IOException {\n    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowId,\n        flowRunId, appId);\n    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n        clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n    File entityFile \u003d\n        new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n    try (BufferedReader reader \u003d\n             new BufferedReader(new InputStreamReader(\n                 new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n      TimelineEntity entity \u003d readEntityFromFile(reader);\n      return createEntityToBeReturned(entity, fieldsToRetrieve);\n    } catch (FileNotFoundException e) {\n      LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n          \"}. Will send HTTP 404 in response.\");\n      return null;\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java",
+      "extendedDetails": {
+        "oldValue": "[userId-String, clusterId-String, flowId-String, flowRunId-Long, appId-String, entityType-String, entityId-String, fieldsToRetrieve-EnumSet\u003cField\u003e]",
+        "newValue": "[userId-String, clusterId-String, flowId-String, flowRunId-Long, appId-String, entityType-String, entityId-String, confsToRetrieve-TimelineFilterList, metricsToRetrieve-TimelineFilterList, fieldsToRetrieve-EnumSet\u003cField\u003e]"
+      }
+    },
+    "451c13b1de1e42394a4c92888192da9a9519d9ac": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3814. REST API implementation for getting raw entities in TimelineReader (Varun Saxena via sjlee)\n",
+      "commitDate": "10/07/16 8:45 AM",
+      "commitName": "451c13b1de1e42394a4c92888192da9a9519d9ac",
+      "commitAuthor": "Sangjin Lee",
+      "commitDateOld": "10/07/16 8:45 AM",
+      "commitNameOld": "9e5155be363c6610ccf41fe08b7f1394f353ea65",
+      "commitAuthorOld": "Sangjin Lee",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 8,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,20 @@\n   public TimelineEntity getEntity(String userId, String clusterId,\n       String flowId, Long flowRunId, String appId, String entityType,\n       String entityId, EnumSet\u003cField\u003e fieldsToRetrieve) throws IOException {\n     String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowId,\n         flowRunId, appId);\n     File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n         clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n     File entityFile \u003d\n         new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n     try (BufferedReader reader \u003d\n              new BufferedReader(new InputStreamReader(\n                  new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n       TimelineEntity entity \u003d readEntityFromFile(reader);\n       return createEntityToBeReturned(entity, fieldsToRetrieve);\n+    } catch (FileNotFoundException e) {\n+      LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n+          \"}. Will send HTTP 404 in response.\");\n+      return null;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public TimelineEntity getEntity(String userId, String clusterId,\n      String flowId, Long flowRunId, String appId, String entityType,\n      String entityId, EnumSet\u003cField\u003e fieldsToRetrieve) throws IOException {\n    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowId,\n        flowRunId, appId);\n    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n        clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n    File entityFile \u003d\n        new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n    try (BufferedReader reader \u003d\n             new BufferedReader(new InputStreamReader(\n                 new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n      TimelineEntity entity \u003d readEntityFromFile(reader);\n      return createEntityToBeReturned(entity, fieldsToRetrieve);\n    } catch (FileNotFoundException e) {\n      LOG.info(\"Cannot find entity {id:\" + entityId + \" , type:\" + entityType +\n          \"}. Will send HTTP 404 in response.\");\n      return null;\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java",
+      "extendedDetails": {}
+    },
+    "2d59bc4458eaeba6e5b98709340db6f0f1204b59": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3051. Created storage oriented reader interface for fetching raw entity data and made the filesystem based implementation. Contributed by Varun Saxena.\n\n(cherry picked from commit 499ce52c7b645ec0b1cc8ac62dc9a3127b987a20)\n",
+      "commitDate": "10/07/16 8:45 AM",
+      "commitName": "2d59bc4458eaeba6e5b98709340db6f0f1204b59",
+      "commitAuthor": "Zhijie Shen",
+      "diff": "@@ -0,0 +1,16 @@\n+  public TimelineEntity getEntity(String userId, String clusterId,\n+      String flowId, Long flowRunId, String appId, String entityType,\n+      String entityId, EnumSet\u003cField\u003e fieldsToRetrieve) throws IOException {\n+    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowId,\n+        flowRunId, appId);\n+    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n+        clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n+    File entityFile \u003d\n+        new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n+    try (BufferedReader reader \u003d\n+        new BufferedReader(new InputStreamReader(\n+            new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n+      TimelineEntity entity \u003d readEntityFromFile(reader);\n+      return createEntityToBeReturned(entity, fieldsToRetrieve);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public TimelineEntity getEntity(String userId, String clusterId,\n      String flowId, Long flowRunId, String appId, String entityType,\n      String entityId, EnumSet\u003cField\u003e fieldsToRetrieve) throws IOException {\n    String flowRunPath \u003d getFlowRunPath(userId, clusterId, flowId,\n        flowRunId, appId);\n    File dir \u003d new File(new File(rootPath, ENTITIES_DIR),\n        clusterId + \"/\" + flowRunPath + \"/\" + appId + \"/\" + entityType);\n    File entityFile \u003d\n        new File(dir, entityId + TIMELINE_SERVICE_STORAGE_EXTENSION);\n    try (BufferedReader reader \u003d\n        new BufferedReader(new InputStreamReader(\n            new FileInputStream(entityFile), Charset.forName(\"UTF-8\")))) {\n      TimelineEntity entity \u003d readEntityFromFile(reader);\n      return createEntityToBeReturned(entity, fieldsToRetrieve);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/FileSystemTimelineReaderImpl.java"
+    }
+  }
+}

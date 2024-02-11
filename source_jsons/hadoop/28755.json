@@ -1,0 +1,161 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "OpportunisticContainerContext.java",
+  "functionName": "addToOutstandingReqs",
+  "functionId": "addToOutstandingReqs___resourceAsks-List__ResourceRequest__",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/scheduler/OpportunisticContainerContext.java",
+  "functionStartLine": 130,
+  "functionEndLine": 162,
+  "numCommitsSeen": 14,
+  "timeTaken": 3714,
+  "changeHistory": [
+    "b733348dde18a242e6c9074c512116a8baf1d281",
+    "0a55bd841ec0f2eb89a0383f4c589526e8b138d4",
+    "ac1e5d4f77e3b9df8dcacb0b1f72eecc27931eb8",
+    "82c9e061017c32e633e0b0cbb7978749a6df4fb2",
+    "e5766b1dbee02ae0ef89618e172f3fb227af19e8",
+    "c282a08f3892e2e8ceb58e1e9a411062fbd1fb2b"
+  ],
+  "changeHistoryShort": {
+    "b733348dde18a242e6c9074c512116a8baf1d281": "Ybodychange",
+    "0a55bd841ec0f2eb89a0383f4c589526e8b138d4": "Ybodychange",
+    "ac1e5d4f77e3b9df8dcacb0b1f72eecc27931eb8": "Ybodychange",
+    "82c9e061017c32e633e0b0cbb7978749a6df4fb2": "Ymultichange(Ymovefromfile,Ybodychange)",
+    "e5766b1dbee02ae0ef89618e172f3fb227af19e8": "Yfilerename",
+    "c282a08f3892e2e8ceb58e1e9a411062fbd1fb2b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b733348dde18a242e6c9074c512116a8baf1d281": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7258. Add Node and Rack Hints to Opportunistic Scheduler. (Kartheek Muthyala via asuresh).\n",
+      "commitDate": "05/10/17 9:58 AM",
+      "commitName": "b733348dde18a242e6c9074c512116a8baf1d281",
+      "commitAuthor": "Arun Suresh",
+      "commitDateOld": "05/01/17 10:31 AM",
+      "commitNameOld": "0a55bd841ec0f2eb89a0383f4c589526e8b138d4",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 272.94,
+      "commitsBetweenForRepo": 1702,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,37 +1,33 @@\n   public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n     for (ResourceRequest request : resourceAsks) {\n       SchedulerRequestKey schedulerKey \u003d SchedulerRequestKey.create(request);\n \n-      // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n-      if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n-        continue;\n-      }\n-\n-      if (request.getNumContainers() \u003d\u003d 0) {\n-        continue;\n-      }\n-\n-      Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n+      Map\u003cResource, EnrichedResourceRequest\u003e reqMap \u003d\n           outstandingOpReqs.get(schedulerKey);\n       if (reqMap \u003d\u003d null) {\n         reqMap \u003d new HashMap\u003c\u003e();\n         outstandingOpReqs.put(schedulerKey, reqMap);\n       }\n \n-      ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n-      if (resourceRequest \u003d\u003d null) {\n-        resourceRequest \u003d request;\n-        reqMap.put(request.getCapability(), request);\n+      EnrichedResourceRequest eReq \u003d reqMap.get(request.getCapability());\n+      if (eReq \u003d\u003d null) {\n+        eReq \u003d new EnrichedResourceRequest(request);\n+        reqMap.put(request.getCapability(), eReq);\n+      }\n+      // Set numContainers only for ANY request\n+      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n+        eReq.getRequest().setResourceName(ResourceRequest.ANY);\n+        eReq.getRequest().setNumContainers(request.getNumContainers());\n       } else {\n-        resourceRequest.setNumContainers(\n-            resourceRequest.getNumContainers() + request.getNumContainers());\n+        eReq.addLocation(request.getResourceName(), request.getNumContainers());\n       }\n       if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n         LOG.info(\"# of outstandingOpReqs in ANY (at \"\n             + \"priority \u003d \" + schedulerKey.getPriority()\n             + \", allocationReqId \u003d \" + schedulerKey.getAllocationRequestId()\n             + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n-            + resourceRequest.getNumContainers());\n+            + \", with location \u003d \" + request.getResourceName() + \" ) : \"\n+            + \", numContainers \u003d \" + eReq.getRequest().getNumContainers());\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n    for (ResourceRequest request : resourceAsks) {\n      SchedulerRequestKey schedulerKey \u003d SchedulerRequestKey.create(request);\n\n      Map\u003cResource, EnrichedResourceRequest\u003e reqMap \u003d\n          outstandingOpReqs.get(schedulerKey);\n      if (reqMap \u003d\u003d null) {\n        reqMap \u003d new HashMap\u003c\u003e();\n        outstandingOpReqs.put(schedulerKey, reqMap);\n      }\n\n      EnrichedResourceRequest eReq \u003d reqMap.get(request.getCapability());\n      if (eReq \u003d\u003d null) {\n        eReq \u003d new EnrichedResourceRequest(request);\n        reqMap.put(request.getCapability(), eReq);\n      }\n      // Set numContainers only for ANY request\n      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n        eReq.getRequest().setResourceName(ResourceRequest.ANY);\n        eReq.getRequest().setNumContainers(request.getNumContainers());\n      } else {\n        eReq.addLocation(request.getResourceName(), request.getNumContainers());\n      }\n      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n        LOG.info(\"# of outstandingOpReqs in ANY (at \"\n            + \"priority \u003d \" + schedulerKey.getPriority()\n            + \", allocationReqId \u003d \" + schedulerKey.getAllocationRequestId()\n            + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n            + \", with location \u003d \" + request.getResourceName() + \" ) : \"\n            + \", numContainers \u003d \" + eReq.getRequest().getNumContainers());\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/scheduler/OpportunisticContainerContext.java",
+      "extendedDetails": {}
+    },
+    "0a55bd841ec0f2eb89a0383f4c589526e8b138d4": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-5959. RM changes to support change of container ExecutionType. (Arun Suresh via wangda)\n",
+      "commitDate": "05/01/17 10:31 AM",
+      "commitName": "0a55bd841ec0f2eb89a0383f4c589526e8b138d4",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "27/12/16 12:40 PM",
+      "commitNameOld": "ac1e5d4f77e3b9df8dcacb0b1f72eecc27931eb8",
+      "commitAuthorOld": "Arun Suresh",
+      "daysBetweenCommits": 8.91,
+      "commitsBetweenForRepo": 37,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,37 @@\n   public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n     for (ResourceRequest request : resourceAsks) {\n       SchedulerRequestKey schedulerKey \u003d SchedulerRequestKey.create(request);\n \n       // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n       if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n         continue;\n       }\n \n       if (request.getNumContainers() \u003d\u003d 0) {\n         continue;\n       }\n \n       Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n           outstandingOpReqs.get(schedulerKey);\n       if (reqMap \u003d\u003d null) {\n         reqMap \u003d new HashMap\u003c\u003e();\n         outstandingOpReqs.put(schedulerKey, reqMap);\n       }\n \n       ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n       if (resourceRequest \u003d\u003d null) {\n         resourceRequest \u003d request;\n         reqMap.put(request.getCapability(), request);\n       } else {\n         resourceRequest.setNumContainers(\n             resourceRequest.getNumContainers() + request.getNumContainers());\n       }\n       if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n-        LOG.info(\"# of outstandingOpReqs in ANY (at\" +\n-            \"priority \u003d \"+ schedulerKey.getPriority()\n+        LOG.info(\"# of outstandingOpReqs in ANY (at \"\n+            + \"priority \u003d \" + schedulerKey.getPriority()\n+            + \", allocationReqId \u003d \" + schedulerKey.getAllocationRequestId()\n             + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n             + resourceRequest.getNumContainers());\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n    for (ResourceRequest request : resourceAsks) {\n      SchedulerRequestKey schedulerKey \u003d SchedulerRequestKey.create(request);\n\n      // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n      if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n        continue;\n      }\n\n      if (request.getNumContainers() \u003d\u003d 0) {\n        continue;\n      }\n\n      Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n          outstandingOpReqs.get(schedulerKey);\n      if (reqMap \u003d\u003d null) {\n        reqMap \u003d new HashMap\u003c\u003e();\n        outstandingOpReqs.put(schedulerKey, reqMap);\n      }\n\n      ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n      if (resourceRequest \u003d\u003d null) {\n        resourceRequest \u003d request;\n        reqMap.put(request.getCapability(), request);\n      } else {\n        resourceRequest.setNumContainers(\n            resourceRequest.getNumContainers() + request.getNumContainers());\n      }\n      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n        LOG.info(\"# of outstandingOpReqs in ANY (at \"\n            + \"priority \u003d \" + schedulerKey.getPriority()\n            + \", allocationReqId \u003d \" + schedulerKey.getAllocationRequestId()\n            + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n            + resourceRequest.getNumContainers());\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/scheduler/OpportunisticContainerContext.java",
+      "extendedDetails": {}
+    },
+    "ac1e5d4f77e3b9df8dcacb0b1f72eecc27931eb8": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-5938. Refactoring OpportunisticContainerAllocator to use SchedulerRequestKey instead of Priority and other misc fixes (asuresh)\n",
+      "commitDate": "27/12/16 12:40 PM",
+      "commitName": "ac1e5d4f77e3b9df8dcacb0b1f72eecc27931eb8",
+      "commitAuthor": "Arun Suresh",
+      "commitDateOld": "29/10/16 2:03 AM",
+      "commitNameOld": "aa3cab1eb29c56368d15882d7260a994e615e8d8",
+      "commitAuthorOld": "Arun Suresh",
+      "daysBetweenCommits": 59.48,
+      "commitsBetweenForRepo": 376,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,35 +1,36 @@\n   public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n     for (ResourceRequest request : resourceAsks) {\n-      Priority priority \u003d request.getPriority();\n+      SchedulerRequestKey schedulerKey \u003d SchedulerRequestKey.create(request);\n \n       // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n       if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n         continue;\n       }\n \n       if (request.getNumContainers() \u003d\u003d 0) {\n         continue;\n       }\n \n       Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n-          outstandingOpReqs.get(priority);\n+          outstandingOpReqs.get(schedulerKey);\n       if (reqMap \u003d\u003d null) {\n         reqMap \u003d new HashMap\u003c\u003e();\n-        outstandingOpReqs.put(priority, reqMap);\n+        outstandingOpReqs.put(schedulerKey, reqMap);\n       }\n \n       ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n       if (resourceRequest \u003d\u003d null) {\n         resourceRequest \u003d request;\n         reqMap.put(request.getCapability(), request);\n       } else {\n         resourceRequest.setNumContainers(\n             resourceRequest.getNumContainers() + request.getNumContainers());\n       }\n       if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n-        LOG.info(\"# of outstandingOpReqs in ANY (at priority \u003d \" + priority\n+        LOG.info(\"# of outstandingOpReqs in ANY (at\" +\n+            \"priority \u003d \"+ schedulerKey.getPriority()\n             + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n             + resourceRequest.getNumContainers());\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n    for (ResourceRequest request : resourceAsks) {\n      SchedulerRequestKey schedulerKey \u003d SchedulerRequestKey.create(request);\n\n      // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n      if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n        continue;\n      }\n\n      if (request.getNumContainers() \u003d\u003d 0) {\n        continue;\n      }\n\n      Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n          outstandingOpReqs.get(schedulerKey);\n      if (reqMap \u003d\u003d null) {\n        reqMap \u003d new HashMap\u003c\u003e();\n        outstandingOpReqs.put(schedulerKey, reqMap);\n      }\n\n      ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n      if (resourceRequest \u003d\u003d null) {\n        resourceRequest \u003d request;\n        reqMap.put(request.getCapability(), request);\n      } else {\n        resourceRequest.setNumContainers(\n            resourceRequest.getNumContainers() + request.getNumContainers());\n      }\n      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n        LOG.info(\"# of outstandingOpReqs in ANY (at\" +\n            \"priority \u003d \"+ schedulerKey.getPriority()\n            + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n            + resourceRequest.getNumContainers());\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/scheduler/OpportunisticContainerContext.java",
+      "extendedDetails": {}
+    },
+    "82c9e061017c32e633e0b0cbb7978749a6df4fb2": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange)",
+      "commitMessage": "YARN-5457. Refactor DistributedScheduling framework to pull out common functionality. (asuresh)\n",
+      "commitDate": "09/08/16 12:42 AM",
+      "commitName": "82c9e061017c32e633e0b0cbb7978749a6df4fb2",
+      "commitAuthor": "Arun Suresh",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "YARN-5457. Refactor DistributedScheduling framework to pull out common functionality. (asuresh)\n",
+          "commitDate": "09/08/16 12:42 AM",
+          "commitName": "82c9e061017c32e633e0b0cbb7978749a6df4fb2",
+          "commitAuthor": "Arun Suresh",
+          "commitDateOld": "08/08/16 5:54 PM",
+          "commitNameOld": "8f9b61852bf6600b65e49875fec172bac9e0a85d",
+          "commitAuthorOld": "Masatake Iwasaki",
+          "daysBetweenCommits": 0.28,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,35 +1,35 @@\n   public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n     for (ResourceRequest request : resourceAsks) {\n       Priority priority \u003d request.getPriority();\n \n       // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n       if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n         continue;\n       }\n \n       if (request.getNumContainers() \u003d\u003d 0) {\n         continue;\n       }\n \n       Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n-          this.outstandingOpReqs.get(priority);\n+          outstandingOpReqs.get(priority);\n       if (reqMap \u003d\u003d null) {\n         reqMap \u003d new HashMap\u003c\u003e();\n-        this.outstandingOpReqs.put(priority, reqMap);\n+        outstandingOpReqs.put(priority, reqMap);\n       }\n \n       ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n       if (resourceRequest \u003d\u003d null) {\n         resourceRequest \u003d request;\n         reqMap.put(request.getCapability(), request);\n       } else {\n         resourceRequest.setNumContainers(\n             resourceRequest.getNumContainers() + request.getNumContainers());\n       }\n       if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n         LOG.info(\"# of outstandingOpReqs in ANY (at priority \u003d \" + priority\n             + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n             + resourceRequest.getNumContainers());\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n    for (ResourceRequest request : resourceAsks) {\n      Priority priority \u003d request.getPriority();\n\n      // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n      if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n        continue;\n      }\n\n      if (request.getNumContainers() \u003d\u003d 0) {\n        continue;\n      }\n\n      Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n          outstandingOpReqs.get(priority);\n      if (reqMap \u003d\u003d null) {\n        reqMap \u003d new HashMap\u003c\u003e();\n        outstandingOpReqs.put(priority, reqMap);\n      }\n\n      ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n      if (resourceRequest \u003d\u003d null) {\n        resourceRequest \u003d request;\n        reqMap.put(request.getCapability(), request);\n      } else {\n        resourceRequest.setNumContainers(\n            resourceRequest.getNumContainers() + request.getNumContainers());\n      }\n      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n        LOG.info(\"# of outstandingOpReqs in ANY (at priority \u003d \" + priority\n            + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n            + resourceRequest.getNumContainers());\n      }\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/scheduler/OpportunisticContainerContext.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/scheduler/DistributedScheduler.java",
+            "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/scheduler/OpportunisticContainerContext.java",
+            "oldMethodName": "addToOutstandingReqs",
+            "newMethodName": "addToOutstandingReqs"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-5457. Refactor DistributedScheduling framework to pull out common functionality. (asuresh)\n",
+          "commitDate": "09/08/16 12:42 AM",
+          "commitName": "82c9e061017c32e633e0b0cbb7978749a6df4fb2",
+          "commitAuthor": "Arun Suresh",
+          "commitDateOld": "08/08/16 5:54 PM",
+          "commitNameOld": "8f9b61852bf6600b65e49875fec172bac9e0a85d",
+          "commitAuthorOld": "Masatake Iwasaki",
+          "daysBetweenCommits": 0.28,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,35 +1,35 @@\n   public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n     for (ResourceRequest request : resourceAsks) {\n       Priority priority \u003d request.getPriority();\n \n       // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n       if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n         continue;\n       }\n \n       if (request.getNumContainers() \u003d\u003d 0) {\n         continue;\n       }\n \n       Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n-          this.outstandingOpReqs.get(priority);\n+          outstandingOpReqs.get(priority);\n       if (reqMap \u003d\u003d null) {\n         reqMap \u003d new HashMap\u003c\u003e();\n-        this.outstandingOpReqs.put(priority, reqMap);\n+        outstandingOpReqs.put(priority, reqMap);\n       }\n \n       ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n       if (resourceRequest \u003d\u003d null) {\n         resourceRequest \u003d request;\n         reqMap.put(request.getCapability(), request);\n       } else {\n         resourceRequest.setNumContainers(\n             resourceRequest.getNumContainers() + request.getNumContainers());\n       }\n       if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n         LOG.info(\"# of outstandingOpReqs in ANY (at priority \u003d \" + priority\n             + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n             + resourceRequest.getNumContainers());\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n    for (ResourceRequest request : resourceAsks) {\n      Priority priority \u003d request.getPriority();\n\n      // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n      if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n        continue;\n      }\n\n      if (request.getNumContainers() \u003d\u003d 0) {\n        continue;\n      }\n\n      Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n          outstandingOpReqs.get(priority);\n      if (reqMap \u003d\u003d null) {\n        reqMap \u003d new HashMap\u003c\u003e();\n        outstandingOpReqs.put(priority, reqMap);\n      }\n\n      ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n      if (resourceRequest \u003d\u003d null) {\n        resourceRequest \u003d request;\n        reqMap.put(request.getCapability(), request);\n      } else {\n        resourceRequest.setNumContainers(\n            resourceRequest.getNumContainers() + request.getNumContainers());\n      }\n      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n        LOG.info(\"# of outstandingOpReqs in ANY (at priority \u003d \" + priority\n            + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n            + resourceRequest.getNumContainers());\n      }\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/scheduler/OpportunisticContainerContext.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e5766b1dbee02ae0ef89618e172f3fb227af19e8": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-5113. Refactoring and other clean-up for distributed scheduling. (Konstantinos Karanasos via asuresh)\n",
+      "commitDate": "31/07/16 11:48 AM",
+      "commitName": "e5766b1dbee02ae0ef89618e172f3fb227af19e8",
+      "commitAuthor": "Arun Suresh",
+      "commitDateOld": "30/07/16 7:29 PM",
+      "commitNameOld": "3d191cc15244e1e29f837b34a9bd1d029e003064",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 0.68,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n    for (ResourceRequest request : resourceAsks) {\n      Priority priority \u003d request.getPriority();\n\n      // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n      if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n        continue;\n      }\n\n      if (request.getNumContainers() \u003d\u003d 0) {\n        continue;\n      }\n\n      Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n          this.outstandingOpReqs.get(priority);\n      if (reqMap \u003d\u003d null) {\n        reqMap \u003d new HashMap\u003c\u003e();\n        this.outstandingOpReqs.put(priority, reqMap);\n      }\n\n      ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n      if (resourceRequest \u003d\u003d null) {\n        resourceRequest \u003d request;\n        reqMap.put(request.getCapability(), request);\n      } else {\n        resourceRequest.setNumContainers(\n            resourceRequest.getNumContainers() + request.getNumContainers());\n      }\n      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n        LOG.info(\"# of outstandingOpReqs in ANY (at priority \u003d \" + priority\n            + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n            + resourceRequest.getNumContainers());\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/scheduler/DistributedScheduler.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/scheduler/LocalScheduler.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/scheduler/DistributedScheduler.java"
+      }
+    },
+    "c282a08f3892e2e8ceb58e1e9a411062fbd1fb2b": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2885. Create AMRMProxy request interceptor and ContainerAllocator to distribute OPPORTUNISTIC containers to appropriate Nodes (asuresh)\n\n(cherry picked from commit 2bf025278a318b0452fdc9ece4427b4c42124e39)\n",
+      "commitDate": "24/04/16 10:38 PM",
+      "commitName": "c282a08f3892e2e8ceb58e1e9a411062fbd1fb2b",
+      "commitAuthor": "Arun Suresh",
+      "diff": "@@ -0,0 +1,35 @@\n+  public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n+    for (ResourceRequest request : resourceAsks) {\n+      Priority priority \u003d request.getPriority();\n+\n+      // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n+      if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n+        continue;\n+      }\n+\n+      if (request.getNumContainers() \u003d\u003d 0) {\n+        continue;\n+      }\n+\n+      Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n+          this.outstandingOpReqs.get(priority);\n+      if (reqMap \u003d\u003d null) {\n+        reqMap \u003d new HashMap\u003c\u003e();\n+        this.outstandingOpReqs.put(priority, reqMap);\n+      }\n+\n+      ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n+      if (resourceRequest \u003d\u003d null) {\n+        resourceRequest \u003d request;\n+        reqMap.put(request.getCapability(), request);\n+      } else {\n+        resourceRequest.setNumContainers(\n+            resourceRequest.getNumContainers() + request.getNumContainers());\n+      }\n+      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n+        LOG.info(\"# of outstandingOpReqs in ANY (at priority \u003d \" + priority\n+            + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n+            + resourceRequest.getNumContainers());\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void addToOutstandingReqs(List\u003cResourceRequest\u003e resourceAsks) {\n    for (ResourceRequest request : resourceAsks) {\n      Priority priority \u003d request.getPriority();\n\n      // TODO: Extend for Node/Rack locality. We only handle ANY requests now\n      if (!ResourceRequest.isAnyLocation(request.getResourceName())) {\n        continue;\n      }\n\n      if (request.getNumContainers() \u003d\u003d 0) {\n        continue;\n      }\n\n      Map\u003cResource, ResourceRequest\u003e reqMap \u003d\n          this.outstandingOpReqs.get(priority);\n      if (reqMap \u003d\u003d null) {\n        reqMap \u003d new HashMap\u003c\u003e();\n        this.outstandingOpReqs.put(priority, reqMap);\n      }\n\n      ResourceRequest resourceRequest \u003d reqMap.get(request.getCapability());\n      if (resourceRequest \u003d\u003d null) {\n        resourceRequest \u003d request;\n        reqMap.put(request.getCapability(), request);\n      } else {\n        resourceRequest.setNumContainers(\n            resourceRequest.getNumContainers() + request.getNumContainers());\n      }\n      if (ResourceRequest.isAnyLocation(request.getResourceName())) {\n        LOG.info(\"# of outstandingOpReqs in ANY (at priority \u003d \" + priority\n            + \", with capability \u003d \" + request.getCapability() + \" ) : \"\n            + resourceRequest.getNumContainers());\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/scheduler/LocalScheduler.java"
+    }
+  }
+}

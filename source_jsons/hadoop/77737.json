@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SFTPConnectionPool.java",
+  "functionName": "connect",
+  "functionId": "connect___host-String__port-int__user-String__password-String__keyFile-String",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/sftp/SFTPConnectionPool.java",
+  "functionStartLine": 123,
+  "functionEndLine": 183,
+  "numCommitsSeen": 2,
+  "timeTaken": 548,
+  "changeHistory": [
+    "559425dcb9302861c3c28b759492a68f8d597092"
+  ],
+  "changeHistoryShort": {
+    "559425dcb9302861c3c28b759492a68f8d597092": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "559425dcb9302861c3c28b759492a68f8d597092": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-5732. Add SFTPFileSystem. Contributed by Ramtin Boustani and Inigo Goiri\n",
+      "commitDate": "07/07/15 10:08 AM",
+      "commitName": "559425dcb9302861c3c28b759492a68f8d597092",
+      "commitAuthor": "Chris Douglas",
+      "diff": "@@ -0,0 +1,61 @@\n+  public ChannelSftp connect(String host, int port, String user,\n+      String password, String keyFile) throws IOException {\n+    // get connection from pool\n+    ConnectionInfo info \u003d new ConnectionInfo(host, port, user);\n+    ChannelSftp channel \u003d getFromPool(info);\n+\n+    if (channel !\u003d null) {\n+      if (channel.isConnected()) {\n+        return channel;\n+      } else {\n+        channel \u003d null;\n+        synchronized (this) {\n+          --liveConnectionCount;\n+          con2infoMap.remove(channel);\n+        }\n+      }\n+    }\n+\n+    // create a new connection and add to pool\n+    JSch jsch \u003d new JSch();\n+    Session session \u003d null;\n+    try {\n+      if (user \u003d\u003d null || user.length() \u003d\u003d 0) {\n+        user \u003d System.getProperty(\"user.name\");\n+      }\n+\n+      if (password \u003d\u003d null) {\n+        password \u003d \"\";\n+      }\n+\n+      if (keyFile !\u003d null \u0026\u0026 keyFile.length() \u003e 0) {\n+        jsch.addIdentity(keyFile);\n+      }\n+\n+      if (port \u003c\u003d 0) {\n+        session \u003d jsch.getSession(user, host);\n+      } else {\n+        session \u003d jsch.getSession(user, host, port);\n+      }\n+\n+      session.setPassword(password);\n+\n+      java.util.Properties config \u003d new java.util.Properties();\n+      config.put(\"StrictHostKeyChecking\", \"no\");\n+      session.setConfig(config);\n+\n+      session.connect();\n+      channel \u003d (ChannelSftp) session.openChannel(\"sftp\");\n+      channel.connect();\n+\n+      synchronized (this) {\n+        con2infoMap.put(channel, info);\n+        liveConnectionCount++;\n+      }\n+\n+      return channel;\n+\n+    } catch (JSchException e) {\n+      throw new IOException(StringUtils.stringifyException(e));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public ChannelSftp connect(String host, int port, String user,\n      String password, String keyFile) throws IOException {\n    // get connection from pool\n    ConnectionInfo info \u003d new ConnectionInfo(host, port, user);\n    ChannelSftp channel \u003d getFromPool(info);\n\n    if (channel !\u003d null) {\n      if (channel.isConnected()) {\n        return channel;\n      } else {\n        channel \u003d null;\n        synchronized (this) {\n          --liveConnectionCount;\n          con2infoMap.remove(channel);\n        }\n      }\n    }\n\n    // create a new connection and add to pool\n    JSch jsch \u003d new JSch();\n    Session session \u003d null;\n    try {\n      if (user \u003d\u003d null || user.length() \u003d\u003d 0) {\n        user \u003d System.getProperty(\"user.name\");\n      }\n\n      if (password \u003d\u003d null) {\n        password \u003d \"\";\n      }\n\n      if (keyFile !\u003d null \u0026\u0026 keyFile.length() \u003e 0) {\n        jsch.addIdentity(keyFile);\n      }\n\n      if (port \u003c\u003d 0) {\n        session \u003d jsch.getSession(user, host);\n      } else {\n        session \u003d jsch.getSession(user, host, port);\n      }\n\n      session.setPassword(password);\n\n      java.util.Properties config \u003d new java.util.Properties();\n      config.put(\"StrictHostKeyChecking\", \"no\");\n      session.setConfig(config);\n\n      session.connect();\n      channel \u003d (ChannelSftp) session.openChannel(\"sftp\");\n      channel.connect();\n\n      synchronized (this) {\n        con2infoMap.put(channel, info);\n        liveConnectionCount++;\n      }\n\n      return channel;\n\n    } catch (JSchException e) {\n      throw new IOException(StringUtils.stringifyException(e));\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/sftp/SFTPConnectionPool.java"
+    }
+  }
+}

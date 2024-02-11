@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSEditLogOp.java",
+  "functionName": "decodeOpFrame",
+  "functionId": "decodeOpFrame",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+  "functionStartLine": 5182,
+  "functionEndLine": 5229,
+  "numCommitsSeen": 100,
+  "timeTaken": 2326,
+  "changeHistory": [
+    "24f6a7c9563757234f53ca23e12f9c9208b53082"
+  ],
+  "changeHistoryShort": {
+    "24f6a7c9563757234f53ca23e12f9c9208b53082": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "24f6a7c9563757234f53ca23e12f9c9208b53082": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-8965. Harden edit log reading code against out of memory errors (cmccabe)\n",
+      "commitDate": "31/08/15 6:06 PM",
+      "commitName": "24f6a7c9563757234f53ca23e12f9c9208b53082",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "diff": "@@ -0,0 +1,48 @@\n+    private long decodeOpFrame() throws IOException {\n+      limiter.setLimit(maxOpSize);\n+      in.mark(maxOpSize);\n+      byte opCodeByte;\n+      try {\n+        opCodeByte \u003d in.readByte();\n+      } catch (EOFException eof) {\n+        // EOF at an opcode boundary is expected.\n+        return HdfsServerConstants.INVALID_TXID;\n+      }\n+      if (opCodeByte \u003d\u003d FSEditLogOpCodes.OP_INVALID.getOpCode()) {\n+        verifyTerminator();\n+        return HdfsServerConstants.INVALID_TXID;\n+      }\n+      // Here, we verify that the Op size makes sense and that the\n+      // data matches its checksum before attempting to construct an Op.\n+      // This is important because otherwise we may encounter an\n+      // OutOfMemoryException which could bring down the NameNode or\n+      // JournalNode when reading garbage data.\n+      int opLength \u003d  in.readInt() + OP_ID_LENGTH + CHECKSUM_LENGTH;\n+      if (opLength \u003e maxOpSize) {\n+        throw new IOException(\"Op \" + (int)opCodeByte + \" has size \" +\n+            opLength + \", but maxOpSize \u003d \" + maxOpSize);\n+      } else  if (opLength \u003c MIN_OP_LENGTH) {\n+        throw new IOException(\"Op \" + (int)opCodeByte + \" has size \" +\n+            opLength + \", but the minimum op size is \" + MIN_OP_LENGTH);\n+      }\n+      long txid \u003d in.readLong();\n+      // Verify checksum\n+      in.reset();\n+      in.mark(maxOpSize);\n+      checksum.reset();\n+      for (int rem \u003d opLength - CHECKSUM_LENGTH; rem \u003e 0;) {\n+        int toRead \u003d Math.min(temp.length, rem);\n+        IOUtils.readFully(in, temp, 0, toRead);\n+        checksum.update(temp, 0, toRead);\n+        rem -\u003d toRead;\n+      }\n+      int expectedChecksum \u003d in.readInt();\n+      int calculatedChecksum \u003d (int)checksum.getValue();\n+      if (expectedChecksum !\u003d calculatedChecksum) {\n+        throw new ChecksumException(\n+            \"Transaction is corrupt. Calculated checksum is \" +\n+            calculatedChecksum + \" but read checksum \" +\n+            expectedChecksum, txid);\n+      }\n+      return txid;\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private long decodeOpFrame() throws IOException {\n      limiter.setLimit(maxOpSize);\n      in.mark(maxOpSize);\n      byte opCodeByte;\n      try {\n        opCodeByte \u003d in.readByte();\n      } catch (EOFException eof) {\n        // EOF at an opcode boundary is expected.\n        return HdfsServerConstants.INVALID_TXID;\n      }\n      if (opCodeByte \u003d\u003d FSEditLogOpCodes.OP_INVALID.getOpCode()) {\n        verifyTerminator();\n        return HdfsServerConstants.INVALID_TXID;\n      }\n      // Here, we verify that the Op size makes sense and that the\n      // data matches its checksum before attempting to construct an Op.\n      // This is important because otherwise we may encounter an\n      // OutOfMemoryException which could bring down the NameNode or\n      // JournalNode when reading garbage data.\n      int opLength \u003d  in.readInt() + OP_ID_LENGTH + CHECKSUM_LENGTH;\n      if (opLength \u003e maxOpSize) {\n        throw new IOException(\"Op \" + (int)opCodeByte + \" has size \" +\n            opLength + \", but maxOpSize \u003d \" + maxOpSize);\n      } else  if (opLength \u003c MIN_OP_LENGTH) {\n        throw new IOException(\"Op \" + (int)opCodeByte + \" has size \" +\n            opLength + \", but the minimum op size is \" + MIN_OP_LENGTH);\n      }\n      long txid \u003d in.readLong();\n      // Verify checksum\n      in.reset();\n      in.mark(maxOpSize);\n      checksum.reset();\n      for (int rem \u003d opLength - CHECKSUM_LENGTH; rem \u003e 0;) {\n        int toRead \u003d Math.min(temp.length, rem);\n        IOUtils.readFully(in, temp, 0, toRead);\n        checksum.update(temp, 0, toRead);\n        rem -\u003d toRead;\n      }\n      int expectedChecksum \u003d in.readInt();\n      int calculatedChecksum \u003d (int)checksum.getValue();\n      if (expectedChecksum !\u003d calculatedChecksum) {\n        throw new ChecksumException(\n            \"Transaction is corrupt. Calculated checksum is \" +\n            calculatedChecksum + \" but read checksum \" +\n            expectedChecksum, txid);\n      }\n      return txid;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java"
+    }
+  }
+}

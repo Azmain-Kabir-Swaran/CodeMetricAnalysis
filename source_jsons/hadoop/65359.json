@@ -1,0 +1,128 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AMultipartUploader.java",
+  "functionName": "complete",
+  "functionId": "complete___filePath-Path__handleMap-Map__Integer,PartHandle____uploadId-UploadHandle",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AMultipartUploader.java",
+  "functionStartLine": 109,
+  "functionEndLine": 140,
+  "numCommitsSeen": 9,
+  "timeTaken": 3131,
+  "changeHistory": [
+    "c1d24f848345f6d34a2ac2d570d49e9787a0df6a",
+    "2ec97abb2e93c1a8127e7a146c08e26454b583fa",
+    "980031bb043dd026a6bf42b0e71d304ac89294a5"
+  ],
+  "changeHistoryShort": {
+    "c1d24f848345f6d34a2ac2d570d49e9787a0df6a": "Ymultichange(Yparameterchange,Ybodychange)",
+    "2ec97abb2e93c1a8127e7a146c08e26454b583fa": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "980031bb043dd026a6bf42b0e71d304ac89294a5": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c1d24f848345f6d34a2ac2d570d49e9787a0df6a": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-13713. Add specification of Multipart Upload API to FS specification, with contract tests.\n\nContributed by Ewan Higgs and Steve Loughran.\n",
+      "commitDate": "29/11/18 7:12 AM",
+      "commitName": "c1d24f848345f6d34a2ac2d570d49e9787a0df6a",
+      "commitAuthor": "Ewan Higgs",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13713. Add specification of Multipart Upload API to FS specification, with contract tests.\n\nContributed by Ewan Higgs and Steve Loughran.\n",
+          "commitDate": "29/11/18 7:12 AM",
+          "commitName": "c1d24f848345f6d34a2ac2d570d49e9787a0df6a",
+          "commitAuthor": "Ewan Higgs",
+          "commitDateOld": "24/09/18 8:49 AM",
+          "commitNameOld": "d060cbea48ffc75da0f4fa98c3ea5203d6db1360",
+          "commitAuthorOld": "Sunil G",
+          "daysBetweenCommits": 65.97,
+          "commitsBetweenForRepo": 566,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,32 @@\n   public PathHandle complete(Path filePath,\n-      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId)\n+      Map\u003cInteger, PartHandle\u003e handleMap,\n+      UploadHandle uploadId)\n       throws IOException {\n     byte[] uploadIdBytes \u003d uploadId.toByteArray();\n     checkUploadId(uploadIdBytes);\n-    if (handles.isEmpty()) {\n-      throw new IOException(\"Empty upload\");\n-    }\n \n+    checkPartHandles(handleMap);\n+    List\u003cMap.Entry\u003cInteger, PartHandle\u003e\u003e handles \u003d\n+        new ArrayList\u003c\u003e(handleMap.entrySet());\n+    handles.sort(Comparator.comparingInt(Map.Entry::getKey));\n     final WriteOperationHelper writeHelper \u003d s3a.getWriteOperationHelper();\n     String key \u003d s3a.pathToKey(filePath);\n \n     String uploadIdStr \u003d new String(uploadIdBytes, 0, uploadIdBytes.length,\n         Charsets.UTF_8);\n     ArrayList\u003cPartETag\u003e eTags \u003d new ArrayList\u003c\u003e();\n     eTags.ensureCapacity(handles.size());\n     long totalLength \u003d 0;\n-    for (Pair\u003cInteger, PartHandle\u003e handle : handles) {\n-      byte[] payload \u003d handle.getRight().toByteArray();\n+    for (Map.Entry\u003cInteger, PartHandle\u003e handle : handles) {\n+      byte[] payload \u003d handle.getValue().toByteArray();\n       Pair\u003cLong, String\u003e result \u003d parsePartHandlePayload(payload);\n       totalLength +\u003d result.getLeft();\n-      eTags.add(new PartETag(handle.getLeft(), result.getRight()));\n+      eTags.add(new PartETag(handle.getKey(), result.getRight()));\n     }\n     AtomicInteger errorCount \u003d new AtomicInteger(0);\n     CompleteMultipartUploadResult result \u003d writeHelper.completeMPUwithRetries(\n         key, uploadIdStr, eTags, totalLength, errorCount);\n \n     byte[] eTag \u003d result.getETag().getBytes(Charsets.UTF_8);\n     return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public PathHandle complete(Path filePath,\n      Map\u003cInteger, PartHandle\u003e handleMap,\n      UploadHandle uploadId)\n      throws IOException {\n    byte[] uploadIdBytes \u003d uploadId.toByteArray();\n    checkUploadId(uploadIdBytes);\n\n    checkPartHandles(handleMap);\n    List\u003cMap.Entry\u003cInteger, PartHandle\u003e\u003e handles \u003d\n        new ArrayList\u003c\u003e(handleMap.entrySet());\n    handles.sort(Comparator.comparingInt(Map.Entry::getKey));\n    final WriteOperationHelper writeHelper \u003d s3a.getWriteOperationHelper();\n    String key \u003d s3a.pathToKey(filePath);\n\n    String uploadIdStr \u003d new String(uploadIdBytes, 0, uploadIdBytes.length,\n        Charsets.UTF_8);\n    ArrayList\u003cPartETag\u003e eTags \u003d new ArrayList\u003c\u003e();\n    eTags.ensureCapacity(handles.size());\n    long totalLength \u003d 0;\n    for (Map.Entry\u003cInteger, PartHandle\u003e handle : handles) {\n      byte[] payload \u003d handle.getValue().toByteArray();\n      Pair\u003cLong, String\u003e result \u003d parsePartHandlePayload(payload);\n      totalLength +\u003d result.getLeft();\n      eTags.add(new PartETag(handle.getKey(), result.getRight()));\n    }\n    AtomicInteger errorCount \u003d new AtomicInteger(0);\n    CompleteMultipartUploadResult result \u003d writeHelper.completeMPUwithRetries(\n        key, uploadIdStr, eTags, totalLength, errorCount);\n\n    byte[] eTag \u003d result.getETag().getBytes(Charsets.UTF_8);\n    return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AMultipartUploader.java",
+          "extendedDetails": {
+            "oldValue": "[filePath-Path, handles-List\u003cPair\u003cInteger,PartHandle\u003e\u003e, uploadId-UploadHandle]",
+            "newValue": "[filePath-Path, handleMap-Map\u003cInteger,PartHandle\u003e, uploadId-UploadHandle]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13713. Add specification of Multipart Upload API to FS specification, with contract tests.\n\nContributed by Ewan Higgs and Steve Loughran.\n",
+          "commitDate": "29/11/18 7:12 AM",
+          "commitName": "c1d24f848345f6d34a2ac2d570d49e9787a0df6a",
+          "commitAuthor": "Ewan Higgs",
+          "commitDateOld": "24/09/18 8:49 AM",
+          "commitNameOld": "d060cbea48ffc75da0f4fa98c3ea5203d6db1360",
+          "commitAuthorOld": "Sunil G",
+          "daysBetweenCommits": 65.97,
+          "commitsBetweenForRepo": 566,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,32 @@\n   public PathHandle complete(Path filePath,\n-      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId)\n+      Map\u003cInteger, PartHandle\u003e handleMap,\n+      UploadHandle uploadId)\n       throws IOException {\n     byte[] uploadIdBytes \u003d uploadId.toByteArray();\n     checkUploadId(uploadIdBytes);\n-    if (handles.isEmpty()) {\n-      throw new IOException(\"Empty upload\");\n-    }\n \n+    checkPartHandles(handleMap);\n+    List\u003cMap.Entry\u003cInteger, PartHandle\u003e\u003e handles \u003d\n+        new ArrayList\u003c\u003e(handleMap.entrySet());\n+    handles.sort(Comparator.comparingInt(Map.Entry::getKey));\n     final WriteOperationHelper writeHelper \u003d s3a.getWriteOperationHelper();\n     String key \u003d s3a.pathToKey(filePath);\n \n     String uploadIdStr \u003d new String(uploadIdBytes, 0, uploadIdBytes.length,\n         Charsets.UTF_8);\n     ArrayList\u003cPartETag\u003e eTags \u003d new ArrayList\u003c\u003e();\n     eTags.ensureCapacity(handles.size());\n     long totalLength \u003d 0;\n-    for (Pair\u003cInteger, PartHandle\u003e handle : handles) {\n-      byte[] payload \u003d handle.getRight().toByteArray();\n+    for (Map.Entry\u003cInteger, PartHandle\u003e handle : handles) {\n+      byte[] payload \u003d handle.getValue().toByteArray();\n       Pair\u003cLong, String\u003e result \u003d parsePartHandlePayload(payload);\n       totalLength +\u003d result.getLeft();\n-      eTags.add(new PartETag(handle.getLeft(), result.getRight()));\n+      eTags.add(new PartETag(handle.getKey(), result.getRight()));\n     }\n     AtomicInteger errorCount \u003d new AtomicInteger(0);\n     CompleteMultipartUploadResult result \u003d writeHelper.completeMPUwithRetries(\n         key, uploadIdStr, eTags, totalLength, errorCount);\n \n     byte[] eTag \u003d result.getETag().getBytes(Charsets.UTF_8);\n     return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public PathHandle complete(Path filePath,\n      Map\u003cInteger, PartHandle\u003e handleMap,\n      UploadHandle uploadId)\n      throws IOException {\n    byte[] uploadIdBytes \u003d uploadId.toByteArray();\n    checkUploadId(uploadIdBytes);\n\n    checkPartHandles(handleMap);\n    List\u003cMap.Entry\u003cInteger, PartHandle\u003e\u003e handles \u003d\n        new ArrayList\u003c\u003e(handleMap.entrySet());\n    handles.sort(Comparator.comparingInt(Map.Entry::getKey));\n    final WriteOperationHelper writeHelper \u003d s3a.getWriteOperationHelper();\n    String key \u003d s3a.pathToKey(filePath);\n\n    String uploadIdStr \u003d new String(uploadIdBytes, 0, uploadIdBytes.length,\n        Charsets.UTF_8);\n    ArrayList\u003cPartETag\u003e eTags \u003d new ArrayList\u003c\u003e();\n    eTags.ensureCapacity(handles.size());\n    long totalLength \u003d 0;\n    for (Map.Entry\u003cInteger, PartHandle\u003e handle : handles) {\n      byte[] payload \u003d handle.getValue().toByteArray();\n      Pair\u003cLong, String\u003e result \u003d parsePartHandlePayload(payload);\n      totalLength +\u003d result.getLeft();\n      eTags.add(new PartETag(handle.getKey(), result.getRight()));\n    }\n    AtomicInteger errorCount \u003d new AtomicInteger(0);\n    CompleteMultipartUploadResult result \u003d writeHelper.completeMPUwithRetries(\n        key, uploadIdStr, eTags, totalLength, errorCount);\n\n    byte[] eTag \u003d result.getETag().getBytes(Charsets.UTF_8);\n    return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AMultipartUploader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "2ec97abb2e93c1a8127e7a146c08e26454b583fa": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-15576. S3A Multipart Uploader to work with S3Guard and encryption Originally contributed by Ewan Higgs with refinements by Steve Loughran.\n",
+      "commitDate": "08/08/18 4:50 AM",
+      "commitName": "2ec97abb2e93c1a8127e7a146c08e26454b583fa",
+      "commitAuthor": "Ewan Higgs",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-15576. S3A Multipart Uploader to work with S3Guard and encryption Originally contributed by Ewan Higgs with refinements by Steve Loughran.\n",
+          "commitDate": "08/08/18 4:50 AM",
+          "commitName": "2ec97abb2e93c1a8127e7a146c08e26454b583fa",
+          "commitAuthor": "Ewan Higgs",
+          "commitDateOld": "17/06/18 11:54 AM",
+          "commitNameOld": "980031bb043dd026a6bf42b0e71d304ac89294a5",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 51.71,
+          "commitsBetweenForRepo": 308,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,30 @@\n   public PathHandle complete(Path filePath,\n-      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId) {\n-    String key \u003d s3a.pathToKey(filePath);\n-    CompleteMultipartUploadRequest request \u003d\n-        new CompleteMultipartUploadRequest();\n-    request.setBucketName(s3a.getBucket());\n-    request.setKey(key);\n+      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId)\n+      throws IOException {\n     byte[] uploadIdBytes \u003d uploadId.toByteArray();\n-    request.setUploadId(new String(uploadIdBytes, 0, uploadIdBytes.length,\n-        Charsets.UTF_8));\n-    List\u003cPartETag\u003e eTags \u003d handles\n-        .stream()\n-        .map(handle -\u003e {\n-          byte[] partEtagBytes \u003d handle.getRight().toByteArray();\n-          return new PartETag(handle.getLeft(),\n-              new String(partEtagBytes, 0, partEtagBytes.length,\n-                  Charsets.UTF_8));\n-        })\n-        .collect(Collectors.toList());\n-    request.setPartETags(eTags);\n-    LOG.debug(\"Complete request: {}\", request);\n-    CompleteMultipartUploadResult completeMultipartUploadResult \u003d\n-        s3a.getAmazonS3Client().completeMultipartUpload(request);\n+    checkUploadId(uploadIdBytes);\n+    if (handles.isEmpty()) {\n+      throw new IOException(\"Empty upload\");\n+    }\n \n-    byte[] eTag \u003d DFSUtilClient.string2Bytes(\n-        completeMultipartUploadResult.getETag());\n+    final WriteOperationHelper writeHelper \u003d s3a.getWriteOperationHelper();\n+    String key \u003d s3a.pathToKey(filePath);\n+\n+    String uploadIdStr \u003d new String(uploadIdBytes, 0, uploadIdBytes.length,\n+        Charsets.UTF_8);\n+    ArrayList\u003cPartETag\u003e eTags \u003d new ArrayList\u003c\u003e();\n+    eTags.ensureCapacity(handles.size());\n+    long totalLength \u003d 0;\n+    for (Pair\u003cInteger, PartHandle\u003e handle : handles) {\n+      byte[] payload \u003d handle.getRight().toByteArray();\n+      Pair\u003cLong, String\u003e result \u003d parsePartHandlePayload(payload);\n+      totalLength +\u003d result.getLeft();\n+      eTags.add(new PartETag(handle.getLeft(), result.getRight()));\n+    }\n+    AtomicInteger errorCount \u003d new AtomicInteger(0);\n+    CompleteMultipartUploadResult result \u003d writeHelper.completeMPUwithRetries(\n+        key, uploadIdStr, eTags, totalLength, errorCount);\n+\n+    byte[] eTag \u003d result.getETag().getBytes(Charsets.UTF_8);\n     return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public PathHandle complete(Path filePath,\n      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId)\n      throws IOException {\n    byte[] uploadIdBytes \u003d uploadId.toByteArray();\n    checkUploadId(uploadIdBytes);\n    if (handles.isEmpty()) {\n      throw new IOException(\"Empty upload\");\n    }\n\n    final WriteOperationHelper writeHelper \u003d s3a.getWriteOperationHelper();\n    String key \u003d s3a.pathToKey(filePath);\n\n    String uploadIdStr \u003d new String(uploadIdBytes, 0, uploadIdBytes.length,\n        Charsets.UTF_8);\n    ArrayList\u003cPartETag\u003e eTags \u003d new ArrayList\u003c\u003e();\n    eTags.ensureCapacity(handles.size());\n    long totalLength \u003d 0;\n    for (Pair\u003cInteger, PartHandle\u003e handle : handles) {\n      byte[] payload \u003d handle.getRight().toByteArray();\n      Pair\u003cLong, String\u003e result \u003d parsePartHandlePayload(payload);\n      totalLength +\u003d result.getLeft();\n      eTags.add(new PartETag(handle.getLeft(), result.getRight()));\n    }\n    AtomicInteger errorCount \u003d new AtomicInteger(0);\n    CompleteMultipartUploadResult result \u003d writeHelper.completeMPUwithRetries(\n        key, uploadIdStr, eTags, totalLength, errorCount);\n\n    byte[] eTag \u003d result.getETag().getBytes(Charsets.UTF_8);\n    return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AMultipartUploader.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15576. S3A Multipart Uploader to work with S3Guard and encryption Originally contributed by Ewan Higgs with refinements by Steve Loughran.\n",
+          "commitDate": "08/08/18 4:50 AM",
+          "commitName": "2ec97abb2e93c1a8127e7a146c08e26454b583fa",
+          "commitAuthor": "Ewan Higgs",
+          "commitDateOld": "17/06/18 11:54 AM",
+          "commitNameOld": "980031bb043dd026a6bf42b0e71d304ac89294a5",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 51.71,
+          "commitsBetweenForRepo": 308,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,30 @@\n   public PathHandle complete(Path filePath,\n-      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId) {\n-    String key \u003d s3a.pathToKey(filePath);\n-    CompleteMultipartUploadRequest request \u003d\n-        new CompleteMultipartUploadRequest();\n-    request.setBucketName(s3a.getBucket());\n-    request.setKey(key);\n+      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId)\n+      throws IOException {\n     byte[] uploadIdBytes \u003d uploadId.toByteArray();\n-    request.setUploadId(new String(uploadIdBytes, 0, uploadIdBytes.length,\n-        Charsets.UTF_8));\n-    List\u003cPartETag\u003e eTags \u003d handles\n-        .stream()\n-        .map(handle -\u003e {\n-          byte[] partEtagBytes \u003d handle.getRight().toByteArray();\n-          return new PartETag(handle.getLeft(),\n-              new String(partEtagBytes, 0, partEtagBytes.length,\n-                  Charsets.UTF_8));\n-        })\n-        .collect(Collectors.toList());\n-    request.setPartETags(eTags);\n-    LOG.debug(\"Complete request: {}\", request);\n-    CompleteMultipartUploadResult completeMultipartUploadResult \u003d\n-        s3a.getAmazonS3Client().completeMultipartUpload(request);\n+    checkUploadId(uploadIdBytes);\n+    if (handles.isEmpty()) {\n+      throw new IOException(\"Empty upload\");\n+    }\n \n-    byte[] eTag \u003d DFSUtilClient.string2Bytes(\n-        completeMultipartUploadResult.getETag());\n+    final WriteOperationHelper writeHelper \u003d s3a.getWriteOperationHelper();\n+    String key \u003d s3a.pathToKey(filePath);\n+\n+    String uploadIdStr \u003d new String(uploadIdBytes, 0, uploadIdBytes.length,\n+        Charsets.UTF_8);\n+    ArrayList\u003cPartETag\u003e eTags \u003d new ArrayList\u003c\u003e();\n+    eTags.ensureCapacity(handles.size());\n+    long totalLength \u003d 0;\n+    for (Pair\u003cInteger, PartHandle\u003e handle : handles) {\n+      byte[] payload \u003d handle.getRight().toByteArray();\n+      Pair\u003cLong, String\u003e result \u003d parsePartHandlePayload(payload);\n+      totalLength +\u003d result.getLeft();\n+      eTags.add(new PartETag(handle.getLeft(), result.getRight()));\n+    }\n+    AtomicInteger errorCount \u003d new AtomicInteger(0);\n+    CompleteMultipartUploadResult result \u003d writeHelper.completeMPUwithRetries(\n+        key, uploadIdStr, eTags, totalLength, errorCount);\n+\n+    byte[] eTag \u003d result.getETag().getBytes(Charsets.UTF_8);\n     return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public PathHandle complete(Path filePath,\n      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId)\n      throws IOException {\n    byte[] uploadIdBytes \u003d uploadId.toByteArray();\n    checkUploadId(uploadIdBytes);\n    if (handles.isEmpty()) {\n      throw new IOException(\"Empty upload\");\n    }\n\n    final WriteOperationHelper writeHelper \u003d s3a.getWriteOperationHelper();\n    String key \u003d s3a.pathToKey(filePath);\n\n    String uploadIdStr \u003d new String(uploadIdBytes, 0, uploadIdBytes.length,\n        Charsets.UTF_8);\n    ArrayList\u003cPartETag\u003e eTags \u003d new ArrayList\u003c\u003e();\n    eTags.ensureCapacity(handles.size());\n    long totalLength \u003d 0;\n    for (Pair\u003cInteger, PartHandle\u003e handle : handles) {\n      byte[] payload \u003d handle.getRight().toByteArray();\n      Pair\u003cLong, String\u003e result \u003d parsePartHandlePayload(payload);\n      totalLength +\u003d result.getLeft();\n      eTags.add(new PartETag(handle.getLeft(), result.getRight()));\n    }\n    AtomicInteger errorCount \u003d new AtomicInteger(0);\n    CompleteMultipartUploadResult result \u003d writeHelper.completeMPUwithRetries(\n        key, uploadIdStr, eTags, totalLength, errorCount);\n\n    byte[] eTag \u003d result.getETag().getBytes(Charsets.UTF_8);\n    return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AMultipartUploader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "980031bb043dd026a6bf42b0e71d304ac89294a5": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13186. Multipart Uploader API. Contributed by Ewan Higgs\n",
+      "commitDate": "17/06/18 11:54 AM",
+      "commitName": "980031bb043dd026a6bf42b0e71d304ac89294a5",
+      "commitAuthor": "Chris Douglas",
+      "diff": "@@ -0,0 +1,28 @@\n+  public PathHandle complete(Path filePath,\n+      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId) {\n+    String key \u003d s3a.pathToKey(filePath);\n+    CompleteMultipartUploadRequest request \u003d\n+        new CompleteMultipartUploadRequest();\n+    request.setBucketName(s3a.getBucket());\n+    request.setKey(key);\n+    byte[] uploadIdBytes \u003d uploadId.toByteArray();\n+    request.setUploadId(new String(uploadIdBytes, 0, uploadIdBytes.length,\n+        Charsets.UTF_8));\n+    List\u003cPartETag\u003e eTags \u003d handles\n+        .stream()\n+        .map(handle -\u003e {\n+          byte[] partEtagBytes \u003d handle.getRight().toByteArray();\n+          return new PartETag(handle.getLeft(),\n+              new String(partEtagBytes, 0, partEtagBytes.length,\n+                  Charsets.UTF_8));\n+        })\n+        .collect(Collectors.toList());\n+    request.setPartETags(eTags);\n+    LOG.debug(\"Complete request: {}\", request);\n+    CompleteMultipartUploadResult completeMultipartUploadResult \u003d\n+        s3a.getAmazonS3Client().completeMultipartUpload(request);\n+\n+    byte[] eTag \u003d DFSUtilClient.string2Bytes(\n+        completeMultipartUploadResult.getETag());\n+    return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public PathHandle complete(Path filePath,\n      List\u003cPair\u003cInteger, PartHandle\u003e\u003e handles, UploadHandle uploadId) {\n    String key \u003d s3a.pathToKey(filePath);\n    CompleteMultipartUploadRequest request \u003d\n        new CompleteMultipartUploadRequest();\n    request.setBucketName(s3a.getBucket());\n    request.setKey(key);\n    byte[] uploadIdBytes \u003d uploadId.toByteArray();\n    request.setUploadId(new String(uploadIdBytes, 0, uploadIdBytes.length,\n        Charsets.UTF_8));\n    List\u003cPartETag\u003e eTags \u003d handles\n        .stream()\n        .map(handle -\u003e {\n          byte[] partEtagBytes \u003d handle.getRight().toByteArray();\n          return new PartETag(handle.getLeft(),\n              new String(partEtagBytes, 0, partEtagBytes.length,\n                  Charsets.UTF_8));\n        })\n        .collect(Collectors.toList());\n    request.setPartETags(eTags);\n    LOG.debug(\"Complete request: {}\", request);\n    CompleteMultipartUploadResult completeMultipartUploadResult \u003d\n        s3a.getAmazonS3Client().completeMultipartUpload(request);\n\n    byte[] eTag \u003d DFSUtilClient.string2Bytes(\n        completeMultipartUploadResult.getETag());\n    return (PathHandle) () -\u003e ByteBuffer.wrap(eTag);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AMultipartUploader.java"
+    }
+  }
+}

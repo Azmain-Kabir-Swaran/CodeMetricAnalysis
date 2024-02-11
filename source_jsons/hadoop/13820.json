@@ -1,0 +1,106 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockManager.java",
+  "functionName": "computeBlockReconstructionWork",
+  "functionId": "computeBlockReconstructionWork___blocksToProcess-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+  "functionStartLine": 1956,
+  "functionEndLine": 1976,
+  "numCommitsSeen": 792,
+  "timeTaken": 10666,
+  "changeHistory": [
+    "900430b9907b590ed2d73a0d68f079c7f4d754b1",
+    "32d043d9c5f4615058ea4f65a58ba271ba47fcb5",
+    "a0fb2eff9b71e2e2c0e53262773b34bed82585d4"
+  ],
+  "changeHistoryShort": {
+    "900430b9907b590ed2d73a0d68f079c7f4d754b1": "Ybodychange",
+    "32d043d9c5f4615058ea4f65a58ba271ba47fcb5": "Ybodychange",
+    "a0fb2eff9b71e2e2c0e53262773b34bed82585d4": "Ymultichange(Yrename,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "900430b9907b590ed2d73a0d68f079c7f4d754b1": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14861. Reset LowRedundancyBlocks Iterator periodically. Contributed by Stephen O\u0027Donnell.\n\nSigned-off-by: Wei-Chiu Chuang \u003cweichiu@apache.org\u003e\n",
+      "commitDate": "25/02/20 1:28 PM",
+      "commitName": "900430b9907b590ed2d73a0d68f079c7f4d754b1",
+      "commitAuthor": "Stephen O\u0027Donnell",
+      "commitDateOld": "24/02/20 7:08 AM",
+      "commitNameOld": "7f8685f4760f1358bb30927a7da9a5041e8c39e1",
+      "commitAuthorOld": "Ayush Saxena",
+      "daysBetweenCommits": 1.26,
+      "commitsBetweenForRepo": 10,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,21 @@\n   int computeBlockReconstructionWork(int blocksToProcess) {\n     List\u003cList\u003cBlockInfo\u003e\u003e blocksToReconstruct \u003d null;\n     namesystem.writeLock();\n     try {\n-      // Choose the blocks to be reconstructed\n+      boolean reset \u003d false;\n+      if (replQueueResetToHeadThreshold \u003e 0) {\n+        if (replQueueCallsSinceReset \u003e\u003d replQueueResetToHeadThreshold) {\n+          reset \u003d true;\n+          replQueueCallsSinceReset \u003d 0;\n+        } else {\n+          replQueueCallsSinceReset++;\n+        }\n+      }\n+        // Choose the blocks to be reconstructed\n       blocksToReconstruct \u003d neededReconstruction\n-          .chooseLowRedundancyBlocks(blocksToProcess);\n+          .chooseLowRedundancyBlocks(blocksToProcess, reset);\n     } finally {\n       namesystem.writeUnlock();\n     }\n     return computeReconstructionWorkForBlocks(blocksToReconstruct);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  int computeBlockReconstructionWork(int blocksToProcess) {\n    List\u003cList\u003cBlockInfo\u003e\u003e blocksToReconstruct \u003d null;\n    namesystem.writeLock();\n    try {\n      boolean reset \u003d false;\n      if (replQueueResetToHeadThreshold \u003e 0) {\n        if (replQueueCallsSinceReset \u003e\u003d replQueueResetToHeadThreshold) {\n          reset \u003d true;\n          replQueueCallsSinceReset \u003d 0;\n        } else {\n          replQueueCallsSinceReset++;\n        }\n      }\n        // Choose the blocks to be reconstructed\n      blocksToReconstruct \u003d neededReconstruction\n          .chooseLowRedundancyBlocks(blocksToProcess, reset);\n    } finally {\n      namesystem.writeUnlock();\n    }\n    return computeReconstructionWorkForBlocks(blocksToReconstruct);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+      "extendedDetails": {}
+    },
+    "32d043d9c5f4615058ea4f65a58ba271ba47fcb5": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9857. Erasure Coding: Rename replication-based names in BlockManager to more generic [part-1]. Contributed by Rakesh R.\n",
+      "commitDate": "16/03/16 4:53 PM",
+      "commitName": "32d043d9c5f4615058ea4f65a58ba271ba47fcb5",
+      "commitAuthor": "Zhe Zhang",
+      "commitDateOld": "10/03/16 7:03 PM",
+      "commitNameOld": "e01c6ea688e62f25c4310e771a0cd85b53a5fb87",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 5.87,
+      "commitsBetweenForRepo": 26,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,12 @@\n   int computeBlockReconstructionWork(int blocksToProcess) {\n-    List\u003cList\u003cBlockInfo\u003e\u003e blocksToReplicate \u003d null;\n+    List\u003cList\u003cBlockInfo\u003e\u003e blocksToReconstruct \u003d null;\n     namesystem.writeLock();\n     try {\n-      // Choose the blocks to be replicated\n-      blocksToReplicate \u003d neededReplications\n-          .chooseUnderReplicatedBlocks(blocksToProcess);\n+      // Choose the blocks to be reconstructed\n+      blocksToReconstruct \u003d neededReconstruction\n+          .chooseLowRedundancyBlocks(blocksToProcess);\n     } finally {\n       namesystem.writeUnlock();\n     }\n-    return computeReconstructionWorkForBlocks(blocksToReplicate);\n+    return computeReconstructionWorkForBlocks(blocksToReconstruct);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  int computeBlockReconstructionWork(int blocksToProcess) {\n    List\u003cList\u003cBlockInfo\u003e\u003e blocksToReconstruct \u003d null;\n    namesystem.writeLock();\n    try {\n      // Choose the blocks to be reconstructed\n      blocksToReconstruct \u003d neededReconstruction\n          .chooseLowRedundancyBlocks(blocksToProcess);\n    } finally {\n      namesystem.writeUnlock();\n    }\n    return computeReconstructionWorkForBlocks(blocksToReconstruct);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+      "extendedDetails": {}
+    },
+    "a0fb2eff9b71e2e2c0e53262773b34bed82585d4": {
+      "type": "Ymultichange(Yrename,Ybodychange)",
+      "commitMessage": "HDFS-9775. Erasure Coding : Rename BlockRecoveryWork to BlockReconstructionWork. Contributed by Rakesh R.\n\nChange-Id: I6dfc8efd94fa2bbb4eec0e4730a5a4f92c8a5519\n",
+      "commitDate": "09/02/16 2:43 PM",
+      "commitName": "a0fb2eff9b71e2e2c0e53262773b34bed82585d4",
+      "commitAuthor": "Zhe Zhang",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-9775. Erasure Coding : Rename BlockRecoveryWork to BlockReconstructionWork. Contributed by Rakesh R.\n\nChange-Id: I6dfc8efd94fa2bbb4eec0e4730a5a4f92c8a5519\n",
+          "commitDate": "09/02/16 2:43 PM",
+          "commitName": "a0fb2eff9b71e2e2c0e53262773b34bed82585d4",
+          "commitAuthor": "Zhe Zhang",
+          "commitDateOld": "02/02/16 11:23 AM",
+          "commitNameOld": "dd9ebf6eedfd4ff8b3486eae2a446de6b0c7fa8a",
+          "commitAuthorOld": "Colin Patrick Mccabe",
+          "daysBetweenCommits": 7.14,
+          "commitsBetweenForRepo": 51,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,12 @@\n-  int computeBlockRecoveryWork(int blocksToProcess) {\n+  int computeBlockReconstructionWork(int blocksToProcess) {\n     List\u003cList\u003cBlockInfo\u003e\u003e blocksToReplicate \u003d null;\n     namesystem.writeLock();\n     try {\n       // Choose the blocks to be replicated\n       blocksToReplicate \u003d neededReplications\n           .chooseUnderReplicatedBlocks(blocksToProcess);\n     } finally {\n       namesystem.writeUnlock();\n     }\n-    return computeRecoveryWorkForBlocks(blocksToReplicate);\n+    return computeReconstructionWorkForBlocks(blocksToReplicate);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  int computeBlockReconstructionWork(int blocksToProcess) {\n    List\u003cList\u003cBlockInfo\u003e\u003e blocksToReplicate \u003d null;\n    namesystem.writeLock();\n    try {\n      // Choose the blocks to be replicated\n      blocksToReplicate \u003d neededReplications\n          .chooseUnderReplicatedBlocks(blocksToProcess);\n    } finally {\n      namesystem.writeUnlock();\n    }\n    return computeReconstructionWorkForBlocks(blocksToReplicate);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+          "extendedDetails": {
+            "oldValue": "computeBlockRecoveryWork",
+            "newValue": "computeBlockReconstructionWork"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-9775. Erasure Coding : Rename BlockRecoveryWork to BlockReconstructionWork. Contributed by Rakesh R.\n\nChange-Id: I6dfc8efd94fa2bbb4eec0e4730a5a4f92c8a5519\n",
+          "commitDate": "09/02/16 2:43 PM",
+          "commitName": "a0fb2eff9b71e2e2c0e53262773b34bed82585d4",
+          "commitAuthor": "Zhe Zhang",
+          "commitDateOld": "02/02/16 11:23 AM",
+          "commitNameOld": "dd9ebf6eedfd4ff8b3486eae2a446de6b0c7fa8a",
+          "commitAuthorOld": "Colin Patrick Mccabe",
+          "daysBetweenCommits": 7.14,
+          "commitsBetweenForRepo": 51,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,12 @@\n-  int computeBlockRecoveryWork(int blocksToProcess) {\n+  int computeBlockReconstructionWork(int blocksToProcess) {\n     List\u003cList\u003cBlockInfo\u003e\u003e blocksToReplicate \u003d null;\n     namesystem.writeLock();\n     try {\n       // Choose the blocks to be replicated\n       blocksToReplicate \u003d neededReplications\n           .chooseUnderReplicatedBlocks(blocksToProcess);\n     } finally {\n       namesystem.writeUnlock();\n     }\n-    return computeRecoveryWorkForBlocks(blocksToReplicate);\n+    return computeReconstructionWorkForBlocks(blocksToReplicate);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  int computeBlockReconstructionWork(int blocksToProcess) {\n    List\u003cList\u003cBlockInfo\u003e\u003e blocksToReplicate \u003d null;\n    namesystem.writeLock();\n    try {\n      // Choose the blocks to be replicated\n      blocksToReplicate \u003d neededReplications\n          .chooseUnderReplicatedBlocks(blocksToProcess);\n    } finally {\n      namesystem.writeUnlock();\n    }\n    return computeReconstructionWorkForBlocks(blocksToReplicate);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

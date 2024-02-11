@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RetryingCollection.java",
+  "functionName": "iterator",
+  "functionId": "iterator",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/RetryingCollection.java",
+  "functionStartLine": 73,
+  "functionEndLine": 75,
+  "numCommitsSeen": 1,
+  "timeTaken": 1127,
+  "changeHistory": [
+    "56dee667707926f3796c7757be1a133a362f05c9"
+  ],
+  "changeHistoryShort": {
+    "56dee667707926f3796c7757be1a133a362f05c9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "56dee667707926f3796c7757be1a133a362f05c9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-16823. Large DeleteObject requests are their own Thundering Herd.\n\nContributed by Steve Loughran.\n\nDuring S3A rename() and delete() calls, the list of objects delete is\nbuilt up into batches of a thousand and then POSTed in a single large\nDeleteObjects request.\n\nBut as the IO capacity allowed on an S3 partition may only be 3500 writes\nper second *and* each entry in that POST counts as a single write, then\none of those posts alone can trigger throttling on an already loaded\nS3 directory tree. Which can trigger backoff and retry, with the same\nthousand entry post, and so recreate the exact same problem.\n\nFixes\n\n* Page size for delete object requests is set in\n  fs.s3a.bulk.delete.page.size; the default is 250.\n* The property fs.s3a.experimental.aws.s3.throttling (default\u003dtrue)\n  can be set to false to disable throttle retry logic in the AWS\n  client SDK -it is all handled in the S3A client. This\n  gives more visibility in to when operations are being throttled\n* Bulk delete throttling events are logged to the log\n  org.apache.hadoop.fs.s3a.throttled log at INFO; if this appears\n  often then choose a smaller page size.\n* The metric \"store_io_throttled\" adds the entire count of delete\n  requests when a single DeleteObjects request is throttled.\n* A new quantile, \"store_io_throttle_rate\" can track throttling\n  load over time.\n* DynamoDB metastore throttle resilience issues have also been\n  identified and fixed. Note: the fs.s3a.experimental.aws.s3.throttling\n  flag does not apply to DDB IO precisely because there may still be\n  lurking issues there and it safest to rely on the DynamoDB client\n  SDK.\n\nChange-Id: I00f85cdd94fc008864d060533f6bd4870263fd84\n",
+      "commitDate": "13/02/20 11:09 AM",
+      "commitName": "56dee667707926f3796c7757be1a133a362f05c9",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,3 @@\n+  public Iterator\u003cT\u003e iterator() {\n+    return new RetryingIterator(source.iterator());\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public Iterator\u003cT\u003e iterator() {\n    return new RetryingIterator(source.iterator());\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/RetryingCollection.java"
+    }
+  }
+}

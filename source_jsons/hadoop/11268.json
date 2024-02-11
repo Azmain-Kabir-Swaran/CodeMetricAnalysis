@@ -1,0 +1,106 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BPOfferService.java",
+  "functionName": "processCommandFromActor",
+  "functionId": "processCommandFromActor___cmd-DatanodeCommand__actor-BPServiceActor",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+  "functionStartLine": 660,
+  "functionEndLine": 689,
+  "numCommitsSeen": 87,
+  "timeTaken": 2169,
+  "changeHistory": [
+    "d3a2fe280775e9320181b671d5951f06837bddad",
+    "07860b1c9ee3e1d77d39a52d41c3243fdcc10c45",
+    "04cf2a768c0fb1c2c5c80d2480aa072ec7e43c3f"
+  ],
+  "changeHistoryShort": {
+    "d3a2fe280775e9320181b671d5951f06837bddad": "Ybodychange",
+    "07860b1c9ee3e1d77d39a52d41c3243fdcc10c45": "Ybodychange",
+    "04cf2a768c0fb1c2c5c80d2480aa072ec7e43c3f": "Ymultichange(Ymodifierchange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "d3a2fe280775e9320181b671d5951f06837bddad": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6772. Get DN storages out of blockContentsStale state faster after NN restarts. (Contributed by Ming Ma)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1616680 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/14 10:41 PM",
+      "commitName": "d3a2fe280775e9320181b671d5951f06837bddad",
+      "commitAuthor": "Arpit Agarwal",
+      "commitDateOld": "01/08/14 11:56 AM",
+      "commitNameOld": "07860b1c9ee3e1d77d39a52d41c3243fdcc10c45",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 6.45,
+      "commitsBetweenForRepo": 48,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,30 @@\n   boolean processCommandFromActor(DatanodeCommand cmd,\n       BPServiceActor actor) throws IOException {\n     assert bpServices.contains(actor);\n     if (cmd \u003d\u003d null) {\n       return true;\n     }\n     /*\n      * Datanode Registration can be done asynchronously here. No need to hold\n      * the lock. for more info refer HDFS-5014\n      */\n     if (DatanodeProtocol.DNA_REGISTER \u003d\u003d cmd.getAction()) {\n       // namenode requested a registration - at start or if NN lost contact\n       // Just logging the claiming state is OK here instead of checking the\n       // actor state by obtaining the lock\n       LOG.info(\"DatanodeCommand action : DNA_REGISTER from \" + actor.nnAddr\n           + \" with \" + actor.state + \" state\");\n       actor.reRegister();\n-      return true;\n+      return false;\n     }\n     writeLock();\n     try {\n       if (actor \u003d\u003d bpServiceToActive) {\n         return processCommandFromActive(cmd, actor);\n       } else {\n         return processCommandFromStandby(cmd, actor);\n       }\n     } finally {\n       writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  boolean processCommandFromActor(DatanodeCommand cmd,\n      BPServiceActor actor) throws IOException {\n    assert bpServices.contains(actor);\n    if (cmd \u003d\u003d null) {\n      return true;\n    }\n    /*\n     * Datanode Registration can be done asynchronously here. No need to hold\n     * the lock. for more info refer HDFS-5014\n     */\n    if (DatanodeProtocol.DNA_REGISTER \u003d\u003d cmd.getAction()) {\n      // namenode requested a registration - at start or if NN lost contact\n      // Just logging the claiming state is OK here instead of checking the\n      // actor state by obtaining the lock\n      LOG.info(\"DatanodeCommand action : DNA_REGISTER from \" + actor.nnAddr\n          + \" with \" + actor.state + \" state\");\n      actor.reRegister();\n      return false;\n    }\n    writeLock();\n    try {\n      if (actor \u003d\u003d bpServiceToActive) {\n        return processCommandFromActive(cmd, actor);\n      } else {\n        return processCommandFromStandby(cmd, actor);\n      }\n    } finally {\n      writeUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+      "extendedDetails": {}
+    },
+    "07860b1c9ee3e1d77d39a52d41c3243fdcc10c45": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6788. Improve synchronization in BPOfferService with read write lock. Contributed by Yongjun Zhang.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1615190 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "01/08/14 11:56 AM",
+      "commitName": "07860b1c9ee3e1d77d39a52d41c3243fdcc10c45",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "22/07/14 12:41 AM",
+      "commitNameOld": "25b0e8471ed744578b2d8e3f0debe5477b268e54",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 10.47,
+      "commitsBetweenForRepo": 80,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,30 @@\n   boolean processCommandFromActor(DatanodeCommand cmd,\n       BPServiceActor actor) throws IOException {\n     assert bpServices.contains(actor);\n     if (cmd \u003d\u003d null) {\n       return true;\n     }\n     /*\n      * Datanode Registration can be done asynchronously here. No need to hold\n      * the lock. for more info refer HDFS-5014\n      */\n     if (DatanodeProtocol.DNA_REGISTER \u003d\u003d cmd.getAction()) {\n       // namenode requested a registration - at start or if NN lost contact\n       // Just logging the claiming state is OK here instead of checking the\n       // actor state by obtaining the lock\n       LOG.info(\"DatanodeCommand action : DNA_REGISTER from \" + actor.nnAddr\n           + \" with \" + actor.state + \" state\");\n       actor.reRegister();\n       return true;\n     }\n-    synchronized (this) {\n+    writeLock();\n+    try {\n       if (actor \u003d\u003d bpServiceToActive) {\n         return processCommandFromActive(cmd, actor);\n       } else {\n         return processCommandFromStandby(cmd, actor);\n       }\n+    } finally {\n+      writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  boolean processCommandFromActor(DatanodeCommand cmd,\n      BPServiceActor actor) throws IOException {\n    assert bpServices.contains(actor);\n    if (cmd \u003d\u003d null) {\n      return true;\n    }\n    /*\n     * Datanode Registration can be done asynchronously here. No need to hold\n     * the lock. for more info refer HDFS-5014\n     */\n    if (DatanodeProtocol.DNA_REGISTER \u003d\u003d cmd.getAction()) {\n      // namenode requested a registration - at start or if NN lost contact\n      // Just logging the claiming state is OK here instead of checking the\n      // actor state by obtaining the lock\n      LOG.info(\"DatanodeCommand action : DNA_REGISTER from \" + actor.nnAddr\n          + \" with \" + actor.state + \" state\");\n      actor.reRegister();\n      return true;\n    }\n    writeLock();\n    try {\n      if (actor \u003d\u003d bpServiceToActive) {\n        return processCommandFromActive(cmd, actor);\n      } else {\n        return processCommandFromStandby(cmd, actor);\n      }\n    } finally {\n      writeUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+      "extendedDetails": {}
+    },
+    "04cf2a768c0fb1c2c5c80d2480aa072ec7e43c3f": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HDFS-5014. Process register commands with out holding BPOfferService lock. Contributed by Vinay.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1543861 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "20/11/13 8:27 AM",
+      "commitName": "04cf2a768c0fb1c2c5c80d2480aa072ec7e43c3f",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-5014. Process register commands with out holding BPOfferService lock. Contributed by Vinay.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1543861 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "20/11/13 8:27 AM",
+          "commitName": "04cf2a768c0fb1c2c5c80d2480aa072ec7e43c3f",
+          "commitAuthor": "Uma Maheswara Rao G",
+          "commitDateOld": "16/10/13 3:15 PM",
+          "commitNameOld": "3cc7a38a53c8ae27ef6b2397cddc5d14a378203a",
+          "commitAuthorOld": "Colin McCabe",
+          "daysBetweenCommits": 34.76,
+          "commitsBetweenForRepo": 190,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,9 +1,27 @@\n-  synchronized boolean processCommandFromActor(DatanodeCommand cmd,\n+  boolean processCommandFromActor(DatanodeCommand cmd,\n       BPServiceActor actor) throws IOException {\n     assert bpServices.contains(actor);\n-    if (actor \u003d\u003d bpServiceToActive) {\n-      return processCommandFromActive(cmd, actor);\n-    } else {\n-      return processCommandFromStandby(cmd, actor);\n+    if (cmd \u003d\u003d null) {\n+      return true;\n+    }\n+    /*\n+     * Datanode Registration can be done asynchronously here. No need to hold\n+     * the lock. for more info refer HDFS-5014\n+     */\n+    if (DatanodeProtocol.DNA_REGISTER \u003d\u003d cmd.getAction()) {\n+      // namenode requested a registration - at start or if NN lost contact\n+      // Just logging the claiming state is OK here instead of checking the\n+      // actor state by obtaining the lock\n+      LOG.info(\"DatanodeCommand action : DNA_REGISTER from \" + actor.nnAddr\n+          + \" with \" + actor.state + \" state\");\n+      actor.reRegister();\n+      return true;\n+    }\n+    synchronized (this) {\n+      if (actor \u003d\u003d bpServiceToActive) {\n+        return processCommandFromActive(cmd, actor);\n+      } else {\n+        return processCommandFromStandby(cmd, actor);\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  boolean processCommandFromActor(DatanodeCommand cmd,\n      BPServiceActor actor) throws IOException {\n    assert bpServices.contains(actor);\n    if (cmd \u003d\u003d null) {\n      return true;\n    }\n    /*\n     * Datanode Registration can be done asynchronously here. No need to hold\n     * the lock. for more info refer HDFS-5014\n     */\n    if (DatanodeProtocol.DNA_REGISTER \u003d\u003d cmd.getAction()) {\n      // namenode requested a registration - at start or if NN lost contact\n      // Just logging the claiming state is OK here instead of checking the\n      // actor state by obtaining the lock\n      LOG.info(\"DatanodeCommand action : DNA_REGISTER from \" + actor.nnAddr\n          + \" with \" + actor.state + \" state\");\n      actor.reRegister();\n      return true;\n    }\n    synchronized (this) {\n      if (actor \u003d\u003d bpServiceToActive) {\n        return processCommandFromActive(cmd, actor);\n      } else {\n        return processCommandFromStandby(cmd, actor);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+          "extendedDetails": {
+            "oldValue": "[synchronized]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-5014. Process register commands with out holding BPOfferService lock. Contributed by Vinay.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1543861 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "20/11/13 8:27 AM",
+          "commitName": "04cf2a768c0fb1c2c5c80d2480aa072ec7e43c3f",
+          "commitAuthor": "Uma Maheswara Rao G",
+          "commitDateOld": "16/10/13 3:15 PM",
+          "commitNameOld": "3cc7a38a53c8ae27ef6b2397cddc5d14a378203a",
+          "commitAuthorOld": "Colin McCabe",
+          "daysBetweenCommits": 34.76,
+          "commitsBetweenForRepo": 190,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,9 +1,27 @@\n-  synchronized boolean processCommandFromActor(DatanodeCommand cmd,\n+  boolean processCommandFromActor(DatanodeCommand cmd,\n       BPServiceActor actor) throws IOException {\n     assert bpServices.contains(actor);\n-    if (actor \u003d\u003d bpServiceToActive) {\n-      return processCommandFromActive(cmd, actor);\n-    } else {\n-      return processCommandFromStandby(cmd, actor);\n+    if (cmd \u003d\u003d null) {\n+      return true;\n+    }\n+    /*\n+     * Datanode Registration can be done asynchronously here. No need to hold\n+     * the lock. for more info refer HDFS-5014\n+     */\n+    if (DatanodeProtocol.DNA_REGISTER \u003d\u003d cmd.getAction()) {\n+      // namenode requested a registration - at start or if NN lost contact\n+      // Just logging the claiming state is OK here instead of checking the\n+      // actor state by obtaining the lock\n+      LOG.info(\"DatanodeCommand action : DNA_REGISTER from \" + actor.nnAddr\n+          + \" with \" + actor.state + \" state\");\n+      actor.reRegister();\n+      return true;\n+    }\n+    synchronized (this) {\n+      if (actor \u003d\u003d bpServiceToActive) {\n+        return processCommandFromActive(cmd, actor);\n+      } else {\n+        return processCommandFromStandby(cmd, actor);\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  boolean processCommandFromActor(DatanodeCommand cmd,\n      BPServiceActor actor) throws IOException {\n    assert bpServices.contains(actor);\n    if (cmd \u003d\u003d null) {\n      return true;\n    }\n    /*\n     * Datanode Registration can be done asynchronously here. No need to hold\n     * the lock. for more info refer HDFS-5014\n     */\n    if (DatanodeProtocol.DNA_REGISTER \u003d\u003d cmd.getAction()) {\n      // namenode requested a registration - at start or if NN lost contact\n      // Just logging the claiming state is OK here instead of checking the\n      // actor state by obtaining the lock\n      LOG.info(\"DatanodeCommand action : DNA_REGISTER from \" + actor.nnAddr\n          + \" with \" + actor.state + \" state\");\n      actor.reRegister();\n      return true;\n    }\n    synchronized (this) {\n      if (actor \u003d\u003d bpServiceToActive) {\n        return processCommandFromActive(cmd, actor);\n      } else {\n        return processCommandFromStandby(cmd, actor);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BPOfferService.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

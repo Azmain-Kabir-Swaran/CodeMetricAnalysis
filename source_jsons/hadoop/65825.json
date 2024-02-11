@@ -1,0 +1,195 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DynamoDBMetadataStore.java",
+  "functionName": "expiredFiles",
+  "functionId": "expiredFiles___pruneMode-PruneMode__cutoff-long__keyPrefix-String",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+  "functionStartLine": 1519,
+  "functionEndLine": 1564,
+  "numCommitsSeen": 73,
+  "timeTaken": 5322,
+  "changeHistory": [
+    "49df83899543586bbcaf80f01399ade031cf68b0",
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+    "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "49df83899543586bbcaf80f01399ade031cf68b0": "Ybodychange",
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c": "Ymultichange(Yparameterchange,Ybodychange)",
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a": "Ymultichange(Yparameterchange,Ybodychange)",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "49df83899543586bbcaf80f01399ade031cf68b0": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16697. Tune/audit S3A authoritative mode.\n\nContains:\n\nHADOOP-16474. S3Guard ProgressiveRenameTracker to mark destination\n              dirirectory as authoritative on success.\nHADOOP-16684. S3guard bucket info to list a bit more about\n              authoritative paths.\nHADOOP-16722. S3GuardTool to support FilterFileSystem.\n\nThis patch improves the marking of newly created/import directory\ntrees in S3Guard DynamoDB tables as authoritative.\n\nSpecific changes:\n\n * Renamed directories are marked as authoritative if the entire\n   operation succeeded (HADOOP-16474).\n * When updating parent table entries as part of any table write,\n   there\u0027s no overwriting of their authoritative flag.\n\ns3guard import changes:\n\n* new -verbose flag to print out what is going on.\n\n* The \"s3guard import\" command lets you declare that a directory tree\nis to be marked as authoritative\n\n  hadoop s3guard import -authoritative -verbose s3a://bucket/path\n\nWhen importing a listing and a file is found, the import tool queries\nthe metastore and only updates the entry if the file is different from\nbefore, where different \u003d\u003d new timestamp, etag, or length. S3Guard can get\ntimestamp differences due to clock skew in PUT operations.\n\nAs the recursive list performed by the import command doesn\u0027t retrieve the\nversionID, the existing entry may in fact be more complete.\nWhen updating an existing due to clock skew the existing version ID\nis propagated to the new entry (note: the etags must match; this is needed\nto deal with inconsistent listings).\n\nThere is a new s3guard command to audit a s3guard bucket/path\u0027s\nauthoritative state:\n\n  hadoop s3guard authoritative -check-config s3a://bucket/path\n\nThis is primarily for testing/auditing.\n\nThe s3guard bucket-info command also provides some more details on the\nauthoritative state of a store (HADOOP-16684).\n\nChange-Id: I58001341c04f6f3597fcb4fcb1581ccefeb77d91\n",
+      "commitDate": "10/01/20 3:11 AM",
+      "commitName": "49df83899543586bbcaf80f01399ade031cf68b0",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "26/11/19 7:36 AM",
+      "commitNameOld": "ea25f4de236611d388e14a710ebe5d6872c421b6",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 44.82,
+      "commitsBetweenForRepo": 155,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,37 +1,46 @@\n   private ItemCollection\u003cScanOutcome\u003e expiredFiles(PruneMode pruneMode,\n       long cutoff, String keyPrefix) throws IOException {\n \n     String filterExpression;\n     String projectionExpression;\n     ValueMap map;\n \n     switch (pruneMode) {\n     case ALL_BY_MODTIME:\n+      // filter all files under the given parent older than the modtime.\n+      // this implicitly skips directories, because they lack a modtime field.\n+      // however we explicitly exclude directories to make clear that\n+      // directories are to be excluded and avoid any confusion\n+      // see: HADOOP-16725.\n+      // note: files lack the is_dir field entirely, so we use a `not` to\n+      // filter out the directories.\n       filterExpression \u003d\n-          \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n+          \"mod_time \u003c :mod_time and begins_with(parent, :parent)\"\n+              + \" and not is_dir \u003d :is_dir\";\n       projectionExpression \u003d \"parent,child\";\n       map \u003d new ValueMap()\n           .withLong(\":mod_time\", cutoff)\n-          .withString(\":parent\", keyPrefix);\n+          .withString(\":parent\", keyPrefix)\n+          .withBoolean(\":is_dir\", true);\n       break;\n     case TOMBSTONES_BY_LASTUPDATED:\n       filterExpression \u003d\n           \"last_updated \u003c :last_updated and begins_with(parent, :parent) \"\n               + \"and is_deleted \u003d :is_deleted\";\n-      projectionExpression \u003d \"parent,child\";\n+      projectionExpression \u003d \"parent,child,is_deleted\";\n       map \u003d new ValueMap()\n           .withLong(\":last_updated\", cutoff)\n           .withString(\":parent\", keyPrefix)\n           .withBoolean(\":is_deleted\", true);\n       break;\n     default:\n       throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n           + pruneMode);\n     }\n \n     return readOp.retry(\n         \"scan\",\n         keyPrefix,\n         true,\n         () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private ItemCollection\u003cScanOutcome\u003e expiredFiles(PruneMode pruneMode,\n      long cutoff, String keyPrefix) throws IOException {\n\n    String filterExpression;\n    String projectionExpression;\n    ValueMap map;\n\n    switch (pruneMode) {\n    case ALL_BY_MODTIME:\n      // filter all files under the given parent older than the modtime.\n      // this implicitly skips directories, because they lack a modtime field.\n      // however we explicitly exclude directories to make clear that\n      // directories are to be excluded and avoid any confusion\n      // see: HADOOP-16725.\n      // note: files lack the is_dir field entirely, so we use a `not` to\n      // filter out the directories.\n      filterExpression \u003d\n          \"mod_time \u003c :mod_time and begins_with(parent, :parent)\"\n              + \" and not is_dir \u003d :is_dir\";\n      projectionExpression \u003d \"parent,child\";\n      map \u003d new ValueMap()\n          .withLong(\":mod_time\", cutoff)\n          .withString(\":parent\", keyPrefix)\n          .withBoolean(\":is_dir\", true);\n      break;\n    case TOMBSTONES_BY_LASTUPDATED:\n      filterExpression \u003d\n          \"last_updated \u003c :last_updated and begins_with(parent, :parent) \"\n              + \"and is_deleted \u003d :is_deleted\";\n      projectionExpression \u003d \"parent,child,is_deleted\";\n      map \u003d new ValueMap()\n          .withLong(\":last_updated\", cutoff)\n          .withString(\":parent\", keyPrefix)\n          .withBoolean(\":is_deleted\", true);\n      break;\n    default:\n      throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n          + pruneMode);\n    }\n\n    return readOp.retry(\n        \"scan\",\n        keyPrefix,\n        true,\n        () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+      "commitDate": "16/06/19 9:05 AM",
+      "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+      "commitAuthor": "Gabor Bota",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+          "commitDate": "16/06/19 9:05 AM",
+          "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "07/06/19 10:26 AM",
+          "commitNameOld": "4e38dafde4dce8cd8c368783a291e830f06e1def",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 8.94,
+          "commitsBetweenForRepo": 50,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,37 @@\n-  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n-      String keyPrefix) throws IOException {\n-    String filterExpression \u003d\n-        \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n-    String projectionExpression \u003d \"parent,child\";\n-    ValueMap map \u003d new ValueMap()\n-        .withLong(\":mod_time\", modTime)\n-        .withString(\":parent\", keyPrefix);\n+  private ItemCollection\u003cScanOutcome\u003e expiredFiles(PruneMode pruneMode,\n+      long cutoff, String keyPrefix) throws IOException {\n+\n+    String filterExpression;\n+    String projectionExpression;\n+    ValueMap map;\n+\n+    switch (pruneMode) {\n+    case ALL_BY_MODTIME:\n+      filterExpression \u003d\n+          \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n+      projectionExpression \u003d \"parent,child\";\n+      map \u003d new ValueMap()\n+          .withLong(\":mod_time\", cutoff)\n+          .withString(\":parent\", keyPrefix);\n+      break;\n+    case TOMBSTONES_BY_LASTUPDATED:\n+      filterExpression \u003d\n+          \"last_updated \u003c :last_updated and begins_with(parent, :parent) \"\n+              + \"and is_deleted \u003d :is_deleted\";\n+      projectionExpression \u003d \"parent,child\";\n+      map \u003d new ValueMap()\n+          .withLong(\":last_updated\", cutoff)\n+          .withString(\":parent\", keyPrefix)\n+          .withBoolean(\":is_deleted\", true);\n+      break;\n+    default:\n+      throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n+          + pruneMode);\n+    }\n+\n     return readOp.retry(\n         \"scan\",\n         keyPrefix,\n         true,\n         () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private ItemCollection\u003cScanOutcome\u003e expiredFiles(PruneMode pruneMode,\n      long cutoff, String keyPrefix) throws IOException {\n\n    String filterExpression;\n    String projectionExpression;\n    ValueMap map;\n\n    switch (pruneMode) {\n    case ALL_BY_MODTIME:\n      filterExpression \u003d\n          \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n      projectionExpression \u003d \"parent,child\";\n      map \u003d new ValueMap()\n          .withLong(\":mod_time\", cutoff)\n          .withString(\":parent\", keyPrefix);\n      break;\n    case TOMBSTONES_BY_LASTUPDATED:\n      filterExpression \u003d\n          \"last_updated \u003c :last_updated and begins_with(parent, :parent) \"\n              + \"and is_deleted \u003d :is_deleted\";\n      projectionExpression \u003d \"parent,child\";\n      map \u003d new ValueMap()\n          .withLong(\":last_updated\", cutoff)\n          .withString(\":parent\", keyPrefix)\n          .withBoolean(\":is_deleted\", true);\n      break;\n    default:\n      throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n          + pruneMode);\n    }\n\n    return readOp.retry(\n        \"scan\",\n        keyPrefix,\n        true,\n        () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[modTime-long, keyPrefix-String]",
+            "newValue": "[pruneMode-PruneMode, cutoff-long, keyPrefix-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+          "commitDate": "16/06/19 9:05 AM",
+          "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "07/06/19 10:26 AM",
+          "commitNameOld": "4e38dafde4dce8cd8c368783a291e830f06e1def",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 8.94,
+          "commitsBetweenForRepo": 50,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,37 @@\n-  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n-      String keyPrefix) throws IOException {\n-    String filterExpression \u003d\n-        \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n-    String projectionExpression \u003d \"parent,child\";\n-    ValueMap map \u003d new ValueMap()\n-        .withLong(\":mod_time\", modTime)\n-        .withString(\":parent\", keyPrefix);\n+  private ItemCollection\u003cScanOutcome\u003e expiredFiles(PruneMode pruneMode,\n+      long cutoff, String keyPrefix) throws IOException {\n+\n+    String filterExpression;\n+    String projectionExpression;\n+    ValueMap map;\n+\n+    switch (pruneMode) {\n+    case ALL_BY_MODTIME:\n+      filterExpression \u003d\n+          \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n+      projectionExpression \u003d \"parent,child\";\n+      map \u003d new ValueMap()\n+          .withLong(\":mod_time\", cutoff)\n+          .withString(\":parent\", keyPrefix);\n+      break;\n+    case TOMBSTONES_BY_LASTUPDATED:\n+      filterExpression \u003d\n+          \"last_updated \u003c :last_updated and begins_with(parent, :parent) \"\n+              + \"and is_deleted \u003d :is_deleted\";\n+      projectionExpression \u003d \"parent,child\";\n+      map \u003d new ValueMap()\n+          .withLong(\":last_updated\", cutoff)\n+          .withString(\":parent\", keyPrefix)\n+          .withBoolean(\":is_deleted\", true);\n+      break;\n+    default:\n+      throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n+          + pruneMode);\n+    }\n+\n     return readOp.retry(\n         \"scan\",\n         keyPrefix,\n         true,\n         () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private ItemCollection\u003cScanOutcome\u003e expiredFiles(PruneMode pruneMode,\n      long cutoff, String keyPrefix) throws IOException {\n\n    String filterExpression;\n    String projectionExpression;\n    ValueMap map;\n\n    switch (pruneMode) {\n    case ALL_BY_MODTIME:\n      filterExpression \u003d\n          \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n      projectionExpression \u003d \"parent,child\";\n      map \u003d new ValueMap()\n          .withLong(\":mod_time\", cutoff)\n          .withString(\":parent\", keyPrefix);\n      break;\n    case TOMBSTONES_BY_LASTUPDATED:\n      filterExpression \u003d\n          \"last_updated \u003c :last_updated and begins_with(parent, :parent) \"\n              + \"and is_deleted \u003d :is_deleted\";\n      projectionExpression \u003d \"parent,child\";\n      map \u003d new ValueMap()\n          .withLong(\":last_updated\", cutoff)\n          .withString(\":parent\", keyPrefix)\n          .withBoolean(\":is_deleted\", true);\n      break;\n    default:\n      throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n          + pruneMode);\n    }\n\n    return readOp.retry(\n        \"scan\",\n        keyPrefix,\n        true,\n        () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+      "commitDate": "12/09/18 9:04 PM",
+      "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+          "commitDate": "12/09/18 9:04 PM",
+          "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "12/09/18 4:36 PM",
+          "commitNameOld": "d32a8d5d582725eb724b78f27310ad1efd33ed2a",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 0.19,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,14 @@\n   private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n-      String keyPrefix) {\n+      String keyPrefix) throws IOException {\n     String filterExpression \u003d\n         \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n     String projectionExpression \u003d \"parent,child\";\n     ValueMap map \u003d new ValueMap()\n         .withLong(\":mod_time\", modTime)\n         .withString(\":parent\", keyPrefix);\n-    return table.scan(filterExpression, projectionExpression, null, map);\n+    return readOp.retry(\n+        \"scan\",\n+        keyPrefix,\n+        true,\n+        () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n      String keyPrefix) throws IOException {\n    String filterExpression \u003d\n        \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n    String projectionExpression \u003d \"parent,child\";\n    ValueMap map \u003d new ValueMap()\n        .withLong(\":mod_time\", modTime)\n        .withString(\":parent\", keyPrefix);\n    return readOp.retry(\n        \"scan\",\n        keyPrefix,\n        true,\n        () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+          "commitDate": "12/09/18 9:04 PM",
+          "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "12/09/18 4:36 PM",
+          "commitNameOld": "d32a8d5d582725eb724b78f27310ad1efd33ed2a",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 0.19,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,14 @@\n   private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n-      String keyPrefix) {\n+      String keyPrefix) throws IOException {\n     String filterExpression \u003d\n         \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n     String projectionExpression \u003d \"parent,child\";\n     ValueMap map \u003d new ValueMap()\n         .withLong(\":mod_time\", modTime)\n         .withString(\":parent\", keyPrefix);\n-    return table.scan(filterExpression, projectionExpression, null, map);\n+    return readOp.retry(\n+        \"scan\",\n+        keyPrefix,\n+        true,\n+        () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n      String keyPrefix) throws IOException {\n    String filterExpression \u003d\n        \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n    String projectionExpression \u003d \"parent,child\";\n    ValueMap map \u003d new ValueMap()\n        .withLong(\":mod_time\", modTime)\n        .withString(\":parent\", keyPrefix);\n    return readOp.retry(\n        \"scan\",\n        keyPrefix,\n        true,\n        () -\u003e table.scan(filterExpression, projectionExpression, null, map));\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-14759 S3GuardTool prune to prune specific bucket entries. Contributed by Gabor Bota.\n",
+      "commitDate": "05/04/18 8:23 PM",
+      "commitName": "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a",
+      "commitAuthor": "Aaron Fabbri",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-14759 S3GuardTool prune to prune specific bucket entries. Contributed by Gabor Bota.\n",
+          "commitDate": "05/04/18 8:23 PM",
+          "commitName": "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "05/03/18 6:06 AM",
+          "commitNameOld": "8110d6a0d59e7dc2ddb25fa424fab188c5e9ce35",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 31.55,
+          "commitsBetweenForRepo": 341,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,6 +1,10 @@\n-  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime) {\n-    String filterExpression \u003d \"mod_time \u003c :mod_time\";\n+  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n+      String keyPrefix) {\n+    String filterExpression \u003d\n+        \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n     String projectionExpression \u003d \"parent,child\";\n-    ValueMap map \u003d new ValueMap().withLong(\":mod_time\", modTime);\n+    ValueMap map \u003d new ValueMap()\n+        .withLong(\":mod_time\", modTime)\n+        .withString(\":parent\", keyPrefix);\n     return table.scan(filterExpression, projectionExpression, null, map);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n      String keyPrefix) {\n    String filterExpression \u003d\n        \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n    String projectionExpression \u003d \"parent,child\";\n    ValueMap map \u003d new ValueMap()\n        .withLong(\":mod_time\", modTime)\n        .withString(\":parent\", keyPrefix);\n    return table.scan(filterExpression, projectionExpression, null, map);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[modTime-long]",
+            "newValue": "[modTime-long, keyPrefix-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14759 S3GuardTool prune to prune specific bucket entries. Contributed by Gabor Bota.\n",
+          "commitDate": "05/04/18 8:23 PM",
+          "commitName": "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "05/03/18 6:06 AM",
+          "commitNameOld": "8110d6a0d59e7dc2ddb25fa424fab188c5e9ce35",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 31.55,
+          "commitsBetweenForRepo": 341,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,6 +1,10 @@\n-  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime) {\n-    String filterExpression \u003d \"mod_time \u003c :mod_time\";\n+  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n+      String keyPrefix) {\n+    String filterExpression \u003d\n+        \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n     String projectionExpression \u003d \"parent,child\";\n-    ValueMap map \u003d new ValueMap().withLong(\":mod_time\", modTime);\n+    ValueMap map \u003d new ValueMap()\n+        .withLong(\":mod_time\", modTime)\n+        .withString(\":parent\", keyPrefix);\n     return table.scan(filterExpression, projectionExpression, null, map);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime,\n      String keyPrefix) {\n    String filterExpression \u003d\n        \"mod_time \u003c :mod_time and begins_with(parent, :parent)\";\n    String projectionExpression \u003d \"parent,child\";\n    ValueMap map \u003d new ValueMap()\n        .withLong(\":mod_time\", modTime)\n        .withString(\":parent\", keyPrefix);\n    return table.scan(filterExpression, projectionExpression, null, map);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,6 @@\n+  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime) {\n+    String filterExpression \u003d \"mod_time \u003c :mod_time\";\n+    String projectionExpression \u003d \"parent,child\";\n+    ValueMap map \u003d new ValueMap().withLong(\":mod_time\", modTime);\n+    return table.scan(filterExpression, projectionExpression, null, map);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private ItemCollection\u003cScanOutcome\u003e expiredFiles(long modTime) {\n    String filterExpression \u003d \"mod_time \u003c :mod_time\";\n    String projectionExpression \u003d \"parent,child\";\n    ValueMap map \u003d new ValueMap().withLong(\":mod_time\", modTime);\n    return table.scan(filterExpression, projectionExpression, null, map);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java"
+    }
+  }
+}

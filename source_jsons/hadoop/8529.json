@@ -1,0 +1,58 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSImage.java",
+  "functionName": "saveFSImageInAllDirs",
+  "functionId": "saveFSImageInAllDirs___source-FSNamesystem__nnf-NameNodeFile__txid-long__canceler-Canceler",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImage.java",
+  "functionStartLine": 1213,
+  "functionEndLine": 1267,
+  "numCommitsSeen": 123,
+  "timeTaken": 2543,
+  "changeHistory": [
+    "a991e899fb9f98d2089f37ac9ac7c485d3bbb959",
+    "c59e7456304def867afe35d6ee009ab572f8fdeb"
+  ],
+  "changeHistoryShort": {
+    "a991e899fb9f98d2089f37ac9ac7c485d3bbb959": "Ybodychange",
+    "c59e7456304def867afe35d6ee009ab572f8fdeb": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "a991e899fb9f98d2089f37ac9ac7c485d3bbb959": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13314. NameNode should optionally exit if it detects FsImage corruption. Contributed by Arpit Agarwal.\n",
+      "commitDate": "28/03/18 12:49 PM",
+      "commitName": "a991e899fb9f98d2089f37ac9ac7c485d3bbb959",
+      "commitAuthor": "Arpit Agarwal",
+      "commitDateOld": "01/05/17 3:29 PM",
+      "commitNameOld": "4cfc8664362ed04b01872e854715a36dad9408a6",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 330.89,
+      "commitsBetweenForRepo": 2384,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,52 +1,55 @@\n   private synchronized void saveFSImageInAllDirs(FSNamesystem source,\n       NameNodeFile nnf, long txid, Canceler canceler) throws IOException {\n     StartupProgress prog \u003d NameNode.getStartupProgress();\n     prog.beginPhase(Phase.SAVING_CHECKPOINT);\n     if (storage.getNumStorageDirs(NameNodeDirType.IMAGE) \u003d\u003d 0) {\n       throw new IOException(\"No image directories available!\");\n     }\n     if (canceler \u003d\u003d null) {\n       canceler \u003d new Canceler();\n     }\n     SaveNamespaceContext ctx \u003d new SaveNamespaceContext(\n         source, txid, canceler);\n     \n     try {\n       List\u003cThread\u003e saveThreads \u003d new ArrayList\u003cThread\u003e();\n       // save images into current\n       for (Iterator\u003cStorageDirectory\u003e it\n              \u003d storage.dirIterator(NameNodeDirType.IMAGE); it.hasNext();) {\n         StorageDirectory sd \u003d it.next();\n         FSImageSaver saver \u003d new FSImageSaver(ctx, sd, nnf);\n         Thread saveThread \u003d new Thread(saver, saver.toString());\n         saveThreads.add(saveThread);\n         saveThread.start();\n       }\n       waitForThreads(saveThreads);\n       saveThreads.clear();\n       storage.reportErrorsOnDirectories(ctx.getErrorSDs());\n   \n       if (storage.getNumStorageDirs(NameNodeDirType.IMAGE) \u003d\u003d 0) {\n         throw new IOException(\n           \"Failed to save in any storage directories while saving namespace.\");\n       }\n       if (canceler.isCancelled()) {\n         deleteCancelledCheckpoint(txid);\n         ctx.checkCancelled(); // throws\n         assert false : \"should have thrown above!\";\n       }\n   \n       renameCheckpoint(txid, NameNodeFile.IMAGE_NEW, nnf, false);\n   \n       // Since we now have a new checkpoint, we can clean up some\n       // old edit logs and checkpoints.\n-      purgeOldStorage(nnf);\n-      archivalManager.purgeCheckpoints(NameNodeFile.IMAGE_NEW);\n+      // Do not purge anything if we just wrote a corrupted FsImage.\n+      if (!exitAfterSave.get()) {\n+        purgeOldStorage(nnf);\n+        archivalManager.purgeCheckpoints(NameNodeFile.IMAGE_NEW);\n+      }\n     } finally {\n       // Notify any threads waiting on the checkpoint to be canceled\n       // that it is complete.\n       ctx.markComplete();\n       ctx \u003d null;\n     }\n     prog.endPhase(Phase.SAVING_CHECKPOINT);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void saveFSImageInAllDirs(FSNamesystem source,\n      NameNodeFile nnf, long txid, Canceler canceler) throws IOException {\n    StartupProgress prog \u003d NameNode.getStartupProgress();\n    prog.beginPhase(Phase.SAVING_CHECKPOINT);\n    if (storage.getNumStorageDirs(NameNodeDirType.IMAGE) \u003d\u003d 0) {\n      throw new IOException(\"No image directories available!\");\n    }\n    if (canceler \u003d\u003d null) {\n      canceler \u003d new Canceler();\n    }\n    SaveNamespaceContext ctx \u003d new SaveNamespaceContext(\n        source, txid, canceler);\n    \n    try {\n      List\u003cThread\u003e saveThreads \u003d new ArrayList\u003cThread\u003e();\n      // save images into current\n      for (Iterator\u003cStorageDirectory\u003e it\n             \u003d storage.dirIterator(NameNodeDirType.IMAGE); it.hasNext();) {\n        StorageDirectory sd \u003d it.next();\n        FSImageSaver saver \u003d new FSImageSaver(ctx, sd, nnf);\n        Thread saveThread \u003d new Thread(saver, saver.toString());\n        saveThreads.add(saveThread);\n        saveThread.start();\n      }\n      waitForThreads(saveThreads);\n      saveThreads.clear();\n      storage.reportErrorsOnDirectories(ctx.getErrorSDs());\n  \n      if (storage.getNumStorageDirs(NameNodeDirType.IMAGE) \u003d\u003d 0) {\n        throw new IOException(\n          \"Failed to save in any storage directories while saving namespace.\");\n      }\n      if (canceler.isCancelled()) {\n        deleteCancelledCheckpoint(txid);\n        ctx.checkCancelled(); // throws\n        assert false : \"should have thrown above!\";\n      }\n  \n      renameCheckpoint(txid, NameNodeFile.IMAGE_NEW, nnf, false);\n  \n      // Since we now have a new checkpoint, we can clean up some\n      // old edit logs and checkpoints.\n      // Do not purge anything if we just wrote a corrupted FsImage.\n      if (!exitAfterSave.get()) {\n        purgeOldStorage(nnf);\n        archivalManager.purgeCheckpoints(NameNodeFile.IMAGE_NEW);\n      }\n    } finally {\n      // Notify any threads waiting on the checkpoint to be canceled\n      // that it is complete.\n      ctx.markComplete();\n      ctx \u003d null;\n    }\n    prog.endPhase(Phase.SAVING_CHECKPOINT);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImage.java",
+      "extendedDetails": {}
+    },
+    "c59e7456304def867afe35d6ee009ab572f8fdeb": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3716. Purger should remove stale fsimage ckpt files (Contributed by J.Andreina)\n",
+      "commitDate": "03/06/15 3:00 AM",
+      "commitName": "c59e7456304def867afe35d6ee009ab572f8fdeb",
+      "commitAuthor": "Vinayakumar B",
+      "commitDateOld": "13/05/15 9:50 PM",
+      "commitNameOld": "b2c85db86c9a62b0a03ee87547265077f664970a",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 20.22,
+      "commitsBetweenForRepo": 149,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,51 +1,52 @@\n   private synchronized void saveFSImageInAllDirs(FSNamesystem source,\n       NameNodeFile nnf, long txid, Canceler canceler) throws IOException {\n     StartupProgress prog \u003d NameNode.getStartupProgress();\n     prog.beginPhase(Phase.SAVING_CHECKPOINT);\n     if (storage.getNumStorageDirs(NameNodeDirType.IMAGE) \u003d\u003d 0) {\n       throw new IOException(\"No image directories available!\");\n     }\n     if (canceler \u003d\u003d null) {\n       canceler \u003d new Canceler();\n     }\n     SaveNamespaceContext ctx \u003d new SaveNamespaceContext(\n         source, txid, canceler);\n     \n     try {\n       List\u003cThread\u003e saveThreads \u003d new ArrayList\u003cThread\u003e();\n       // save images into current\n       for (Iterator\u003cStorageDirectory\u003e it\n              \u003d storage.dirIterator(NameNodeDirType.IMAGE); it.hasNext();) {\n         StorageDirectory sd \u003d it.next();\n         FSImageSaver saver \u003d new FSImageSaver(ctx, sd, nnf);\n         Thread saveThread \u003d new Thread(saver, saver.toString());\n         saveThreads.add(saveThread);\n         saveThread.start();\n       }\n       waitForThreads(saveThreads);\n       saveThreads.clear();\n       storage.reportErrorsOnDirectories(ctx.getErrorSDs());\n   \n       if (storage.getNumStorageDirs(NameNodeDirType.IMAGE) \u003d\u003d 0) {\n         throw new IOException(\n           \"Failed to save in any storage directories while saving namespace.\");\n       }\n       if (canceler.isCancelled()) {\n         deleteCancelledCheckpoint(txid);\n         ctx.checkCancelled(); // throws\n         assert false : \"should have thrown above!\";\n       }\n   \n       renameCheckpoint(txid, NameNodeFile.IMAGE_NEW, nnf, false);\n   \n       // Since we now have a new checkpoint, we can clean up some\n       // old edit logs and checkpoints.\n       purgeOldStorage(nnf);\n+      archivalManager.purgeCheckpoints(NameNodeFile.IMAGE_NEW);\n     } finally {\n       // Notify any threads waiting on the checkpoint to be canceled\n       // that it is complete.\n       ctx.markComplete();\n       ctx \u003d null;\n     }\n     prog.endPhase(Phase.SAVING_CHECKPOINT);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void saveFSImageInAllDirs(FSNamesystem source,\n      NameNodeFile nnf, long txid, Canceler canceler) throws IOException {\n    StartupProgress prog \u003d NameNode.getStartupProgress();\n    prog.beginPhase(Phase.SAVING_CHECKPOINT);\n    if (storage.getNumStorageDirs(NameNodeDirType.IMAGE) \u003d\u003d 0) {\n      throw new IOException(\"No image directories available!\");\n    }\n    if (canceler \u003d\u003d null) {\n      canceler \u003d new Canceler();\n    }\n    SaveNamespaceContext ctx \u003d new SaveNamespaceContext(\n        source, txid, canceler);\n    \n    try {\n      List\u003cThread\u003e saveThreads \u003d new ArrayList\u003cThread\u003e();\n      // save images into current\n      for (Iterator\u003cStorageDirectory\u003e it\n             \u003d storage.dirIterator(NameNodeDirType.IMAGE); it.hasNext();) {\n        StorageDirectory sd \u003d it.next();\n        FSImageSaver saver \u003d new FSImageSaver(ctx, sd, nnf);\n        Thread saveThread \u003d new Thread(saver, saver.toString());\n        saveThreads.add(saveThread);\n        saveThread.start();\n      }\n      waitForThreads(saveThreads);\n      saveThreads.clear();\n      storage.reportErrorsOnDirectories(ctx.getErrorSDs());\n  \n      if (storage.getNumStorageDirs(NameNodeDirType.IMAGE) \u003d\u003d 0) {\n        throw new IOException(\n          \"Failed to save in any storage directories while saving namespace.\");\n      }\n      if (canceler.isCancelled()) {\n        deleteCancelledCheckpoint(txid);\n        ctx.checkCancelled(); // throws\n        assert false : \"should have thrown above!\";\n      }\n  \n      renameCheckpoint(txid, NameNodeFile.IMAGE_NEW, nnf, false);\n  \n      // Since we now have a new checkpoint, we can clean up some\n      // old edit logs and checkpoints.\n      purgeOldStorage(nnf);\n      archivalManager.purgeCheckpoints(NameNodeFile.IMAGE_NEW);\n    } finally {\n      // Notify any threads waiting on the checkpoint to be canceled\n      // that it is complete.\n      ctx.markComplete();\n      ctx \u003d null;\n    }\n    prog.endPhase(Phase.SAVING_CHECKPOINT);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImage.java",
+      "extendedDetails": {}
+    }
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FederationRegistryClient.java",
+  "functionName": "loadStateFromRegistry",
+  "functionId": "loadStateFromRegistry___appId-ApplicationId",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/federation/utils/FederationRegistryClient.java",
+  "functionStartLine": 158,
+  "functionEndLine": 199,
+  "numCommitsSeen": 2,
+  "timeTaken": 1566,
+  "changeHistory": [
+    "3090922805699b8374a359e92323884a4177dc4e",
+    "d5f66888b8d767ee6706fab9950c194a1bf26d32"
+  ],
+  "changeHistoryShort": {
+    "3090922805699b8374a359e92323884a4177dc4e": "Ymodifierchange",
+    "d5f66888b8d767ee6706fab9950c194a1bf26d32": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "3090922805699b8374a359e92323884a4177dc4e": {
+      "type": "Ymodifierchange",
+      "commitMessage": "YARN-8696. [AMRMProxy] FederationInterceptor upgrade: home sub-cluster heartbeat async. Contributed by Botong Huang.\n",
+      "commitDate": "24/09/18 11:37 AM",
+      "commitName": "3090922805699b8374a359e92323884a4177dc4e",
+      "commitAuthor": "Giovanni Matteo Fumarola",
+      "commitDateOld": "17/11/17 5:39 PM",
+      "commitNameOld": "d5f66888b8d767ee6706fab9950c194a1bf26d32",
+      "commitAuthorOld": "Subru Krishnan",
+      "daysBetweenCommits": 310.71,
+      "commitsBetweenForRepo": 2792,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "      loadStateFromRegistry(ApplicationId appId) {\n    Map\u003cString, Token\u003cAMRMTokenIdentifier\u003e\u003e retMap \u003d new HashMap\u003c\u003e();\n    // Suppress the exception here because it is valid that the entry does not\n    // exist\n    List\u003cString\u003e subclusters \u003d null;\n    try {\n      subclusters \u003d listDirRegistry(this.registry, this.user,\n          getRegistryKey(appId, null), false);\n    } catch (YarnException e) {\n      LOG.warn(\"Unexpected exception from listDirRegistry\", e);\n    }\n\n    if (subclusters \u003d\u003d null) {\n      LOG.info(\"Application {} does not exist in registry\", appId);\n      return retMap;\n    }\n\n    // Read the amrmToken for each sub-cluster with an existing UAM\n    for (String scId : subclusters) {\n      LOG.info(\"Reading amrmToken for subcluster {} for {}\", scId, appId);\n      String key \u003d getRegistryKey(appId, scId);\n      try {\n        String tokenString \u003d readRegistry(this.registry, this.user, key, true);\n        if (tokenString \u003d\u003d null) {\n          throw new YarnException(\"Null string from readRegistry key \" + key);\n        }\n        Token\u003cAMRMTokenIdentifier\u003e amrmToken \u003d new Token\u003c\u003e();\n        amrmToken.decodeFromUrlString(tokenString);\n        // Clear the service field, as if RM just issued the token\n        amrmToken.setService(new Text());\n\n        retMap.put(scId, amrmToken);\n      } catch (Exception e) {\n        LOG.error(\"Failed reading registry key \" + key\n            + \", skipping subcluster \" + scId, e);\n      }\n    }\n\n    // Override existing map if there\n    this.appSubClusterTokenMap.put(appId, new ConcurrentHashMap\u003c\u003e(retMap));\n    return retMap;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/federation/utils/FederationRegistryClient.java",
+      "extendedDetails": {
+        "oldValue": "[public]",
+        "newValue": "[public, synchronized]"
+      }
+    },
+    "d5f66888b8d767ee6706fab9950c194a1bf26d32": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6128. Add support for AMRMProxy HA. (Botong Huang via Subru).\n",
+      "commitDate": "17/11/17 5:39 PM",
+      "commitName": "d5f66888b8d767ee6706fab9950c194a1bf26d32",
+      "commitAuthor": "Subru Krishnan",
+      "diff": "@@ -0,0 +1,42 @@\n+      loadStateFromRegistry(ApplicationId appId) {\n+    Map\u003cString, Token\u003cAMRMTokenIdentifier\u003e\u003e retMap \u003d new HashMap\u003c\u003e();\n+    // Suppress the exception here because it is valid that the entry does not\n+    // exist\n+    List\u003cString\u003e subclusters \u003d null;\n+    try {\n+      subclusters \u003d listDirRegistry(this.registry, this.user,\n+          getRegistryKey(appId, null), false);\n+    } catch (YarnException e) {\n+      LOG.warn(\"Unexpected exception from listDirRegistry\", e);\n+    }\n+\n+    if (subclusters \u003d\u003d null) {\n+      LOG.info(\"Application {} does not exist in registry\", appId);\n+      return retMap;\n+    }\n+\n+    // Read the amrmToken for each sub-cluster with an existing UAM\n+    for (String scId : subclusters) {\n+      LOG.info(\"Reading amrmToken for subcluster {} for {}\", scId, appId);\n+      String key \u003d getRegistryKey(appId, scId);\n+      try {\n+        String tokenString \u003d readRegistry(this.registry, this.user, key, true);\n+        if (tokenString \u003d\u003d null) {\n+          throw new YarnException(\"Null string from readRegistry key \" + key);\n+        }\n+        Token\u003cAMRMTokenIdentifier\u003e amrmToken \u003d new Token\u003c\u003e();\n+        amrmToken.decodeFromUrlString(tokenString);\n+        // Clear the service field, as if RM just issued the token\n+        amrmToken.setService(new Text());\n+\n+        retMap.put(scId, amrmToken);\n+      } catch (Exception e) {\n+        LOG.error(\"Failed reading registry key \" + key\n+            + \", skipping subcluster \" + scId, e);\n+      }\n+    }\n+\n+    // Override existing map if there\n+    this.appSubClusterTokenMap.put(appId, new ConcurrentHashMap\u003c\u003e(retMap));\n+    return retMap;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "      loadStateFromRegistry(ApplicationId appId) {\n    Map\u003cString, Token\u003cAMRMTokenIdentifier\u003e\u003e retMap \u003d new HashMap\u003c\u003e();\n    // Suppress the exception here because it is valid that the entry does not\n    // exist\n    List\u003cString\u003e subclusters \u003d null;\n    try {\n      subclusters \u003d listDirRegistry(this.registry, this.user,\n          getRegistryKey(appId, null), false);\n    } catch (YarnException e) {\n      LOG.warn(\"Unexpected exception from listDirRegistry\", e);\n    }\n\n    if (subclusters \u003d\u003d null) {\n      LOG.info(\"Application {} does not exist in registry\", appId);\n      return retMap;\n    }\n\n    // Read the amrmToken for each sub-cluster with an existing UAM\n    for (String scId : subclusters) {\n      LOG.info(\"Reading amrmToken for subcluster {} for {}\", scId, appId);\n      String key \u003d getRegistryKey(appId, scId);\n      try {\n        String tokenString \u003d readRegistry(this.registry, this.user, key, true);\n        if (tokenString \u003d\u003d null) {\n          throw new YarnException(\"Null string from readRegistry key \" + key);\n        }\n        Token\u003cAMRMTokenIdentifier\u003e amrmToken \u003d new Token\u003c\u003e();\n        amrmToken.decodeFromUrlString(tokenString);\n        // Clear the service field, as if RM just issued the token\n        amrmToken.setService(new Text());\n\n        retMap.put(scId, amrmToken);\n      } catch (Exception e) {\n        LOG.error(\"Failed reading registry key \" + key\n            + \", skipping subcluster \" + scId, e);\n      }\n    }\n\n    // Override existing map if there\n    this.appSubClusterTokenMap.put(appId, new ConcurrentHashMap\u003c\u003e(retMap));\n    return retMap;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-common/src/main/java/org/apache/hadoop/yarn/server/federation/utils/FederationRegistryClient.java"
+    }
+  }
+}

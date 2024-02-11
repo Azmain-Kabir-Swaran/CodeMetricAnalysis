@@ -1,0 +1,54 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RegistryDNS.java",
+  "functionName": "updateDNSServer",
+  "functionId": "updateDNSServer___conf-Configuration",
+  "sourceFilePath": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+  "functionStartLine": 204,
+  "functionEndLine": 272,
+  "numCommitsSeen": 15,
+  "timeTaken": 1334,
+  "changeHistory": [
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae",
+    "501be9b4be7d549b23cc501b26fdfdce0a7aa911"
+  ],
+  "changeHistoryShort": {
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae": "Yfilerename",
+    "501be9b4be7d549b23cc501b26fdfdce0a7aa911": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-15821. Move YARN Registry to Hadoop Registry.\n              Contributed by Íñigo Goiri\n",
+      "commitDate": "19/10/18 4:46 PM",
+      "commitName": "e2a9fa8448e2aac34c318260e425786a6c8ca2ae",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "19/10/18 1:57 PM",
+      "commitNameOld": "00254d7b8c714ae2000d0934d260b23458033529",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.12,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void updateDNSServer(Configuration conf) {\n    synchronized (resolverUpdateLock) {\n      if (!resolverUpdateRequested) {\n        return;\n      }\n      int port \u003d conf.getInt(KEY_DNS_PORT, DEFAULT_DNS_PORT);\n      resolverUpdateRequested \u003d false;\n      List\u003cInetAddress\u003e list \u003d new ArrayList\u003cInetAddress\u003e();\n      try {\n        // If resolv.conf contains the server\u0027s own IP address,\n        // and RegistryDNS handles the lookup.  Local IP address\n        // must be filter out from default resolvers to prevent\n        // self recursive loop.\n        if (port !\u003d 53) {\n          // When registryDNS is not running on default port,\n          // registryDNS can utilize local DNS server as upstream lookup.\n          throw new SocketException(\"Bypass filtering local DNS server.\");\n        }\n        Enumeration\u003cNetworkInterface\u003e net \u003d\n            NetworkInterface.getNetworkInterfaces();\n        while(net.hasMoreElements()) {\n          NetworkInterface n \u003d (NetworkInterface) net.nextElement();\n          Enumeration\u003cInetAddress\u003e ee \u003d n.getInetAddresses();\n          while (ee.hasMoreElements()) {\n            InetAddress i \u003d (InetAddress) ee.nextElement();\n            list.add(i);\n          }\n        }\n      } catch (SocketException e) {\n      }\n      ResolverConfig.refresh();\n      ExtendedResolver resolver;\n      try {\n        resolver \u003d new ExtendedResolver();\n      } catch (UnknownHostException e) {\n        LOG.error(\"Can not resolve DNS servers: \", e);\n        return;\n      }\n      for (Resolver check : resolver.getResolvers()) {\n        if (check instanceof SimpleResolver) {\n          InetAddress address \u003d ((SimpleResolver) check).getAddress()\n              .getAddress();\n          if (list.contains(address)) {\n            resolver.deleteResolver(check);\n            continue;\n          } else {\n            check.setTimeout(30);\n          }\n        } else {\n          LOG.error(\"Not simple resolver!!!?\" + check);\n        }\n      }\n      synchronized (Lookup.class) {\n        Lookup.setDefaultResolver(resolver);\n        Lookup.setDefaultSearchPath(ResolverConfig.getCurrentConfig()\n            .searchPath());\n      }\n      StringBuilder message \u003d new StringBuilder();\n      message.append(\"DNS servers: \");\n      if (ResolverConfig.getCurrentConfig().servers() !\u003d null) {\n        for (String server : ResolverConfig.getCurrentConfig()\n            .servers()) {\n          message.append(server);\n          message.append(\" \");\n        }\n      }\n      LOG.info(message.toString());\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+        "newPath": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java"
+      }
+    },
+    "501be9b4be7d549b23cc501b26fdfdce0a7aa911": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-7326. Add recursion support and configure RegistryDNS to lookup upstream. Contributed by Eric Yang\n",
+      "commitDate": "06/11/17 1:30 PM",
+      "commitName": "501be9b4be7d549b23cc501b26fdfdce0a7aa911",
+      "commitAuthor": "Billie Rinaldi",
+      "diff": "@@ -0,0 +1,69 @@\n+  private void updateDNSServer(Configuration conf) {\n+    synchronized (resolverUpdateLock) {\n+      if (!resolverUpdateRequested) {\n+        return;\n+      }\n+      int port \u003d conf.getInt(KEY_DNS_PORT, DEFAULT_DNS_PORT);\n+      resolverUpdateRequested \u003d false;\n+      List\u003cInetAddress\u003e list \u003d new ArrayList\u003cInetAddress\u003e();\n+      try {\n+        // If resolv.conf contains the server\u0027s own IP address,\n+        // and RegistryDNS handles the lookup.  Local IP address\n+        // must be filter out from default resolvers to prevent\n+        // self recursive loop.\n+        if (port !\u003d 53) {\n+          // When registryDNS is not running on default port,\n+          // registryDNS can utilize local DNS server as upstream lookup.\n+          throw new SocketException(\"Bypass filtering local DNS server.\");\n+        }\n+        Enumeration\u003cNetworkInterface\u003e net \u003d\n+            NetworkInterface.getNetworkInterfaces();\n+        while(net.hasMoreElements()) {\n+          NetworkInterface n \u003d (NetworkInterface) net.nextElement();\n+          Enumeration\u003cInetAddress\u003e ee \u003d n.getInetAddresses();\n+          while (ee.hasMoreElements()) {\n+            InetAddress i \u003d (InetAddress) ee.nextElement();\n+            list.add(i);\n+          }\n+        }\n+      } catch (SocketException e) {\n+      }\n+      ResolverConfig.refresh();\n+      ExtendedResolver resolver;\n+      try {\n+        resolver \u003d new ExtendedResolver();\n+      } catch (UnknownHostException e) {\n+        LOG.error(\"Can not resolve DNS servers: \", e);\n+        return;\n+      }\n+      for (Resolver check : resolver.getResolvers()) {\n+        if (check instanceof SimpleResolver) {\n+          InetAddress address \u003d ((SimpleResolver) check).getAddress()\n+              .getAddress();\n+          if (list.contains(address)) {\n+            resolver.deleteResolver(check);\n+            continue;\n+          } else {\n+            check.setTimeout(30);\n+          }\n+        } else {\n+          LOG.error(\"Not simple resolver!!!?\" + check);\n+        }\n+      }\n+      synchronized (Lookup.class) {\n+        Lookup.setDefaultResolver(resolver);\n+        Lookup.setDefaultSearchPath(ResolverConfig.getCurrentConfig()\n+            .searchPath());\n+      }\n+      StringBuilder message \u003d new StringBuilder();\n+      message.append(\"DNS servers: \");\n+      if (ResolverConfig.getCurrentConfig().servers() !\u003d null) {\n+        for (String server : ResolverConfig.getCurrentConfig()\n+            .servers()) {\n+          message.append(server);\n+          message.append(\" \");\n+        }\n+      }\n+      LOG.info(message.toString());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void updateDNSServer(Configuration conf) {\n    synchronized (resolverUpdateLock) {\n      if (!resolverUpdateRequested) {\n        return;\n      }\n      int port \u003d conf.getInt(KEY_DNS_PORT, DEFAULT_DNS_PORT);\n      resolverUpdateRequested \u003d false;\n      List\u003cInetAddress\u003e list \u003d new ArrayList\u003cInetAddress\u003e();\n      try {\n        // If resolv.conf contains the server\u0027s own IP address,\n        // and RegistryDNS handles the lookup.  Local IP address\n        // must be filter out from default resolvers to prevent\n        // self recursive loop.\n        if (port !\u003d 53) {\n          // When registryDNS is not running on default port,\n          // registryDNS can utilize local DNS server as upstream lookup.\n          throw new SocketException(\"Bypass filtering local DNS server.\");\n        }\n        Enumeration\u003cNetworkInterface\u003e net \u003d\n            NetworkInterface.getNetworkInterfaces();\n        while(net.hasMoreElements()) {\n          NetworkInterface n \u003d (NetworkInterface) net.nextElement();\n          Enumeration\u003cInetAddress\u003e ee \u003d n.getInetAddresses();\n          while (ee.hasMoreElements()) {\n            InetAddress i \u003d (InetAddress) ee.nextElement();\n            list.add(i);\n          }\n        }\n      } catch (SocketException e) {\n      }\n      ResolverConfig.refresh();\n      ExtendedResolver resolver;\n      try {\n        resolver \u003d new ExtendedResolver();\n      } catch (UnknownHostException e) {\n        LOG.error(\"Can not resolve DNS servers: \", e);\n        return;\n      }\n      for (Resolver check : resolver.getResolvers()) {\n        if (check instanceof SimpleResolver) {\n          InetAddress address \u003d ((SimpleResolver) check).getAddress()\n              .getAddress();\n          if (list.contains(address)) {\n            resolver.deleteResolver(check);\n            continue;\n          } else {\n            check.setTimeout(30);\n          }\n        } else {\n          LOG.error(\"Not simple resolver!!!?\" + check);\n        }\n      }\n      synchronized (Lookup.class) {\n        Lookup.setDefaultResolver(resolver);\n        Lookup.setDefaultSearchPath(ResolverConfig.getCurrentConfig()\n            .searchPath());\n      }\n      StringBuilder message \u003d new StringBuilder();\n      message.append(\"DNS servers: \");\n      if (ResolverConfig.getCurrentConfig().servers() !\u003d null) {\n        for (String server : ResolverConfig.getCurrentConfig()\n            .servers()) {\n          message.append(server);\n          message.append(\" \");\n        }\n      }\n      LOG.info(message.toString());\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java"
+    }
+  }
+}

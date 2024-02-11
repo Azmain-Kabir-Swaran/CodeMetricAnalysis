@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CentralizedOpportunisticContainerAllocator.java",
+  "functionName": "allocateContainers",
+  "functionId": "allocateContainers___blackList-ResourceBlacklistRequest__oppResourceReqs-List__ResourceRequest____applicationAttemptId-ApplicationAttemptId__opportContext-OpportunisticContainerContext__rmIdentifier-long__appSubmitter-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/distributed/CentralizedOpportunisticContainerAllocator.java",
+  "functionStartLine": 95,
+  "functionEndLine": 139,
+  "numCommitsSeen": 1,
+  "timeTaken": 872,
+  "changeHistory": [
+    "fb512f50877438acb01fe6b3ec96c12b4db61694"
+  ],
+  "changeHistoryShort": {
+    "fb512f50877438acb01fe6b3ec96c12b4db61694": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fb512f50877438acb01fe6b3ec96c12b4db61694": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-9697. Efficient allocation of Opportunistic containers. Contributed by Abhishek Modi.\n",
+      "commitDate": "12/11/19 3:04 AM",
+      "commitName": "fb512f50877438acb01fe6b3ec96c12b4db61694",
+      "commitAuthor": "Abhishek Modi",
+      "diff": "@@ -0,0 +1,45 @@\n+  public List\u003cContainer\u003e allocateContainers(\n+      ResourceBlacklistRequest blackList, List\u003cResourceRequest\u003e oppResourceReqs,\n+      ApplicationAttemptId applicationAttemptId,\n+      OpportunisticContainerContext opportContext, long rmIdentifier,\n+      String appSubmitter) throws YarnException {\n+\n+    updateBlacklist(blackList, opportContext);\n+\n+    // Add OPPORTUNISTIC requests to the outstanding ones.\n+    opportContext.addToOutstandingReqs(oppResourceReqs);\n+\n+    Set\u003cString\u003e nodeBlackList \u003d new HashSet\u003c\u003e(opportContext.getBlacklist());\n+    List\u003cContainer\u003e allocatedContainers \u003d new ArrayList\u003c\u003e();\n+    int maxAllocationsPerAMHeartbeat \u003d getMaxAllocationsPerAMHeartbeat();\n+    List\u003cMap\u003cResource, List\u003cAllocation\u003e\u003e\u003e allocations \u003d new ArrayList\u003c\u003e();\n+\n+    for (SchedulerRequestKey schedulerKey :\n+        opportContext.getOutstandingOpReqs().descendingKeySet()) {\n+      // Allocated containers :\n+      //  Key \u003d Requested Capability,\n+      //  Value \u003d List of Containers of given cap (the actual container size\n+      //          might be different than what is requested, which is why\n+      //          we need the requested capability (key) to match against\n+      //          the outstanding reqs)\n+      int remAllocs \u003d -1;\n+      if (maxAllocationsPerAMHeartbeat \u003e 0) {\n+        remAllocs \u003d\n+            maxAllocationsPerAMHeartbeat - getTotalAllocations(allocations);\n+        if (remAllocs \u003c\u003d 0) {\n+          LOG.info(\"Not allocating more containers as we have reached max \"\n+                  + \"allocations per AM heartbeat {}\",\n+              maxAllocationsPerAMHeartbeat);\n+          break;\n+        }\n+      }\n+      Map\u003cResource, List\u003cAllocation\u003e\u003e allocation \u003d allocatePerSchedulerKey(\n+          rmIdentifier, opportContext, schedulerKey, applicationAttemptId,\n+          appSubmitter, nodeBlackList, remAllocs);\n+      if (allocation.size() \u003e 0) {\n+        allocations.add(allocation);\n+      }\n+    }\n+    matchAllocation(allocations, allocatedContainers, opportContext);\n+    return allocatedContainers;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public List\u003cContainer\u003e allocateContainers(\n      ResourceBlacklistRequest blackList, List\u003cResourceRequest\u003e oppResourceReqs,\n      ApplicationAttemptId applicationAttemptId,\n      OpportunisticContainerContext opportContext, long rmIdentifier,\n      String appSubmitter) throws YarnException {\n\n    updateBlacklist(blackList, opportContext);\n\n    // Add OPPORTUNISTIC requests to the outstanding ones.\n    opportContext.addToOutstandingReqs(oppResourceReqs);\n\n    Set\u003cString\u003e nodeBlackList \u003d new HashSet\u003c\u003e(opportContext.getBlacklist());\n    List\u003cContainer\u003e allocatedContainers \u003d new ArrayList\u003c\u003e();\n    int maxAllocationsPerAMHeartbeat \u003d getMaxAllocationsPerAMHeartbeat();\n    List\u003cMap\u003cResource, List\u003cAllocation\u003e\u003e\u003e allocations \u003d new ArrayList\u003c\u003e();\n\n    for (SchedulerRequestKey schedulerKey :\n        opportContext.getOutstandingOpReqs().descendingKeySet()) {\n      // Allocated containers :\n      //  Key \u003d Requested Capability,\n      //  Value \u003d List of Containers of given cap (the actual container size\n      //          might be different than what is requested, which is why\n      //          we need the requested capability (key) to match against\n      //          the outstanding reqs)\n      int remAllocs \u003d -1;\n      if (maxAllocationsPerAMHeartbeat \u003e 0) {\n        remAllocs \u003d\n            maxAllocationsPerAMHeartbeat - getTotalAllocations(allocations);\n        if (remAllocs \u003c\u003d 0) {\n          LOG.info(\"Not allocating more containers as we have reached max \"\n                  + \"allocations per AM heartbeat {}\",\n              maxAllocationsPerAMHeartbeat);\n          break;\n        }\n      }\n      Map\u003cResource, List\u003cAllocation\u003e\u003e allocation \u003d allocatePerSchedulerKey(\n          rmIdentifier, opportContext, schedulerKey, applicationAttemptId,\n          appSubmitter, nodeBlackList, remAllocs);\n      if (allocation.size() \u003e 0) {\n        allocations.add(allocation);\n      }\n    }\n    matchAllocation(allocations, allocatedContainers, opportContext);\n    return allocatedContainers;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/distributed/CentralizedOpportunisticContainerAllocator.java"
+    }
+  }
+}

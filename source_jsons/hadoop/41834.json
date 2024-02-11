@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ClusterNodeTracker.java",
+  "functionName": "updateMaxResources",
+  "functionId": "updateMaxResources___node-SchedulerNode__add-boolean",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/ClusterNodeTracker.java",
+  "functionStartLine": 273,
+  "functionEndLine": 325,
+  "numCommitsSeen": 17,
+  "timeTaken": 2141,
+  "changeHistory": [
+    "8498d287cd3beddcf8fe19625227e09982ec4be2",
+    "42f90ab885d9693fcc1e52f9637f7de4111110ae",
+    "20d389ce61eaacb5ddfb329015f50e96ad894f8d"
+  ],
+  "changeHistoryShort": {
+    "8498d287cd3beddcf8fe19625227e09982ec4be2": "Ybodychange",
+    "42f90ab885d9693fcc1e52f9637f7de4111110ae": "Ybodychange",
+    "20d389ce61eaacb5ddfb329015f50e96ad894f8d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8498d287cd3beddcf8fe19625227e09982ec4be2": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7541. Node updates don\u0027t update the maximum cluster capability for resources other than CPU and memory\n",
+      "commitDate": "29/11/17 11:11 AM",
+      "commitName": "8498d287cd3beddcf8fe19625227e09982ec4be2",
+      "commitAuthor": "Daniel Templeton",
+      "commitDateOld": "09/11/17 2:51 PM",
+      "commitNameOld": "dd07038ffae33a5e73eb331477d43eaf3f4c2aaa",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 19.85,
+      "commitsBetweenForRepo": 81,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,33 +1,53 @@\n   private void updateMaxResources(SchedulerNode node, boolean add) {\n     Resource totalResource \u003d node.getTotalResource();\n+    ResourceInformation[] totalResources;\n+\n+    if (totalResource !\u003d null) {\n+      totalResources \u003d totalResource.getResources();\n+    } else {\n+      LOG.warn(node.getNodeName() + \" reported in with null resources, which \"\n+          + \"indicates a problem in the source code. Please file an issue at \"\n+          + \"https://issues.apache.org/jira/secure/CreateIssue!default.jspa\");\n+\n+      return;\n+    }\n+\n     writeLock.lock();\n+\n     try {\n       if (add) { // added node\n-        long nodeMemory \u003d totalResource.getMemorySize();\n-        if (nodeMemory \u003e maxNodeMemory) {\n-          maxNodeMemory \u003d nodeMemory;\n-        }\n-        int nodeVCores \u003d totalResource.getVirtualCores();\n-        if (nodeVCores \u003e maxNodeVCores) {\n-          maxNodeVCores \u003d nodeVCores;\n+        // If we add a node, we must have a max allocation for all resource\n+        // types\n+        reportedMaxAllocation \u003d true;\n+\n+        for (int i \u003d 0; i \u003c maxAllocation.length; i++) {\n+          long value \u003d totalResources[i].getValue();\n+\n+          if (value \u003e maxAllocation[i]) {\n+            maxAllocation[i] \u003d value;\n+          }\n         }\n       } else {  // removed node\n-        if (maxNodeMemory \u003d\u003d totalResource.getMemorySize()) {\n-          maxNodeMemory \u003d -1;\n+        boolean recalculate \u003d false;\n+\n+        for (int i \u003d 0; i \u003c maxAllocation.length; i++) {\n+          if (totalResources[i].getValue() \u003d\u003d maxAllocation[i]) {\n+            // No need to set reportedMaxAllocation to false here because we\n+            // will recalculate before we release the lock.\n+            maxAllocation[i] \u003d -1;\n+            recalculate \u003d true;\n+          }\n         }\n-        if (maxNodeVCores \u003d\u003d totalResource.getVirtualCores()) {\n-          maxNodeVCores \u003d -1;\n-        }\n+\n         // We only have to iterate through the nodes if the current max memory\n         // or vcores was equal to the removed node\u0027s\n-        if (maxNodeMemory \u003d\u003d -1 || maxNodeVCores \u003d\u003d -1) {\n+        if (recalculate) {\n           // Treat it like an empty cluster and add nodes\n-          for (N n : nodes.values()) {\n-            updateMaxResources(n, true);\n-          }\n+          reportedMaxAllocation \u003d false;\n+          nodes.values().forEach(n -\u003e updateMaxResources(n, true));\n         }\n       }\n     } finally {\n       writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void updateMaxResources(SchedulerNode node, boolean add) {\n    Resource totalResource \u003d node.getTotalResource();\n    ResourceInformation[] totalResources;\n\n    if (totalResource !\u003d null) {\n      totalResources \u003d totalResource.getResources();\n    } else {\n      LOG.warn(node.getNodeName() + \" reported in with null resources, which \"\n          + \"indicates a problem in the source code. Please file an issue at \"\n          + \"https://issues.apache.org/jira/secure/CreateIssue!default.jspa\");\n\n      return;\n    }\n\n    writeLock.lock();\n\n    try {\n      if (add) { // added node\n        // If we add a node, we must have a max allocation for all resource\n        // types\n        reportedMaxAllocation \u003d true;\n\n        for (int i \u003d 0; i \u003c maxAllocation.length; i++) {\n          long value \u003d totalResources[i].getValue();\n\n          if (value \u003e maxAllocation[i]) {\n            maxAllocation[i] \u003d value;\n          }\n        }\n      } else {  // removed node\n        boolean recalculate \u003d false;\n\n        for (int i \u003d 0; i \u003c maxAllocation.length; i++) {\n          if (totalResources[i].getValue() \u003d\u003d maxAllocation[i]) {\n            // No need to set reportedMaxAllocation to false here because we\n            // will recalculate before we release the lock.\n            maxAllocation[i] \u003d -1;\n            recalculate \u003d true;\n          }\n        }\n\n        // We only have to iterate through the nodes if the current max memory\n        // or vcores was equal to the removed node\u0027s\n        if (recalculate) {\n          // Treat it like an empty cluster and add nodes\n          reportedMaxAllocation \u003d false;\n          nodes.values().forEach(n -\u003e updateMaxResources(n, true));\n        }\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/ClusterNodeTracker.java",
+      "extendedDetails": {}
+    },
+    "42f90ab885d9693fcc1e52f9637f7de4111110ae": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4844. Add getMemorySize/getVirtualCoresSize to o.a.h.y.api.records.Resource. Contributed by Wangda Tan.\n",
+      "commitDate": "29/05/16 8:54 AM",
+      "commitName": "42f90ab885d9693fcc1e52f9637f7de4111110ae",
+      "commitAuthor": "Varun Vasudev",
+      "commitDateOld": "14/03/16 2:19 PM",
+      "commitNameOld": "20d389ce61eaacb5ddfb329015f50e96ad894f8d",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 75.77,
+      "commitsBetweenForRepo": 486,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,33 +1,33 @@\n   private void updateMaxResources(SchedulerNode node, boolean add) {\n     Resource totalResource \u003d node.getTotalResource();\n     writeLock.lock();\n     try {\n       if (add) { // added node\n-        int nodeMemory \u003d totalResource.getMemory();\n+        long nodeMemory \u003d totalResource.getMemorySize();\n         if (nodeMemory \u003e maxNodeMemory) {\n           maxNodeMemory \u003d nodeMemory;\n         }\n         int nodeVCores \u003d totalResource.getVirtualCores();\n         if (nodeVCores \u003e maxNodeVCores) {\n           maxNodeVCores \u003d nodeVCores;\n         }\n       } else {  // removed node\n-        if (maxNodeMemory \u003d\u003d totalResource.getMemory()) {\n+        if (maxNodeMemory \u003d\u003d totalResource.getMemorySize()) {\n           maxNodeMemory \u003d -1;\n         }\n         if (maxNodeVCores \u003d\u003d totalResource.getVirtualCores()) {\n           maxNodeVCores \u003d -1;\n         }\n         // We only have to iterate through the nodes if the current max memory\n         // or vcores was equal to the removed node\u0027s\n         if (maxNodeMemory \u003d\u003d -1 || maxNodeVCores \u003d\u003d -1) {\n           // Treat it like an empty cluster and add nodes\n           for (N n : nodes.values()) {\n             updateMaxResources(n, true);\n           }\n         }\n       }\n     } finally {\n       writeLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void updateMaxResources(SchedulerNode node, boolean add) {\n    Resource totalResource \u003d node.getTotalResource();\n    writeLock.lock();\n    try {\n      if (add) { // added node\n        long nodeMemory \u003d totalResource.getMemorySize();\n        if (nodeMemory \u003e maxNodeMemory) {\n          maxNodeMemory \u003d nodeMemory;\n        }\n        int nodeVCores \u003d totalResource.getVirtualCores();\n        if (nodeVCores \u003e maxNodeVCores) {\n          maxNodeVCores \u003d nodeVCores;\n        }\n      } else {  // removed node\n        if (maxNodeMemory \u003d\u003d totalResource.getMemorySize()) {\n          maxNodeMemory \u003d -1;\n        }\n        if (maxNodeVCores \u003d\u003d totalResource.getVirtualCores()) {\n          maxNodeVCores \u003d -1;\n        }\n        // We only have to iterate through the nodes if the current max memory\n        // or vcores was equal to the removed node\u0027s\n        if (maxNodeMemory \u003d\u003d -1 || maxNodeVCores \u003d\u003d -1) {\n          // Treat it like an empty cluster and add nodes\n          for (N n : nodes.values()) {\n            updateMaxResources(n, true);\n          }\n        }\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/ClusterNodeTracker.java",
+      "extendedDetails": {}
+    },
+    "20d389ce61eaacb5ddfb329015f50e96ad894f8d": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4719. Add a helper library to maintain node state and allows common queries. (kasha)\n",
+      "commitDate": "14/03/16 2:19 PM",
+      "commitName": "20d389ce61eaacb5ddfb329015f50e96ad894f8d",
+      "commitAuthor": "Karthik Kambatla",
+      "diff": "@@ -0,0 +1,33 @@\n+  private void updateMaxResources(SchedulerNode node, boolean add) {\n+    Resource totalResource \u003d node.getTotalResource();\n+    writeLock.lock();\n+    try {\n+      if (add) { // added node\n+        int nodeMemory \u003d totalResource.getMemory();\n+        if (nodeMemory \u003e maxNodeMemory) {\n+          maxNodeMemory \u003d nodeMemory;\n+        }\n+        int nodeVCores \u003d totalResource.getVirtualCores();\n+        if (nodeVCores \u003e maxNodeVCores) {\n+          maxNodeVCores \u003d nodeVCores;\n+        }\n+      } else {  // removed node\n+        if (maxNodeMemory \u003d\u003d totalResource.getMemory()) {\n+          maxNodeMemory \u003d -1;\n+        }\n+        if (maxNodeVCores \u003d\u003d totalResource.getVirtualCores()) {\n+          maxNodeVCores \u003d -1;\n+        }\n+        // We only have to iterate through the nodes if the current max memory\n+        // or vcores was equal to the removed node\u0027s\n+        if (maxNodeMemory \u003d\u003d -1 || maxNodeVCores \u003d\u003d -1) {\n+          // Treat it like an empty cluster and add nodes\n+          for (N n : nodes.values()) {\n+            updateMaxResources(n, true);\n+          }\n+        }\n+      }\n+    } finally {\n+      writeLock.unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void updateMaxResources(SchedulerNode node, boolean add) {\n    Resource totalResource \u003d node.getTotalResource();\n    writeLock.lock();\n    try {\n      if (add) { // added node\n        int nodeMemory \u003d totalResource.getMemory();\n        if (nodeMemory \u003e maxNodeMemory) {\n          maxNodeMemory \u003d nodeMemory;\n        }\n        int nodeVCores \u003d totalResource.getVirtualCores();\n        if (nodeVCores \u003e maxNodeVCores) {\n          maxNodeVCores \u003d nodeVCores;\n        }\n      } else {  // removed node\n        if (maxNodeMemory \u003d\u003d totalResource.getMemory()) {\n          maxNodeMemory \u003d -1;\n        }\n        if (maxNodeVCores \u003d\u003d totalResource.getVirtualCores()) {\n          maxNodeVCores \u003d -1;\n        }\n        // We only have to iterate through the nodes if the current max memory\n        // or vcores was equal to the removed node\u0027s\n        if (maxNodeMemory \u003d\u003d -1 || maxNodeVCores \u003d\u003d -1) {\n          // Treat it like an empty cluster and add nodes\n          for (N n : nodes.values()) {\n            updateMaxResources(n, true);\n          }\n        }\n      }\n    } finally {\n      writeLock.unlock();\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/ClusterNodeTracker.java"
+    }
+  }
+}

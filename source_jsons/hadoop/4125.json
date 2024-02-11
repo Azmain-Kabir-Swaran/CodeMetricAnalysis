@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DistributedFileSystem.java",
+  "functionName": "hasPathCapability",
+  "functionId": "hasPathCapability___path-Path(modifiers-final)__capability-String(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+  "functionStartLine": 3581,
+  "functionEndLine": 3600,
+  "numCommitsSeen": 96,
+  "timeTaken": 2637,
+  "changeHistory": [
+    "c734d69a55693143d0aba2f7f5a793b11c8c50a5",
+    "e346e3638c595a512cd582739ff51fb64c3b4950"
+  ],
+  "changeHistoryShort": {
+    "c734d69a55693143d0aba2f7f5a793b11c8c50a5": "Ybodychange",
+    "e346e3638c595a512cd582739ff51fb64c3b4950": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c734d69a55693143d0aba2f7f5a793b11c8c50a5": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16898. Batch listing of multiple directories via an (unstable) interface\n\nContributed by Steve Loughran.\n\nThis moves the new API of HDFS-13616 into a interface which is implemented by\nHDFS RPC filesystem client (not WebHDFS or any other connector)\n\nThis new interface, BatchListingOperations, is in hadoop-common,\nso applications do not need to be compiled with HDFS on the classpath.\nThey must cast the FS into the interface.\n\ninstanceof can probe the client for having the new interface -the patch\nalso adds a new path capability to probe for this.\n\nThe FileSystem implementation is cut; tests updated as appropriate.\n\nAll new interfaces/classes/constants are marked as @unstable.\n\nChange-Id: I5623c51f2c75804f58f915dd7e60cb2cffdac681\n",
+      "commitDate": "09/03/20 7:51 AM",
+      "commitName": "c734d69a55693143d0aba2f7f5a793b11c8c50a5",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "02/03/20 5:22 AM",
+      "commitNameOld": "0dd8956f2e4bd7cd2315ef23703e4b2da1a0d073",
+      "commitAuthorOld": "Xiaoyu Yao",
+      "daysBetweenCommits": 7.06,
+      "commitsBetweenForRepo": 22,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,11 +1,20 @@\n   public boolean hasPathCapability(final Path path, final String capability)\n       throws IOException {\n     // qualify the path to make sure that it refers to the current FS.\n     final Path p \u003d makeQualified(path);\n     Optional\u003cBoolean\u003e cap \u003d DfsPathCapabilities.hasPathCapability(p,\n         capability);\n     if (cap.isPresent()) {\n       return cap.get();\n     }\n+    // this switch is for features which are in the DFS client but not\n+    // (yet/ever) in the WebHDFS API.\n+    switch (validatePathCapabilityArgs(path, capability)) {\n+    case CommonPathCapabilities.FS_EXPERIMENTAL_BATCH_LISTING:\n+      return true;\n+    default:\n+      // fall through\n+    }\n+\n     return super.hasPathCapability(p, capability);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public boolean hasPathCapability(final Path path, final String capability)\n      throws IOException {\n    // qualify the path to make sure that it refers to the current FS.\n    final Path p \u003d makeQualified(path);\n    Optional\u003cBoolean\u003e cap \u003d DfsPathCapabilities.hasPathCapability(p,\n        capability);\n    if (cap.isPresent()) {\n      return cap.get();\n    }\n    // this switch is for features which are in the DFS client but not\n    // (yet/ever) in the WebHDFS API.\n    switch (validatePathCapabilityArgs(path, capability)) {\n    case CommonPathCapabilities.FS_EXPERIMENTAL_BATCH_LISTING:\n      return true;\n    default:\n      // fall through\n    }\n\n    return super.hasPathCapability(p, capability);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+      "extendedDetails": {}
+    },
+    "e346e3638c595a512cd582739ff51fb64c3b4950": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15691 Add PathCapabilities to FileSystem and FileContext.\n\nContributed by Steve Loughran.\n\nThis complements the StreamCapabilities Interface by allowing applications to probe for a specific path on a specific instance of a FileSystem client\nto offer a specific capability.\n\nThis is intended to allow applications to determine\n\n* Whether a method is implemented before calling it and dealing with UnsupportedOperationException.\n* Whether a specific feature is believed to be available in the remote store.\n\nAs well as a common set of capabilities defined in CommonPathCapabilities,\nfile systems are free to add their own capabilities, prefixed with\n fs. + schema + .\n\nThe plan is to identify and document more capabilities -and for file systems which add new features, for a declaration of the availability of the feature to always be available.\n\nNote\n\n* The remote store is not expected to be checked for the feature;\n  It is more a check of client API and the client\u0027s configuration/knowledge\n  of the state of the remote system.\n* Permissions are not checked.\n\nChange-Id: I80bfebe94f4a8bdad8f3ac055495735b824968f5\n",
+      "commitDate": "25/09/19 4:16 AM",
+      "commitName": "e346e3638c595a512cd582739ff51fb64c3b4950",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,11 @@\n+  public boolean hasPathCapability(final Path path, final String capability)\n+      throws IOException {\n+    // qualify the path to make sure that it refers to the current FS.\n+    final Path p \u003d makeQualified(path);\n+    Optional\u003cBoolean\u003e cap \u003d DfsPathCapabilities.hasPathCapability(p,\n+        capability);\n+    if (cap.isPresent()) {\n+      return cap.get();\n+    }\n+    return super.hasPathCapability(p, capability);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public boolean hasPathCapability(final Path path, final String capability)\n      throws IOException {\n    // qualify the path to make sure that it refers to the current FS.\n    final Path p \u003d makeQualified(path);\n    Optional\u003cBoolean\u003e cap \u003d DfsPathCapabilities.hasPathCapability(p,\n        capability);\n    if (cap.isPresent()) {\n      return cap.get();\n    }\n    return super.hasPathCapability(p, capability);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SFTPFileSystem.java",
+  "functionName": "mkdirs",
+  "functionId": "mkdirs___client-ChannelSftp__file-Path__permission-FsPermission",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/sftp/SFTPFileSystem.java",
+  "functionStartLine": 311,
+  "functionEndLine": 344,
+  "numCommitsSeen": 7,
+  "timeTaken": 1037,
+  "changeHistory": [
+    "736ceab2f58fb9ab5907c5b5110bd44384038e6b",
+    "559425dcb9302861c3c28b759492a68f8d597092"
+  ],
+  "changeHistoryShort": {
+    "736ceab2f58fb9ab5907c5b5110bd44384038e6b": "Ybodychange",
+    "559425dcb9302861c3c28b759492a68f8d597092": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "736ceab2f58fb9ab5907c5b5110bd44384038e6b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12325. SFTPFileSystem operations should restore cwd. Contributed by Chen Liang.\n",
+      "commitDate": "21/08/17 11:48 AM",
+      "commitName": "736ceab2f58fb9ab5907c5b5110bd44384038e6b",
+      "commitAuthor": "Arpit Agarwal",
+      "commitDateOld": "17/07/17 9:32 PM",
+      "commitNameOld": "ccaf036662e22da14583942054898c99fa51dae5",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 34.59,
+      "commitsBetweenForRepo": 256,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,34 @@\n   private boolean mkdirs(ChannelSftp client, Path file, FsPermission permission)\n       throws IOException {\n     boolean created \u003d true;\n     Path workDir;\n     try {\n       workDir \u003d new Path(client.pwd());\n     } catch (SftpException e) {\n       throw new IOException(e);\n     }\n     Path absolute \u003d makeAbsolute(workDir, file);\n     String pathName \u003d absolute.getName();\n     if (!exists(client, absolute)) {\n       Path parent \u003d absolute.getParent();\n       created \u003d\n           (parent \u003d\u003d null || mkdirs(client, parent, FsPermission.getDefault()));\n       if (created) {\n         String parentDir \u003d parent.toUri().getPath();\n         boolean succeeded \u003d true;\n         try {\n+          final String previousCwd \u003d client.pwd();\n           client.cd(parentDir);\n           client.mkdir(pathName);\n+          client.cd(previousCwd);\n         } catch (SftpException e) {\n           throw new IOException(String.format(E_MAKE_DIR_FORPATH, pathName,\n               parentDir));\n         }\n         created \u003d created \u0026 succeeded;\n       }\n     } else if (isFile(client, absolute)) {\n       throw new IOException(String.format(E_DIR_CREATE_FROMFILE, absolute));\n     }\n     return created;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean mkdirs(ChannelSftp client, Path file, FsPermission permission)\n      throws IOException {\n    boolean created \u003d true;\n    Path workDir;\n    try {\n      workDir \u003d new Path(client.pwd());\n    } catch (SftpException e) {\n      throw new IOException(e);\n    }\n    Path absolute \u003d makeAbsolute(workDir, file);\n    String pathName \u003d absolute.getName();\n    if (!exists(client, absolute)) {\n      Path parent \u003d absolute.getParent();\n      created \u003d\n          (parent \u003d\u003d null || mkdirs(client, parent, FsPermission.getDefault()));\n      if (created) {\n        String parentDir \u003d parent.toUri().getPath();\n        boolean succeeded \u003d true;\n        try {\n          final String previousCwd \u003d client.pwd();\n          client.cd(parentDir);\n          client.mkdir(pathName);\n          client.cd(previousCwd);\n        } catch (SftpException e) {\n          throw new IOException(String.format(E_MAKE_DIR_FORPATH, pathName,\n              parentDir));\n        }\n        created \u003d created \u0026 succeeded;\n      }\n    } else if (isFile(client, absolute)) {\n      throw new IOException(String.format(E_DIR_CREATE_FROMFILE, absolute));\n    }\n    return created;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/sftp/SFTPFileSystem.java",
+      "extendedDetails": {}
+    },
+    "559425dcb9302861c3c28b759492a68f8d597092": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-5732. Add SFTPFileSystem. Contributed by Ramtin Boustani and Inigo Goiri\n",
+      "commitDate": "07/07/15 10:08 AM",
+      "commitName": "559425dcb9302861c3c28b759492a68f8d597092",
+      "commitAuthor": "Chris Douglas",
+      "diff": "@@ -0,0 +1,32 @@\n+  private boolean mkdirs(ChannelSftp client, Path file, FsPermission permission)\n+      throws IOException {\n+    boolean created \u003d true;\n+    Path workDir;\n+    try {\n+      workDir \u003d new Path(client.pwd());\n+    } catch (SftpException e) {\n+      throw new IOException(e);\n+    }\n+    Path absolute \u003d makeAbsolute(workDir, file);\n+    String pathName \u003d absolute.getName();\n+    if (!exists(client, absolute)) {\n+      Path parent \u003d absolute.getParent();\n+      created \u003d\n+          (parent \u003d\u003d null || mkdirs(client, parent, FsPermission.getDefault()));\n+      if (created) {\n+        String parentDir \u003d parent.toUri().getPath();\n+        boolean succeeded \u003d true;\n+        try {\n+          client.cd(parentDir);\n+          client.mkdir(pathName);\n+        } catch (SftpException e) {\n+          throw new IOException(String.format(E_MAKE_DIR_FORPATH, pathName,\n+              parentDir));\n+        }\n+        created \u003d created \u0026 succeeded;\n+      }\n+    } else if (isFile(client, absolute)) {\n+      throw new IOException(String.format(E_DIR_CREATE_FROMFILE, absolute));\n+    }\n+    return created;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean mkdirs(ChannelSftp client, Path file, FsPermission permission)\n      throws IOException {\n    boolean created \u003d true;\n    Path workDir;\n    try {\n      workDir \u003d new Path(client.pwd());\n    } catch (SftpException e) {\n      throw new IOException(e);\n    }\n    Path absolute \u003d makeAbsolute(workDir, file);\n    String pathName \u003d absolute.getName();\n    if (!exists(client, absolute)) {\n      Path parent \u003d absolute.getParent();\n      created \u003d\n          (parent \u003d\u003d null || mkdirs(client, parent, FsPermission.getDefault()));\n      if (created) {\n        String parentDir \u003d parent.toUri().getPath();\n        boolean succeeded \u003d true;\n        try {\n          client.cd(parentDir);\n          client.mkdir(pathName);\n        } catch (SftpException e) {\n          throw new IOException(String.format(E_MAKE_DIR_FORPATH, pathName,\n              parentDir));\n        }\n        created \u003d created \u0026 succeeded;\n      }\n    } else if (isFile(client, absolute)) {\n      throw new IOException(String.format(E_DIR_CREATE_FROMFILE, absolute));\n    }\n    return created;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/sftp/SFTPFileSystem.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbstractFSNodeStore.java",
+  "functionName": "recoverFromStore",
+  "functionId": "recoverFromStore",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/nodelabels/store/AbstractFSNodeStore.java",
+  "functionStartLine": 134,
+  "functionEndLine": 184,
+  "numCommitsSeen": 4,
+  "timeTaken": 716,
+  "changeHistory": [
+    "6f4bc49c6d153e03edcc9b3a796fb1ccc95334b0"
+  ],
+  "changeHistoryShort": {
+    "6f4bc49c6d153e03edcc9b3a796fb1ccc95334b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6f4bc49c6d153e03edcc9b3a796fb1ccc95334b0": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-7988. Refactor FSNodeLabelStore code for Node Attributes store support. Contributed by Bibin A Chundatt.\n",
+      "commitDate": "12/09/18 3:31 AM",
+      "commitName": "6f4bc49c6d153e03edcc9b3a796fb1ccc95334b0",
+      "commitAuthor": "Sunil G",
+      "diff": "@@ -0,0 +1,51 @@\n+  protected void recoverFromStore() throws IOException {\n+        /*\n+     * Steps of recover\n+     * 1) Read from last mirror (from mirror or mirror.old)\n+     * 2) Read from last edit log, and apply such edit log\n+     * 3) Write new mirror to mirror.writing\n+     * 4) Rename mirror to mirror.old\n+     * 5) Move mirror.writing to mirror\n+     * 6) Remove mirror.old\n+     * 7) Remove edit log and create a new empty edit log\n+     */\n+\n+    // Open mirror from serialized file\n+    Path mirrorPath \u003d new Path(fsWorkingPath, schema.mirrorName);\n+    Path oldMirrorPath \u003d new Path(fsWorkingPath, schema.mirrorName + \".old\");\n+\n+    loadFromMirror(mirrorPath, oldMirrorPath);\n+\n+    // Open and process editlog\n+    editLogPath \u003d new Path(fsWorkingPath, schema.editLogName);\n+\n+    loadManagerFromEditLog(editLogPath);\n+\n+    // Serialize current mirror to mirror.writing\n+    Path writingMirrorPath \u003d\n+        new Path(fsWorkingPath, schema.mirrorName + \".writing\");\n+\n+    try(FSDataOutputStream os \u003d fs.create(writingMirrorPath, true)){\n+      StoreOp op \u003d FSStoreOpHandler.getMirrorOp(storeType);\n+      op.write(os, manager);\n+    }\n+    // Move mirror to mirror.old\n+    if (fs.exists(mirrorPath)) {\n+      fs.delete(oldMirrorPath, false);\n+      fs.rename(mirrorPath, oldMirrorPath);\n+    }\n+\n+    // move mirror.writing to mirror\n+    fs.rename(writingMirrorPath, mirrorPath);\n+    fs.delete(writingMirrorPath, false);\n+\n+    // remove mirror.old\n+    fs.delete(oldMirrorPath, false);\n+\n+    // create a new editlog file\n+    editlogOs \u003d fs.create(editLogPath, true);\n+    editlogOs.close();\n+\n+    LOG.info(\"Finished write mirror at:\" + mirrorPath.toString());\n+    LOG.info(\"Finished create editlog file at:\" + editLogPath.toString());\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void recoverFromStore() throws IOException {\n        /*\n     * Steps of recover\n     * 1) Read from last mirror (from mirror or mirror.old)\n     * 2) Read from last edit log, and apply such edit log\n     * 3) Write new mirror to mirror.writing\n     * 4) Rename mirror to mirror.old\n     * 5) Move mirror.writing to mirror\n     * 6) Remove mirror.old\n     * 7) Remove edit log and create a new empty edit log\n     */\n\n    // Open mirror from serialized file\n    Path mirrorPath \u003d new Path(fsWorkingPath, schema.mirrorName);\n    Path oldMirrorPath \u003d new Path(fsWorkingPath, schema.mirrorName + \".old\");\n\n    loadFromMirror(mirrorPath, oldMirrorPath);\n\n    // Open and process editlog\n    editLogPath \u003d new Path(fsWorkingPath, schema.editLogName);\n\n    loadManagerFromEditLog(editLogPath);\n\n    // Serialize current mirror to mirror.writing\n    Path writingMirrorPath \u003d\n        new Path(fsWorkingPath, schema.mirrorName + \".writing\");\n\n    try(FSDataOutputStream os \u003d fs.create(writingMirrorPath, true)){\n      StoreOp op \u003d FSStoreOpHandler.getMirrorOp(storeType);\n      op.write(os, manager);\n    }\n    // Move mirror to mirror.old\n    if (fs.exists(mirrorPath)) {\n      fs.delete(oldMirrorPath, false);\n      fs.rename(mirrorPath, oldMirrorPath);\n    }\n\n    // move mirror.writing to mirror\n    fs.rename(writingMirrorPath, mirrorPath);\n    fs.delete(writingMirrorPath, false);\n\n    // remove mirror.old\n    fs.delete(oldMirrorPath, false);\n\n    // create a new editlog file\n    editlogOs \u003d fs.create(editLogPath, true);\n    editlogOs.close();\n\n    LOG.info(\"Finished write mirror at:\" + mirrorPath.toString());\n    LOG.info(\"Finished create editlog file at:\" + editLogPath.toString());\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/nodelabels/store/AbstractFSNodeStore.java"
+    }
+  }
+}

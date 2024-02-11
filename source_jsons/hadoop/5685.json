@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSEditLogAsync.java",
+  "functionName": "run",
+  "functionId": "run",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogAsync.java",
+  "functionStartLine": 225,
+  "functionEndLine": 257,
+  "numCommitsSeen": 6,
+  "timeTaken": 1452,
+  "changeHistory": [
+    "2151716832ad14932dd65b1a4e47e64d8d6cd767"
+  ],
+  "changeHistoryShort": {
+    "2151716832ad14932dd65b1a4e47e64d8d6cd767": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2151716832ad14932dd65b1a4e47e64d8d6cd767": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7964. Add support for async edit logging. Contributed by Daryn Sharp.\n",
+      "commitDate": "29/02/16 3:34 PM",
+      "commitName": "2151716832ad14932dd65b1a4e47e64d8d6cd767",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,33 @@\n+  public void run() {\n+    try {\n+      while (true) {\n+        boolean doSync;\n+        Edit edit \u003d dequeueEdit();\n+        if (edit !\u003d null) {\n+          // sync if requested by edit log.\n+          doSync \u003d edit.logEdit();\n+          syncWaitQ.add(edit);\n+        } else {\n+          // sync when editq runs dry, but have edits pending a sync.\n+          doSync \u003d !syncWaitQ.isEmpty();\n+        }\n+        if (doSync) {\n+          // normally edit log exceptions cause the NN to terminate, but tests\n+          // relying on ExitUtil.terminate need to see the exception.\n+          RuntimeException syncEx \u003d null;\n+          try {\n+            logSync(getLastWrittenTxId());\n+          } catch (RuntimeException ex) {\n+            syncEx \u003d ex;\n+          }\n+          while ((edit \u003d syncWaitQ.poll()) !\u003d null) {\n+            edit.logSyncNotify(syncEx);\n+          }\n+        }\n+      }\n+    } catch (InterruptedException ie) {\n+      LOG.info(Thread.currentThread().getName() + \" was interrupted, exiting\");\n+    } catch (Throwable t) {\n+      terminate(t);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void run() {\n    try {\n      while (true) {\n        boolean doSync;\n        Edit edit \u003d dequeueEdit();\n        if (edit !\u003d null) {\n          // sync if requested by edit log.\n          doSync \u003d edit.logEdit();\n          syncWaitQ.add(edit);\n        } else {\n          // sync when editq runs dry, but have edits pending a sync.\n          doSync \u003d !syncWaitQ.isEmpty();\n        }\n        if (doSync) {\n          // normally edit log exceptions cause the NN to terminate, but tests\n          // relying on ExitUtil.terminate need to see the exception.\n          RuntimeException syncEx \u003d null;\n          try {\n            logSync(getLastWrittenTxId());\n          } catch (RuntimeException ex) {\n            syncEx \u003d ex;\n          }\n          while ((edit \u003d syncWaitQ.poll()) !\u003d null) {\n            edit.logSyncNotify(syncEx);\n          }\n        }\n      }\n    } catch (InterruptedException ie) {\n      LOG.info(Thread.currentThread().getName() + \" was interrupted, exiting\");\n    } catch (Throwable t) {\n      terminate(t);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogAsync.java"
+    }
+  }
+}

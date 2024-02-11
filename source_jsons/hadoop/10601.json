@@ -1,0 +1,231 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockRecoveryWorker.java",
+  "functionName": "recoverBlocks",
+  "functionId": "recoverBlocks___who-String(modifiers-final)__blocks-Collection__RecoveringBlock__(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+  "functionStartLine": 598,
+  "functionEndLine": 624,
+  "numCommitsSeen": 325,
+  "timeTaken": 11381,
+  "changeHistory": [
+    "6e04b00df1bf4f0a45571c9fc4361e4e8a05f7ee",
+    "61ab0440f7eaff0f631cbae0378403912f88d7ad",
+    "e287e7d14b838a866ba03d895fa35819999d7c09",
+    "0e8e499ff482c165d21c8e4f5ff9c33f306ca0d9",
+    "5258d6bf3fb8090739cf96f5089f96cee87393c4",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "d86f3183d93714ba078416af4f609d26376eadb0",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "6e04b00df1bf4f0a45571c9fc4361e4e8a05f7ee": "Ybodychange",
+    "61ab0440f7eaff0f631cbae0378403912f88d7ad": "Ybodychange",
+    "e287e7d14b838a866ba03d895fa35819999d7c09": "Ymultichange(Ymovefromfile,Ybodychange)",
+    "0e8e499ff482c165d21c8e4f5ff9c33f306ca0d9": "Ybodychange",
+    "5258d6bf3fb8090739cf96f5089f96cee87393c4": "Ymultichange(Yparameterchange,Ybodychange)",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "d86f3183d93714ba078416af4f609d26376eadb0": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6e04b00df1bf4f0a45571c9fc4361e4e8a05f7ee": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12288. Fix DataNode\u0027s xceiver count calculation. Contributed by Lisheng Sun.\n",
+      "commitDate": "23/05/20 9:58 AM",
+      "commitName": "6e04b00df1bf4f0a45571c9fc4361e4e8a05f7ee",
+      "commitAuthor": "Inigo Goiri",
+      "commitDateOld": "15/02/20 10:45 PM",
+      "commitNameOld": "810783d443cce4dd560acfc3e652a912d57d6a77",
+      "commitAuthorOld": "Surendra Singh Lilhore",
+      "daysBetweenCommits": 97.43,
+      "commitsBetweenForRepo": 340,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,27 @@\n   public Daemon recoverBlocks(final String who,\n       final Collection\u003cRecoveringBlock\u003e blocks) {\n     Daemon d \u003d new Daemon(datanode.threadGroup, new Runnable() {\n       @Override\n       public void run() {\n-        for(RecoveringBlock b : blocks) {\n-          try {\n-            logRecoverBlock(who, b);\n-            if (b.isStriped()) {\n-              new RecoveryTaskStriped((RecoveringStripedBlock) b).recover();\n-            } else {\n-              new RecoveryTaskContiguous(b).recover();\n+        datanode.metrics.incrDataNodeBlockRecoveryWorkerCount();\n+        try {\n+          for (RecoveringBlock b : blocks) {\n+            try {\n+              logRecoverBlock(who, b);\n+              if (b.isStriped()) {\n+                new RecoveryTaskStriped((RecoveringStripedBlock) b).recover();\n+              } else {\n+                new RecoveryTaskContiguous(b).recover();\n+              }\n+            } catch (IOException e) {\n+              LOG.warn(\"recover Block: {} FAILED: {}\", b, e);\n             }\n-          } catch (IOException e) {\n-            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n           }\n+        } finally {\n+          datanode.metrics.decrDataNodeBlockRecoveryWorkerCount();\n         }\n       }\n     });\n     d.start();\n     return d;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Daemon recoverBlocks(final String who,\n      final Collection\u003cRecoveringBlock\u003e blocks) {\n    Daemon d \u003d new Daemon(datanode.threadGroup, new Runnable() {\n      @Override\n      public void run() {\n        datanode.metrics.incrDataNodeBlockRecoveryWorkerCount();\n        try {\n          for (RecoveringBlock b : blocks) {\n            try {\n              logRecoverBlock(who, b);\n              if (b.isStriped()) {\n                new RecoveryTaskStriped((RecoveringStripedBlock) b).recover();\n              } else {\n                new RecoveryTaskContiguous(b).recover();\n              }\n            } catch (IOException e) {\n              LOG.warn(\"recover Block: {} FAILED: {}\", b, e);\n            }\n          }\n        } finally {\n          datanode.metrics.decrDataNodeBlockRecoveryWorkerCount();\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+      "extendedDetails": {}
+    },
+    "61ab0440f7eaff0f631cbae0378403912f88d7ad": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9173. Erasure Coding: Lease recovery for striped file. Contributed by Walter Su and Jing Zhao.\n\nChange-Id: I51703a61c9d8454f883028f3f6acb5729fde1b15\n",
+      "commitDate": "18/12/15 3:57 PM",
+      "commitName": "61ab0440f7eaff0f631cbae0378403912f88d7ad",
+      "commitAuthor": "Zhe Zhang",
+      "commitDateOld": "22/11/15 3:54 PM",
+      "commitNameOld": "176ff5ce90f2cbcd8342016d0f5570337d2ff79f",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 26.0,
+      "commitsBetweenForRepo": 196,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,22 @@\n   public Daemon recoverBlocks(final String who,\n       final Collection\u003cRecoveringBlock\u003e blocks) {\n     Daemon d \u003d new Daemon(datanode.threadGroup, new Runnable() {\n       @Override\n       public void run() {\n         for(RecoveringBlock b : blocks) {\n           try {\n             logRecoverBlock(who, b);\n-            RecoveryTaskContiguous task \u003d new RecoveryTaskContiguous(b);\n-            task.recover();\n+            if (b.isStriped()) {\n+              new RecoveryTaskStriped((RecoveringStripedBlock) b).recover();\n+            } else {\n+              new RecoveryTaskContiguous(b).recover();\n+            }\n           } catch (IOException e) {\n             LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n           }\n         }\n       }\n     });\n     d.start();\n     return d;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Daemon recoverBlocks(final String who,\n      final Collection\u003cRecoveringBlock\u003e blocks) {\n    Daemon d \u003d new Daemon(datanode.threadGroup, new Runnable() {\n      @Override\n      public void run() {\n        for(RecoveringBlock b : blocks) {\n          try {\n            logRecoverBlock(who, b);\n            if (b.isStriped()) {\n              new RecoveryTaskStriped((RecoveringStripedBlock) b).recover();\n            } else {\n              new RecoveryTaskContiguous(b).recover();\n            }\n          } catch (IOException e) {\n            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n          }\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+      "extendedDetails": {}
+    },
+    "e287e7d14b838a866ba03d895fa35819999d7c09": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange)",
+      "commitMessage": "HDFS-9255. Consolidate block recovery related implementation into a single class. Contributed by Walter Su.\n\nChange-Id: I7a1c03f50123d79ac0a78c981d9721617e3229d1\n",
+      "commitDate": "28/10/15 7:34 AM",
+      "commitName": "e287e7d14b838a866ba03d895fa35819999d7c09",
+      "commitAuthor": "Zhe Zhang",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-9255. Consolidate block recovery related implementation into a single class. Contributed by Walter Su.\n\nChange-Id: I7a1c03f50123d79ac0a78c981d9721617e3229d1\n",
+          "commitDate": "28/10/15 7:34 AM",
+          "commitName": "e287e7d14b838a866ba03d895fa35819999d7c09",
+          "commitAuthor": "Zhe Zhang",
+          "commitDateOld": "28/10/15 3:36 AM",
+          "commitNameOld": "a04b16970b0dbe903ac9a3a2a3080cf6de181bc2",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 0.16,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,19 @@\n-  public Daemon recoverBlocks(\n-      final String who,\n+  public Daemon recoverBlocks(final String who,\n       final Collection\u003cRecoveringBlock\u003e blocks) {\n-    \n-    Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n-      /** Recover a list of blocks. It is run by the primary datanode. */\n+    Daemon d \u003d new Daemon(datanode.threadGroup, new Runnable() {\n       @Override\n       public void run() {\n         for(RecoveringBlock b : blocks) {\n           try {\n             logRecoverBlock(who, b);\n-            recoverBlock(b);\n+            RecoveryTaskContiguous task \u003d new RecoveryTaskContiguous(b);\n+            task.recover();\n           } catch (IOException e) {\n             LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n           }\n         }\n       }\n     });\n     d.start();\n     return d;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Daemon recoverBlocks(final String who,\n      final Collection\u003cRecoveringBlock\u003e blocks) {\n    Daemon d \u003d new Daemon(datanode.threadGroup, new Runnable() {\n      @Override\n      public void run() {\n        for(RecoveringBlock b : blocks) {\n          try {\n            logRecoverBlock(who, b);\n            RecoveryTaskContiguous task \u003d new RecoveryTaskContiguous(b);\n            task.recover();\n          } catch (IOException e) {\n            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n          }\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+            "oldMethodName": "recoverBlocks",
+            "newMethodName": "recoverBlocks"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-9255. Consolidate block recovery related implementation into a single class. Contributed by Walter Su.\n\nChange-Id: I7a1c03f50123d79ac0a78c981d9721617e3229d1\n",
+          "commitDate": "28/10/15 7:34 AM",
+          "commitName": "e287e7d14b838a866ba03d895fa35819999d7c09",
+          "commitAuthor": "Zhe Zhang",
+          "commitDateOld": "28/10/15 3:36 AM",
+          "commitNameOld": "a04b16970b0dbe903ac9a3a2a3080cf6de181bc2",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 0.16,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,19 @@\n-  public Daemon recoverBlocks(\n-      final String who,\n+  public Daemon recoverBlocks(final String who,\n       final Collection\u003cRecoveringBlock\u003e blocks) {\n-    \n-    Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n-      /** Recover a list of blocks. It is run by the primary datanode. */\n+    Daemon d \u003d new Daemon(datanode.threadGroup, new Runnable() {\n       @Override\n       public void run() {\n         for(RecoveringBlock b : blocks) {\n           try {\n             logRecoverBlock(who, b);\n-            recoverBlock(b);\n+            RecoveryTaskContiguous task \u003d new RecoveryTaskContiguous(b);\n+            task.recover();\n           } catch (IOException e) {\n             LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n           }\n         }\n       }\n     });\n     d.start();\n     return d;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Daemon recoverBlocks(final String who,\n      final Collection\u003cRecoveringBlock\u003e blocks) {\n    Daemon d \u003d new Daemon(datanode.threadGroup, new Runnable() {\n      @Override\n      public void run() {\n        for(RecoveringBlock b : blocks) {\n          try {\n            logRecoverBlock(who, b);\n            RecoveryTaskContiguous task \u003d new RecoveryTaskContiguous(b);\n            task.recover();\n          } catch (IOException e) {\n            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n          }\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockRecoveryWorker.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "0e8e499ff482c165d21c8e4f5ff9c33f306ca0d9": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3659. Add missing @Override to methods across the hadoop-hdfs project. Contributed by Brandon Li. (harsh)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1361894 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "15/07/12 7:58 PM",
+      "commitName": "0e8e499ff482c165d21c8e4f5ff9c33f306ca0d9",
+      "commitAuthor": "Harsh J",
+      "commitDateOld": "12/07/12 12:01 PM",
+      "commitNameOld": "4a5ba3b7bd2360fd9605863630b477d362874e1e",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 3.33,
+      "commitsBetweenForRepo": 27,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,21 @@\n   public Daemon recoverBlocks(\n       final String who,\n       final Collection\u003cRecoveringBlock\u003e blocks) {\n     \n     Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n       /** Recover a list of blocks. It is run by the primary datanode. */\n+      @Override\n       public void run() {\n         for(RecoveringBlock b : blocks) {\n           try {\n             logRecoverBlock(who, b);\n             recoverBlock(b);\n           } catch (IOException e) {\n             LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n           }\n         }\n       }\n     });\n     d.start();\n     return d;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Daemon recoverBlocks(\n      final String who,\n      final Collection\u003cRecoveringBlock\u003e blocks) {\n    \n    Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n      /** Recover a list of blocks. It is run by the primary datanode. */\n      @Override\n      public void run() {\n        for(RecoveringBlock b : blocks) {\n          try {\n            logRecoverBlock(who, b);\n            recoverBlock(b);\n          } catch (IOException e) {\n            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n          }\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "extendedDetails": {}
+    },
+    "5258d6bf3fb8090739cf96f5089f96cee87393c4": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-3391. Fix InvalidateBlocks to compare blocks including their generation stamps. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1339897 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/05/12 3:30 PM",
+      "commitName": "5258d6bf3fb8090739cf96f5089f96cee87393c4",
+      "commitAuthor": "Todd Lipcon",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-3391. Fix InvalidateBlocks to compare blocks including their generation stamps. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1339897 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "17/05/12 3:30 PM",
+          "commitName": "5258d6bf3fb8090739cf96f5089f96cee87393c4",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "15/05/12 9:23 AM",
+          "commitNameOld": "e9a7648f62c72164decb69390ecff4da65bbca5e",
+          "commitAuthorOld": "Eli Collins",
+          "daysBetweenCommits": 2.25,
+          "commitsBetweenForRepo": 21,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,20 @@\n-  public Daemon recoverBlocks(final Collection\u003cRecoveringBlock\u003e blocks) {\n+  public Daemon recoverBlocks(\n+      final String who,\n+      final Collection\u003cRecoveringBlock\u003e blocks) {\n+    \n     Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n       /** Recover a list of blocks. It is run by the primary datanode. */\n       public void run() {\n         for(RecoveringBlock b : blocks) {\n           try {\n-            logRecoverBlock(\"NameNode\", b.getBlock(), b.getLocations());\n+            logRecoverBlock(who, b);\n             recoverBlock(b);\n           } catch (IOException e) {\n             LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n           }\n         }\n       }\n     });\n     d.start();\n     return d;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Daemon recoverBlocks(\n      final String who,\n      final Collection\u003cRecoveringBlock\u003e blocks) {\n    \n    Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n      /** Recover a list of blocks. It is run by the primary datanode. */\n      public void run() {\n        for(RecoveringBlock b : blocks) {\n          try {\n            logRecoverBlock(who, b);\n            recoverBlock(b);\n          } catch (IOException e) {\n            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n          }\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+          "extendedDetails": {
+            "oldValue": "[blocks-Collection\u003cRecoveringBlock\u003e(modifiers-final)]",
+            "newValue": "[who-String(modifiers-final), blocks-Collection\u003cRecoveringBlock\u003e(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3391. Fix InvalidateBlocks to compare blocks including their generation stamps. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1339897 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "17/05/12 3:30 PM",
+          "commitName": "5258d6bf3fb8090739cf96f5089f96cee87393c4",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "15/05/12 9:23 AM",
+          "commitNameOld": "e9a7648f62c72164decb69390ecff4da65bbca5e",
+          "commitAuthorOld": "Eli Collins",
+          "daysBetweenCommits": 2.25,
+          "commitsBetweenForRepo": 21,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,20 @@\n-  public Daemon recoverBlocks(final Collection\u003cRecoveringBlock\u003e blocks) {\n+  public Daemon recoverBlocks(\n+      final String who,\n+      final Collection\u003cRecoveringBlock\u003e blocks) {\n+    \n     Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n       /** Recover a list of blocks. It is run by the primary datanode. */\n       public void run() {\n         for(RecoveringBlock b : blocks) {\n           try {\n-            logRecoverBlock(\"NameNode\", b.getBlock(), b.getLocations());\n+            logRecoverBlock(who, b);\n             recoverBlock(b);\n           } catch (IOException e) {\n             LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n           }\n         }\n       }\n     });\n     d.start();\n     return d;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public Daemon recoverBlocks(\n      final String who,\n      final Collection\u003cRecoveringBlock\u003e blocks) {\n    \n    Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n      /** Recover a list of blocks. It is run by the primary datanode. */\n      public void run() {\n        for(RecoveringBlock b : blocks) {\n          try {\n            logRecoverBlock(who, b);\n            recoverBlock(b);\n          } catch (IOException e) {\n            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n          }\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public Daemon recoverBlocks(final Collection\u003cRecoveringBlock\u003e blocks) {\n    Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n      /** Recover a list of blocks. It is run by the primary datanode. */\n      public void run() {\n        for(RecoveringBlock b : blocks) {\n          try {\n            logRecoverBlock(\"NameNode\", b.getBlock(), b.getLocations());\n            recoverBlock(b);\n          } catch (IOException e) {\n            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n          }\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java"
+      }
+    },
+    "d86f3183d93714ba078416af4f609d26376eadb0": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-2096. Mavenization of hadoop-hdfs. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159702 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "19/08/11 10:36 AM",
+      "commitName": "d86f3183d93714ba078416af4f609d26376eadb0",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "19/08/11 10:26 AM",
+      "commitNameOld": "6ee5a73e0e91a2ef27753a32c576835e951d8119",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public Daemon recoverBlocks(final Collection\u003cRecoveringBlock\u003e blocks) {\n    Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n      /** Recover a list of blocks. It is run by the primary datanode. */\n      public void run() {\n        for(RecoveringBlock b : blocks) {\n          try {\n            logRecoverBlock(\"NameNode\", b.getBlock(), b.getLocations());\n            recoverBlock(b);\n          } catch (IOException e) {\n            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n          }\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+      "path": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+      "extendedDetails": {
+        "oldPath": "hdfs/src/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java",
+        "newPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,17 @@\n+  public Daemon recoverBlocks(final Collection\u003cRecoveringBlock\u003e blocks) {\n+    Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n+      /** Recover a list of blocks. It is run by the primary datanode. */\n+      public void run() {\n+        for(RecoveringBlock b : blocks) {\n+          try {\n+            logRecoverBlock(\"NameNode\", b.getBlock(), b.getLocations());\n+            recoverBlock(b);\n+          } catch (IOException e) {\n+            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n+          }\n+        }\n+      }\n+    });\n+    d.start();\n+    return d;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public Daemon recoverBlocks(final Collection\u003cRecoveringBlock\u003e blocks) {\n    Daemon d \u003d new Daemon(threadGroup, new Runnable() {\n      /** Recover a list of blocks. It is run by the primary datanode. */\n      public void run() {\n        for(RecoveringBlock b : blocks) {\n          try {\n            logRecoverBlock(\"NameNode\", b.getBlock(), b.getLocations());\n            recoverBlock(b);\n          } catch (IOException e) {\n            LOG.warn(\"recoverBlocks FAILED: \" + b, e);\n          }\n        }\n      }\n    });\n    d.start();\n    return d;\n  }",
+      "path": "hdfs/src/java/org/apache/hadoop/hdfs/server/datanode/DataNode.java"
+    }
+  }
+}

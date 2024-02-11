@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RouterWebServices.java",
+  "functionName": "initializePipeline",
+  "functionId": "initializePipeline___user-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/RouterWebServices.java",
+  "functionStartLine": 252,
+  "functionEndLine": 279,
+  "numCommitsSeen": 12,
+  "timeTaken": 1779,
+  "changeHistory": [
+    "0d9804dcef2eab5ebf84667d9ca49bb035d9a731",
+    "acda6b96a4e92e432bd1d97fa14004a11e70387e"
+  ],
+  "changeHistoryShort": {
+    "0d9804dcef2eab5ebf84667d9ca49bb035d9a731": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "acda6b96a4e92e432bd1d97fa14004a11e70387e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0d9804dcef2eab5ebf84667d9ca49bb035d9a731": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "YARN-8435. Fix NPE when the same client simultaneously contact for the first time Yarn Router. Contributed by Rang Jiaheng.\n",
+      "commitDate": "05/07/18 10:54 AM",
+      "commitName": "0d9804dcef2eab5ebf84667d9ca49bb035d9a731",
+      "commitAuthor": "Giovanni Matteo Fumarola",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "YARN-8435. Fix NPE when the same client simultaneously contact for the first time Yarn Router. Contributed by Rang Jiaheng.\n",
+          "commitDate": "05/07/18 10:54 AM",
+          "commitName": "0d9804dcef2eab5ebf84667d9ca49bb035d9a731",
+          "commitAuthor": "Giovanni Matteo Fumarola",
+          "commitDateOld": "02/04/18 3:22 PM",
+          "commitNameOld": "c78cb18c61a0565b9697ab5bbf4d186e43e82f55",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 93.81,
+          "commitsBetweenForRepo": 1158,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,28 @@\n-  private void initializePipeline(String user) {\n-    RequestInterceptorChainWrapper chainWrapper \u003d null;\n+  private RequestInterceptorChainWrapper initializePipeline(String user) {\n     synchronized (this.userPipelineMap) {\n       if (this.userPipelineMap.containsKey(user)) {\n         LOG.info(\"Request to start an already existing user: {}\"\n             + \" was received, so ignoring.\", user);\n-        return;\n+        return userPipelineMap.get(user);\n       }\n \n-      chainWrapper \u003d new RequestInterceptorChainWrapper();\n+      RequestInterceptorChainWrapper chainWrapper \u003d\n+          new RequestInterceptorChainWrapper();\n+      try {\n+        // We should init the pipeline instance after it is created and then\n+        // add to the map, to ensure thread safe.\n+        LOG.info(\"Initializing request processing pipeline for user: {}\", user);\n+\n+        RESTRequestInterceptor interceptorChain \u003d\n+            this.createRequestInterceptorChain();\n+        interceptorChain.init(user);\n+        chainWrapper.init(interceptorChain);\n+      } catch (Exception e) {\n+        LOG.error(\"Init RESTRequestInterceptor error for user: \" + user, e);\n+        throw e;\n+      }\n+\n       this.userPipelineMap.put(user, chainWrapper);\n-    }\n-\n-    // We register the pipeline instance in the map first and then initialize it\n-    // later because chain initialization can be expensive and we would like to\n-    // release the lock as soon as possible to prevent other applications from\n-    // blocking when one application\u0027s chain is initializing\n-    LOG.info(\"Initializing request processing pipeline for the user: {}\", user);\n-\n-    try {\n-      RESTRequestInterceptor interceptorChain \u003d\n-          this.createRequestInterceptorChain();\n-      interceptorChain.init(user);\n-      chainWrapper.init(interceptorChain);\n-    } catch (Exception e) {\n-      synchronized (this.userPipelineMap) {\n-        this.userPipelineMap.remove(user);\n-      }\n-      throw e;\n+      return chainWrapper;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private RequestInterceptorChainWrapper initializePipeline(String user) {\n    synchronized (this.userPipelineMap) {\n      if (this.userPipelineMap.containsKey(user)) {\n        LOG.info(\"Request to start an already existing user: {}\"\n            + \" was received, so ignoring.\", user);\n        return userPipelineMap.get(user);\n      }\n\n      RequestInterceptorChainWrapper chainWrapper \u003d\n          new RequestInterceptorChainWrapper();\n      try {\n        // We should init the pipeline instance after it is created and then\n        // add to the map, to ensure thread safe.\n        LOG.info(\"Initializing request processing pipeline for user: {}\", user);\n\n        RESTRequestInterceptor interceptorChain \u003d\n            this.createRequestInterceptorChain();\n        interceptorChain.init(user);\n        chainWrapper.init(interceptorChain);\n      } catch (Exception e) {\n        LOG.error(\"Init RESTRequestInterceptor error for user: \" + user, e);\n        throw e;\n      }\n\n      this.userPipelineMap.put(user, chainWrapper);\n      return chainWrapper;\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/RouterWebServices.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "RequestInterceptorChainWrapper"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-8435. Fix NPE when the same client simultaneously contact for the first time Yarn Router. Contributed by Rang Jiaheng.\n",
+          "commitDate": "05/07/18 10:54 AM",
+          "commitName": "0d9804dcef2eab5ebf84667d9ca49bb035d9a731",
+          "commitAuthor": "Giovanni Matteo Fumarola",
+          "commitDateOld": "02/04/18 3:22 PM",
+          "commitNameOld": "c78cb18c61a0565b9697ab5bbf4d186e43e82f55",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 93.81,
+          "commitsBetweenForRepo": 1158,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,28 @@\n-  private void initializePipeline(String user) {\n-    RequestInterceptorChainWrapper chainWrapper \u003d null;\n+  private RequestInterceptorChainWrapper initializePipeline(String user) {\n     synchronized (this.userPipelineMap) {\n       if (this.userPipelineMap.containsKey(user)) {\n         LOG.info(\"Request to start an already existing user: {}\"\n             + \" was received, so ignoring.\", user);\n-        return;\n+        return userPipelineMap.get(user);\n       }\n \n-      chainWrapper \u003d new RequestInterceptorChainWrapper();\n+      RequestInterceptorChainWrapper chainWrapper \u003d\n+          new RequestInterceptorChainWrapper();\n+      try {\n+        // We should init the pipeline instance after it is created and then\n+        // add to the map, to ensure thread safe.\n+        LOG.info(\"Initializing request processing pipeline for user: {}\", user);\n+\n+        RESTRequestInterceptor interceptorChain \u003d\n+            this.createRequestInterceptorChain();\n+        interceptorChain.init(user);\n+        chainWrapper.init(interceptorChain);\n+      } catch (Exception e) {\n+        LOG.error(\"Init RESTRequestInterceptor error for user: \" + user, e);\n+        throw e;\n+      }\n+\n       this.userPipelineMap.put(user, chainWrapper);\n-    }\n-\n-    // We register the pipeline instance in the map first and then initialize it\n-    // later because chain initialization can be expensive and we would like to\n-    // release the lock as soon as possible to prevent other applications from\n-    // blocking when one application\u0027s chain is initializing\n-    LOG.info(\"Initializing request processing pipeline for the user: {}\", user);\n-\n-    try {\n-      RESTRequestInterceptor interceptorChain \u003d\n-          this.createRequestInterceptorChain();\n-      interceptorChain.init(user);\n-      chainWrapper.init(interceptorChain);\n-    } catch (Exception e) {\n-      synchronized (this.userPipelineMap) {\n-        this.userPipelineMap.remove(user);\n-      }\n-      throw e;\n+      return chainWrapper;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private RequestInterceptorChainWrapper initializePipeline(String user) {\n    synchronized (this.userPipelineMap) {\n      if (this.userPipelineMap.containsKey(user)) {\n        LOG.info(\"Request to start an already existing user: {}\"\n            + \" was received, so ignoring.\", user);\n        return userPipelineMap.get(user);\n      }\n\n      RequestInterceptorChainWrapper chainWrapper \u003d\n          new RequestInterceptorChainWrapper();\n      try {\n        // We should init the pipeline instance after it is created and then\n        // add to the map, to ensure thread safe.\n        LOG.info(\"Initializing request processing pipeline for user: {}\", user);\n\n        RESTRequestInterceptor interceptorChain \u003d\n            this.createRequestInterceptorChain();\n        interceptorChain.init(user);\n        chainWrapper.init(interceptorChain);\n      } catch (Exception e) {\n        LOG.error(\"Init RESTRequestInterceptor error for user: \" + user, e);\n        throw e;\n      }\n\n      this.userPipelineMap.put(user, chainWrapper);\n      return chainWrapper;\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/RouterWebServices.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "acda6b96a4e92e432bd1d97fa14004a11e70387e": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5412. Create a proxy chain for ResourceManager REST API in the Router. (Contributed by Giovanni Matteo Fumarola via curino)\n\n(cherry picked from commit b6240b92abf453affc5fd64e1eedf2d29842aa75)\n",
+      "commitDate": "01/08/17 5:28 PM",
+      "commitName": "acda6b96a4e92e432bd1d97fa14004a11e70387e",
+      "commitAuthor": "Carlo Curino",
+      "diff": "@@ -0,0 +1,31 @@\n+  private void initializePipeline(String user) {\n+    RequestInterceptorChainWrapper chainWrapper \u003d null;\n+    synchronized (this.userPipelineMap) {\n+      if (this.userPipelineMap.containsKey(user)) {\n+        LOG.info(\"Request to start an already existing user: {}\"\n+            + \" was received, so ignoring.\", user);\n+        return;\n+      }\n+\n+      chainWrapper \u003d new RequestInterceptorChainWrapper();\n+      this.userPipelineMap.put(user, chainWrapper);\n+    }\n+\n+    // We register the pipeline instance in the map first and then initialize it\n+    // later because chain initialization can be expensive and we would like to\n+    // release the lock as soon as possible to prevent other applications from\n+    // blocking when one application\u0027s chain is initializing\n+    LOG.info(\"Initializing request processing pipeline for the user: {}\", user);\n+\n+    try {\n+      RESTRequestInterceptor interceptorChain \u003d\n+          this.createRequestInterceptorChain();\n+      interceptorChain.init(user);\n+      chainWrapper.init(interceptorChain);\n+    } catch (Exception e) {\n+      synchronized (this.userPipelineMap) {\n+        this.userPipelineMap.remove(user);\n+      }\n+      throw e;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void initializePipeline(String user) {\n    RequestInterceptorChainWrapper chainWrapper \u003d null;\n    synchronized (this.userPipelineMap) {\n      if (this.userPipelineMap.containsKey(user)) {\n        LOG.info(\"Request to start an already existing user: {}\"\n            + \" was received, so ignoring.\", user);\n        return;\n      }\n\n      chainWrapper \u003d new RequestInterceptorChainWrapper();\n      this.userPipelineMap.put(user, chainWrapper);\n    }\n\n    // We register the pipeline instance in the map first and then initialize it\n    // later because chain initialization can be expensive and we would like to\n    // release the lock as soon as possible to prevent other applications from\n    // blocking when one application\u0027s chain is initializing\n    LOG.info(\"Initializing request processing pipeline for the user: {}\", user);\n\n    try {\n      RESTRequestInterceptor interceptorChain \u003d\n          this.createRequestInterceptorChain();\n      interceptorChain.init(user);\n      chainWrapper.init(interceptorChain);\n    } catch (Exception e) {\n      synchronized (this.userPipelineMap) {\n        this.userPipelineMap.remove(user);\n      }\n      throw e;\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/RouterWebServices.java"
+    }
+  }
+}

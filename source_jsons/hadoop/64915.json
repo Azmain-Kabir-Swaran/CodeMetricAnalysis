@@ -1,0 +1,360 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DefaultS3ClientFactory.java",
+  "functionName": "createS3Client",
+  "functionId": "createS3Client___name-URI__bucket-String(modifiers-final)__credentials-AWSCredentialsProvider(modifiers-final)__userAgentSuffix-String(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+  "functionStartLine": 55,
+  "functionEndLine": 77,
+  "numCommitsSeen": 22,
+  "timeTaken": 9281,
+  "changeHistory": [
+    "56dee667707926f3796c7757be1a133a362f05c9",
+    "e02b1023c2f42b6792d2941c1f987ae06259b021",
+    "6d0bffe17eadedd60d4599427248b0db4a7c5502",
+    "7f783970364930cc461d1a73833bc58cdd10553e",
+    "d7152332b32a575c3a92e3f4c44b95e58462528d",
+    "da9a39eed138210de29b59b90c449b28da1c04f9",
+    "621b43e254afaff708cd6fc4698b29628f6abc33",
+    "2e30aa72e01de7b5774fcb312406a393221e0908",
+    "d152557cf7f4d2288524c222fcbaf152bdc038b0"
+  ],
+  "changeHistoryShort": {
+    "56dee667707926f3796c7757be1a133a362f05c9": "Ybodychange",
+    "e02b1023c2f42b6792d2941c1f987ae06259b021": "Ybodychange",
+    "6d0bffe17eadedd60d4599427248b0db4a7c5502": "Ymultichange(Yparameterchange,Ybodychange)",
+    "7f783970364930cc461d1a73833bc58cdd10553e": "Ymultichange(Yparameterchange,Ybodychange)",
+    "d7152332b32a575c3a92e3f4c44b95e58462528d": "Ymultichange(Yparameterchange,Ybodychange)",
+    "da9a39eed138210de29b59b90c449b28da1c04f9": "Ymultichange(Yparameterchange,Ybodychange)",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Ymultichange(Ymovefromfile,Ybodychange)",
+    "2e30aa72e01de7b5774fcb312406a393221e0908": "Ymultichange(Yparameterchange,Ybodychange)",
+    "d152557cf7f4d2288524c222fcbaf152bdc038b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "56dee667707926f3796c7757be1a133a362f05c9": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16823. Large DeleteObject requests are their own Thundering Herd.\n\nContributed by Steve Loughran.\n\nDuring S3A rename() and delete() calls, the list of objects delete is\nbuilt up into batches of a thousand and then POSTed in a single large\nDeleteObjects request.\n\nBut as the IO capacity allowed on an S3 partition may only be 3500 writes\nper second *and* each entry in that POST counts as a single write, then\none of those posts alone can trigger throttling on an already loaded\nS3 directory tree. Which can trigger backoff and retry, with the same\nthousand entry post, and so recreate the exact same problem.\n\nFixes\n\n* Page size for delete object requests is set in\n  fs.s3a.bulk.delete.page.size; the default is 250.\n* The property fs.s3a.experimental.aws.s3.throttling (default\u003dtrue)\n  can be set to false to disable throttle retry logic in the AWS\n  client SDK -it is all handled in the S3A client. This\n  gives more visibility in to when operations are being throttled\n* Bulk delete throttling events are logged to the log\n  org.apache.hadoop.fs.s3a.throttled log at INFO; if this appears\n  often then choose a smaller page size.\n* The metric \"store_io_throttled\" adds the entire count of delete\n  requests when a single DeleteObjects request is throttled.\n* A new quantile, \"store_io_throttle_rate\" can track throttling\n  load over time.\n* DynamoDB metastore throttle resilience issues have also been\n  identified and fixed. Note: the fs.s3a.experimental.aws.s3.throttling\n  flag does not apply to DDB IO precisely because there may still be\n  lurking issues there and it safest to rely on the DynamoDB client\n  SDK.\n\nChange-Id: I00f85cdd94fc008864d060533f6bd4870263fd84\n",
+      "commitDate": "13/02/20 11:09 AM",
+      "commitName": "56dee667707926f3796c7757be1a133a362f05c9",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "20/09/19 11:20 PM",
+      "commitNameOld": "e02b1023c2f42b6792d2941c1f987ae06259b021",
+      "commitAuthorOld": "Siddharth Seth",
+      "daysBetweenCommits": 145.53,
+      "commitsBetweenForRepo": 604,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,23 @@\n   public AmazonS3 createS3Client(URI name,\n       final String bucket,\n       final AWSCredentialsProvider credentials,\n       final String userAgentSuffix) throws IOException {\n     Configuration conf \u003d getConf();\n     final ClientConfiguration awsConf \u003d S3AUtils\n-        .createAwsConf(getConf(), bucket, Constants.AWS_SERVICE_IDENTIFIER_S3);\n+        .createAwsConf(conf, bucket, Constants.AWS_SERVICE_IDENTIFIER_S3);\n+\n+    // When EXPERIMENTAL_AWS_INTERNAL_THROTTLING is false\n+    // throttling is explicitly disabled on the S3 client so that\n+    // all failures are collected in S3A instrumentation, and its\n+    // retry policy is the only one used.\n+    // This may cause problems in copy/rename.\n+    awsConf.setUseThrottleRetries(\n+        conf.getBoolean(EXPERIMENTAL_AWS_INTERNAL_THROTTLING,\n+            EXPERIMENTAL_AWS_INTERNAL_THROTTLING_DEFAULT));\n+\n     if (!StringUtils.isEmpty(userAgentSuffix)) {\n       awsConf.setUserAgentSuffix(userAgentSuffix);\n     }\n     return configureAmazonS3Client(\n         newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials,\n      final String userAgentSuffix) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils\n        .createAwsConf(conf, bucket, Constants.AWS_SERVICE_IDENTIFIER_S3);\n\n    // When EXPERIMENTAL_AWS_INTERNAL_THROTTLING is false\n    // throttling is explicitly disabled on the S3 client so that\n    // all failures are collected in S3A instrumentation, and its\n    // retry policy is the only one used.\n    // This may cause problems in copy/rename.\n    awsConf.setUseThrottleRetries(\n        conf.getBoolean(EXPERIMENTAL_AWS_INTERNAL_THROTTLING,\n            EXPERIMENTAL_AWS_INTERNAL_THROTTLING_DEFAULT));\n\n    if (!StringUtils.isEmpty(userAgentSuffix)) {\n      awsConf.setUserAgentSuffix(userAgentSuffix);\n    }\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+      "extendedDetails": {}
+    },
+    "e02b1023c2f42b6792d2941c1f987ae06259b021": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16445. Allow separate custom signing algorithms for S3 and DDB (#1332)\n\n",
+      "commitDate": "20/09/19 11:20 PM",
+      "commitName": "e02b1023c2f42b6792d2941c1f987ae06259b021",
+      "commitAuthor": "Siddharth Seth",
+      "commitDateOld": "14/01/19 9:59 AM",
+      "commitNameOld": "6d0bffe17eadedd60d4599427248b0db4a7c5502",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 249.51,
+      "commitsBetweenForRepo": 1965,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,13 @@\n   public AmazonS3 createS3Client(URI name,\n       final String bucket,\n       final AWSCredentialsProvider credentials,\n       final String userAgentSuffix) throws IOException {\n     Configuration conf \u003d getConf();\n-    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n+    final ClientConfiguration awsConf \u003d S3AUtils\n+        .createAwsConf(getConf(), bucket, Constants.AWS_SERVICE_IDENTIFIER_S3);\n     if (!StringUtils.isEmpty(userAgentSuffix)) {\n       awsConf.setUserAgentSuffix(userAgentSuffix);\n     }\n     return configureAmazonS3Client(\n         newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials,\n      final String userAgentSuffix) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils\n        .createAwsConf(getConf(), bucket, Constants.AWS_SERVICE_IDENTIFIER_S3);\n    if (!StringUtils.isEmpty(userAgentSuffix)) {\n      awsConf.setUserAgentSuffix(userAgentSuffix);\n    }\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+      "extendedDetails": {}
+    },
+    "6d0bffe17eadedd60d4599427248b0db4a7c5502": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-14556. S3A to support Delegation Tokens.\n\nContributed by Steve Loughran and Daryn Sharp.\n",
+      "commitDate": "14/01/19 9:59 AM",
+      "commitName": "6d0bffe17eadedd60d4599427248b0db4a7c5502",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-14556. S3A to support Delegation Tokens.\n\nContributed by Steve Loughran and Daryn Sharp.\n",
+          "commitDate": "14/01/19 9:59 AM",
+          "commitName": "6d0bffe17eadedd60d4599427248b0db4a7c5502",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "07/01/19 9:51 PM",
+          "commitNameOld": "7f783970364930cc461d1a73833bc58cdd10553e",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 6.51,
+          "commitsBetweenForRepo": 32,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,12 @@\n   public AmazonS3 createS3Client(URI name,\n       final String bucket,\n-      final AWSCredentialsProvider credentials) throws IOException {\n+      final AWSCredentialsProvider credentials,\n+      final String userAgentSuffix) throws IOException {\n     Configuration conf \u003d getConf();\n     final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n+    if (!StringUtils.isEmpty(userAgentSuffix)) {\n+      awsConf.setUserAgentSuffix(userAgentSuffix);\n+    }\n     return configureAmazonS3Client(\n         newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials,\n      final String userAgentSuffix) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n    if (!StringUtils.isEmpty(userAgentSuffix)) {\n      awsConf.setUserAgentSuffix(userAgentSuffix);\n    }\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {
+            "oldValue": "[name-URI, bucket-String(modifiers-final), credentials-AWSCredentialsProvider(modifiers-final)]",
+            "newValue": "[name-URI, bucket-String(modifiers-final), credentials-AWSCredentialsProvider(modifiers-final), userAgentSuffix-String(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14556. S3A to support Delegation Tokens.\n\nContributed by Steve Loughran and Daryn Sharp.\n",
+          "commitDate": "14/01/19 9:59 AM",
+          "commitName": "6d0bffe17eadedd60d4599427248b0db4a7c5502",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "07/01/19 9:51 PM",
+          "commitNameOld": "7f783970364930cc461d1a73833bc58cdd10553e",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 6.51,
+          "commitsBetweenForRepo": 32,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,12 @@\n   public AmazonS3 createS3Client(URI name,\n       final String bucket,\n-      final AWSCredentialsProvider credentials) throws IOException {\n+      final AWSCredentialsProvider credentials,\n+      final String userAgentSuffix) throws IOException {\n     Configuration conf \u003d getConf();\n     final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n+    if (!StringUtils.isEmpty(userAgentSuffix)) {\n+      awsConf.setUserAgentSuffix(userAgentSuffix);\n+    }\n     return configureAmazonS3Client(\n         newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials,\n      final String userAgentSuffix) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n    if (!StringUtils.isEmpty(userAgentSuffix)) {\n      awsConf.setUserAgentSuffix(userAgentSuffix);\n    }\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "7f783970364930cc461d1a73833bc58cdd10553e": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "Revert \"HADOOP-14556. S3A to support Delegation Tokens.\"\n\nThis reverts commit d7152332b32a575c3a92e3f4c44b95e58462528d.\n",
+      "commitDate": "07/01/19 9:51 PM",
+      "commitName": "7f783970364930cc461d1a73833bc58cdd10553e",
+      "commitAuthor": "Akira Ajisaka",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "Revert \"HADOOP-14556. S3A to support Delegation Tokens.\"\n\nThis reverts commit d7152332b32a575c3a92e3f4c44b95e58462528d.\n",
+          "commitDate": "07/01/19 9:51 PM",
+          "commitName": "7f783970364930cc461d1a73833bc58cdd10553e",
+          "commitAuthor": "Akira Ajisaka",
+          "commitDateOld": "07/01/19 5:18 AM",
+          "commitNameOld": "d7152332b32a575c3a92e3f4c44b95e58462528d",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 0.69,
+          "commitsBetweenForRepo": 7,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,8 @@\n   public AmazonS3 createS3Client(URI name,\n       final String bucket,\n-      final AWSCredentialsProvider credentials,\n-      final String userAgentSuffix) throws IOException {\n+      final AWSCredentialsProvider credentials) throws IOException {\n     Configuration conf \u003d getConf();\n     final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n-    if (!StringUtils.isEmpty(userAgentSuffix)) {\n-      awsConf.setUserAgentSuffix(userAgentSuffix);\n-    }\n     return configureAmazonS3Client(\n         newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {
+            "oldValue": "[name-URI, bucket-String(modifiers-final), credentials-AWSCredentialsProvider(modifiers-final), userAgentSuffix-String(modifiers-final)]",
+            "newValue": "[name-URI, bucket-String(modifiers-final), credentials-AWSCredentialsProvider(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "Revert \"HADOOP-14556. S3A to support Delegation Tokens.\"\n\nThis reverts commit d7152332b32a575c3a92e3f4c44b95e58462528d.\n",
+          "commitDate": "07/01/19 9:51 PM",
+          "commitName": "7f783970364930cc461d1a73833bc58cdd10553e",
+          "commitAuthor": "Akira Ajisaka",
+          "commitDateOld": "07/01/19 5:18 AM",
+          "commitNameOld": "d7152332b32a575c3a92e3f4c44b95e58462528d",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 0.69,
+          "commitsBetweenForRepo": 7,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,8 @@\n   public AmazonS3 createS3Client(URI name,\n       final String bucket,\n-      final AWSCredentialsProvider credentials,\n-      final String userAgentSuffix) throws IOException {\n+      final AWSCredentialsProvider credentials) throws IOException {\n     Configuration conf \u003d getConf();\n     final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n-    if (!StringUtils.isEmpty(userAgentSuffix)) {\n-      awsConf.setUserAgentSuffix(userAgentSuffix);\n-    }\n     return configureAmazonS3Client(\n         newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "d7152332b32a575c3a92e3f4c44b95e58462528d": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-14556. S3A to support Delegation Tokens.\n\nContributed by Steve Loughran.\n",
+      "commitDate": "07/01/19 5:18 AM",
+      "commitName": "d7152332b32a575c3a92e3f4c44b95e58462528d",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-14556. S3A to support Delegation Tokens.\n\nContributed by Steve Loughran.\n",
+          "commitDate": "07/01/19 5:18 AM",
+          "commitName": "d7152332b32a575c3a92e3f4c44b95e58462528d",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "08/08/18 10:57 PM",
+          "commitNameOld": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 151.31,
+          "commitsBetweenForRepo": 1243,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,12 @@\n   public AmazonS3 createS3Client(URI name,\n       final String bucket,\n-      final AWSCredentialsProvider credentials) throws IOException {\n+      final AWSCredentialsProvider credentials,\n+      final String userAgentSuffix) throws IOException {\n     Configuration conf \u003d getConf();\n     final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n+    if (!StringUtils.isEmpty(userAgentSuffix)) {\n+      awsConf.setUserAgentSuffix(userAgentSuffix);\n+    }\n     return configureAmazonS3Client(\n         newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials,\n      final String userAgentSuffix) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n    if (!StringUtils.isEmpty(userAgentSuffix)) {\n      awsConf.setUserAgentSuffix(userAgentSuffix);\n    }\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {
+            "oldValue": "[name-URI, bucket-String(modifiers-final), credentials-AWSCredentialsProvider(modifiers-final)]",
+            "newValue": "[name-URI, bucket-String(modifiers-final), credentials-AWSCredentialsProvider(modifiers-final), userAgentSuffix-String(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14556. S3A to support Delegation Tokens.\n\nContributed by Steve Loughran.\n",
+          "commitDate": "07/01/19 5:18 AM",
+          "commitName": "d7152332b32a575c3a92e3f4c44b95e58462528d",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "08/08/18 10:57 PM",
+          "commitNameOld": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 151.31,
+          "commitsBetweenForRepo": 1243,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,12 @@\n   public AmazonS3 createS3Client(URI name,\n       final String bucket,\n-      final AWSCredentialsProvider credentials) throws IOException {\n+      final AWSCredentialsProvider credentials,\n+      final String userAgentSuffix) throws IOException {\n     Configuration conf \u003d getConf();\n     final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n+    if (!StringUtils.isEmpty(userAgentSuffix)) {\n+      awsConf.setUserAgentSuffix(userAgentSuffix);\n+    }\n     return configureAmazonS3Client(\n         newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials,\n      final String userAgentSuffix) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n    if (!StringUtils.isEmpty(userAgentSuffix)) {\n      awsConf.setUserAgentSuffix(userAgentSuffix);\n    }\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "da9a39eed138210de29b59b90c449b28da1c04f9": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+      "commitDate": "08/08/18 10:57 PM",
+      "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+          "commitDate": "08/08/18 10:57 PM",
+          "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "01/09/17 6:13 AM",
+          "commitNameOld": "621b43e254afaff708cd6fc4698b29628f6abc33",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 341.7,
+          "commitsBetweenForRepo": 3035,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,8 @@\n-  public AmazonS3 createS3Client(URI name) throws IOException {\n+  public AmazonS3 createS3Client(URI name,\n+      final String bucket,\n+      final AWSCredentialsProvider credentials) throws IOException {\n     Configuration conf \u003d getConf();\n-    AWSCredentialsProvider credentials \u003d\n-        createAWSCredentialProviderSet(name, conf);\n-    final ClientConfiguration awsConf \u003d createAwsConf(getConf());\n-    AmazonS3 s3 \u003d newAmazonS3Client(credentials, awsConf);\n-    return createAmazonS3Client(s3, conf, credentials, awsConf);\n+    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n+    return configureAmazonS3Client(\n+        newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {
+            "oldValue": "[name-URI]",
+            "newValue": "[name-URI, bucket-String(modifiers-final), credentials-AWSCredentialsProvider(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+          "commitDate": "08/08/18 10:57 PM",
+          "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "01/09/17 6:13 AM",
+          "commitNameOld": "621b43e254afaff708cd6fc4698b29628f6abc33",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 341.7,
+          "commitsBetweenForRepo": 3035,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,8 @@\n-  public AmazonS3 createS3Client(URI name) throws IOException {\n+  public AmazonS3 createS3Client(URI name,\n+      final String bucket,\n+      final AWSCredentialsProvider credentials) throws IOException {\n     Configuration conf \u003d getConf();\n-    AWSCredentialsProvider credentials \u003d\n-        createAWSCredentialProviderSet(name, conf);\n-    final ClientConfiguration awsConf \u003d createAwsConf(getConf());\n-    AmazonS3 s3 \u003d newAmazonS3Client(credentials, awsConf);\n-    return createAmazonS3Client(s3, conf, credentials, awsConf);\n+    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n+    return configureAmazonS3Client(\n+        newAmazonS3Client(credentials, awsConf), conf);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name,\n      final String bucket,\n      final AWSCredentialsProvider credentials) throws IOException {\n    Configuration conf \u003d getConf();\n    final ClientConfiguration awsConf \u003d S3AUtils.createAwsConf(getConf(), bucket);\n    return configureAmazonS3Client(\n        newAmazonS3Client(credentials, awsConf), conf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange)",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+          "commitDate": "01/09/17 6:13 AM",
+          "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "01/09/17 2:48 AM",
+          "commitNameOld": "7a96033b15580a01a2867fa3cab9c1e409dbaafd",
+          "commitAuthorOld": "Kai Zheng",
+          "daysBetweenCommits": 0.14,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,8 @@\n-    public AmazonS3 createS3Client(URI name) throws IOException {\n-      Configuration conf \u003d getConf();\n-      AWSCredentialsProvider credentials \u003d\n-          createAWSCredentialProviderSet(name, conf);\n-      ClientConfiguration awsConf \u003d new ClientConfiguration();\n-      initConnectionSettings(conf, awsConf);\n-      initProxySupport(conf, awsConf);\n-      initUserAgent(conf, awsConf);\n-      return createAmazonS3Client(conf, credentials, awsConf);\n-    }\n\\ No newline at end of file\n+  public AmazonS3 createS3Client(URI name) throws IOException {\n+    Configuration conf \u003d getConf();\n+    AWSCredentialsProvider credentials \u003d\n+        createAWSCredentialProviderSet(name, conf);\n+    final ClientConfiguration awsConf \u003d createAwsConf(getConf());\n+    AmazonS3 s3 \u003d newAmazonS3Client(credentials, awsConf);\n+    return createAmazonS3Client(s3, conf, credentials, awsConf);\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name) throws IOException {\n    Configuration conf \u003d getConf();\n    AWSCredentialsProvider credentials \u003d\n        createAWSCredentialProviderSet(name, conf);\n    final ClientConfiguration awsConf \u003d createAwsConf(getConf());\n    AmazonS3 s3 \u003d newAmazonS3Client(credentials, awsConf);\n    return createAmazonS3Client(s3, conf, credentials, awsConf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ClientFactory.java",
+            "newPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+            "oldMethodName": "createS3Client",
+            "newMethodName": "createS3Client"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+          "commitDate": "01/09/17 6:13 AM",
+          "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "01/09/17 2:48 AM",
+          "commitNameOld": "7a96033b15580a01a2867fa3cab9c1e409dbaafd",
+          "commitAuthorOld": "Kai Zheng",
+          "daysBetweenCommits": 0.14,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,8 @@\n-    public AmazonS3 createS3Client(URI name) throws IOException {\n-      Configuration conf \u003d getConf();\n-      AWSCredentialsProvider credentials \u003d\n-          createAWSCredentialProviderSet(name, conf);\n-      ClientConfiguration awsConf \u003d new ClientConfiguration();\n-      initConnectionSettings(conf, awsConf);\n-      initProxySupport(conf, awsConf);\n-      initUserAgent(conf, awsConf);\n-      return createAmazonS3Client(conf, credentials, awsConf);\n-    }\n\\ No newline at end of file\n+  public AmazonS3 createS3Client(URI name) throws IOException {\n+    Configuration conf \u003d getConf();\n+    AWSCredentialsProvider credentials \u003d\n+        createAWSCredentialProviderSet(name, conf);\n+    final ClientConfiguration awsConf \u003d createAwsConf(getConf());\n+    AmazonS3 s3 \u003d newAmazonS3Client(credentials, awsConf);\n+    return createAmazonS3Client(s3, conf, credentials, awsConf);\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  public AmazonS3 createS3Client(URI name) throws IOException {\n    Configuration conf \u003d getConf();\n    AWSCredentialsProvider credentials \u003d\n        createAWSCredentialProviderSet(name, conf);\n    final ClientConfiguration awsConf \u003d createAwsConf(getConf());\n    AmazonS3 s3 \u003d newAmazonS3Client(credentials, awsConf);\n    return createAmazonS3Client(s3, conf, credentials, awsConf);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/DefaultS3ClientFactory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "2e30aa72e01de7b5774fcb312406a393221e0908": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-14135. Remove URI parameter in AWSCredentialProvider constructors. Contributed by Mingliang Liu\n",
+      "commitDate": "23/03/17 11:33 AM",
+      "commitName": "2e30aa72e01de7b5774fcb312406a393221e0908",
+      "commitAuthor": "Mingliang Liu",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-14135. Remove URI parameter in AWSCredentialProvider constructors. Contributed by Mingliang Liu\n",
+          "commitDate": "23/03/17 11:33 AM",
+          "commitName": "2e30aa72e01de7b5774fcb312406a393221e0908",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "22/11/16 2:00 PM",
+          "commitNameOld": "af791b774bdc3af26ab99487ffea7246c6788a9c",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 120.86,
+          "commitsBetweenForRepo": 634,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,10 @@\n-    public AmazonS3 createS3Client(URI name, URI uri) throws IOException {\n+    public AmazonS3 createS3Client(URI name) throws IOException {\n       Configuration conf \u003d getConf();\n       AWSCredentialsProvider credentials \u003d\n-          createAWSCredentialProviderSet(name, conf, uri);\n+          createAWSCredentialProviderSet(name, conf);\n       ClientConfiguration awsConf \u003d new ClientConfiguration();\n       initConnectionSettings(conf, awsConf);\n       initProxySupport(conf, awsConf);\n       initUserAgent(conf, awsConf);\n       return createAmazonS3Client(conf, credentials, awsConf);\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public AmazonS3 createS3Client(URI name) throws IOException {\n      Configuration conf \u003d getConf();\n      AWSCredentialsProvider credentials \u003d\n          createAWSCredentialProviderSet(name, conf);\n      ClientConfiguration awsConf \u003d new ClientConfiguration();\n      initConnectionSettings(conf, awsConf);\n      initProxySupport(conf, awsConf);\n      initUserAgent(conf, awsConf);\n      return createAmazonS3Client(conf, credentials, awsConf);\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ClientFactory.java",
+          "extendedDetails": {
+            "oldValue": "[name-URI, uri-URI]",
+            "newValue": "[name-URI]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14135. Remove URI parameter in AWSCredentialProvider constructors. Contributed by Mingliang Liu\n",
+          "commitDate": "23/03/17 11:33 AM",
+          "commitName": "2e30aa72e01de7b5774fcb312406a393221e0908",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "22/11/16 2:00 PM",
+          "commitNameOld": "af791b774bdc3af26ab99487ffea7246c6788a9c",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 120.86,
+          "commitsBetweenForRepo": 634,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,10 @@\n-    public AmazonS3 createS3Client(URI name, URI uri) throws IOException {\n+    public AmazonS3 createS3Client(URI name) throws IOException {\n       Configuration conf \u003d getConf();\n       AWSCredentialsProvider credentials \u003d\n-          createAWSCredentialProviderSet(name, conf, uri);\n+          createAWSCredentialProviderSet(name, conf);\n       ClientConfiguration awsConf \u003d new ClientConfiguration();\n       initConnectionSettings(conf, awsConf);\n       initProxySupport(conf, awsConf);\n       initUserAgent(conf, awsConf);\n       return createAmazonS3Client(conf, credentials, awsConf);\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public AmazonS3 createS3Client(URI name) throws IOException {\n      Configuration conf \u003d getConf();\n      AWSCredentialsProvider credentials \u003d\n          createAWSCredentialProviderSet(name, conf);\n      ClientConfiguration awsConf \u003d new ClientConfiguration();\n      initConnectionSettings(conf, awsConf);\n      initProxySupport(conf, awsConf);\n      initUserAgent(conf, awsConf);\n      return createAmazonS3Client(conf, credentials, awsConf);\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ClientFactory.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "d152557cf7f4d2288524c222fcbaf152bdc038b0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13447. Refactor S3AFileSystem to support introduction of separate metadata repository and tests. Contributed by Chris Nauroth.\n",
+      "commitDate": "06/09/16 9:36 AM",
+      "commitName": "d152557cf7f4d2288524c222fcbaf152bdc038b0",
+      "commitAuthor": "Chris Nauroth",
+      "diff": "@@ -0,0 +1,10 @@\n+    public AmazonS3 createS3Client(URI name, URI uri) throws IOException {\n+      Configuration conf \u003d getConf();\n+      AWSCredentialsProvider credentials \u003d\n+          createAWSCredentialProviderSet(name, conf, uri);\n+      ClientConfiguration awsConf \u003d new ClientConfiguration();\n+      initConnectionSettings(conf, awsConf);\n+      initProxySupport(conf, awsConf);\n+      initUserAgent(conf, awsConf);\n+      return createAmazonS3Client(conf, credentials, awsConf);\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public AmazonS3 createS3Client(URI name, URI uri) throws IOException {\n      Configuration conf \u003d getConf();\n      AWSCredentialsProvider credentials \u003d\n          createAWSCredentialProviderSet(name, conf, uri);\n      ClientConfiguration awsConf \u003d new ClientConfiguration();\n      initConnectionSettings(conf, awsConf);\n      initProxySupport(conf, awsConf);\n      initUserAgent(conf, awsConf);\n      return createAmazonS3Client(conf, credentials, awsConf);\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ClientFactory.java"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AliyunOSSBlockOutputStream.java",
+  "functionName": "uploadCurrentPart",
+  "functionId": "uploadCurrentPart",
+  "sourceFilePath": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSBlockOutputStream.java",
+  "functionStartLine": 177,
+  "functionEndLine": 199,
+  "numCommitsSeen": 6,
+  "timeTaken": 968,
+  "changeHistory": [
+    "0857f116b754d83d3c540cd6f989087af24fef27",
+    "6542d17ea460ec222137c4b275b13daf15d3fca3"
+  ],
+  "changeHistoryShort": {
+    "0857f116b754d83d3c540cd6f989087af24fef27": "Ybodychange",
+    "6542d17ea460ec222137c4b275b13daf15d3fca3": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0857f116b754d83d3c540cd6f989087af24fef27": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15607. AliyunOSS: fix duplicated partNumber issue in AliyunOSSBlockOutputStream. Contributed by Jinhu Wu.\n",
+      "commitDate": "29/07/18 7:53 PM",
+      "commitName": "0857f116b754d83d3c540cd6f989087af24fef27",
+      "commitAuthor": "Sammi Chen",
+      "commitDateOld": "30/03/18 5:23 AM",
+      "commitNameOld": "6542d17ea460ec222137c4b275b13daf15d3fca3",
+      "commitAuthorOld": "Sammi Chen",
+      "daysBetweenCommits": 121.6,
+      "commitsBetweenForRepo": 1341,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,23 @@\n   private void uploadCurrentPart() throws IOException {\n-    blockFiles.add(blockFile);\n     blockStream.flush();\n     blockStream.close();\n     if (blockId \u003d\u003d 0) {\n       uploadId \u003d store.getUploadId(key);\n     }\n+\n+    blockId++;\n+    blockFiles.put(blockId, blockFile);\n+\n+    File currentFile \u003d blockFile;\n+    int currentBlockId \u003d blockId;\n     ListenableFuture\u003cPartETag\u003e partETagFuture \u003d\n         executorService.submit(() -\u003e {\n-          PartETag partETag \u003d store.uploadPart(blockFile, key, uploadId,\n-              blockId + 1);\n+          PartETag partETag \u003d store.uploadPart(currentFile, key, uploadId,\n+              currentBlockId);\n           return partETag;\n         });\n     partETagsFutures.add(partETagFuture);\n+    removePartFiles();\n     blockFile \u003d newBlockFile();\n-    blockId++;\n     blockStream \u003d new BufferedOutputStream(new FileOutputStream(blockFile));\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void uploadCurrentPart() throws IOException {\n    blockStream.flush();\n    blockStream.close();\n    if (blockId \u003d\u003d 0) {\n      uploadId \u003d store.getUploadId(key);\n    }\n\n    blockId++;\n    blockFiles.put(blockId, blockFile);\n\n    File currentFile \u003d blockFile;\n    int currentBlockId \u003d blockId;\n    ListenableFuture\u003cPartETag\u003e partETagFuture \u003d\n        executorService.submit(() -\u003e {\n          PartETag partETag \u003d store.uploadPart(currentFile, key, uploadId,\n              currentBlockId);\n          return partETag;\n        });\n    partETagsFutures.add(partETagFuture);\n    removePartFiles();\n    blockFile \u003d newBlockFile();\n    blockStream \u003d new BufferedOutputStream(new FileOutputStream(blockFile));\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSBlockOutputStream.java",
+      "extendedDetails": {}
+    },
+    "6542d17ea460ec222137c4b275b13daf15d3fca3": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14999. AliyunOSS: provide one asynchronous multi-part based uploading mechanism. Contributed by Genmao Yu.\n",
+      "commitDate": "30/03/18 5:23 AM",
+      "commitName": "6542d17ea460ec222137c4b275b13daf15d3fca3",
+      "commitAuthor": "Sammi Chen",
+      "diff": "@@ -0,0 +1,18 @@\n+  private void uploadCurrentPart() throws IOException {\n+    blockFiles.add(blockFile);\n+    blockStream.flush();\n+    blockStream.close();\n+    if (blockId \u003d\u003d 0) {\n+      uploadId \u003d store.getUploadId(key);\n+    }\n+    ListenableFuture\u003cPartETag\u003e partETagFuture \u003d\n+        executorService.submit(() -\u003e {\n+          PartETag partETag \u003d store.uploadPart(blockFile, key, uploadId,\n+              blockId + 1);\n+          return partETag;\n+        });\n+    partETagsFutures.add(partETagFuture);\n+    blockFile \u003d newBlockFile();\n+    blockId++;\n+    blockStream \u003d new BufferedOutputStream(new FileOutputStream(blockFile));\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void uploadCurrentPart() throws IOException {\n    blockFiles.add(blockFile);\n    blockStream.flush();\n    blockStream.close();\n    if (blockId \u003d\u003d 0) {\n      uploadId \u003d store.getUploadId(key);\n    }\n    ListenableFuture\u003cPartETag\u003e partETagFuture \u003d\n        executorService.submit(() -\u003e {\n          PartETag partETag \u003d store.uploadPart(blockFile, key, uploadId,\n              blockId + 1);\n          return partETag;\n        });\n    partETagsFutures.add(partETagFuture);\n    blockFile \u003d newBlockFile();\n    blockId++;\n    blockStream \u003d new BufferedOutputStream(new FileOutputStream(blockFile));\n  }",
+      "path": "hadoop-tools/hadoop-aliyun/src/main/java/org/apache/hadoop/fs/aliyun/oss/AliyunOSSBlockOutputStream.java"
+    }
+  }
+}

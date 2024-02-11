@@ -1,0 +1,92 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockMetadataHeader.java",
+  "functionName": "preadHeader",
+  "functionId": "preadHeader___fc-FileChannel",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockMetadataHeader.java",
+  "functionStartLine": 117,
+  "functionEndLine": 137,
+  "numCommitsSeen": 18,
+  "timeTaken": 2387,
+  "changeHistory": [
+    "915cbc91c0a12cc7b4d3ef4ea951941defbbcb33",
+    "c992bcf9c136d3df686655a80e636bb7bb0664da",
+    "463aec11718e47d4aabb86a7a539cb973460aae6",
+    "124e507674c0d396f8494585e64226957199097b"
+  ],
+  "changeHistoryShort": {
+    "915cbc91c0a12cc7b4d3ef4ea951941defbbcb33": "Ybodychange",
+    "c992bcf9c136d3df686655a80e636bb7bb0664da": "Yfilerename",
+    "463aec11718e47d4aabb86a7a539cb973460aae6": "Ybodychange",
+    "124e507674c0d396f8494585e64226957199097b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "915cbc91c0a12cc7b4d3ef4ea951941defbbcb33": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14706. Checksums are not checked if block meta file is less than 7 bytes. Contributed by Stephen O\u0027Donnell.\n\nSigned-off-by: Wei-Chiu Chuang \u003cweichiu@apache.org\u003e\n",
+      "commitDate": "02/09/19 9:47 AM",
+      "commitName": "915cbc91c0a12cc7b4d3ef4ea951941defbbcb33",
+      "commitAuthor": "Stephen O\u0027Donnell",
+      "commitDateOld": "14/12/16 11:18 AM",
+      "commitNameOld": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 991.89,
+      "commitsBetweenForRepo": 7618,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,21 @@\n   public static BlockMetadataHeader preadHeader(FileChannel fc)\n       throws IOException {\n     final byte arr[] \u003d new byte[getHeaderSize()];\n     ByteBuffer buf \u003d ByteBuffer.wrap(arr);\n \n     while (buf.hasRemaining()) {\n-      if (fc.read(buf, 0) \u003c\u003d 0) {\n-        throw new EOFException(\"unexpected EOF while reading \" +\n-            \"metadata file header\");\n+      if (fc.read(buf, buf.position()) \u003c\u003d 0) {\n+        throw new CorruptMetaHeaderException(\"EOF while reading header from \"+\n+            \"the metadata file. The meta file may be truncated or corrupt\");\n       }\n     }\n     short version \u003d (short)((arr[0] \u003c\u003c 8) | (arr[1] \u0026 0xff));\n-    DataChecksum dataChecksum \u003d DataChecksum.newDataChecksum(arr, 2);\n+    DataChecksum dataChecksum;\n+    try {\n+      dataChecksum \u003d DataChecksum.newDataChecksum(arr, 2);\n+    } catch (InvalidChecksumSizeException e) {\n+      throw new CorruptMetaHeaderException(\"The block meta file header is \"+\n+          \"corrupt\", e);\n+    }\n     return new BlockMetadataHeader(version, dataChecksum);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static BlockMetadataHeader preadHeader(FileChannel fc)\n      throws IOException {\n    final byte arr[] \u003d new byte[getHeaderSize()];\n    ByteBuffer buf \u003d ByteBuffer.wrap(arr);\n\n    while (buf.hasRemaining()) {\n      if (fc.read(buf, buf.position()) \u003c\u003d 0) {\n        throw new CorruptMetaHeaderException(\"EOF while reading header from \"+\n            \"the metadata file. The meta file may be truncated or corrupt\");\n      }\n    }\n    short version \u003d (short)((arr[0] \u003c\u003c 8) | (arr[1] \u0026 0xff));\n    DataChecksum dataChecksum;\n    try {\n      dataChecksum \u003d DataChecksum.newDataChecksum(arr, 2);\n    } catch (InvalidChecksumSizeException e) {\n      throw new CorruptMetaHeaderException(\"The block meta file header is \"+\n          \"corrupt\", e);\n    }\n    return new BlockMetadataHeader(version, dataChecksum);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockMetadataHeader.java",
+      "extendedDetails": {}
+    },
+    "c992bcf9c136d3df686655a80e636bb7bb0664da": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-8951. Move the shortcircuit package to hdfs-client. Contributed by Mingliang Liu.\n",
+      "commitDate": "26/08/15 2:02 PM",
+      "commitName": "c992bcf9c136d3df686655a80e636bb7bb0664da",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "25/08/15 2:29 PM",
+      "commitNameOld": "a4d9acc51d1a977bc333da17780c00c72e8546f1",
+      "commitAuthorOld": "Colin Patrick Mccabe",
+      "daysBetweenCommits": 0.98,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static BlockMetadataHeader preadHeader(FileChannel fc)\n      throws IOException {\n    final byte arr[] \u003d new byte[getHeaderSize()];\n    ByteBuffer buf \u003d ByteBuffer.wrap(arr);\n\n    while (buf.hasRemaining()) {\n      if (fc.read(buf, 0) \u003c\u003d 0) {\n        throw new EOFException(\"unexpected EOF while reading \" +\n            \"metadata file header\");\n      }\n    }\n    short version \u003d (short)((arr[0] \u003c\u003c 8) | (arr[1] \u0026 0xff));\n    DataChecksum dataChecksum \u003d DataChecksum.newDataChecksum(arr, 2);\n    return new BlockMetadataHeader(version, dataChecksum);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockMetadataHeader.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockMetadataHeader.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockMetadataHeader.java"
+      }
+    },
+    "463aec11718e47d4aabb86a7a539cb973460aae6": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6934. Move checksum computation off the hot path when writing to RAM disk. Contributed by Chris Nauroth.\n",
+      "commitDate": "27/10/14 9:38 AM",
+      "commitName": "463aec11718e47d4aabb86a7a539cb973460aae6",
+      "commitAuthor": "cnauroth",
+      "commitDateOld": "23/04/14 1:13 PM",
+      "commitNameOld": "876fd8ab7913a259ff9f69c16cc2d9af46ad3f9b",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 186.85,
+      "commitsBetweenForRepo": 1537,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,15 @@\n   public static BlockMetadataHeader preadHeader(FileChannel fc)\n       throws IOException {\n-    byte arr[] \u003d new byte[2 + DataChecksum.HEADER_LEN];\n+    final byte arr[] \u003d new byte[getHeaderSize()];\n     ByteBuffer buf \u003d ByteBuffer.wrap(arr);\n \n     while (buf.hasRemaining()) {\n       if (fc.read(buf, 0) \u003c\u003d 0) {\n         throw new EOFException(\"unexpected EOF while reading \" +\n             \"metadata file header\");\n       }\n     }\n     short version \u003d (short)((arr[0] \u003c\u003c 8) | (arr[1] \u0026 0xff));\n     DataChecksum dataChecksum \u003d DataChecksum.newDataChecksum(arr, 2);\n     return new BlockMetadataHeader(version, dataChecksum);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static BlockMetadataHeader preadHeader(FileChannel fc)\n      throws IOException {\n    final byte arr[] \u003d new byte[getHeaderSize()];\n    ByteBuffer buf \u003d ByteBuffer.wrap(arr);\n\n    while (buf.hasRemaining()) {\n      if (fc.read(buf, 0) \u003c\u003d 0) {\n        throw new EOFException(\"unexpected EOF while reading \" +\n            \"metadata file header\");\n      }\n    }\n    short version \u003d (short)((arr[0] \u003c\u003c 8) | (arr[1] \u0026 0xff));\n    DataChecksum dataChecksum \u003d DataChecksum.newDataChecksum(arr, 2);\n    return new BlockMetadataHeader(version, dataChecksum);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockMetadataHeader.java",
+      "extendedDetails": {}
+    },
+    "124e507674c0d396f8494585e64226957199097b": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-5634. Allow BlockReaderLocal to switch between checksumming and not (cmccabe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1551701 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/12/13 12:57 PM",
+      "commitName": "124e507674c0d396f8494585e64226957199097b",
+      "commitAuthor": "Colin McCabe",
+      "diff": "@@ -0,0 +1,15 @@\n+  public static BlockMetadataHeader preadHeader(FileChannel fc)\n+      throws IOException {\n+    byte arr[] \u003d new byte[2 + DataChecksum.HEADER_LEN];\n+    ByteBuffer buf \u003d ByteBuffer.wrap(arr);\n+\n+    while (buf.hasRemaining()) {\n+      if (fc.read(buf, 0) \u003c\u003d 0) {\n+        throw new EOFException(\"unexpected EOF while reading \" +\n+            \"metadata file header\");\n+      }\n+    }\n+    short version \u003d (short)((arr[0] \u003c\u003c 8) | (arr[1] \u0026 0xff));\n+    DataChecksum dataChecksum \u003d DataChecksum.newDataChecksum(arr, 2);\n+    return new BlockMetadataHeader(version, dataChecksum);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static BlockMetadataHeader preadHeader(FileChannel fc)\n      throws IOException {\n    byte arr[] \u003d new byte[2 + DataChecksum.HEADER_LEN];\n    ByteBuffer buf \u003d ByteBuffer.wrap(arr);\n\n    while (buf.hasRemaining()) {\n      if (fc.read(buf, 0) \u003c\u003d 0) {\n        throw new EOFException(\"unexpected EOF while reading \" +\n            \"metadata file header\");\n      }\n    }\n    short version \u003d (short)((arr[0] \u003c\u003c 8) | (arr[1] \u0026 0xff));\n    DataChecksum dataChecksum \u003d DataChecksum.newDataChecksum(arr, 2);\n    return new BlockMetadataHeader(version, dataChecksum);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockMetadataHeader.java"
+    }
+  }
+}

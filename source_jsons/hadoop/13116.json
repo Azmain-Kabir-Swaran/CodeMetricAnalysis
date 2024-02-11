@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockManagerSafeMode.java",
+  "functionName": "areThresholdsMet",
+  "functionId": "areThresholdsMet",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+  "functionStartLine": 573,
+  "functionEndLine": 590,
+  "numCommitsSeen": 14,
+  "timeTaken": 2716,
+  "changeHistory": [
+    "91320b446171013ad47783d7400d646d2d71ca3d",
+    "e9a005dfcf4d2249235aeff4da85b321dddc1ca9",
+    "a49cc74b4c72195dee1dfb6f9548e5e411dff553"
+  ],
+  "changeHistoryShort": {
+    "91320b446171013ad47783d7400d646d2d71ca3d": "Ybodychange",
+    "e9a005dfcf4d2249235aeff4da85b321dddc1ca9": "Ybodychange",
+    "a49cc74b4c72195dee1dfb6f9548e5e411dff553": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "91320b446171013ad47783d7400d646d2d71ca3d": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14859. Prevent unnecessary evaluation of costly operation getNumLiveDataNodes when dfs.namenode.safemode.min.datanodes is not zero. Contributed by Srinivasu Majeti.\n",
+      "commitDate": "08/10/19 1:44 AM",
+      "commitName": "91320b446171013ad47783d7400d646d2d71ca3d",
+      "commitAuthor": "Ayush Saxena",
+      "commitDateOld": "14/08/19 11:42 PM",
+      "commitNameOld": "34681643e92774da6f74826c468ecec4dcbedf5a",
+      "commitAuthorOld": "Surendra Singh Lilhore",
+      "daysBetweenCommits": 54.08,
+      "commitsBetweenForRepo": 477,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,18 @@\n   private boolean areThresholdsMet() {\n     assert namesystem.hasWriteLock();\n     // Calculating the number of live datanodes is time-consuming\n     // in large clusters. Skip it when datanodeThreshold is zero.\n-    int datanodeNum \u003d 0;\n-    if (datanodeThreshold \u003e 0) {\n-      datanodeNum \u003d blockManager.getDatanodeManager().getNumLiveDataNodes();\n-    }\n+    // We need to evaluate getNumLiveDataNodes only when\n+    // (blockSafe \u003e\u003d blockThreshold) is true and hence moving evaluation\n+    // of datanodeNum conditional to isBlockThresholdMet as well\n     synchronized (this) {\n-      return blockSafe \u003e\u003d blockThreshold \u0026\u0026 datanodeNum \u003e\u003d datanodeThreshold;\n+      boolean isBlockThresholdMet \u003d (blockSafe \u003e\u003d blockThreshold);\n+      boolean isDatanodeThresholdMet \u003d true;\n+      if (isBlockThresholdMet \u0026\u0026 datanodeThreshold \u003e 0) {\n+        int datanodeNum \u003d blockManager.getDatanodeManager().\n+                getNumLiveDataNodes();\n+        isDatanodeThresholdMet \u003d (datanodeNum \u003e\u003d datanodeThreshold);\n+      }\n+      return isBlockThresholdMet \u0026\u0026 isDatanodeThresholdMet;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean areThresholdsMet() {\n    assert namesystem.hasWriteLock();\n    // Calculating the number of live datanodes is time-consuming\n    // in large clusters. Skip it when datanodeThreshold is zero.\n    // We need to evaluate getNumLiveDataNodes only when\n    // (blockSafe \u003e\u003d blockThreshold) is true and hence moving evaluation\n    // of datanodeNum conditional to isBlockThresholdMet as well\n    synchronized (this) {\n      boolean isBlockThresholdMet \u003d (blockSafe \u003e\u003d blockThreshold);\n      boolean isDatanodeThresholdMet \u003d true;\n      if (isBlockThresholdMet \u0026\u0026 datanodeThreshold \u003e 0) {\n        int datanodeNum \u003d blockManager.getDatanodeManager().\n                getNumLiveDataNodes();\n        isDatanodeThresholdMet \u003d (datanodeNum \u003e\u003d datanodeThreshold);\n      }\n      return isBlockThresholdMet \u0026\u0026 isDatanodeThresholdMet;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+      "extendedDetails": {}
+    },
+    "e9a005dfcf4d2249235aeff4da85b321dddc1ca9": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14171. Performance improvement in Tailing EditLog. Contributed by Kenneth Yang.\n",
+      "commitDate": "28/12/18 10:34 AM",
+      "commitName": "e9a005dfcf4d2249235aeff4da85b321dddc1ca9",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "12/09/18 11:18 AM",
+      "commitNameOld": "78bd3b1db9dc9eb533c2379ee71f133ecfc5cdeb",
+      "commitAuthorOld": "Daniel Templeton",
+      "daysBetweenCommits": 107.01,
+      "commitsBetweenForRepo": 897,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,7 +1,12 @@\n   private boolean areThresholdsMet() {\n     assert namesystem.hasWriteLock();\n-    int datanodeNum \u003d blockManager.getDatanodeManager().getNumLiveDataNodes();\n+    // Calculating the number of live datanodes is time-consuming\n+    // in large clusters. Skip it when datanodeThreshold is zero.\n+    int datanodeNum \u003d 0;\n+    if (datanodeThreshold \u003e 0) {\n+      datanodeNum \u003d blockManager.getDatanodeManager().getNumLiveDataNodes();\n+    }\n     synchronized (this) {\n       return blockSafe \u003e\u003d blockThreshold \u0026\u0026 datanodeNum \u003e\u003d datanodeThreshold;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean areThresholdsMet() {\n    assert namesystem.hasWriteLock();\n    // Calculating the number of live datanodes is time-consuming\n    // in large clusters. Skip it when datanodeThreshold is zero.\n    int datanodeNum \u003d 0;\n    if (datanodeThreshold \u003e 0) {\n      datanodeNum \u003d blockManager.getDatanodeManager().getNumLiveDataNodes();\n    }\n    synchronized (this) {\n      return blockSafe \u003e\u003d blockThreshold \u0026\u0026 datanodeNum \u003e\u003d datanodeThreshold;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java",
+      "extendedDetails": {}
+    },
+    "a49cc74b4c72195dee1dfb6f9548e5e411dff553": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9129. Move the safemode block count into BlockManager. Contributed by Mingliang Liu.\n",
+      "commitDate": "01/12/15 4:09 PM",
+      "commitName": "a49cc74b4c72195dee1dfb6f9548e5e411dff553",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,7 @@\n+  private boolean areThresholdsMet() {\n+    assert namesystem.hasWriteLock();\n+    int datanodeNum \u003d blockManager.getDatanodeManager().getNumLiveDataNodes();\n+    synchronized (this) {\n+      return blockSafe \u003e\u003d blockThreshold \u0026\u0026 datanodeNum \u003e\u003d datanodeThreshold;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean areThresholdsMet() {\n    assert namesystem.hasWriteLock();\n    int datanodeNum \u003d blockManager.getDatanodeManager().getNumLiveDataNodes();\n    synchronized (this) {\n      return blockSafe \u003e\u003d blockThreshold \u0026\u0026 datanodeNum \u003e\u003d datanodeThreshold;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManagerSafeMode.java"
+    }
+  }
+}

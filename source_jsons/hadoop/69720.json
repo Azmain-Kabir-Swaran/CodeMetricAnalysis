@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbfsInputStream.java",
+  "functionName": "readOneBlock",
+  "functionId": "readOneBlock___b-byte[](modifiers-final)__off-int(modifiers-final)__len-int(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsInputStream.java",
+  "functionStartLine": 127,
+  "functionEndLine": 187,
+  "numCommitsSeen": 13,
+  "timeTaken": 595,
+  "changeHistory": [
+    "f044deedbbfee0812316d587139cb828f27172e9"
+  ],
+  "changeHistoryShort": {
+    "f044deedbbfee0812316d587139cb828f27172e9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f044deedbbfee0812316d587139cb828f27172e9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15407. HADOOP-15540. Support Windows Azure Storage - Blob file system \"ABFS\" in Hadoop: Core Commit.\n\nContributed by Shane Mainali, Thomas Marquardt, Zichen Sun, Georgi Chalakov, Esfandiar Manii, Amit Singh, Dana Kaban, Da Zhou, Junhua Gu, Saher Ahwal, Saurabh Pant, James Baker, Shaoyu Zhang, Lawrence Chen, Kevin Chen and Steve Loughran\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "f044deedbbfee0812316d587139cb828f27172e9",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,61 @@\n+  private int readOneBlock(final byte[] b, final int off, final int len) throws IOException {\n+    if (closed) {\n+      throw new IOException(FSExceptionMessages.STREAM_IS_CLOSED);\n+    }\n+\n+    Preconditions.checkNotNull(b);\n+\n+    if (len \u003d\u003d 0) {\n+      return 0;\n+    }\n+\n+    if (this.available() \u003d\u003d 0) {\n+      return -1;\n+    }\n+\n+    if (off \u003c 0 || len \u003c 0 || len \u003e b.length - off) {\n+      throw new IndexOutOfBoundsException();\n+    }\n+\n+    //If buffer is empty, then fill the buffer.\n+    if (bCursor \u003d\u003d limit) {\n+      //If EOF, then return -1\n+      if (fCursor \u003e\u003d contentLength) {\n+        return -1;\n+      }\n+\n+      long bytesRead \u003d 0;\n+      //reset buffer to initial state - i.e., throw away existing data\n+      bCursor \u003d 0;\n+      limit \u003d 0;\n+      if (buffer \u003d\u003d null) {\n+        buffer \u003d new byte[bufferSize];\n+      }\n+\n+      // Enable readAhead when reading sequentially\n+      if (-1 \u003d\u003d fCursorAfterLastRead || fCursorAfterLastRead \u003d\u003d fCursor || b.length \u003e\u003d bufferSize) {\n+        bytesRead \u003d readInternal(fCursor, buffer, 0, bufferSize, false);\n+      } else {\n+        bytesRead \u003d readInternal(fCursor, buffer, 0, b.length, true);\n+      }\n+\n+      if (bytesRead \u003d\u003d -1) {\n+        return -1;\n+      }\n+\n+      limit +\u003d bytesRead;\n+      fCursor +\u003d bytesRead;\n+      fCursorAfterLastRead \u003d fCursor;\n+    }\n+\n+    //If there is anything in the buffer, then return lesser of (requested bytes) and (bytes in buffer)\n+    //(bytes returned may be less than requested)\n+    int bytesRemaining \u003d limit - bCursor;\n+    int bytesToRead \u003d Math.min(len, bytesRemaining);\n+    System.arraycopy(buffer, bCursor, b, off, bytesToRead);\n+    bCursor +\u003d bytesToRead;\n+    if (statistics !\u003d null) {\n+      statistics.incrementBytesRead(bytesToRead);\n+    }\n+    return bytesToRead;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private int readOneBlock(final byte[] b, final int off, final int len) throws IOException {\n    if (closed) {\n      throw new IOException(FSExceptionMessages.STREAM_IS_CLOSED);\n    }\n\n    Preconditions.checkNotNull(b);\n\n    if (len \u003d\u003d 0) {\n      return 0;\n    }\n\n    if (this.available() \u003d\u003d 0) {\n      return -1;\n    }\n\n    if (off \u003c 0 || len \u003c 0 || len \u003e b.length - off) {\n      throw new IndexOutOfBoundsException();\n    }\n\n    //If buffer is empty, then fill the buffer.\n    if (bCursor \u003d\u003d limit) {\n      //If EOF, then return -1\n      if (fCursor \u003e\u003d contentLength) {\n        return -1;\n      }\n\n      long bytesRead \u003d 0;\n      //reset buffer to initial state - i.e., throw away existing data\n      bCursor \u003d 0;\n      limit \u003d 0;\n      if (buffer \u003d\u003d null) {\n        buffer \u003d new byte[bufferSize];\n      }\n\n      // Enable readAhead when reading sequentially\n      if (-1 \u003d\u003d fCursorAfterLastRead || fCursorAfterLastRead \u003d\u003d fCursor || b.length \u003e\u003d bufferSize) {\n        bytesRead \u003d readInternal(fCursor, buffer, 0, bufferSize, false);\n      } else {\n        bytesRead \u003d readInternal(fCursor, buffer, 0, b.length, true);\n      }\n\n      if (bytesRead \u003d\u003d -1) {\n        return -1;\n      }\n\n      limit +\u003d bytesRead;\n      fCursor +\u003d bytesRead;\n      fCursorAfterLastRead \u003d fCursor;\n    }\n\n    //If there is anything in the buffer, then return lesser of (requested bytes) and (bytes in buffer)\n    //(bytes returned may be less than requested)\n    int bytesRemaining \u003d limit - bCursor;\n    int bytesToRead \u003d Math.min(len, bytesRemaining);\n    System.arraycopy(buffer, bCursor, b, off, bytesToRead);\n    bCursor +\u003d bytesToRead;\n    if (statistics !\u003d null) {\n      statistics.incrementBytesRead(bytesToRead);\n    }\n    return bytesToRead;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsInputStream.java"
+    }
+  }
+}

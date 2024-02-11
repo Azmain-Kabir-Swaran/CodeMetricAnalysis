@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "MagicS3GuardCommitter.java",
+  "functionName": "innerCommitTask",
+  "functionId": "innerCommitTask___context-TaskAttemptContext",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/magic/MagicS3GuardCommitter.java",
+  "functionStartLine": 192,
+  "functionEndLine": 232,
+  "numCommitsSeen": 5,
+  "timeTaken": 1244,
+  "changeHistory": [
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,41 @@\n+  private PendingSet innerCommitTask(\n+      TaskAttemptContext context) throws IOException {\n+    Path taskAttemptPath \u003d getTaskAttemptPath(context);\n+    // load in all pending commits.\n+    CommitOperations actions \u003d getCommitOperations();\n+    Pair\u003cPendingSet, List\u003cPair\u003cLocatedFileStatus, IOException\u003e\u003e\u003e\n+        loaded \u003d actions.loadSinglePendingCommits(\n+            taskAttemptPath, true);\n+    PendingSet pendingSet \u003d loaded.getKey();\n+    List\u003cPair\u003cLocatedFileStatus, IOException\u003e\u003e failures \u003d loaded.getValue();\n+    if (!failures.isEmpty()) {\n+      // At least one file failed to load\n+      // revert all which did; report failure with first exception\n+      LOG.error(\"At least one commit file could not be read: failing\");\n+      abortPendingUploads(context, pendingSet.getCommits(), true);\n+      throw failures.get(0).getValue();\n+    }\n+    // patch in IDs\n+    String jobId \u003d String.valueOf(context.getJobID());\n+    String taskId \u003d String.valueOf(context.getTaskAttemptID());\n+    for (SinglePendingCommit commit : pendingSet.getCommits()) {\n+      commit.setJobId(jobId);\n+      commit.setTaskId(taskId);\n+    }\n+\n+    Path jobAttemptPath \u003d getJobAttemptPath(context);\n+    TaskAttemptID taskAttemptID \u003d context.getTaskAttemptID();\n+    Path taskOutcomePath \u003d new Path(jobAttemptPath,\n+        taskAttemptID.getTaskID().toString() +\n+        CommitConstants.PENDINGSET_SUFFIX);\n+    LOG.info(\"Saving work of {} to {}\", taskAttemptID, taskOutcomePath);\n+    try {\n+      pendingSet.save(getDestFS(), taskOutcomePath, false);\n+    } catch (IOException e) {\n+      LOG.warn(\"Failed to save task commit data to {} \",\n+          taskOutcomePath, e);\n+      abortPendingUploads(context, pendingSet.getCommits(), true);\n+      throw e;\n+    }\n+    return pendingSet;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private PendingSet innerCommitTask(\n      TaskAttemptContext context) throws IOException {\n    Path taskAttemptPath \u003d getTaskAttemptPath(context);\n    // load in all pending commits.\n    CommitOperations actions \u003d getCommitOperations();\n    Pair\u003cPendingSet, List\u003cPair\u003cLocatedFileStatus, IOException\u003e\u003e\u003e\n        loaded \u003d actions.loadSinglePendingCommits(\n            taskAttemptPath, true);\n    PendingSet pendingSet \u003d loaded.getKey();\n    List\u003cPair\u003cLocatedFileStatus, IOException\u003e\u003e failures \u003d loaded.getValue();\n    if (!failures.isEmpty()) {\n      // At least one file failed to load\n      // revert all which did; report failure with first exception\n      LOG.error(\"At least one commit file could not be read: failing\");\n      abortPendingUploads(context, pendingSet.getCommits(), true);\n      throw failures.get(0).getValue();\n    }\n    // patch in IDs\n    String jobId \u003d String.valueOf(context.getJobID());\n    String taskId \u003d String.valueOf(context.getTaskAttemptID());\n    for (SinglePendingCommit commit : pendingSet.getCommits()) {\n      commit.setJobId(jobId);\n      commit.setTaskId(taskId);\n    }\n\n    Path jobAttemptPath \u003d getJobAttemptPath(context);\n    TaskAttemptID taskAttemptID \u003d context.getTaskAttemptID();\n    Path taskOutcomePath \u003d new Path(jobAttemptPath,\n        taskAttemptID.getTaskID().toString() +\n        CommitConstants.PENDINGSET_SUFFIX);\n    LOG.info(\"Saving work of {} to {}\", taskAttemptID, taskOutcomePath);\n    try {\n      pendingSet.save(getDestFS(), taskOutcomePath, false);\n    } catch (IOException e) {\n      LOG.warn(\"Failed to save task commit data to {} \",\n          taskOutcomePath, e);\n      abortPendingUploads(context, pendingSet.getCommits(), true);\n      throw e;\n    }\n    return pendingSet;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/magic/MagicS3GuardCommitter.java"
+    }
+  }
+}

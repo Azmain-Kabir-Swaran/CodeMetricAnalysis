@@ -1,0 +1,416 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AFileSystem.java",
+  "functionName": "removeKeys",
+  "functionId": "removeKeys___keysToDelete-List__DeleteObjectsRequest.KeyVersion__(modifiers-final)__deleteFakeDir-boolean(modifiers-final)__undeletedObjectsOnFailure-List__Path__(modifiers-final)__operationState-BulkOperationState(modifiers-final)__quiet-boolean(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+  "functionStartLine": 2415,
+  "functionEndLine": 2447,
+  "numCommitsSeen": 408,
+  "timeTaken": 10206,
+  "changeHistory": [
+    "511df1e837b19ccb9271520589452d82d50ac69d",
+    "e02eb24e0a9139418120027b694492e0738df20a",
+    "9a013b255f301c557c3868dc1ad657202e9e7a67",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+    "ba70225cf6a1e7dc756f4991881de04f525ff088",
+    "ebd4f39a393e5fa9a810c6a36b749549229a53df",
+    "ee0c722dc8fb81ec902cd1da5958ce5adb0ab08f",
+    "c58a59f7081d55dd2108545ebf9ee48cf43ca944",
+    "39ec1515a205952eda7e171408a8b83eceb4abde",
+    "27c4e90efce04e1b1302f668b5eb22412e00d033",
+    "29ae25801380b94442253c4202dee782dc4713f5"
+  ],
+  "changeHistoryShort": {
+    "511df1e837b19ccb9271520589452d82d50ac69d": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+    "e02eb24e0a9139418120027b694492e0738df20a": "Ymultichange(Yparameterchange,Ybodychange,Yparametermetachange)",
+    "9a013b255f301c557c3868dc1ad657202e9e7a67": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yexceptionschange",
+    "ba70225cf6a1e7dc756f4991881de04f525ff088": "Ymultichange(Ymodifierchange,Yexceptionschange)",
+    "ebd4f39a393e5fa9a810c6a36b749549229a53df": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "ee0c722dc8fb81ec902cd1da5958ce5adb0ab08f": "Ymultichange(Yparameterchange,Ybodychange)",
+    "c58a59f7081d55dd2108545ebf9ee48cf43ca944": "Ybodychange",
+    "39ec1515a205952eda7e171408a8b83eceb4abde": "Yexceptionschange",
+    "27c4e90efce04e1b1302f668b5eb22412e00d033": "Ybodychange",
+    "29ae25801380b94442253c4202dee782dc4713f5": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "511df1e837b19ccb9271520589452d82d50ac69d": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+      "commitMessage": "HADOOP-16430. S3AFilesystem.delete to incrementally update s3guard with deletions\n\nContributed by Steve Loughran.\n\nThis overlaps the scanning for directory entries with batched calls to S3 DELETE and updates of the S3Guard tables.\nIt also uses S3Guard to list the files to delete, so find newly created files even when S3 listings are not use consistent.\n\nFor path which the client considers S3Guard to be authoritative, we also do a recursive LIST of the store and delete files; this is to find unindexed files and do guarantee that the delete(path, true) call really does delete everything underneath.\n\nChange-Id: Ice2f6e940c506e0b3a78fa534a99721b1698708e\n",
+      "commitDate": "05/09/19 6:25 AM",
+      "commitName": "511df1e837b19ccb9271520589452d82d50ac69d",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16430. S3AFilesystem.delete to incrementally update s3guard with deletions\n\nContributed by Steve Loughran.\n\nThis overlaps the scanning for directory entries with batched calls to S3 DELETE and updates of the S3Guard tables.\nIt also uses S3Guard to list the files to delete, so find newly created files even when S3 listings are not use consistent.\n\nFor path which the client considers S3Guard to be authoritative, we also do a recursive LIST of the store and delete files; this is to find unindexed files and do guarantee that the delete(path, true) call really does delete everything underneath.\n\nChange-Id: Ice2f6e940c506e0b3a78fa534a99721b1698708e\n",
+          "commitDate": "05/09/19 6:25 AM",
+          "commitName": "511df1e837b19ccb9271520589452d82d50ac69d",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "23/07/19 6:52 AM",
+          "commitNameOld": "4317d332321778269a583e2223d433107fab82eb",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 43.98,
+          "commitsBetweenForRepo": 415,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,33 @@\n-  void removeKeys(\n+  DeleteObjectsResult removeKeys(\n       final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n       final boolean deleteFakeDir,\n-      final List\u003cPath\u003e undeletedObjectsOnFailure)\n-      throws MultiObjectDeleteException, AmazonClientException,\n-      IOException {\n+      final List\u003cPath\u003e undeletedObjectsOnFailure,\n+      final BulkOperationState operationState,\n+      final boolean quiet)\n+      throws MultiObjectDeleteException, AmazonClientException, IOException {\n     undeletedObjectsOnFailure.clear();\n-    try(DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n-      removeKeysS3(keysToDelete, deleteFakeDir);\n+    try (DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n+      return removeKeysS3(keysToDelete, deleteFakeDir, quiet);\n     } catch (MultiObjectDeleteException ex) {\n       LOG.debug(\"Partial delete failure\");\n       // what to do if an IOE was raised? Given an exception was being\n       // raised anyway, and the failures are logged, do nothing.\n       if (!deleteFakeDir) {\n         // when deleting fake directories we don\u0027t want to delete metastore\n         // entries so we only process these failures on \"real\" deletes.\n         Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n-            new MultiObjectDeleteSupport(createStoreContext())\n+            new MultiObjectDeleteSupport(createStoreContext(), operationState)\n                 .processDeleteFailure(ex, keysToDelete);\n         undeletedObjectsOnFailure.addAll(results.getMiddle());\n       }\n       throw ex;\n     } catch (AmazonClientException | IOException ex) {\n-      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(createStoreContext())\n+      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(\n+          createStoreContext(),\n+          operationState)\n           .processDeleteFailureGenericException(ex, keysToDelete);\n       // other failures. Assume nothing was deleted\n       undeletedObjectsOnFailure.addAll(paths);\n       throw ex;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  DeleteObjectsResult removeKeys(\n      final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      final boolean deleteFakeDir,\n      final List\u003cPath\u003e undeletedObjectsOnFailure,\n      final BulkOperationState operationState,\n      final boolean quiet)\n      throws MultiObjectDeleteException, AmazonClientException, IOException {\n    undeletedObjectsOnFailure.clear();\n    try (DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n      return removeKeysS3(keysToDelete, deleteFakeDir, quiet);\n    } catch (MultiObjectDeleteException ex) {\n      LOG.debug(\"Partial delete failure\");\n      // what to do if an IOE was raised? Given an exception was being\n      // raised anyway, and the failures are logged, do nothing.\n      if (!deleteFakeDir) {\n        // when deleting fake directories we don\u0027t want to delete metastore\n        // entries so we only process these failures on \"real\" deletes.\n        Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n            new MultiObjectDeleteSupport(createStoreContext(), operationState)\n                .processDeleteFailure(ex, keysToDelete);\n        undeletedObjectsOnFailure.addAll(results.getMiddle());\n      }\n      throw ex;\n    } catch (AmazonClientException | IOException ex) {\n      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(\n          createStoreContext(),\n          operationState)\n          .processDeleteFailureGenericException(ex, keysToDelete);\n      // other failures. Assume nothing was deleted\n      undeletedObjectsOnFailure.addAll(paths);\n      throw ex;\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[keysToDelete-List\u003cDeleteObjectsRequest.KeyVersion\u003e(modifiers-final), deleteFakeDir-boolean(modifiers-final), undeletedObjectsOnFailure-List\u003cPath\u003e(modifiers-final)]",
+            "newValue": "[keysToDelete-List\u003cDeleteObjectsRequest.KeyVersion\u003e(modifiers-final), deleteFakeDir-boolean(modifiers-final), undeletedObjectsOnFailure-List\u003cPath\u003e(modifiers-final), operationState-BulkOperationState(modifiers-final), quiet-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-16430. S3AFilesystem.delete to incrementally update s3guard with deletions\n\nContributed by Steve Loughran.\n\nThis overlaps the scanning for directory entries with batched calls to S3 DELETE and updates of the S3Guard tables.\nIt also uses S3Guard to list the files to delete, so find newly created files even when S3 listings are not use consistent.\n\nFor path which the client considers S3Guard to be authoritative, we also do a recursive LIST of the store and delete files; this is to find unindexed files and do guarantee that the delete(path, true) call really does delete everything underneath.\n\nChange-Id: Ice2f6e940c506e0b3a78fa534a99721b1698708e\n",
+          "commitDate": "05/09/19 6:25 AM",
+          "commitName": "511df1e837b19ccb9271520589452d82d50ac69d",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "23/07/19 6:52 AM",
+          "commitNameOld": "4317d332321778269a583e2223d433107fab82eb",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 43.98,
+          "commitsBetweenForRepo": 415,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,33 @@\n-  void removeKeys(\n+  DeleteObjectsResult removeKeys(\n       final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n       final boolean deleteFakeDir,\n-      final List\u003cPath\u003e undeletedObjectsOnFailure)\n-      throws MultiObjectDeleteException, AmazonClientException,\n-      IOException {\n+      final List\u003cPath\u003e undeletedObjectsOnFailure,\n+      final BulkOperationState operationState,\n+      final boolean quiet)\n+      throws MultiObjectDeleteException, AmazonClientException, IOException {\n     undeletedObjectsOnFailure.clear();\n-    try(DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n-      removeKeysS3(keysToDelete, deleteFakeDir);\n+    try (DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n+      return removeKeysS3(keysToDelete, deleteFakeDir, quiet);\n     } catch (MultiObjectDeleteException ex) {\n       LOG.debug(\"Partial delete failure\");\n       // what to do if an IOE was raised? Given an exception was being\n       // raised anyway, and the failures are logged, do nothing.\n       if (!deleteFakeDir) {\n         // when deleting fake directories we don\u0027t want to delete metastore\n         // entries so we only process these failures on \"real\" deletes.\n         Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n-            new MultiObjectDeleteSupport(createStoreContext())\n+            new MultiObjectDeleteSupport(createStoreContext(), operationState)\n                 .processDeleteFailure(ex, keysToDelete);\n         undeletedObjectsOnFailure.addAll(results.getMiddle());\n       }\n       throw ex;\n     } catch (AmazonClientException | IOException ex) {\n-      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(createStoreContext())\n+      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(\n+          createStoreContext(),\n+          operationState)\n           .processDeleteFailureGenericException(ex, keysToDelete);\n       // other failures. Assume nothing was deleted\n       undeletedObjectsOnFailure.addAll(paths);\n       throw ex;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  DeleteObjectsResult removeKeys(\n      final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      final boolean deleteFakeDir,\n      final List\u003cPath\u003e undeletedObjectsOnFailure,\n      final BulkOperationState operationState,\n      final boolean quiet)\n      throws MultiObjectDeleteException, AmazonClientException, IOException {\n    undeletedObjectsOnFailure.clear();\n    try (DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n      return removeKeysS3(keysToDelete, deleteFakeDir, quiet);\n    } catch (MultiObjectDeleteException ex) {\n      LOG.debug(\"Partial delete failure\");\n      // what to do if an IOE was raised? Given an exception was being\n      // raised anyway, and the failures are logged, do nothing.\n      if (!deleteFakeDir) {\n        // when deleting fake directories we don\u0027t want to delete metastore\n        // entries so we only process these failures on \"real\" deletes.\n        Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n            new MultiObjectDeleteSupport(createStoreContext(), operationState)\n                .processDeleteFailure(ex, keysToDelete);\n        undeletedObjectsOnFailure.addAll(results.getMiddle());\n      }\n      throw ex;\n    } catch (AmazonClientException | IOException ex) {\n      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(\n          createStoreContext(),\n          operationState)\n          .processDeleteFailureGenericException(ex, keysToDelete);\n      // other failures. Assume nothing was deleted\n      undeletedObjectsOnFailure.addAll(paths);\n      throw ex;\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "DeleteObjectsResult"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16430. S3AFilesystem.delete to incrementally update s3guard with deletions\n\nContributed by Steve Loughran.\n\nThis overlaps the scanning for directory entries with batched calls to S3 DELETE and updates of the S3Guard tables.\nIt also uses S3Guard to list the files to delete, so find newly created files even when S3 listings are not use consistent.\n\nFor path which the client considers S3Guard to be authoritative, we also do a recursive LIST of the store and delete files; this is to find unindexed files and do guarantee that the delete(path, true) call really does delete everything underneath.\n\nChange-Id: Ice2f6e940c506e0b3a78fa534a99721b1698708e\n",
+          "commitDate": "05/09/19 6:25 AM",
+          "commitName": "511df1e837b19ccb9271520589452d82d50ac69d",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "23/07/19 6:52 AM",
+          "commitNameOld": "4317d332321778269a583e2223d433107fab82eb",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 43.98,
+          "commitsBetweenForRepo": 415,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,33 @@\n-  void removeKeys(\n+  DeleteObjectsResult removeKeys(\n       final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n       final boolean deleteFakeDir,\n-      final List\u003cPath\u003e undeletedObjectsOnFailure)\n-      throws MultiObjectDeleteException, AmazonClientException,\n-      IOException {\n+      final List\u003cPath\u003e undeletedObjectsOnFailure,\n+      final BulkOperationState operationState,\n+      final boolean quiet)\n+      throws MultiObjectDeleteException, AmazonClientException, IOException {\n     undeletedObjectsOnFailure.clear();\n-    try(DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n-      removeKeysS3(keysToDelete, deleteFakeDir);\n+    try (DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n+      return removeKeysS3(keysToDelete, deleteFakeDir, quiet);\n     } catch (MultiObjectDeleteException ex) {\n       LOG.debug(\"Partial delete failure\");\n       // what to do if an IOE was raised? Given an exception was being\n       // raised anyway, and the failures are logged, do nothing.\n       if (!deleteFakeDir) {\n         // when deleting fake directories we don\u0027t want to delete metastore\n         // entries so we only process these failures on \"real\" deletes.\n         Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n-            new MultiObjectDeleteSupport(createStoreContext())\n+            new MultiObjectDeleteSupport(createStoreContext(), operationState)\n                 .processDeleteFailure(ex, keysToDelete);\n         undeletedObjectsOnFailure.addAll(results.getMiddle());\n       }\n       throw ex;\n     } catch (AmazonClientException | IOException ex) {\n-      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(createStoreContext())\n+      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(\n+          createStoreContext(),\n+          operationState)\n           .processDeleteFailureGenericException(ex, keysToDelete);\n       // other failures. Assume nothing was deleted\n       undeletedObjectsOnFailure.addAll(paths);\n       throw ex;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  DeleteObjectsResult removeKeys(\n      final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      final boolean deleteFakeDir,\n      final List\u003cPath\u003e undeletedObjectsOnFailure,\n      final BulkOperationState operationState,\n      final boolean quiet)\n      throws MultiObjectDeleteException, AmazonClientException, IOException {\n    undeletedObjectsOnFailure.clear();\n    try (DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n      return removeKeysS3(keysToDelete, deleteFakeDir, quiet);\n    } catch (MultiObjectDeleteException ex) {\n      LOG.debug(\"Partial delete failure\");\n      // what to do if an IOE was raised? Given an exception was being\n      // raised anyway, and the failures are logged, do nothing.\n      if (!deleteFakeDir) {\n        // when deleting fake directories we don\u0027t want to delete metastore\n        // entries so we only process these failures on \"real\" deletes.\n        Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n            new MultiObjectDeleteSupport(createStoreContext(), operationState)\n                .processDeleteFailure(ex, keysToDelete);\n        undeletedObjectsOnFailure.addAll(results.getMiddle());\n      }\n      throw ex;\n    } catch (AmazonClientException | IOException ex) {\n      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(\n          createStoreContext(),\n          operationState)\n          .processDeleteFailureGenericException(ex, keysToDelete);\n      // other failures. Assume nothing was deleted\n      undeletedObjectsOnFailure.addAll(paths);\n      throw ex;\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e02eb24e0a9139418120027b694492e0738df20a": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange,Yparametermetachange)",
+      "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+      "commitDate": "20/06/19 1:56 AM",
+      "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+          "commitDate": "20/06/19 1:56 AM",
+          "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "16/06/19 9:05 AM",
+          "commitNameOld": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 3.7,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,30 @@\n-  void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n-      boolean clearKeys, boolean deleteFakeDir)\n+  void removeKeys(\n+      final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n+      final boolean deleteFakeDir,\n+      final List\u003cPath\u003e undeletedObjectsOnFailure)\n       throws MultiObjectDeleteException, AmazonClientException,\n       IOException {\n-    if (keysToDelete.isEmpty()) {\n-      // exit fast if there are no keys to delete\n-      return;\n-    }\n-    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n-      blockRootDelete(keyVersion.getKey());\n-    }\n-    if (enableMultiObjectsDelete) {\n-      deleteObjects(new DeleteObjectsRequest(bucket)\n-          .withKeys(keysToDelete)\n-          .withQuiet(true));\n-    } else {\n-      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n-        deleteObject(keyVersion.getKey());\n+    undeletedObjectsOnFailure.clear();\n+    try(DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n+      removeKeysS3(keysToDelete, deleteFakeDir);\n+    } catch (MultiObjectDeleteException ex) {\n+      LOG.debug(\"Partial delete failure\");\n+      // what to do if an IOE was raised? Given an exception was being\n+      // raised anyway, and the failures are logged, do nothing.\n+      if (!deleteFakeDir) {\n+        // when deleting fake directories we don\u0027t want to delete metastore\n+        // entries so we only process these failures on \"real\" deletes.\n+        Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n+            new MultiObjectDeleteSupport(createStoreContext())\n+                .processDeleteFailure(ex, keysToDelete);\n+        undeletedObjectsOnFailure.addAll(results.getMiddle());\n       }\n-    }\n-    if (!deleteFakeDir) {\n-      instrumentation.fileDeleted(keysToDelete.size());\n-    } else {\n-      instrumentation.fakeDirsDeleted(keysToDelete.size());\n-    }\n-    if (clearKeys) {\n-      keysToDelete.clear();\n+      throw ex;\n+    } catch (AmazonClientException | IOException ex) {\n+      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(createStoreContext())\n+          .processDeleteFailureGenericException(ex, keysToDelete);\n+      // other failures. Assume nothing was deleted\n+      undeletedObjectsOnFailure.addAll(paths);\n+      throw ex;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeKeys(\n      final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      final boolean deleteFakeDir,\n      final List\u003cPath\u003e undeletedObjectsOnFailure)\n      throws MultiObjectDeleteException, AmazonClientException,\n      IOException {\n    undeletedObjectsOnFailure.clear();\n    try(DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n      removeKeysS3(keysToDelete, deleteFakeDir);\n    } catch (MultiObjectDeleteException ex) {\n      LOG.debug(\"Partial delete failure\");\n      // what to do if an IOE was raised? Given an exception was being\n      // raised anyway, and the failures are logged, do nothing.\n      if (!deleteFakeDir) {\n        // when deleting fake directories we don\u0027t want to delete metastore\n        // entries so we only process these failures on \"real\" deletes.\n        Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n            new MultiObjectDeleteSupport(createStoreContext())\n                .processDeleteFailure(ex, keysToDelete);\n        undeletedObjectsOnFailure.addAll(results.getMiddle());\n      }\n      throw ex;\n    } catch (AmazonClientException | IOException ex) {\n      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(createStoreContext())\n          .processDeleteFailureGenericException(ex, keysToDelete);\n      // other failures. Assume nothing was deleted\n      undeletedObjectsOnFailure.addAll(paths);\n      throw ex;\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[keysToDelete-List\u003cDeleteObjectsRequest.KeyVersion\u003e, clearKeys-boolean, deleteFakeDir-boolean]",
+            "newValue": "[keysToDelete-List\u003cDeleteObjectsRequest.KeyVersion\u003e(modifiers-final), deleteFakeDir-boolean(modifiers-final), undeletedObjectsOnFailure-List\u003cPath\u003e(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+          "commitDate": "20/06/19 1:56 AM",
+          "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "16/06/19 9:05 AM",
+          "commitNameOld": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 3.7,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,30 @@\n-  void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n-      boolean clearKeys, boolean deleteFakeDir)\n+  void removeKeys(\n+      final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n+      final boolean deleteFakeDir,\n+      final List\u003cPath\u003e undeletedObjectsOnFailure)\n       throws MultiObjectDeleteException, AmazonClientException,\n       IOException {\n-    if (keysToDelete.isEmpty()) {\n-      // exit fast if there are no keys to delete\n-      return;\n-    }\n-    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n-      blockRootDelete(keyVersion.getKey());\n-    }\n-    if (enableMultiObjectsDelete) {\n-      deleteObjects(new DeleteObjectsRequest(bucket)\n-          .withKeys(keysToDelete)\n-          .withQuiet(true));\n-    } else {\n-      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n-        deleteObject(keyVersion.getKey());\n+    undeletedObjectsOnFailure.clear();\n+    try(DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n+      removeKeysS3(keysToDelete, deleteFakeDir);\n+    } catch (MultiObjectDeleteException ex) {\n+      LOG.debug(\"Partial delete failure\");\n+      // what to do if an IOE was raised? Given an exception was being\n+      // raised anyway, and the failures are logged, do nothing.\n+      if (!deleteFakeDir) {\n+        // when deleting fake directories we don\u0027t want to delete metastore\n+        // entries so we only process these failures on \"real\" deletes.\n+        Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n+            new MultiObjectDeleteSupport(createStoreContext())\n+                .processDeleteFailure(ex, keysToDelete);\n+        undeletedObjectsOnFailure.addAll(results.getMiddle());\n       }\n-    }\n-    if (!deleteFakeDir) {\n-      instrumentation.fileDeleted(keysToDelete.size());\n-    } else {\n-      instrumentation.fakeDirsDeleted(keysToDelete.size());\n-    }\n-    if (clearKeys) {\n-      keysToDelete.clear();\n+      throw ex;\n+    } catch (AmazonClientException | IOException ex) {\n+      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(createStoreContext())\n+          .processDeleteFailureGenericException(ex, keysToDelete);\n+      // other failures. Assume nothing was deleted\n+      undeletedObjectsOnFailure.addAll(paths);\n+      throw ex;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeKeys(\n      final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      final boolean deleteFakeDir,\n      final List\u003cPath\u003e undeletedObjectsOnFailure)\n      throws MultiObjectDeleteException, AmazonClientException,\n      IOException {\n    undeletedObjectsOnFailure.clear();\n    try(DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n      removeKeysS3(keysToDelete, deleteFakeDir);\n    } catch (MultiObjectDeleteException ex) {\n      LOG.debug(\"Partial delete failure\");\n      // what to do if an IOE was raised? Given an exception was being\n      // raised anyway, and the failures are logged, do nothing.\n      if (!deleteFakeDir) {\n        // when deleting fake directories we don\u0027t want to delete metastore\n        // entries so we only process these failures on \"real\" deletes.\n        Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n            new MultiObjectDeleteSupport(createStoreContext())\n                .processDeleteFailure(ex, keysToDelete);\n        undeletedObjectsOnFailure.addAll(results.getMiddle());\n      }\n      throw ex;\n    } catch (AmazonClientException | IOException ex) {\n      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(createStoreContext())\n          .processDeleteFailureGenericException(ex, keysToDelete);\n      // other failures. Assume nothing was deleted\n      undeletedObjectsOnFailure.addAll(paths);\n      throw ex;\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+          "commitDate": "20/06/19 1:56 AM",
+          "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "16/06/19 9:05 AM",
+          "commitNameOld": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 3.7,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,30 @@\n-  void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n-      boolean clearKeys, boolean deleteFakeDir)\n+  void removeKeys(\n+      final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n+      final boolean deleteFakeDir,\n+      final List\u003cPath\u003e undeletedObjectsOnFailure)\n       throws MultiObjectDeleteException, AmazonClientException,\n       IOException {\n-    if (keysToDelete.isEmpty()) {\n-      // exit fast if there are no keys to delete\n-      return;\n-    }\n-    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n-      blockRootDelete(keyVersion.getKey());\n-    }\n-    if (enableMultiObjectsDelete) {\n-      deleteObjects(new DeleteObjectsRequest(bucket)\n-          .withKeys(keysToDelete)\n-          .withQuiet(true));\n-    } else {\n-      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n-        deleteObject(keyVersion.getKey());\n+    undeletedObjectsOnFailure.clear();\n+    try(DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n+      removeKeysS3(keysToDelete, deleteFakeDir);\n+    } catch (MultiObjectDeleteException ex) {\n+      LOG.debug(\"Partial delete failure\");\n+      // what to do if an IOE was raised? Given an exception was being\n+      // raised anyway, and the failures are logged, do nothing.\n+      if (!deleteFakeDir) {\n+        // when deleting fake directories we don\u0027t want to delete metastore\n+        // entries so we only process these failures on \"real\" deletes.\n+        Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n+            new MultiObjectDeleteSupport(createStoreContext())\n+                .processDeleteFailure(ex, keysToDelete);\n+        undeletedObjectsOnFailure.addAll(results.getMiddle());\n       }\n-    }\n-    if (!deleteFakeDir) {\n-      instrumentation.fileDeleted(keysToDelete.size());\n-    } else {\n-      instrumentation.fakeDirsDeleted(keysToDelete.size());\n-    }\n-    if (clearKeys) {\n-      keysToDelete.clear();\n+      throw ex;\n+    } catch (AmazonClientException | IOException ex) {\n+      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(createStoreContext())\n+          .processDeleteFailureGenericException(ex, keysToDelete);\n+      // other failures. Assume nothing was deleted\n+      undeletedObjectsOnFailure.addAll(paths);\n+      throw ex;\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeKeys(\n      final List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      final boolean deleteFakeDir,\n      final List\u003cPath\u003e undeletedObjectsOnFailure)\n      throws MultiObjectDeleteException, AmazonClientException,\n      IOException {\n    undeletedObjectsOnFailure.clear();\n    try(DurationInfo ignored \u003d new DurationInfo(LOG, false, \"Deleting\")) {\n      removeKeysS3(keysToDelete, deleteFakeDir);\n    } catch (MultiObjectDeleteException ex) {\n      LOG.debug(\"Partial delete failure\");\n      // what to do if an IOE was raised? Given an exception was being\n      // raised anyway, and the failures are logged, do nothing.\n      if (!deleteFakeDir) {\n        // when deleting fake directories we don\u0027t want to delete metastore\n        // entries so we only process these failures on \"real\" deletes.\n        Triple\u003cList\u003cPath\u003e, List\u003cPath\u003e, List\u003cPair\u003cPath, IOException\u003e\u003e\u003e results \u003d\n            new MultiObjectDeleteSupport(createStoreContext())\n                .processDeleteFailure(ex, keysToDelete);\n        undeletedObjectsOnFailure.addAll(results.getMiddle());\n      }\n      throw ex;\n    } catch (AmazonClientException | IOException ex) {\n      List\u003cPath\u003e paths \u003d new MultiObjectDeleteSupport(createStoreContext())\n          .processDeleteFailureGenericException(ex, keysToDelete);\n      // other failures. Assume nothing was deleted\n      undeletedObjectsOnFailure.addAll(paths);\n      throw ex;\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[keysToDelete-List\u003cDeleteObjectsRequest.KeyVersion\u003e, clearKeys-boolean, deleteFakeDir-boolean]",
+            "newValue": "[keysToDelete-List\u003cDeleteObjectsRequest.KeyVersion\u003e(modifiers-final), deleteFakeDir-boolean(modifiers-final), undeletedObjectsOnFailure-List\u003cPath\u003e(modifiers-final)]"
+          }
+        }
+      ]
+    },
+    "9a013b255f301c557c3868dc1ad657202e9e7a67": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15176. Enhance IAM Assumed Role support in S3A client.\nContributed by Steve Loughran\n\n(cherry picked from commit 96c047fbb98c2378eed9693a724d4cbbd03c00fd)\n",
+      "commitDate": "15/02/18 7:57 AM",
+      "commitName": "9a013b255f301c557c3868dc1ad657202e9e7a67",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "18/01/18 5:13 AM",
+      "commitNameOld": "1093a73689912f78547e6d23023be2fd1c7ddc85",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 28.11,
+      "commitsBetweenForRepo": 184,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,29 @@\n   void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n       boolean clearKeys, boolean deleteFakeDir)\n       throws MultiObjectDeleteException, AmazonClientException,\n       IOException {\n     if (keysToDelete.isEmpty()) {\n       // exit fast if there are no keys to delete\n       return;\n     }\n     for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n       blockRootDelete(keyVersion.getKey());\n     }\n     if (enableMultiObjectsDelete) {\n-      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n+      deleteObjects(new DeleteObjectsRequest(bucket)\n+          .withKeys(keysToDelete)\n+          .withQuiet(true));\n     } else {\n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         deleteObject(keyVersion.getKey());\n       }\n     }\n     if (!deleteFakeDir) {\n       instrumentation.fileDeleted(keysToDelete.size());\n     } else {\n       instrumentation.fakeDirsDeleted(keysToDelete.size());\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      boolean clearKeys, boolean deleteFakeDir)\n      throws MultiObjectDeleteException, AmazonClientException,\n      IOException {\n    if (keysToDelete.isEmpty()) {\n      // exit fast if there are no keys to delete\n      return;\n    }\n    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n      blockRootDelete(keyVersion.getKey());\n    }\n    if (enableMultiObjectsDelete) {\n      deleteObjects(new DeleteObjectsRequest(bucket)\n          .withKeys(keysToDelete)\n          .withQuiet(true));\n    } else {\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        deleteObject(keyVersion.getKey());\n      }\n    }\n    if (!deleteFakeDir) {\n      instrumentation.fileDeleted(keysToDelete.size());\n    } else {\n      instrumentation.fakeDirsDeleted(keysToDelete.size());\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yexceptionschange",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "25/09/17 3:59 PM",
+      "commitNameOld": "47011d7dd300b0c74bb6cfe25b918c479d718f4f",
+      "commitAuthorOld": "Aaron Fabbri",
+      "daysBetweenCommits": 57.69,
+      "commitsBetweenForRepo": 477,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,27 @@\n   void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n       boolean clearKeys, boolean deleteFakeDir)\n       throws MultiObjectDeleteException, AmazonClientException,\n-      InvalidRequestException {\n+      IOException {\n     if (keysToDelete.isEmpty()) {\n       // exit fast if there are no keys to delete\n       return;\n     }\n     for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n       blockRootDelete(keyVersion.getKey());\n     }\n     if (enableMultiObjectsDelete) {\n       deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n     } else {\n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         deleteObject(keyVersion.getKey());\n       }\n     }\n     if (!deleteFakeDir) {\n       instrumentation.fileDeleted(keysToDelete.size());\n     } else {\n       instrumentation.fakeDirsDeleted(keysToDelete.size());\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      boolean clearKeys, boolean deleteFakeDir)\n      throws MultiObjectDeleteException, AmazonClientException,\n      IOException {\n    if (keysToDelete.isEmpty()) {\n      // exit fast if there are no keys to delete\n      return;\n    }\n    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n      blockRootDelete(keyVersion.getKey());\n    }\n    if (enableMultiObjectsDelete) {\n      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n    } else {\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        deleteObject(keyVersion.getKey());\n      }\n    }\n    if (!deleteFakeDir) {\n      instrumentation.fileDeleted(keysToDelete.size());\n    } else {\n      instrumentation.fakeDirsDeleted(keysToDelete.size());\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {
+        "oldValue": "[MultiObjectDeleteException, AmazonClientException, InvalidRequestException]",
+        "newValue": "[MultiObjectDeleteException, AmazonClientException, IOException]"
+      }
+    },
+    "ba70225cf6a1e7dc756f4991881de04f525ff088": {
+      "type": "Ymultichange(Ymodifierchange,Yexceptionschange)",
+      "commitMessage": "HADOOP-11572. s3a delete() operation fails during a concurrent delete of child entries.\nContributed by Steve Loughran.\n\n(cherry picked from commit 2ac5aab8d725f761a9f9723471a4426f6b5d78c4)\n",
+      "commitDate": "18/05/17 7:44 AM",
+      "commitName": "ba70225cf6a1e7dc756f4991881de04f525ff088",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-11572. s3a delete() operation fails during a concurrent delete of child entries.\nContributed by Steve Loughran.\n\n(cherry picked from commit 2ac5aab8d725f761a9f9723471a4426f6b5d78c4)\n",
+          "commitDate": "18/05/17 7:44 AM",
+          "commitName": "ba70225cf6a1e7dc756f4991881de04f525ff088",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "20/04/17 5:13 PM",
+          "commitNameOld": "667966c13c1e09077c2e2088bd66c9d7851dd14e",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 27.6,
+          "commitsBetweenForRepo": 151,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,27 @@\n-  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n+  void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n       boolean clearKeys, boolean deleteFakeDir)\n-      throws AmazonClientException, InvalidRequestException {\n+      throws MultiObjectDeleteException, AmazonClientException,\n+      InvalidRequestException {\n     if (keysToDelete.isEmpty()) {\n       // exit fast if there are no keys to delete\n       return;\n     }\n     for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n       blockRootDelete(keyVersion.getKey());\n     }\n     if (enableMultiObjectsDelete) {\n       deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n     } else {\n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         deleteObject(keyVersion.getKey());\n       }\n     }\n     if (!deleteFakeDir) {\n       instrumentation.fileDeleted(keysToDelete.size());\n     } else {\n       instrumentation.fakeDirsDeleted(keysToDelete.size());\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      boolean clearKeys, boolean deleteFakeDir)\n      throws MultiObjectDeleteException, AmazonClientException,\n      InvalidRequestException {\n    if (keysToDelete.isEmpty()) {\n      // exit fast if there are no keys to delete\n      return;\n    }\n    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n      blockRootDelete(keyVersion.getKey());\n    }\n    if (enableMultiObjectsDelete) {\n      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n    } else {\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        deleteObject(keyVersion.getKey());\n      }\n    }\n    if (!deleteFakeDir) {\n      instrumentation.fileDeleted(keysToDelete.size());\n    } else {\n      instrumentation.fakeDirsDeleted(keysToDelete.size());\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-11572. s3a delete() operation fails during a concurrent delete of child entries.\nContributed by Steve Loughran.\n\n(cherry picked from commit 2ac5aab8d725f761a9f9723471a4426f6b5d78c4)\n",
+          "commitDate": "18/05/17 7:44 AM",
+          "commitName": "ba70225cf6a1e7dc756f4991881de04f525ff088",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "20/04/17 5:13 PM",
+          "commitNameOld": "667966c13c1e09077c2e2088bd66c9d7851dd14e",
+          "commitAuthorOld": "Mingliang Liu",
+          "daysBetweenCommits": 27.6,
+          "commitsBetweenForRepo": 151,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,27 @@\n-  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n+  void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n       boolean clearKeys, boolean deleteFakeDir)\n-      throws AmazonClientException, InvalidRequestException {\n+      throws MultiObjectDeleteException, AmazonClientException,\n+      InvalidRequestException {\n     if (keysToDelete.isEmpty()) {\n       // exit fast if there are no keys to delete\n       return;\n     }\n     for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n       blockRootDelete(keyVersion.getKey());\n     }\n     if (enableMultiObjectsDelete) {\n       deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n     } else {\n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         deleteObject(keyVersion.getKey());\n       }\n     }\n     if (!deleteFakeDir) {\n       instrumentation.fileDeleted(keysToDelete.size());\n     } else {\n       instrumentation.fakeDirsDeleted(keysToDelete.size());\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      boolean clearKeys, boolean deleteFakeDir)\n      throws MultiObjectDeleteException, AmazonClientException,\n      InvalidRequestException {\n    if (keysToDelete.isEmpty()) {\n      // exit fast if there are no keys to delete\n      return;\n    }\n    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n      blockRootDelete(keyVersion.getKey());\n    }\n    if (enableMultiObjectsDelete) {\n      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n    } else {\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        deleteObject(keyVersion.getKey());\n      }\n    }\n    if (!deleteFakeDir) {\n      instrumentation.fileDeleted(keysToDelete.size());\n    } else {\n      instrumentation.fakeDirsDeleted(keysToDelete.size());\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[AmazonClientException, InvalidRequestException]",
+            "newValue": "[MultiObjectDeleteException, AmazonClientException, InvalidRequestException]"
+          }
+        }
+      ]
+    },
+    "ebd4f39a393e5fa9a810c6a36b749549229a53df": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-12977 s3a to handle delete(\"/\", true) robustly. Contributed by Steve Loughran.\n",
+      "commitDate": "07/10/16 4:51 AM",
+      "commitName": "ebd4f39a393e5fa9a810c6a36b749549229a53df",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-12977 s3a to handle delete(\"/\", true) robustly. Contributed by Steve Loughran.\n",
+          "commitDate": "07/10/16 4:51 AM",
+          "commitName": "ebd4f39a393e5fa9a810c6a36b749549229a53df",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "05/10/16 7:02 AM",
+          "commitNameOld": "d6be1e75d8e5b846f463e79bfbce889d31b943a7",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 1.91,
+          "commitsBetweenForRepo": 19,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,26 @@\n   private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n-      boolean clearKeys, boolean deleteFakeDir) throws AmazonClientException {\n+      boolean clearKeys, boolean deleteFakeDir)\n+      throws AmazonClientException, InvalidRequestException {\n     if (keysToDelete.isEmpty()) {\n-      // no keys\n+      // exit fast if there are no keys to delete\n       return;\n     }\n+    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n+      blockRootDelete(keyVersion.getKey());\n+    }\n     if (enableMultiObjectsDelete) {\n       deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n     } else {\n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         deleteObject(keyVersion.getKey());\n       }\n     }\n     if (!deleteFakeDir) {\n       instrumentation.fileDeleted(keysToDelete.size());\n     } else {\n       instrumentation.fakeDirsDeleted(keysToDelete.size());\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      boolean clearKeys, boolean deleteFakeDir)\n      throws AmazonClientException, InvalidRequestException {\n    if (keysToDelete.isEmpty()) {\n      // exit fast if there are no keys to delete\n      return;\n    }\n    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n      blockRootDelete(keyVersion.getKey());\n    }\n    if (enableMultiObjectsDelete) {\n      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n    } else {\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        deleteObject(keyVersion.getKey());\n      }\n    }\n    if (!deleteFakeDir) {\n      instrumentation.fileDeleted(keysToDelete.size());\n    } else {\n      instrumentation.fakeDirsDeleted(keysToDelete.size());\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[AmazonClientException]",
+            "newValue": "[AmazonClientException, InvalidRequestException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-12977 s3a to handle delete(\"/\", true) robustly. Contributed by Steve Loughran.\n",
+          "commitDate": "07/10/16 4:51 AM",
+          "commitName": "ebd4f39a393e5fa9a810c6a36b749549229a53df",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "05/10/16 7:02 AM",
+          "commitNameOld": "d6be1e75d8e5b846f463e79bfbce889d31b943a7",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 1.91,
+          "commitsBetweenForRepo": 19,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,26 @@\n   private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n-      boolean clearKeys, boolean deleteFakeDir) throws AmazonClientException {\n+      boolean clearKeys, boolean deleteFakeDir)\n+      throws AmazonClientException, InvalidRequestException {\n     if (keysToDelete.isEmpty()) {\n-      // no keys\n+      // exit fast if there are no keys to delete\n       return;\n     }\n+    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n+      blockRootDelete(keyVersion.getKey());\n+    }\n     if (enableMultiObjectsDelete) {\n       deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n     } else {\n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         deleteObject(keyVersion.getKey());\n       }\n     }\n     if (!deleteFakeDir) {\n       instrumentation.fileDeleted(keysToDelete.size());\n     } else {\n       instrumentation.fakeDirsDeleted(keysToDelete.size());\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      boolean clearKeys, boolean deleteFakeDir)\n      throws AmazonClientException, InvalidRequestException {\n    if (keysToDelete.isEmpty()) {\n      // exit fast if there are no keys to delete\n      return;\n    }\n    for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n      blockRootDelete(keyVersion.getKey());\n    }\n    if (enableMultiObjectsDelete) {\n      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n    } else {\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        deleteObject(keyVersion.getKey());\n      }\n    }\n    if (!deleteFakeDir) {\n      instrumentation.fileDeleted(keysToDelete.size());\n    } else {\n      instrumentation.fakeDirsDeleted(keysToDelete.size());\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "ee0c722dc8fb81ec902cd1da5958ce5adb0ab08f": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-13164 Optimize S3AFileSystem::deleteUnnecessaryFakeDirectories. Contributed by Rajesh Balamohan.\n",
+      "commitDate": "29/09/16 9:01 AM",
+      "commitName": "ee0c722dc8fb81ec902cd1da5958ce5adb0ab08f",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-13164 Optimize S3AFileSystem::deleteUnnecessaryFakeDirectories. Contributed by Rajesh Balamohan.\n",
+          "commitDate": "29/09/16 9:01 AM",
+          "commitName": "ee0c722dc8fb81ec902cd1da5958ce5adb0ab08f",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "28/09/16 4:19 PM",
+          "commitNameOld": "47f80922dc7cb2fa6d084e6fb1f354c4ec1d4c69",
+          "commitAuthorOld": "Chris Nauroth",
+          "daysBetweenCommits": 0.7,
+          "commitsBetweenForRepo": 4,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,22 @@\n   private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n-          boolean clearKeys) throws AmazonClientException {\n+      boolean clearKeys, boolean deleteFakeDir) throws AmazonClientException {\n+    if (keysToDelete.isEmpty()) {\n+      // no keys\n+      return;\n+    }\n     if (enableMultiObjectsDelete) {\n       deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n-      instrumentation.fileDeleted(keysToDelete.size());\n     } else {\n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         deleteObject(keyVersion.getKey());\n       }\n+    }\n+    if (!deleteFakeDir) {\n       instrumentation.fileDeleted(keysToDelete.size());\n+    } else {\n+      instrumentation.fakeDirsDeleted(keysToDelete.size());\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      boolean clearKeys, boolean deleteFakeDir) throws AmazonClientException {\n    if (keysToDelete.isEmpty()) {\n      // no keys\n      return;\n    }\n    if (enableMultiObjectsDelete) {\n      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n    } else {\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        deleteObject(keyVersion.getKey());\n      }\n    }\n    if (!deleteFakeDir) {\n      instrumentation.fileDeleted(keysToDelete.size());\n    } else {\n      instrumentation.fakeDirsDeleted(keysToDelete.size());\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[keysToDelete-List\u003cDeleteObjectsRequest.KeyVersion\u003e, clearKeys-boolean]",
+            "newValue": "[keysToDelete-List\u003cDeleteObjectsRequest.KeyVersion\u003e, clearKeys-boolean, deleteFakeDir-boolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13164 Optimize S3AFileSystem::deleteUnnecessaryFakeDirectories. Contributed by Rajesh Balamohan.\n",
+          "commitDate": "29/09/16 9:01 AM",
+          "commitName": "ee0c722dc8fb81ec902cd1da5958ce5adb0ab08f",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "28/09/16 4:19 PM",
+          "commitNameOld": "47f80922dc7cb2fa6d084e6fb1f354c4ec1d4c69",
+          "commitAuthorOld": "Chris Nauroth",
+          "daysBetweenCommits": 0.7,
+          "commitsBetweenForRepo": 4,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,22 @@\n   private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n-          boolean clearKeys) throws AmazonClientException {\n+      boolean clearKeys, boolean deleteFakeDir) throws AmazonClientException {\n+    if (keysToDelete.isEmpty()) {\n+      // no keys\n+      return;\n+    }\n     if (enableMultiObjectsDelete) {\n       deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n-      instrumentation.fileDeleted(keysToDelete.size());\n     } else {\n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         deleteObject(keyVersion.getKey());\n       }\n+    }\n+    if (!deleteFakeDir) {\n       instrumentation.fileDeleted(keysToDelete.size());\n+    } else {\n+      instrumentation.fakeDirsDeleted(keysToDelete.size());\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n      boolean clearKeys, boolean deleteFakeDir) throws AmazonClientException {\n    if (keysToDelete.isEmpty()) {\n      // no keys\n      return;\n    }\n    if (enableMultiObjectsDelete) {\n      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n    } else {\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        deleteObject(keyVersion.getKey());\n      }\n    }\n    if (!deleteFakeDir) {\n      instrumentation.fileDeleted(keysToDelete.size());\n    } else {\n      instrumentation.fakeDirsDeleted(keysToDelete.size());\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "c58a59f7081d55dd2108545ebf9ee48cf43ca944": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13171. Add StorageStatistics to S3A; instrument some more operations. Contributed by Steve Loughran.\n",
+      "commitDate": "03/06/16 8:55 AM",
+      "commitName": "c58a59f7081d55dd2108545ebf9ee48cf43ca944",
+      "commitAuthor": "Chris Nauroth",
+      "commitDateOld": "01/06/16 2:49 PM",
+      "commitNameOld": "16b1cc7af9bd63b65ef50e1056f275a7baf111a2",
+      "commitAuthorOld": "Chris Nauroth",
+      "daysBetweenCommits": 1.75,
+      "commitsBetweenForRepo": 8,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,15 @@\n   private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n           boolean clearKeys) throws AmazonClientException {\n     if (enableMultiObjectsDelete) {\n-      DeleteObjectsRequest deleteRequest\n-          \u003d new DeleteObjectsRequest(bucket).withKeys(keysToDelete);\n-      s3.deleteObjects(deleteRequest);\n+      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n       instrumentation.fileDeleted(keysToDelete.size());\n-      statistics.incrementWriteOps(1);\n     } else {\n-      int writeops \u003d 0;\n-\n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n-        s3.deleteObject(\n-            new DeleteObjectRequest(bucket, keyVersion.getKey()));\n-        writeops++;\n+        deleteObject(keyVersion.getKey());\n       }\n       instrumentation.fileDeleted(keysToDelete.size());\n-      statistics.incrementWriteOps(writeops);\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n          boolean clearKeys) throws AmazonClientException {\n    if (enableMultiObjectsDelete) {\n      deleteObjects(new DeleteObjectsRequest(bucket).withKeys(keysToDelete));\n      instrumentation.fileDeleted(keysToDelete.size());\n    } else {\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        deleteObject(keyVersion.getKey());\n      }\n      instrumentation.fileDeleted(keysToDelete.size());\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "39ec1515a205952eda7e171408a8b83eceb4abde": {
+      "type": "Yexceptionschange",
+      "commitMessage": "HADOOP-13130. s3a failures can surface as RTEs, not IOEs. (Steve Loughran)\n",
+      "commitDate": "21/05/16 8:39 AM",
+      "commitName": "39ec1515a205952eda7e171408a8b83eceb4abde",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "20/05/16 5:52 AM",
+      "commitNameOld": "757050ff355d40bc28f9dbfd0c0083c5f337d270",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 1.12,
+      "commitsBetweenForRepo": 4,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,23 @@\n   private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n-          boolean clearKeys) {\n+          boolean clearKeys) throws AmazonClientException {\n     if (enableMultiObjectsDelete) {\n       DeleteObjectsRequest deleteRequest\n           \u003d new DeleteObjectsRequest(bucket).withKeys(keysToDelete);\n       s3.deleteObjects(deleteRequest);\n       instrumentation.fileDeleted(keysToDelete.size());\n       statistics.incrementWriteOps(1);\n     } else {\n       int writeops \u003d 0;\n \n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         s3.deleteObject(\n             new DeleteObjectRequest(bucket, keyVersion.getKey()));\n         writeops++;\n       }\n       instrumentation.fileDeleted(keysToDelete.size());\n       statistics.incrementWriteOps(writeops);\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n          boolean clearKeys) throws AmazonClientException {\n    if (enableMultiObjectsDelete) {\n      DeleteObjectsRequest deleteRequest\n          \u003d new DeleteObjectsRequest(bucket).withKeys(keysToDelete);\n      s3.deleteObjects(deleteRequest);\n      instrumentation.fileDeleted(keysToDelete.size());\n      statistics.incrementWriteOps(1);\n    } else {\n      int writeops \u003d 0;\n\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        s3.deleteObject(\n            new DeleteObjectRequest(bucket, keyVersion.getKey()));\n        writeops++;\n      }\n      instrumentation.fileDeleted(keysToDelete.size());\n      statistics.incrementWriteOps(writeops);\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {
+        "oldValue": "[]",
+        "newValue": "[AmazonClientException]"
+      }
+    },
+    "27c4e90efce04e1b1302f668b5eb22412e00d033": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13028 add low level counter metrics for S3A; use in read performance tests. contributed by: stevel\npatch includes\nHADOOP-12844 Recover when S3A fails on IOException in read()\nHADOOP-13058 S3A FS fails during init against a read-only FS if multipart purge\nHADOOP-13047 S3a Forward seek in stream length to be configurable\n",
+      "commitDate": "12/05/16 11:24 AM",
+      "commitName": "27c4e90efce04e1b1302f668b5eb22412e00d033",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "12/05/16 5:57 AM",
+      "commitNameOld": "def2a6d3856452d5c804f04e5bf485541a3bc53a",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 0.23,
+      "commitsBetweenForRepo": 5,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,23 @@\n   private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n           boolean clearKeys) {\n     if (enableMultiObjectsDelete) {\n       DeleteObjectsRequest deleteRequest\n           \u003d new DeleteObjectsRequest(bucket).withKeys(keysToDelete);\n       s3.deleteObjects(deleteRequest);\n+      instrumentation.fileDeleted(keysToDelete.size());\n       statistics.incrementWriteOps(1);\n     } else {\n       int writeops \u003d 0;\n \n       for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n         s3.deleteObject(\n             new DeleteObjectRequest(bucket, keyVersion.getKey()));\n         writeops++;\n       }\n-\n+      instrumentation.fileDeleted(keysToDelete.size());\n       statistics.incrementWriteOps(writeops);\n     }\n     if (clearKeys) {\n       keysToDelete.clear();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n          boolean clearKeys) {\n    if (enableMultiObjectsDelete) {\n      DeleteObjectsRequest deleteRequest\n          \u003d new DeleteObjectsRequest(bucket).withKeys(keysToDelete);\n      s3.deleteObjects(deleteRequest);\n      instrumentation.fileDeleted(keysToDelete.size());\n      statistics.incrementWriteOps(1);\n    } else {\n      int writeops \u003d 0;\n\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        s3.deleteObject(\n            new DeleteObjectRequest(bucket, keyVersion.getKey()));\n        writeops++;\n      }\n      instrumentation.fileDeleted(keysToDelete.size());\n      statistics.incrementWriteOps(writeops);\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "29ae25801380b94442253c4202dee782dc4713f5": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12292. Make use of DeleteObjects optional.  (Thomas Demoor via stevel)\n",
+      "commitDate": "06/02/16 7:05 AM",
+      "commitName": "29ae25801380b94442253c4202dee782dc4713f5",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,22 @@\n+  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n+          boolean clearKeys) {\n+    if (enableMultiObjectsDelete) {\n+      DeleteObjectsRequest deleteRequest\n+          \u003d new DeleteObjectsRequest(bucket).withKeys(keysToDelete);\n+      s3.deleteObjects(deleteRequest);\n+      statistics.incrementWriteOps(1);\n+    } else {\n+      int writeops \u003d 0;\n+\n+      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n+        s3.deleteObject(\n+            new DeleteObjectRequest(bucket, keyVersion.getKey()));\n+        writeops++;\n+      }\n+\n+      statistics.incrementWriteOps(writeops);\n+    }\n+    if (clearKeys) {\n+      keysToDelete.clear();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void removeKeys(List\u003cDeleteObjectsRequest.KeyVersion\u003e keysToDelete,\n          boolean clearKeys) {\n    if (enableMultiObjectsDelete) {\n      DeleteObjectsRequest deleteRequest\n          \u003d new DeleteObjectsRequest(bucket).withKeys(keysToDelete);\n      s3.deleteObjects(deleteRequest);\n      statistics.incrementWriteOps(1);\n    } else {\n      int writeops \u003d 0;\n\n      for (DeleteObjectsRequest.KeyVersion keyVersion : keysToDelete) {\n        s3.deleteObject(\n            new DeleteObjectRequest(bucket, keyVersion.getKey()));\n        writeops++;\n      }\n\n      statistics.incrementWriteOps(writeops);\n    }\n    if (clearKeys) {\n      keysToDelete.clear();\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java"
+    }
+  }
+}

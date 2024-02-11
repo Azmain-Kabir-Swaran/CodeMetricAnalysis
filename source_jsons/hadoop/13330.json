@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DatanodeManager.java",
+  "functionName": "handleLifeline",
+  "functionId": "handleLifeline___nodeReg-DatanodeRegistration__reports-StorageReport[]__blockPoolId-String__cacheCapacity-long__cacheUsed-long__xceiverCount-int__maxTransfers-int__failedVolumes-int__volumeFailureSummary-VolumeFailureSummary",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java",
+  "functionStartLine": 1823,
+  "functionEndLine": 1848,
+  "numCommitsSeen": 172,
+  "timeTaken": 2894,
+  "changeHistory": [
+    "d1d4aba71b21871140b162583a4b94ce118e1fb3",
+    "2759689d7d23001f007cb0dbe2521de90734dd5c"
+  ],
+  "changeHistoryShort": {
+    "d1d4aba71b21871140b162583a4b94ce118e1fb3": "Ybodychange",
+    "2759689d7d23001f007cb0dbe2521de90734dd5c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d1d4aba71b21871140b162583a4b94ce118e1fb3": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11224. Lifeline message should be ignored for dead nodes (Contributed by Vinayakumar B)\n",
+      "commitDate": "09/12/16 1:23 AM",
+      "commitName": "d1d4aba71b21871140b162583a4b94ce118e1fb3",
+      "commitAuthor": "Vinayakumar B",
+      "commitDateOld": "07/12/16 8:26 AM",
+      "commitNameOld": "c73e08a6dad46cad14b38a4a586a5cda1622b206",
+      "commitAuthorOld": "Ming Ma",
+      "daysBetweenCommits": 1.71,
+      "commitsBetweenForRepo": 20,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,26 @@\n   public void handleLifeline(DatanodeRegistration nodeReg,\n       StorageReport[] reports, String blockPoolId, long cacheCapacity,\n       long cacheUsed, int xceiverCount, int maxTransfers, int failedVolumes,\n       VolumeFailureSummary volumeFailureSummary) throws IOException {\n     if (LOG.isDebugEnabled()) {\n       LOG.debug(\"Received handleLifeline from nodeReg \u003d \" + nodeReg);\n     }\n     DatanodeDescriptor nodeinfo \u003d getDatanode(nodeReg);\n-    if (nodeinfo \u003d\u003d null) {\n-      // This is null if the DataNode has not yet registered.  We expect this\n-      // will never happen, because the DataNode has logic to prevent sending\n-      // lifeline messages until after initial registration is successful.\n+    if (nodeinfo \u003d\u003d null || !nodeinfo.isRegistered()) {\n+      // This can happen if the lifeline message comes when DataNode is either\n+      // not registered at all or its marked dead at NameNode and expectes\n+      // re-registration. Ignore lifeline messages without registration.\n       // Lifeline message handling can\u0027t send commands back to the DataNode to\n       // tell it to register, so simply exit.\n       return;\n     }\n     if (nodeinfo.isDisallowed()) {\n       // This is highly unlikely, because heartbeat handling is much more\n       // frequent and likely would have already sent the disallowed error.\n       // Lifeline messages are not intended to send any kind of control response\n       // back to the DataNode, so simply exit.\n       return;\n     }\n     heartbeatManager.updateLifeline(nodeinfo, reports, cacheCapacity, cacheUsed,\n         xceiverCount, failedVolumes, volumeFailureSummary);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void handleLifeline(DatanodeRegistration nodeReg,\n      StorageReport[] reports, String blockPoolId, long cacheCapacity,\n      long cacheUsed, int xceiverCount, int maxTransfers, int failedVolumes,\n      VolumeFailureSummary volumeFailureSummary) throws IOException {\n    if (LOG.isDebugEnabled()) {\n      LOG.debug(\"Received handleLifeline from nodeReg \u003d \" + nodeReg);\n    }\n    DatanodeDescriptor nodeinfo \u003d getDatanode(nodeReg);\n    if (nodeinfo \u003d\u003d null || !nodeinfo.isRegistered()) {\n      // This can happen if the lifeline message comes when DataNode is either\n      // not registered at all or its marked dead at NameNode and expectes\n      // re-registration. Ignore lifeline messages without registration.\n      // Lifeline message handling can\u0027t send commands back to the DataNode to\n      // tell it to register, so simply exit.\n      return;\n    }\n    if (nodeinfo.isDisallowed()) {\n      // This is highly unlikely, because heartbeat handling is much more\n      // frequent and likely would have already sent the disallowed error.\n      // Lifeline messages are not intended to send any kind of control response\n      // back to the DataNode, so simply exit.\n      return;\n    }\n    heartbeatManager.updateLifeline(nodeinfo, reports, cacheCapacity, cacheUsed,\n        xceiverCount, failedVolumes, volumeFailureSummary);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java",
+      "extendedDetails": {}
+    },
+    "2759689d7d23001f007cb0dbe2521de90734dd5c": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9239. DataNode Lifeline Protocol: an alternative protocol for reporting DataNode liveness. Contributed by Chris Nauroth.\n",
+      "commitDate": "04/03/16 3:29 PM",
+      "commitName": "2759689d7d23001f007cb0dbe2521de90734dd5c",
+      "commitAuthor": "Chris Nauroth",
+      "diff": "@@ -0,0 +1,26 @@\n+  public void handleLifeline(DatanodeRegistration nodeReg,\n+      StorageReport[] reports, String blockPoolId, long cacheCapacity,\n+      long cacheUsed, int xceiverCount, int maxTransfers, int failedVolumes,\n+      VolumeFailureSummary volumeFailureSummary) throws IOException {\n+    if (LOG.isDebugEnabled()) {\n+      LOG.debug(\"Received handleLifeline from nodeReg \u003d \" + nodeReg);\n+    }\n+    DatanodeDescriptor nodeinfo \u003d getDatanode(nodeReg);\n+    if (nodeinfo \u003d\u003d null) {\n+      // This is null if the DataNode has not yet registered.  We expect this\n+      // will never happen, because the DataNode has logic to prevent sending\n+      // lifeline messages until after initial registration is successful.\n+      // Lifeline message handling can\u0027t send commands back to the DataNode to\n+      // tell it to register, so simply exit.\n+      return;\n+    }\n+    if (nodeinfo.isDisallowed()) {\n+      // This is highly unlikely, because heartbeat handling is much more\n+      // frequent and likely would have already sent the disallowed error.\n+      // Lifeline messages are not intended to send any kind of control response\n+      // back to the DataNode, so simply exit.\n+      return;\n+    }\n+    heartbeatManager.updateLifeline(nodeinfo, reports, cacheCapacity, cacheUsed,\n+        xceiverCount, failedVolumes, volumeFailureSummary);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void handleLifeline(DatanodeRegistration nodeReg,\n      StorageReport[] reports, String blockPoolId, long cacheCapacity,\n      long cacheUsed, int xceiverCount, int maxTransfers, int failedVolumes,\n      VolumeFailureSummary volumeFailureSummary) throws IOException {\n    if (LOG.isDebugEnabled()) {\n      LOG.debug(\"Received handleLifeline from nodeReg \u003d \" + nodeReg);\n    }\n    DatanodeDescriptor nodeinfo \u003d getDatanode(nodeReg);\n    if (nodeinfo \u003d\u003d null) {\n      // This is null if the DataNode has not yet registered.  We expect this\n      // will never happen, because the DataNode has logic to prevent sending\n      // lifeline messages until after initial registration is successful.\n      // Lifeline message handling can\u0027t send commands back to the DataNode to\n      // tell it to register, so simply exit.\n      return;\n    }\n    if (nodeinfo.isDisallowed()) {\n      // This is highly unlikely, because heartbeat handling is much more\n      // frequent and likely would have already sent the disallowed error.\n      // Lifeline messages are not intended to send any kind of control response\n      // back to the DataNode, so simply exit.\n      return;\n    }\n    heartbeatManager.updateLifeline(nodeinfo, reports, cacheCapacity, cacheUsed,\n        xceiverCount, failedVolumes, volumeFailureSummary);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeManager.java"
+    }
+  }
+}

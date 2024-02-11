@@ -1,0 +1,87 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NameNodeRpcServer.java",
+  "functionName": "transitionToStandby",
+  "functionId": "transitionToStandby___req-StateChangeRequestInfo",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java",
+  "functionStartLine": 1822,
+  "functionEndLine": 1838,
+  "numCommitsSeen": 296,
+  "timeTaken": 6508,
+  "changeHistory": [
+    "46166bd8d1be6f25bd38703fb9b0a417e3ef750b",
+    "db334bb8625da97c7e518cbcf477530c7ba7001e"
+  ],
+  "changeHistoryShort": {
+    "46166bd8d1be6f25bd38703fb9b0a417e3ef750b": "Ybodychange",
+    "db334bb8625da97c7e518cbcf477530c7ba7001e": "Ymultichange(Yexceptionschange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "46166bd8d1be6f25bd38703fb9b0a417e3ef750b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14961. [SBN read] Prevent ZKFC changing Observer Namenode state. Contributed by Ayush Saxena.\n",
+      "commitDate": "28/11/19 4:58 AM",
+      "commitName": "46166bd8d1be6f25bd38703fb9b0a417e3ef750b",
+      "commitAuthor": "Ayush Saxena",
+      "commitDateOld": "21/11/19 11:01 AM",
+      "commitNameOld": "26270196a2d2cfddcf24ee7bbd2b84a2e93accef",
+      "commitAuthorOld": "Surendra Singh Lilhore",
+      "daysBetweenCommits": 6.75,
+      "commitsBetweenForRepo": 26,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,6 +1,17 @@\n-  public synchronized void transitionToStandby(StateChangeRequestInfo req) \n+  public synchronized void transitionToStandby(StateChangeRequestInfo req)\n       throws ServiceFailedException, AccessControlException, IOException {\n     checkNNStartup();\n+    // This is to eliminate any race condition between manual transition of\n+    // namenode into Observer, and ZKFC auto failover election, when the\n+    // namenode has already participated in the\n+    // ZKFC election, before transition to Observer state as Standby Node.\n+    // For more details check : HDFS-14961.\n+    if (nn.getState().equals(NameNode.OBSERVER_STATE.toString())\n+        \u0026\u0026 req.getSource() \u003d\u003d RequestSource.REQUEST_BY_ZKFC) {\n+      throw new AccessControlException(\n+          \"Request from ZK failover controller at \" + Server.getRemoteAddress()\n+              + \" denied since the namenode is in Observer state.\");\n+    }\n     nn.checkHaStateChange(req);\n     nn.transitionToStandby();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void transitionToStandby(StateChangeRequestInfo req)\n      throws ServiceFailedException, AccessControlException, IOException {\n    checkNNStartup();\n    // This is to eliminate any race condition between manual transition of\n    // namenode into Observer, and ZKFC auto failover election, when the\n    // namenode has already participated in the\n    // ZKFC election, before transition to Observer state as Standby Node.\n    // For more details check : HDFS-14961.\n    if (nn.getState().equals(NameNode.OBSERVER_STATE.toString())\n        \u0026\u0026 req.getSource() \u003d\u003d RequestSource.REQUEST_BY_ZKFC) {\n      throw new AccessControlException(\n          \"Request from ZK failover controller at \" + Server.getRemoteAddress()\n              + \" denied since the namenode is in Observer state.\");\n    }\n    nn.checkHaStateChange(req);\n    nn.transitionToStandby();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java",
+      "extendedDetails": {}
+    },
+    "db334bb8625da97c7e518cbcf477530c7ba7001e": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-3443. Fix NPE when namenode transition to active during startup by adding checkNNStartup() in NameNodeRpcServer.  Contributed by Vinayakumar B\n",
+      "commitDate": "21/01/15 11:33 AM",
+      "commitName": "db334bb8625da97c7e518cbcf477530c7ba7001e",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-3443. Fix NPE when namenode transition to active during startup by adding checkNNStartup() in NameNodeRpcServer.  Contributed by Vinayakumar B\n",
+          "commitDate": "21/01/15 11:33 AM",
+          "commitName": "db334bb8625da97c7e518cbcf477530c7ba7001e",
+          "commitAuthor": "Tsz-Wo Nicholas Sze",
+          "commitDateOld": "12/01/15 10:50 PM",
+          "commitNameOld": "7e9358feb326d48b8c4f00249e7af5023cebd2e2",
+          "commitAuthorOld": "Plamen Jeliazkov",
+          "daysBetweenCommits": 8.53,
+          "commitsBetweenForRepo": 59,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,5 +1,6 @@\n   public synchronized void transitionToStandby(StateChangeRequestInfo req) \n-      throws ServiceFailedException, AccessControlException {\n+      throws ServiceFailedException, AccessControlException, IOException {\n+    checkNNStartup();\n     nn.checkHaStateChange(req);\n     nn.transitionToStandby();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void transitionToStandby(StateChangeRequestInfo req) \n      throws ServiceFailedException, AccessControlException, IOException {\n    checkNNStartup();\n    nn.checkHaStateChange(req);\n    nn.transitionToStandby();\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java",
+          "extendedDetails": {
+            "oldValue": "[ServiceFailedException, AccessControlException]",
+            "newValue": "[ServiceFailedException, AccessControlException, IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3443. Fix NPE when namenode transition to active during startup by adding checkNNStartup() in NameNodeRpcServer.  Contributed by Vinayakumar B\n",
+          "commitDate": "21/01/15 11:33 AM",
+          "commitName": "db334bb8625da97c7e518cbcf477530c7ba7001e",
+          "commitAuthor": "Tsz-Wo Nicholas Sze",
+          "commitDateOld": "12/01/15 10:50 PM",
+          "commitNameOld": "7e9358feb326d48b8c4f00249e7af5023cebd2e2",
+          "commitAuthorOld": "Plamen Jeliazkov",
+          "daysBetweenCommits": 8.53,
+          "commitsBetweenForRepo": 59,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,5 +1,6 @@\n   public synchronized void transitionToStandby(StateChangeRequestInfo req) \n-      throws ServiceFailedException, AccessControlException {\n+      throws ServiceFailedException, AccessControlException, IOException {\n+    checkNNStartup();\n     nn.checkHaStateChange(req);\n     nn.transitionToStandby();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void transitionToStandby(StateChangeRequestInfo req) \n      throws ServiceFailedException, AccessControlException, IOException {\n    checkNNStartup();\n    nn.checkHaStateChange(req);\n    nn.transitionToStandby();\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNodeRpcServer.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

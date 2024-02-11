@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TaskAttemptListenerImpl.java",
+  "functionName": "coalesceStatusUpdate",
+  "functionId": "coalesceStatusUpdate___yarnAttemptID-TaskAttemptId__taskAttemptStatus-TaskAttemptStatus__lastStatusRef-AtomicReference__TaskAttemptStatus__",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapred/TaskAttemptListenerImpl.java",
+  "functionStartLine": 605,
+  "functionEndLine": 645,
+  "numCommitsSeen": 38,
+  "timeTaken": 1404,
+  "changeHistory": [
+    "fe35103591ece0209f8345aba5544313e45a073c",
+    "21d36273551fa45c4130e5523b6724358cf34b1e"
+  ],
+  "changeHistoryShort": {
+    "fe35103591ece0209f8345aba5544313e45a073c": "Ybodychange",
+    "21d36273551fa45c4130e5523b6724358cf34b1e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fe35103591ece0209f8345aba5544313e45a073c": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-7028. Concurrent task progress updates causing NPE in Application Master. Contributed by Gergo Repas\n",
+      "commitDate": "03/01/18 9:01 AM",
+      "commitName": "fe35103591ece0209f8345aba5544313e45a073c",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "01/12/17 12:04 PM",
+      "commitNameOld": "21d36273551fa45c4130e5523b6724358cf34b1e",
+      "commitAuthorOld": "Jason Lowe",
+      "daysBetweenCommits": 32.87,
+      "commitsBetweenForRepo": 189,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,41 @@\n   private void coalesceStatusUpdate(TaskAttemptId yarnAttemptID,\n       TaskAttemptStatus taskAttemptStatus,\n       AtomicReference\u003cTaskAttemptStatus\u003e lastStatusRef) {\n-    boolean asyncUpdatedNeeded \u003d false;\n-    TaskAttemptStatus lastStatus \u003d lastStatusRef.get();\n-\n-    if (lastStatus \u003d\u003d null) {\n-      lastStatusRef.set(taskAttemptStatus);\n-      asyncUpdatedNeeded \u003d true;\n-    } else {\n-      List\u003cTaskAttemptId\u003e oldFetchFailedMaps \u003d\n-          taskAttemptStatus.fetchFailedMaps;\n-\n-      // merge fetchFailedMaps from the previous update\n-      if (lastStatus.fetchFailedMaps !\u003d null) {\n+    List\u003cTaskAttemptId\u003e fetchFailedMaps \u003d taskAttemptStatus.fetchFailedMaps;\n+    TaskAttemptStatus lastStatus \u003d null;\n+    boolean done \u003d false;\n+    while (!done) {\n+      lastStatus \u003d lastStatusRef.get();\n+      if (lastStatus !\u003d null \u0026\u0026 lastStatus.fetchFailedMaps !\u003d null) {\n+        // merge fetchFailedMaps from the previous update\n         if (taskAttemptStatus.fetchFailedMaps \u003d\u003d null) {\n           taskAttemptStatus.fetchFailedMaps \u003d lastStatus.fetchFailedMaps;\n         } else {\n-          taskAttemptStatus.fetchFailedMaps.addAll(lastStatus.fetchFailedMaps);\n+          taskAttemptStatus.fetchFailedMaps \u003d\n+              new ArrayList\u003c\u003e(lastStatus.fetchFailedMaps.size() +\n+                  fetchFailedMaps.size());\n+          taskAttemptStatus.fetchFailedMaps.addAll(\n+              lastStatus.fetchFailedMaps);\n+          taskAttemptStatus.fetchFailedMaps.addAll(\n+              fetchFailedMaps);\n         }\n       }\n \n-      if (!lastStatusRef.compareAndSet(lastStatus, taskAttemptStatus)) {\n-        // update failed - async dispatcher has processed it in the meantime\n-        taskAttemptStatus.fetchFailedMaps \u003d oldFetchFailedMaps;\n-        lastStatusRef.set(taskAttemptStatus);\n-        asyncUpdatedNeeded \u003d true;\n+      // lastStatusRef may be changed by either the AsyncDispatcher when\n+      // it processes the update, or by another IPC server handler\n+      done \u003d lastStatusRef.compareAndSet(lastStatus, taskAttemptStatus);\n+      if (!done) {\n+        LOG.info(\"TaskAttempt \" + yarnAttemptID +\n+            \": lastStatusRef changed by another thread, retrying...\");\n+        // let\u0027s revert taskAttemptStatus.fetchFailedMaps\n+        taskAttemptStatus.fetchFailedMaps \u003d fetchFailedMaps;\n       }\n     }\n \n+    boolean asyncUpdatedNeeded \u003d (lastStatus \u003d\u003d null);\n     if (asyncUpdatedNeeded) {\n       context.getEventHandler().handle(\n           new TaskAttemptStatusUpdateEvent(taskAttemptStatus.id,\n               lastStatusRef));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void coalesceStatusUpdate(TaskAttemptId yarnAttemptID,\n      TaskAttemptStatus taskAttemptStatus,\n      AtomicReference\u003cTaskAttemptStatus\u003e lastStatusRef) {\n    List\u003cTaskAttemptId\u003e fetchFailedMaps \u003d taskAttemptStatus.fetchFailedMaps;\n    TaskAttemptStatus lastStatus \u003d null;\n    boolean done \u003d false;\n    while (!done) {\n      lastStatus \u003d lastStatusRef.get();\n      if (lastStatus !\u003d null \u0026\u0026 lastStatus.fetchFailedMaps !\u003d null) {\n        // merge fetchFailedMaps from the previous update\n        if (taskAttemptStatus.fetchFailedMaps \u003d\u003d null) {\n          taskAttemptStatus.fetchFailedMaps \u003d lastStatus.fetchFailedMaps;\n        } else {\n          taskAttemptStatus.fetchFailedMaps \u003d\n              new ArrayList\u003c\u003e(lastStatus.fetchFailedMaps.size() +\n                  fetchFailedMaps.size());\n          taskAttemptStatus.fetchFailedMaps.addAll(\n              lastStatus.fetchFailedMaps);\n          taskAttemptStatus.fetchFailedMaps.addAll(\n              fetchFailedMaps);\n        }\n      }\n\n      // lastStatusRef may be changed by either the AsyncDispatcher when\n      // it processes the update, or by another IPC server handler\n      done \u003d lastStatusRef.compareAndSet(lastStatus, taskAttemptStatus);\n      if (!done) {\n        LOG.info(\"TaskAttempt \" + yarnAttemptID +\n            \": lastStatusRef changed by another thread, retrying...\");\n        // let\u0027s revert taskAttemptStatus.fetchFailedMaps\n        taskAttemptStatus.fetchFailedMaps \u003d fetchFailedMaps;\n      }\n    }\n\n    boolean asyncUpdatedNeeded \u003d (lastStatus \u003d\u003d null);\n    if (asyncUpdatedNeeded) {\n      context.getEventHandler().handle(\n          new TaskAttemptStatusUpdateEvent(taskAttemptStatus.id,\n              lastStatusRef));\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapred/TaskAttemptListenerImpl.java",
+      "extendedDetails": {}
+    },
+    "21d36273551fa45c4130e5523b6724358cf34b1e": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-5124. AM lacks flow control for task events. Contributed by Peter Bacsko\n",
+      "commitDate": "01/12/17 12:04 PM",
+      "commitName": "21d36273551fa45c4130e5523b6724358cf34b1e",
+      "commitAuthor": "Jason Lowe",
+      "diff": "@@ -0,0 +1,36 @@\n+  private void coalesceStatusUpdate(TaskAttemptId yarnAttemptID,\n+      TaskAttemptStatus taskAttemptStatus,\n+      AtomicReference\u003cTaskAttemptStatus\u003e lastStatusRef) {\n+    boolean asyncUpdatedNeeded \u003d false;\n+    TaskAttemptStatus lastStatus \u003d lastStatusRef.get();\n+\n+    if (lastStatus \u003d\u003d null) {\n+      lastStatusRef.set(taskAttemptStatus);\n+      asyncUpdatedNeeded \u003d true;\n+    } else {\n+      List\u003cTaskAttemptId\u003e oldFetchFailedMaps \u003d\n+          taskAttemptStatus.fetchFailedMaps;\n+\n+      // merge fetchFailedMaps from the previous update\n+      if (lastStatus.fetchFailedMaps !\u003d null) {\n+        if (taskAttemptStatus.fetchFailedMaps \u003d\u003d null) {\n+          taskAttemptStatus.fetchFailedMaps \u003d lastStatus.fetchFailedMaps;\n+        } else {\n+          taskAttemptStatus.fetchFailedMaps.addAll(lastStatus.fetchFailedMaps);\n+        }\n+      }\n+\n+      if (!lastStatusRef.compareAndSet(lastStatus, taskAttemptStatus)) {\n+        // update failed - async dispatcher has processed it in the meantime\n+        taskAttemptStatus.fetchFailedMaps \u003d oldFetchFailedMaps;\n+        lastStatusRef.set(taskAttemptStatus);\n+        asyncUpdatedNeeded \u003d true;\n+      }\n+    }\n+\n+    if (asyncUpdatedNeeded) {\n+      context.getEventHandler().handle(\n+          new TaskAttemptStatusUpdateEvent(taskAttemptStatus.id,\n+              lastStatusRef));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void coalesceStatusUpdate(TaskAttemptId yarnAttemptID,\n      TaskAttemptStatus taskAttemptStatus,\n      AtomicReference\u003cTaskAttemptStatus\u003e lastStatusRef) {\n    boolean asyncUpdatedNeeded \u003d false;\n    TaskAttemptStatus lastStatus \u003d lastStatusRef.get();\n\n    if (lastStatus \u003d\u003d null) {\n      lastStatusRef.set(taskAttemptStatus);\n      asyncUpdatedNeeded \u003d true;\n    } else {\n      List\u003cTaskAttemptId\u003e oldFetchFailedMaps \u003d\n          taskAttemptStatus.fetchFailedMaps;\n\n      // merge fetchFailedMaps from the previous update\n      if (lastStatus.fetchFailedMaps !\u003d null) {\n        if (taskAttemptStatus.fetchFailedMaps \u003d\u003d null) {\n          taskAttemptStatus.fetchFailedMaps \u003d lastStatus.fetchFailedMaps;\n        } else {\n          taskAttemptStatus.fetchFailedMaps.addAll(lastStatus.fetchFailedMaps);\n        }\n      }\n\n      if (!lastStatusRef.compareAndSet(lastStatus, taskAttemptStatus)) {\n        // update failed - async dispatcher has processed it in the meantime\n        taskAttemptStatus.fetchFailedMaps \u003d oldFetchFailedMaps;\n        lastStatusRef.set(taskAttemptStatus);\n        asyncUpdatedNeeded \u003d true;\n      }\n    }\n\n    if (asyncUpdatedNeeded) {\n      context.getEventHandler().handle(\n          new TaskAttemptStatusUpdateEvent(taskAttemptStatus.id,\n              lastStatusRef));\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapred/TaskAttemptListenerImpl.java"
+    }
+  }
+}

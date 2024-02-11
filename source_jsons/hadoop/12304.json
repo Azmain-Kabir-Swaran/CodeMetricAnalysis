@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "VolumeScanner.java",
+  "functionName": "findNextUsableBlockIter",
+  "functionId": "findNextUsableBlockIter",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/VolumeScanner.java",
+  "functionStartLine": 362,
+  "functionEndLine": 405,
+  "numCommitsSeen": 20,
+  "timeTaken": 2102,
+  "changeHistory": [
+    "96b12662ea76e3ded4ef13944fc8df206cfb4613",
+    "6e62a1a6728b1f782f64065424f92b292c3f163a"
+  ],
+  "changeHistoryShort": {
+    "96b12662ea76e3ded4ef13944fc8df206cfb4613": "Ybodychange",
+    "6e62a1a6728b1f782f64065424f92b292c3f163a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "96b12662ea76e3ded4ef13944fc8df206cfb4613": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10637. Modifications to remove the assumption that FsVolumes are backed by java.io.File. (Virajith Jalaparti via lei)\n",
+      "commitDate": "10/10/16 3:30 PM",
+      "commitName": "96b12662ea76e3ded4ef13944fc8df206cfb4613",
+      "commitAuthor": "Lei Xu",
+      "commitDateOld": "29/08/16 1:59 PM",
+      "commitNameOld": "5d1609ddf275e4907bd224bf618e2aad4b262888",
+      "commitAuthorOld": "Yongjun Zhang",
+      "daysBetweenCommits": 42.06,
+      "commitsBetweenForRepo": 263,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,44 +1,44 @@\n   private synchronized long findNextUsableBlockIter() {\n     int numBlockIters \u003d blockIters.size();\n     if (numBlockIters \u003d\u003d 0) {\n       LOG.debug(\"{}: no block pools are registered.\", this);\n       return Long.MAX_VALUE;\n     }\n     int curIdx;\n     if (curBlockIter \u003d\u003d null) {\n       curIdx \u003d 0;\n     } else {\n       curIdx \u003d blockIters.indexOf(curBlockIter);\n       Preconditions.checkState(curIdx \u003e\u003d 0);\n     }\n     // Note that this has to be wall-clock time, not monotonic time.  This is\n     // because the time saved in the cursor file is a wall-clock time.  We do\n     // not want to save a monotonic time in the cursor file, because it resets\n     // every time the machine reboots (on most platforms).\n     long nowMs \u003d Time.now();\n     long minTimeoutMs \u003d Long.MAX_VALUE;\n     for (int i \u003d 0; i \u003c numBlockIters; i++) {\n       int idx \u003d (curIdx + i + 1) % numBlockIters;\n       BlockIterator iter \u003d blockIters.get(idx);\n       if (!iter.atEnd()) {\n         LOG.info(\"Now scanning bpid {} on volume {}\",\n-            iter.getBlockPoolId(), volume.getBasePath());\n+            iter.getBlockPoolId(), volume);\n         curBlockIter \u003d iter;\n         return 0L;\n       }\n       long iterStartMs \u003d iter.getIterStartMs();\n       long waitMs \u003d (iterStartMs + conf.scanPeriodMs) - nowMs;\n       if (waitMs \u003c\u003d 0) {\n         iter.rewind();\n         LOG.info(\"Now rescanning bpid {} on volume {}, after more than \" +\n-            \"{} hour(s)\", iter.getBlockPoolId(), volume.getBasePath(),\n+            \"{} hour(s)\", iter.getBlockPoolId(), volume,\n             TimeUnit.HOURS.convert(conf.scanPeriodMs, TimeUnit.MILLISECONDS));\n         curBlockIter \u003d iter;\n         return 0L;\n       }\n       minTimeoutMs \u003d Math.min(minTimeoutMs, waitMs);\n     }\n     LOG.info(\"{}: no suitable block pools found to scan.  Waiting {} ms.\",\n         this, minTimeoutMs);\n     return minTimeoutMs;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized long findNextUsableBlockIter() {\n    int numBlockIters \u003d blockIters.size();\n    if (numBlockIters \u003d\u003d 0) {\n      LOG.debug(\"{}: no block pools are registered.\", this);\n      return Long.MAX_VALUE;\n    }\n    int curIdx;\n    if (curBlockIter \u003d\u003d null) {\n      curIdx \u003d 0;\n    } else {\n      curIdx \u003d blockIters.indexOf(curBlockIter);\n      Preconditions.checkState(curIdx \u003e\u003d 0);\n    }\n    // Note that this has to be wall-clock time, not monotonic time.  This is\n    // because the time saved in the cursor file is a wall-clock time.  We do\n    // not want to save a monotonic time in the cursor file, because it resets\n    // every time the machine reboots (on most platforms).\n    long nowMs \u003d Time.now();\n    long minTimeoutMs \u003d Long.MAX_VALUE;\n    for (int i \u003d 0; i \u003c numBlockIters; i++) {\n      int idx \u003d (curIdx + i + 1) % numBlockIters;\n      BlockIterator iter \u003d blockIters.get(idx);\n      if (!iter.atEnd()) {\n        LOG.info(\"Now scanning bpid {} on volume {}\",\n            iter.getBlockPoolId(), volume);\n        curBlockIter \u003d iter;\n        return 0L;\n      }\n      long iterStartMs \u003d iter.getIterStartMs();\n      long waitMs \u003d (iterStartMs + conf.scanPeriodMs) - nowMs;\n      if (waitMs \u003c\u003d 0) {\n        iter.rewind();\n        LOG.info(\"Now rescanning bpid {} on volume {}, after more than \" +\n            \"{} hour(s)\", iter.getBlockPoolId(), volume,\n            TimeUnit.HOURS.convert(conf.scanPeriodMs, TimeUnit.MILLISECONDS));\n        curBlockIter \u003d iter;\n        return 0L;\n      }\n      minTimeoutMs \u003d Math.min(minTimeoutMs, waitMs);\n    }\n    LOG.info(\"{}: no suitable block pools found to scan.  Waiting {} ms.\",\n        this, minTimeoutMs);\n    return minTimeoutMs;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/VolumeScanner.java",
+      "extendedDetails": {}
+    },
+    "6e62a1a6728b1f782f64065424f92b292c3f163a": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7430. Refactor the BlockScanner to use O(1) memory and use multiple threads (cmccabe)\n",
+      "commitDate": "21/01/15 7:00 PM",
+      "commitName": "6e62a1a6728b1f782f64065424f92b292c3f163a",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "diff": "@@ -0,0 +1,44 @@\n+  private synchronized long findNextUsableBlockIter() {\n+    int numBlockIters \u003d blockIters.size();\n+    if (numBlockIters \u003d\u003d 0) {\n+      LOG.debug(\"{}: no block pools are registered.\", this);\n+      return Long.MAX_VALUE;\n+    }\n+    int curIdx;\n+    if (curBlockIter \u003d\u003d null) {\n+      curIdx \u003d 0;\n+    } else {\n+      curIdx \u003d blockIters.indexOf(curBlockIter);\n+      Preconditions.checkState(curIdx \u003e\u003d 0);\n+    }\n+    // Note that this has to be wall-clock time, not monotonic time.  This is\n+    // because the time saved in the cursor file is a wall-clock time.  We do\n+    // not want to save a monotonic time in the cursor file, because it resets\n+    // every time the machine reboots (on most platforms).\n+    long nowMs \u003d Time.now();\n+    long minTimeoutMs \u003d Long.MAX_VALUE;\n+    for (int i \u003d 0; i \u003c numBlockIters; i++) {\n+      int idx \u003d (curIdx + i + 1) % numBlockIters;\n+      BlockIterator iter \u003d blockIters.get(idx);\n+      if (!iter.atEnd()) {\n+        LOG.info(\"Now scanning bpid {} on volume {}\",\n+            iter.getBlockPoolId(), volume.getBasePath());\n+        curBlockIter \u003d iter;\n+        return 0L;\n+      }\n+      long iterStartMs \u003d iter.getIterStartMs();\n+      long waitMs \u003d (iterStartMs + conf.scanPeriodMs) - nowMs;\n+      if (waitMs \u003c\u003d 0) {\n+        iter.rewind();\n+        LOG.info(\"Now rescanning bpid {} on volume {}, after more than \" +\n+            \"{} hour(s)\", iter.getBlockPoolId(), volume.getBasePath(),\n+            TimeUnit.HOURS.convert(conf.scanPeriodMs, TimeUnit.MILLISECONDS));\n+        curBlockIter \u003d iter;\n+        return 0L;\n+      }\n+      minTimeoutMs \u003d Math.min(minTimeoutMs, waitMs);\n+    }\n+    LOG.info(\"{}: no suitable block pools found to scan.  Waiting {} ms.\",\n+        this, minTimeoutMs);\n+    return minTimeoutMs;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized long findNextUsableBlockIter() {\n    int numBlockIters \u003d blockIters.size();\n    if (numBlockIters \u003d\u003d 0) {\n      LOG.debug(\"{}: no block pools are registered.\", this);\n      return Long.MAX_VALUE;\n    }\n    int curIdx;\n    if (curBlockIter \u003d\u003d null) {\n      curIdx \u003d 0;\n    } else {\n      curIdx \u003d blockIters.indexOf(curBlockIter);\n      Preconditions.checkState(curIdx \u003e\u003d 0);\n    }\n    // Note that this has to be wall-clock time, not monotonic time.  This is\n    // because the time saved in the cursor file is a wall-clock time.  We do\n    // not want to save a monotonic time in the cursor file, because it resets\n    // every time the machine reboots (on most platforms).\n    long nowMs \u003d Time.now();\n    long minTimeoutMs \u003d Long.MAX_VALUE;\n    for (int i \u003d 0; i \u003c numBlockIters; i++) {\n      int idx \u003d (curIdx + i + 1) % numBlockIters;\n      BlockIterator iter \u003d blockIters.get(idx);\n      if (!iter.atEnd()) {\n        LOG.info(\"Now scanning bpid {} on volume {}\",\n            iter.getBlockPoolId(), volume.getBasePath());\n        curBlockIter \u003d iter;\n        return 0L;\n      }\n      long iterStartMs \u003d iter.getIterStartMs();\n      long waitMs \u003d (iterStartMs + conf.scanPeriodMs) - nowMs;\n      if (waitMs \u003c\u003d 0) {\n        iter.rewind();\n        LOG.info(\"Now rescanning bpid {} on volume {}, after more than \" +\n            \"{} hour(s)\", iter.getBlockPoolId(), volume.getBasePath(),\n            TimeUnit.HOURS.convert(conf.scanPeriodMs, TimeUnit.MILLISECONDS));\n        curBlockIter \u003d iter;\n        return 0L;\n      }\n      minTimeoutMs \u003d Math.min(minTimeoutMs, waitMs);\n    }\n    LOG.info(\"{}: no suitable block pools found to scan.  Waiting {} ms.\",\n        this, minTimeoutMs);\n    return minTimeoutMs;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/VolumeScanner.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NMLeveldbStateStoreService.java",
+  "functionName": "loadApplicationsState",
+  "functionId": "loadApplicationsState",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/recovery/NMLeveldbStateStoreService.java",
+  "functionStartLine": 759,
+  "functionEndLine": 765,
+  "numCommitsSeen": 43,
+  "timeTaken": 2358,
+  "changeHistory": [
+    "65e7469712be6cf393e29ef73cc94727eec81227",
+    "3150ae8108a1fc40a67926be6254824c1e37cb38",
+    "b8f151231ba37247b9daa23ecce1211fdca0e49f"
+  ],
+  "changeHistoryShort": {
+    "65e7469712be6cf393e29ef73cc94727eec81227": "Ybodychange",
+    "3150ae8108a1fc40a67926be6254824c1e37cb38": "Ybodychange",
+    "b8f151231ba37247b9daa23ecce1211fdca0e49f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "65e7469712be6cf393e29ef73cc94727eec81227": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8242. YARN NM: OOM error while reading back the state store on recovery. Contributed by Pradeep Ambati and Kanwaljeet Sachdev\n",
+      "commitDate": "20/08/18 8:14 AM",
+      "commitName": "65e7469712be6cf393e29ef73cc94727eec81227",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "28/07/18 8:22 AM",
+      "commitNameOld": "3d586841aba99c7df98b2b4d3e48ec0144bad086",
+      "commitAuthorOld": "bibinchundatt",
+      "daysBetweenCommits": 22.99,
+      "commitsBetweenForRepo": 209,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,7 @@\n   public RecoveredApplicationsState loadApplicationsState()\n       throws IOException {\n     RecoveredApplicationsState state \u003d new RecoveredApplicationsState();\n-    state.applications \u003d new ArrayList\u003cContainerManagerApplicationProto\u003e();\n-    String keyPrefix \u003d APPLICATIONS_KEY_PREFIX;\n-    LeveldbIterator iter \u003d null;\n-    try {\n-      iter \u003d new LeveldbIterator(db);\n-      iter.seek(bytes(keyPrefix));\n-      while (iter.hasNext()) {\n-        Entry\u003cbyte[], byte[]\u003e entry \u003d iter.next();\n-        String key \u003d asString(entry.getKey());\n-        if (!key.startsWith(keyPrefix)) {\n-          break;\n-        }\n-        state.applications.add(\n-            ContainerManagerApplicationProto.parseFrom(entry.getValue()));\n-      }\n-    } catch (DBException e) {\n-      throw new IOException(e);\n-    } finally {\n-      if (iter !\u003d null) {\n-        iter.close();\n-      }\n-    }\n-\n+    state.it \u003d new ApplicationStateIterator();\n     cleanupDeprecatedFinishedApps();\n-\n     return state;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public RecoveredApplicationsState loadApplicationsState()\n      throws IOException {\n    RecoveredApplicationsState state \u003d new RecoveredApplicationsState();\n    state.it \u003d new ApplicationStateIterator();\n    cleanupDeprecatedFinishedApps();\n    return state;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/recovery/NMLeveldbStateStoreService.java",
+      "extendedDetails": {}
+    },
+    "3150ae8108a1fc40a67926be6254824c1e37cb38": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4924. NM recovery race can lead to container not cleaned up. Contributed by sandflee\n",
+      "commitDate": "14/04/16 12:17 PM",
+      "commitName": "3150ae8108a1fc40a67926be6254824c1e37cb38",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "01/02/16 7:55 PM",
+      "commitNameOld": "1cd55e0c171f7c4dec6f843931285557d59cd5ea",
+      "commitAuthorOld": "Varun Vasudev",
+      "daysBetweenCommits": 72.64,
+      "commitsBetweenForRepo": 470,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,42 +1,30 @@\n   public RecoveredApplicationsState loadApplicationsState()\n       throws IOException {\n     RecoveredApplicationsState state \u003d new RecoveredApplicationsState();\n     state.applications \u003d new ArrayList\u003cContainerManagerApplicationProto\u003e();\n     String keyPrefix \u003d APPLICATIONS_KEY_PREFIX;\n     LeveldbIterator iter \u003d null;\n     try {\n       iter \u003d new LeveldbIterator(db);\n       iter.seek(bytes(keyPrefix));\n       while (iter.hasNext()) {\n         Entry\u003cbyte[], byte[]\u003e entry \u003d iter.next();\n         String key \u003d asString(entry.getKey());\n         if (!key.startsWith(keyPrefix)) {\n           break;\n         }\n         state.applications.add(\n             ContainerManagerApplicationProto.parseFrom(entry.getValue()));\n       }\n-\n-      state.finishedApplications \u003d new ArrayList\u003cApplicationId\u003e();\n-      keyPrefix \u003d FINISHED_APPS_KEY_PREFIX;\n-      iter.seek(bytes(keyPrefix));\n-      while (iter.hasNext()) {\n-        Entry\u003cbyte[], byte[]\u003e entry \u003d iter.next();\n-        String key \u003d asString(entry.getKey());\n-        if (!key.startsWith(keyPrefix)) {\n-          break;\n-        }\n-        ApplicationId appId \u003d\n-            ConverterUtils.toApplicationId(key.substring(keyPrefix.length()));\n-        state.finishedApplications.add(appId);\n-      }\n     } catch (DBException e) {\n       throw new IOException(e);\n     } finally {\n       if (iter !\u003d null) {\n         iter.close();\n       }\n     }\n \n+    cleanupDeprecatedFinishedApps();\n+\n     return state;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public RecoveredApplicationsState loadApplicationsState()\n      throws IOException {\n    RecoveredApplicationsState state \u003d new RecoveredApplicationsState();\n    state.applications \u003d new ArrayList\u003cContainerManagerApplicationProto\u003e();\n    String keyPrefix \u003d APPLICATIONS_KEY_PREFIX;\n    LeveldbIterator iter \u003d null;\n    try {\n      iter \u003d new LeveldbIterator(db);\n      iter.seek(bytes(keyPrefix));\n      while (iter.hasNext()) {\n        Entry\u003cbyte[], byte[]\u003e entry \u003d iter.next();\n        String key \u003d asString(entry.getKey());\n        if (!key.startsWith(keyPrefix)) {\n          break;\n        }\n        state.applications.add(\n            ContainerManagerApplicationProto.parseFrom(entry.getValue()));\n      }\n    } catch (DBException e) {\n      throw new IOException(e);\n    } finally {\n      if (iter !\u003d null) {\n        iter.close();\n      }\n    }\n\n    cleanupDeprecatedFinishedApps();\n\n    return state;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/recovery/NMLeveldbStateStoreService.java",
+      "extendedDetails": {}
+    },
+    "b8f151231ba37247b9daa23ecce1211fdca0e49f": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-1354. Recover applications upon nodemanager restart. (Contributed by Jason Lowe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1615550 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/08/14 6:25 AM",
+      "commitName": "b8f151231ba37247b9daa23ecce1211fdca0e49f",
+      "commitAuthor": "Junping Du",
+      "diff": "@@ -0,0 +1,42 @@\n+  public RecoveredApplicationsState loadApplicationsState()\n+      throws IOException {\n+    RecoveredApplicationsState state \u003d new RecoveredApplicationsState();\n+    state.applications \u003d new ArrayList\u003cContainerManagerApplicationProto\u003e();\n+    String keyPrefix \u003d APPLICATIONS_KEY_PREFIX;\n+    LeveldbIterator iter \u003d null;\n+    try {\n+      iter \u003d new LeveldbIterator(db);\n+      iter.seek(bytes(keyPrefix));\n+      while (iter.hasNext()) {\n+        Entry\u003cbyte[], byte[]\u003e entry \u003d iter.next();\n+        String key \u003d asString(entry.getKey());\n+        if (!key.startsWith(keyPrefix)) {\n+          break;\n+        }\n+        state.applications.add(\n+            ContainerManagerApplicationProto.parseFrom(entry.getValue()));\n+      }\n+\n+      state.finishedApplications \u003d new ArrayList\u003cApplicationId\u003e();\n+      keyPrefix \u003d FINISHED_APPS_KEY_PREFIX;\n+      iter.seek(bytes(keyPrefix));\n+      while (iter.hasNext()) {\n+        Entry\u003cbyte[], byte[]\u003e entry \u003d iter.next();\n+        String key \u003d asString(entry.getKey());\n+        if (!key.startsWith(keyPrefix)) {\n+          break;\n+        }\n+        ApplicationId appId \u003d\n+            ConverterUtils.toApplicationId(key.substring(keyPrefix.length()));\n+        state.finishedApplications.add(appId);\n+      }\n+    } catch (DBException e) {\n+      throw new IOException(e);\n+    } finally {\n+      if (iter !\u003d null) {\n+        iter.close();\n+      }\n+    }\n+\n+    return state;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public RecoveredApplicationsState loadApplicationsState()\n      throws IOException {\n    RecoveredApplicationsState state \u003d new RecoveredApplicationsState();\n    state.applications \u003d new ArrayList\u003cContainerManagerApplicationProto\u003e();\n    String keyPrefix \u003d APPLICATIONS_KEY_PREFIX;\n    LeveldbIterator iter \u003d null;\n    try {\n      iter \u003d new LeveldbIterator(db);\n      iter.seek(bytes(keyPrefix));\n      while (iter.hasNext()) {\n        Entry\u003cbyte[], byte[]\u003e entry \u003d iter.next();\n        String key \u003d asString(entry.getKey());\n        if (!key.startsWith(keyPrefix)) {\n          break;\n        }\n        state.applications.add(\n            ContainerManagerApplicationProto.parseFrom(entry.getValue()));\n      }\n\n      state.finishedApplications \u003d new ArrayList\u003cApplicationId\u003e();\n      keyPrefix \u003d FINISHED_APPS_KEY_PREFIX;\n      iter.seek(bytes(keyPrefix));\n      while (iter.hasNext()) {\n        Entry\u003cbyte[], byte[]\u003e entry \u003d iter.next();\n        String key \u003d asString(entry.getKey());\n        if (!key.startsWith(keyPrefix)) {\n          break;\n        }\n        ApplicationId appId \u003d\n            ConverterUtils.toApplicationId(key.substring(keyPrefix.length()));\n        state.finishedApplications.add(appId);\n      }\n    } catch (DBException e) {\n      throw new IOException(e);\n    } finally {\n      if (iter !\u003d null) {\n        iter.close();\n      }\n    }\n\n    return state;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/recovery/NMLeveldbStateStoreService.java"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ProducerConsumer.java",
+  "functionName": "run",
+  "functionId": "run",
+  "sourceFilePath": "hadoop-tools/hadoop-distcp/src/main/java/org/apache/hadoop/tools/util/ProducerConsumer.java",
+  "functionStartLine": 171,
+  "functionEndLine": 199,
+  "numCommitsSeen": 5,
+  "timeTaken": 908,
+  "changeHistory": [
+    "a9c69ebeb707801071db3cc22bfcd14f87be443a",
+    "cfba355052df15f8eb6cc9b8e90e2d8492bec7d7"
+  ],
+  "changeHistoryShort": {
+    "a9c69ebeb707801071db3cc22bfcd14f87be443a": "Ybodychange",
+    "cfba355052df15f8eb6cc9b8e90e2d8492bec7d7": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a9c69ebeb707801071db3cc22bfcd14f87be443a": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9612. DistCp worker threads are not terminated after jobs are done. (Wei-Chiu Chuang via Yongjun Zhang)\n",
+      "commitDate": "15/01/16 10:03 AM",
+      "commitName": "a9c69ebeb707801071db3cc22bfcd14f87be443a",
+      "commitAuthor": "Yongjun Zhang",
+      "commitDateOld": "11/01/16 9:46 AM",
+      "commitNameOld": "95f32015ad9273420299130a9f10acdbafe63556",
+      "commitAuthorOld": "Zhe Zhang",
+      "daysBetweenCommits": 4.01,
+      "commitsBetweenForRepo": 45,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,29 @@\n     public void run() {\n       while (true) {\n-        try {\n-          WorkRequest\u003cT\u003e work \u003d inputQueue.take();\n-          WorkReport\u003cR\u003e result \u003d processor.processItem(work);\n+        WorkRequest\u003cT\u003e work;\n \n-          boolean isDone \u003d false;\n-          while (!isDone) {\n-            try {\n-              outputQueue.put(result);\n-              isDone \u003d true;\n-            } catch (InterruptedException ie) {\n-              LOG.debug(\"Could not put report into outputQueue. Retrying...\");\n-            }\n+        try {\n+          work \u003d inputQueue.take();\n+        } catch (InterruptedException e) {\n+          // It is assumed that if an interrupt occurs while taking a work\n+          // out from input queue, the interrupt is likely triggered by\n+          // ProducerConsumer.shutdown(). Therefore, exit the thread.\n+          LOG.debug(\"Interrupted while waiting for requests from inputQueue.\");\n+          return;\n+        }\n+\n+        boolean isDone \u003d false;\n+        while (!isDone) {\n+          try {\n+            // if the interrupt happens while the work is being processed,\n+            // go back to process the same work again.\n+            WorkReport\u003cR\u003e result \u003d processor.processItem(work);\n+            outputQueue.put(result);\n+            isDone \u003d true;\n+          } catch (InterruptedException ie) {\n+            LOG.debug(\"Worker thread was interrupted while processing an item,\"\n+                + \" or putting into outputQueue. Retrying...\");\n           }\n-        } catch (InterruptedException ie) {\n-          LOG.debug(\"Interrupted while waiting for request from inputQueue.\");\n         }\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void run() {\n      while (true) {\n        WorkRequest\u003cT\u003e work;\n\n        try {\n          work \u003d inputQueue.take();\n        } catch (InterruptedException e) {\n          // It is assumed that if an interrupt occurs while taking a work\n          // out from input queue, the interrupt is likely triggered by\n          // ProducerConsumer.shutdown(). Therefore, exit the thread.\n          LOG.debug(\"Interrupted while waiting for requests from inputQueue.\");\n          return;\n        }\n\n        boolean isDone \u003d false;\n        while (!isDone) {\n          try {\n            // if the interrupt happens while the work is being processed,\n            // go back to process the same work again.\n            WorkReport\u003cR\u003e result \u003d processor.processItem(work);\n            outputQueue.put(result);\n            isDone \u003d true;\n          } catch (InterruptedException ie) {\n            LOG.debug(\"Worker thread was interrupted while processing an item,\"\n                + \" or putting into outputQueue. Retrying...\");\n          }\n        }\n      }\n    }",
+      "path": "hadoop-tools/hadoop-distcp/src/main/java/org/apache/hadoop/tools/util/ProducerConsumer.java",
+      "extendedDetails": {}
+    },
+    "cfba355052df15f8eb6cc9b8e90e2d8492bec7d7": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-11827. Speed-up distcp buildListing() using threadpool (Zoran Dimitrijevic via raviprak)\n",
+      "commitDate": "21/04/15 4:49 PM",
+      "commitName": "cfba355052df15f8eb6cc9b8e90e2d8492bec7d7",
+      "commitAuthor": "Ravi Prakash",
+      "diff": "@@ -0,0 +1,20 @@\n+    public void run() {\n+      while (true) {\n+        try {\n+          WorkRequest\u003cT\u003e work \u003d inputQueue.take();\n+          WorkReport\u003cR\u003e result \u003d processor.processItem(work);\n+\n+          boolean isDone \u003d false;\n+          while (!isDone) {\n+            try {\n+              outputQueue.put(result);\n+              isDone \u003d true;\n+            } catch (InterruptedException ie) {\n+              LOG.debug(\"Could not put report into outputQueue. Retrying...\");\n+            }\n+          }\n+        } catch (InterruptedException ie) {\n+          LOG.debug(\"Interrupted while waiting for request from inputQueue.\");\n+        }\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void run() {\n      while (true) {\n        try {\n          WorkRequest\u003cT\u003e work \u003d inputQueue.take();\n          WorkReport\u003cR\u003e result \u003d processor.processItem(work);\n\n          boolean isDone \u003d false;\n          while (!isDone) {\n            try {\n              outputQueue.put(result);\n              isDone \u003d true;\n            } catch (InterruptedException ie) {\n              LOG.debug(\"Could not put report into outputQueue. Retrying...\");\n            }\n          }\n        } catch (InterruptedException ie) {\n          LOG.debug(\"Interrupted while waiting for request from inputQueue.\");\n        }\n      }\n    }",
+      "path": "hadoop-tools/hadoop-distcp/src/main/java/org/apache/hadoop/tools/util/ProducerConsumer.java"
+    }
+  }
+}

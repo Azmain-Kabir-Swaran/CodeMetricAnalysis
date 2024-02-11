@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "QueueManager.java",
+  "functionName": "removeQueue",
+  "functionId": "removeQueue___queue-FSQueue",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueueManager.java",
+  "functionStartLine": 534,
+  "functionEndLine": 547,
+  "numCommitsSeen": 52,
+  "timeTaken": 1780,
+  "changeHistory": [
+    "fb2e525c0775ccf218c8980676e9fb4005a406a6",
+    "edb9cd0f7aa1ecaf34afaa120e3d79583e0ec689",
+    "f4fd050dee83ecbff0a92b28c3a51ae353f95c24"
+  ],
+  "changeHistoryShort": {
+    "fb2e525c0775ccf218c8980676e9fb4005a406a6": "Ybodychange",
+    "edb9cd0f7aa1ecaf34afaa120e3d79583e0ec689": "Ybodychange",
+    "f4fd050dee83ecbff0a92b28c3a51ae353f95c24": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fb2e525c0775ccf218c8980676e9fb4005a406a6": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4204. ConcurrentModificationException in FairSchedulerQueueInfo. (adhoot)\n",
+      "commitDate": "28/09/15 9:05 AM",
+      "commitName": "fb2e525c0775ccf218c8980676e9fb4005a406a6",
+      "commitAuthor": "Anubhav Dhoot",
+      "commitDateOld": "03/06/15 1:47 PM",
+      "commitNameOld": "edb9cd0f7aa1ecaf34afaa120e3d79583e0ec689",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 116.8,
+      "commitsBetweenForRepo": 717,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,14 @@\n   private void removeQueue(FSQueue queue) {\n-    if (queue instanceof FSLeafQueue) {\n-      leafQueues.remove(queue);\n-    } else {\n-      List\u003cFSQueue\u003e childQueues \u003d queue.getChildQueues();\n-      while (!childQueues.isEmpty()) {\n-        removeQueue(childQueues.get(0));\n+    synchronized (queues) {\n+      if (queue instanceof FSLeafQueue) {\n+        leafQueues.remove(queue);\n+      } else {\n+        for (FSQueue childQueue:queue.getChildQueues()) {\n+          removeQueue(childQueue);\n+        }\n       }\n+      queues.remove(queue.getName());\n+      FSParentQueue parent \u003d queue.getParent();\n+      parent.removeChildQueue(queue);\n     }\n-    queues.remove(queue.getName());\n-    FSParentQueue parent \u003d queue.getParent();\n-    parent.removeChildQueue(queue);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void removeQueue(FSQueue queue) {\n    synchronized (queues) {\n      if (queue instanceof FSLeafQueue) {\n        leafQueues.remove(queue);\n      } else {\n        for (FSQueue childQueue:queue.getChildQueues()) {\n          removeQueue(childQueue);\n        }\n      }\n      queues.remove(queue.getName());\n      FSParentQueue parent \u003d queue.getParent();\n      parent.removeChildQueue(queue);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueueManager.java",
+      "extendedDetails": {}
+    },
+    "edb9cd0f7aa1ecaf34afaa120e3d79583e0ec689": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3762. FairScheduler: CME on FSParentQueue#getQueueUserAclInfo. (kasha)\n",
+      "commitDate": "03/06/15 1:47 PM",
+      "commitName": "edb9cd0f7aa1ecaf34afaa120e3d79583e0ec689",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "23/03/15 1:22 PM",
+      "commitNameOld": "2bc097cd14692e6ceb06bff959f28531534eb307",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 72.02,
+      "commitsBetweenForRepo": 685,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,13 @@\n   private void removeQueue(FSQueue queue) {\n     if (queue instanceof FSLeafQueue) {\n       leafQueues.remove(queue);\n     } else {\n       List\u003cFSQueue\u003e childQueues \u003d queue.getChildQueues();\n       while (!childQueues.isEmpty()) {\n         removeQueue(childQueues.get(0));\n       }\n     }\n     queues.remove(queue.getName());\n-    queue.getParent().getChildQueues().remove(queue);\n+    FSParentQueue parent \u003d queue.getParent();\n+    parent.removeChildQueue(queue);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void removeQueue(FSQueue queue) {\n    if (queue instanceof FSLeafQueue) {\n      leafQueues.remove(queue);\n    } else {\n      List\u003cFSQueue\u003e childQueues \u003d queue.getChildQueues();\n      while (!childQueues.isEmpty()) {\n        removeQueue(childQueues.get(0));\n      }\n    }\n    queues.remove(queue.getName());\n    FSParentQueue parent \u003d queue.getParent();\n    parent.removeChildQueue(queue);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueueManager.java",
+      "extendedDetails": {}
+    },
+    "f4fd050dee83ecbff0a92b28c3a51ae353f95c24": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-1567. In Fair Scheduler, allow empty queues to change between leaf and parent on allocation file reload (Sandy Ryza)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1558228 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "14/01/14 2:33 PM",
+      "commitName": "f4fd050dee83ecbff0a92b28c3a51ae353f95c24",
+      "commitAuthor": "Sanford Ryza",
+      "diff": "@@ -0,0 +1,12 @@\n+  private void removeQueue(FSQueue queue) {\n+    if (queue instanceof FSLeafQueue) {\n+      leafQueues.remove(queue);\n+    } else {\n+      List\u003cFSQueue\u003e childQueues \u003d queue.getChildQueues();\n+      while (!childQueues.isEmpty()) {\n+        removeQueue(childQueues.get(0));\n+      }\n+    }\n+    queues.remove(queue.getName());\n+    queue.getParent().getChildQueues().remove(queue);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void removeQueue(FSQueue queue) {\n    if (queue instanceof FSLeafQueue) {\n      leafQueues.remove(queue);\n    } else {\n      List\u003cFSQueue\u003e childQueues \u003d queue.getChildQueues();\n      while (!childQueues.isEmpty()) {\n        removeQueue(childQueues.get(0));\n      }\n    }\n    queues.remove(queue.getName());\n    queue.getParent().getChildQueues().remove(queue);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueueManager.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BootstrapStandby.java",
+  "functionName": "doPreUpgrade",
+  "functionId": "doPreUpgrade___storage-NNStorage__nsInfo-NamespaceInfo",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/BootstrapStandby.java",
+  "functionStartLine": 281,
+  "functionEndLine": 326,
+  "numCommitsSeen": 35,
+  "timeTaken": 1771,
+  "changeHistory": [
+    "fddd55279d0bdd08b3b40aba6fe2ded1d2e0d846"
+  ],
+  "changeHistoryShort": {
+    "fddd55279d0bdd08b3b40aba6fe2ded1d2e0d846": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fddd55279d0bdd08b3b40aba6fe2ded1d2e0d846": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-8127. NameNode Failover during HA upgrade can cause DataNode to finalize upgrade. Contributed by Jing Zhao.\n",
+      "commitDate": "14/04/15 3:05 PM",
+      "commitName": "fddd55279d0bdd08b3b40aba6fe2ded1d2e0d846",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,46 @@\n+  private boolean doPreUpgrade(NNStorage storage, NamespaceInfo nsInfo)\n+      throws IOException {\n+    boolean isFormatted \u003d false;\n+    Map\u003cStorageDirectory, StorageState\u003e dataDirStates \u003d\n+        new HashMap\u003c\u003e();\n+    try {\n+      isFormatted \u003d FSImage.recoverStorageDirs(StartupOption.UPGRADE, storage,\n+          dataDirStates);\n+      if (dataDirStates.values().contains(StorageState.NOT_FORMATTED)) {\n+        // recoverStorageDirs returns true if there is a formatted directory\n+        isFormatted \u003d false;\n+        System.err.println(\"The original storage directory is not formatted.\");\n+      }\n+    } catch (InconsistentFSStateException e) {\n+      // if the storage is in a bad state,\n+      LOG.warn(\"The storage directory is in an inconsistent state\", e);\n+    } finally {\n+      storage.unlockAll();\n+    }\n+\n+    // if there is InconsistentFSStateException or the storage is not formatted,\n+    // format the storage. Although this format is done through the new\n+    // software, since in HA setup the SBN is rolled back through\n+    // \"-bootstrapStandby\", we should still be fine.\n+    if (!isFormatted \u0026\u0026 !format(storage, nsInfo)) {\n+      return false;\n+    }\n+\n+    // make sure there is no previous directory\n+    FSImage.checkUpgrade(storage);\n+    // Do preUpgrade for each directory\n+    for (Iterator\u003cStorageDirectory\u003e it \u003d storage.dirIterator(false);\n+         it.hasNext();) {\n+      StorageDirectory sd \u003d it.next();\n+      try {\n+        NNUpgradeUtil.renameCurToTmp(sd);\n+      } catch (IOException e) {\n+        LOG.error(\"Failed to move aside pre-upgrade storage \" +\n+            \"in image directory \" + sd.getRoot(), e);\n+        throw e;\n+      }\n+    }\n+    storage.setStorageInfo(nsInfo);\n+    storage.setBlockPoolID(nsInfo.getBlockPoolID());\n+    return true;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean doPreUpgrade(NNStorage storage, NamespaceInfo nsInfo)\n      throws IOException {\n    boolean isFormatted \u003d false;\n    Map\u003cStorageDirectory, StorageState\u003e dataDirStates \u003d\n        new HashMap\u003c\u003e();\n    try {\n      isFormatted \u003d FSImage.recoverStorageDirs(StartupOption.UPGRADE, storage,\n          dataDirStates);\n      if (dataDirStates.values().contains(StorageState.NOT_FORMATTED)) {\n        // recoverStorageDirs returns true if there is a formatted directory\n        isFormatted \u003d false;\n        System.err.println(\"The original storage directory is not formatted.\");\n      }\n    } catch (InconsistentFSStateException e) {\n      // if the storage is in a bad state,\n      LOG.warn(\"The storage directory is in an inconsistent state\", e);\n    } finally {\n      storage.unlockAll();\n    }\n\n    // if there is InconsistentFSStateException or the storage is not formatted,\n    // format the storage. Although this format is done through the new\n    // software, since in HA setup the SBN is rolled back through\n    // \"-bootstrapStandby\", we should still be fine.\n    if (!isFormatted \u0026\u0026 !format(storage, nsInfo)) {\n      return false;\n    }\n\n    // make sure there is no previous directory\n    FSImage.checkUpgrade(storage);\n    // Do preUpgrade for each directory\n    for (Iterator\u003cStorageDirectory\u003e it \u003d storage.dirIterator(false);\n         it.hasNext();) {\n      StorageDirectory sd \u003d it.next();\n      try {\n        NNUpgradeUtil.renameCurToTmp(sd);\n      } catch (IOException e) {\n        LOG.error(\"Failed to move aside pre-upgrade storage \" +\n            \"in image directory \" + sd.getRoot(), e);\n        throw e;\n      }\n    }\n    storage.setStorageInfo(nsInfo);\n    storage.setBlockPoolID(nsInfo.getBlockPoolID());\n    return true;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/BootstrapStandby.java"
+    }
+  }
+}

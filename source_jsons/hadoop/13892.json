@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockManager.java",
+  "functionName": "countReplicasForStripedBlock",
+  "functionId": "countReplicasForStripedBlock___counters-NumberReplicas__block-BlockInfoStriped__nodesCorrupt-Collection__DatanodeDescriptor____inStartupSafeMode-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+  "functionStartLine": 4407,
+  "functionEndLine": 4418,
+  "numCommitsSeen": 477,
+  "timeTaken": 8626,
+  "changeHistory": [
+    "9d25ae7669eed1a047578b574f42bd121b445a3c",
+    "b782bf2156dd9d43610c0bc47d458b2db297589f",
+    "47b92f2b6f2dafc129a41b247f35e77c8e47ffba"
+  ],
+  "changeHistoryShort": {
+    "9d25ae7669eed1a047578b574f42bd121b445a3c": "Ybodychange",
+    "b782bf2156dd9d43610c0bc47d458b2db297589f": "Ybodychange",
+    "47b92f2b6f2dafc129a41b247f35e77c8e47ffba": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9d25ae7669eed1a047578b574f42bd121b445a3c": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14920. Erasure Coding: Decommission may hang If one or more datanodes are out of service during decommission. Contributed by Fei Hui.\n",
+      "commitDate": "31/10/19 11:19 AM",
+      "commitName": "9d25ae7669eed1a047578b574f42bd121b445a3c",
+      "commitAuthor": "Ayush Saxena",
+      "commitDateOld": "03/10/19 10:13 PM",
+      "commitNameOld": "c99a12167ff9566012ef32104a3964887d62c899",
+      "commitAuthorOld": "Stephen O\u0027Donnell",
+      "daysBetweenCommits": 27.55,
+      "commitsBetweenForRepo": 128,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,12 @@\n   private void countReplicasForStripedBlock(NumberReplicas counters,\n       BlockInfoStriped block, Collection\u003cDatanodeDescriptor\u003e nodesCorrupt,\n       boolean inStartupSafeMode) {\n-    BitSet bitSet \u003d new BitSet(block.getTotalBlockNum());\n+    BitSet liveBitSet \u003d new BitSet(block.getTotalBlockNum());\n+    BitSet decommissioningBitSet \u003d new BitSet(block.getTotalBlockNum());\n     for (StorageAndBlockIndex si : block.getStorageAndIndexInfos()) {\n       StoredReplicaState state \u003d checkReplicaOnStorage(counters, block,\n           si.getStorage(), nodesCorrupt, inStartupSafeMode);\n-      if (state \u003d\u003d StoredReplicaState.LIVE) {\n-        if (!bitSet.get(si.getBlockIndex())) {\n-          bitSet.set(si.getBlockIndex());\n-        } else {\n-          counters.subtract(StoredReplicaState.LIVE, 1);\n-          counters.add(StoredReplicaState.REDUNDANT, 1);\n-        }\n-      }\n+      countLiveAndDecommissioningReplicas(counters, state, liveBitSet,\n+          decommissioningBitSet, si.getBlockIndex());\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void countReplicasForStripedBlock(NumberReplicas counters,\n      BlockInfoStriped block, Collection\u003cDatanodeDescriptor\u003e nodesCorrupt,\n      boolean inStartupSafeMode) {\n    BitSet liveBitSet \u003d new BitSet(block.getTotalBlockNum());\n    BitSet decommissioningBitSet \u003d new BitSet(block.getTotalBlockNum());\n    for (StorageAndBlockIndex si : block.getStorageAndIndexInfos()) {\n      StoredReplicaState state \u003d checkReplicaOnStorage(counters, block,\n          si.getStorage(), nodesCorrupt, inStartupSafeMode);\n      countLiveAndDecommissioningReplicas(counters, state, liveBitSet,\n          decommissioningBitSet, si.getBlockIndex());\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+      "extendedDetails": {}
+    },
+    "b782bf2156dd9d43610c0bc47d458b2db297589f": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11124. Report blockIds of internal blocks for EC files in Fsck. Contributed by Takanobu Asanuma.\n",
+      "commitDate": "25/01/17 11:16 AM",
+      "commitName": "b782bf2156dd9d43610c0bc47d458b2db297589f",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "18/01/17 1:31 PM",
+      "commitNameOld": "a2a5d7b5bca715835d92816e7b267b59f7270708",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 6.91,
+      "commitsBetweenForRepo": 40,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,17 @@\n   private void countReplicasForStripedBlock(NumberReplicas counters,\n       BlockInfoStriped block, Collection\u003cDatanodeDescriptor\u003e nodesCorrupt,\n       boolean inStartupSafeMode) {\n     BitSet bitSet \u003d new BitSet(block.getTotalBlockNum());\n     for (StorageAndBlockIndex si : block.getStorageAndIndexInfos()) {\n       StoredReplicaState state \u003d checkReplicaOnStorage(counters, block,\n-          si.storage, nodesCorrupt, inStartupSafeMode);\n+          si.getStorage(), nodesCorrupt, inStartupSafeMode);\n       if (state \u003d\u003d StoredReplicaState.LIVE) {\n-        if (!bitSet.get(si.blockIndex)) {\n-          bitSet.set(si.blockIndex);\n+        if (!bitSet.get(si.getBlockIndex())) {\n+          bitSet.set(si.getBlockIndex());\n         } else {\n           counters.subtract(StoredReplicaState.LIVE, 1);\n           counters.add(StoredReplicaState.REDUNDANT, 1);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void countReplicasForStripedBlock(NumberReplicas counters,\n      BlockInfoStriped block, Collection\u003cDatanodeDescriptor\u003e nodesCorrupt,\n      boolean inStartupSafeMode) {\n    BitSet bitSet \u003d new BitSet(block.getTotalBlockNum());\n    for (StorageAndBlockIndex si : block.getStorageAndIndexInfos()) {\n      StoredReplicaState state \u003d checkReplicaOnStorage(counters, block,\n          si.getStorage(), nodesCorrupt, inStartupSafeMode);\n      if (state \u003d\u003d StoredReplicaState.LIVE) {\n        if (!bitSet.get(si.getBlockIndex())) {\n          bitSet.set(si.getBlockIndex());\n        } else {\n          counters.subtract(StoredReplicaState.LIVE, 1);\n          counters.add(StoredReplicaState.REDUNDANT, 1);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java",
+      "extendedDetails": {}
+    },
+    "47b92f2b6f2dafc129a41b247f35e77c8e47ffba": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9837. BlockManager#countNodes should be able to detect duplicated internal blocks. Contributed by Jing Zhao.\n",
+      "commitDate": "24/02/16 3:13 PM",
+      "commitName": "47b92f2b6f2dafc129a41b247f35e77c8e47ffba",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,17 @@\n+  private void countReplicasForStripedBlock(NumberReplicas counters,\n+      BlockInfoStriped block, Collection\u003cDatanodeDescriptor\u003e nodesCorrupt,\n+      boolean inStartupSafeMode) {\n+    BitSet bitSet \u003d new BitSet(block.getTotalBlockNum());\n+    for (StorageAndBlockIndex si : block.getStorageAndIndexInfos()) {\n+      StoredReplicaState state \u003d checkReplicaOnStorage(counters, block,\n+          si.storage, nodesCorrupt, inStartupSafeMode);\n+      if (state \u003d\u003d StoredReplicaState.LIVE) {\n+        if (!bitSet.get(si.blockIndex)) {\n+          bitSet.set(si.blockIndex);\n+        } else {\n+          counters.subtract(StoredReplicaState.LIVE, 1);\n+          counters.add(StoredReplicaState.REDUNDANT, 1);\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void countReplicasForStripedBlock(NumberReplicas counters,\n      BlockInfoStriped block, Collection\u003cDatanodeDescriptor\u003e nodesCorrupt,\n      boolean inStartupSafeMode) {\n    BitSet bitSet \u003d new BitSet(block.getTotalBlockNum());\n    for (StorageAndBlockIndex si : block.getStorageAndIndexInfos()) {\n      StoredReplicaState state \u003d checkReplicaOnStorage(counters, block,\n          si.storage, nodesCorrupt, inStartupSafeMode);\n      if (state \u003d\u003d StoredReplicaState.LIVE) {\n        if (!bitSet.get(si.blockIndex)) {\n          bitSet.set(si.blockIndex);\n        } else {\n          counters.subtract(StoredReplicaState.LIVE, 1);\n          counters.add(StoredReplicaState.REDUNDANT, 1);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockManager.java"
+    }
+  }
+}

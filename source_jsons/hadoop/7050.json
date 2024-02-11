@@ -1,0 +1,250 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSPermissionChecker.java",
+  "functionName": "checkSubAccess",
+  "functionId": "checkSubAccess___components-byte[][]__pathIdx-int__inode-INode__snapshotId-int__access-FsAction__ignoreEmptyDir-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+  "functionStartLine": 417,
+  "functionEndLine": 488,
+  "numCommitsSeen": 160,
+  "timeTaken": 4860,
+  "changeHistory": [
+    "5690b51ef7c708c0a71162ddaff04466bc71cdcc",
+    "438a9f047eb6af2a4b916a4f6ef6f68adeab8068",
+    "53a28afe293e5bf185c8d4f2c7aea212e66015c2",
+    "e9c6840b24bab7d6c21243baa9b2353119b0f976",
+    "70cff9e2f0c8f78c1dc54a064182971bb2106795",
+    "b1333e5b561d01a010e2e1311e8501879f377bdc"
+  ],
+  "changeHistoryShort": {
+    "5690b51ef7c708c0a71162ddaff04466bc71cdcc": "Ybodychange",
+    "438a9f047eb6af2a4b916a4f6ef6f68adeab8068": "Ymultichange(Yparameterchange,Ybodychange)",
+    "53a28afe293e5bf185c8d4f2c7aea212e66015c2": "Ymultichange(Yparameterchange,Ybodychange)",
+    "e9c6840b24bab7d6c21243baa9b2353119b0f976": "Ymultichange(Yparameterchange,Ybodychange)",
+    "70cff9e2f0c8f78c1dc54a064182971bb2106795": "Ymultichange(Yparameterchange,Ybodychange)",
+    "b1333e5b561d01a010e2e1311e8501879f377bdc": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "5690b51ef7c708c0a71162ddaff04466bc71cdcc": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11100. Recursively deleting file protected by sticky bit should fail. Contributed by John Zhuge.\n",
+      "commitDate": "16/02/17 5:39 AM",
+      "commitName": "5690b51ef7c708c0a71162ddaff04466bc71cdcc",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "24/10/16 3:14 PM",
+      "commitNameOld": "9d175853b0170683ad5f21d9bcdeaac49fe89e04",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 114.64,
+      "commitsBetweenForRepo": 711,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,72 @@\n   private void checkSubAccess(byte[][] components, int pathIdx,\n       INode inode, int snapshotId, FsAction access, boolean ignoreEmptyDir)\n       throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n+    // Each inode in the subtree has a level. The root inode has level 0.\n+    // List subINodePath tracks the inode path in the subtree during\n+    // traversal. The root inode is not stored because it is already in array\n+    // components. The list index is (level - 1).\n+    ArrayList\u003cINodeDirectory\u003e subINodePath \u003d new ArrayList\u003c\u003e();\n+\n+    // The stack of levels matches the stack of directory inodes.\n+    Stack\u003cInteger\u003e levels \u003d new Stack\u003c\u003e();\n+    levels.push(0);    // Level 0 is the root\n+\n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n     for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n+      int level \u003d levels.pop();\n       ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n       if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n         //TODO have to figure this out with inodeattribute provider\n         INodeAttributes inodeAttr \u003d\n             getINodeAttrs(components, pathIdx, d, snapshotId);\n         if (!hasPermission(inodeAttr, access)) {\n           throw new AccessControlException(\n               toAccessControlString(inodeAttr, d.getFullPathName(), access));\n         }\n+\n+        if (level \u003e 0) {\n+          if (level - 1 \u003c subINodePath.size()) {\n+            subINodePath.set(level - 1, d);\n+          } else {\n+            Preconditions.checkState(level - 1 \u003d\u003d subINodePath.size());\n+            subINodePath.add(d);\n+          }\n+        }\n+\n+        if (inodeAttr.getFsPermission().getStickyBit()) {\n+          for (INode child : cList) {\n+            INodeAttributes childInodeAttr \u003d\n+                getINodeAttrs(components, pathIdx, child, snapshotId);\n+            if (isStickyBitViolated(inodeAttr, childInodeAttr)) {\n+              List\u003cbyte[]\u003e allComponentList \u003d new ArrayList\u003c\u003e();\n+              for (int i \u003d 0; i \u003c\u003d pathIdx; ++i) {\n+                allComponentList.add(components[i]);\n+              }\n+              for (int i \u003d 0; i \u003c level; ++i) {\n+                allComponentList.add(subINodePath.get(i).getLocalNameBytes());\n+              }\n+              allComponentList.add(child.getLocalNameBytes());\n+              int index \u003d pathIdx + level;\n+              byte[][] allComponents \u003d\n+                  allComponentList.toArray(new byte[][]{});\n+              throwStickyBitException(\n+                  getPath(allComponents, 0, index + 1), child,\n+                  getPath(allComponents, 0, index), inode);\n+            }\n+          }\n+        }\n       }\n \n       for(INode child : cList) {\n         if (child.isDirectory()) {\n           directories.push(child.asDirectory());\n+          levels.push(level + 1);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void checkSubAccess(byte[][] components, int pathIdx,\n      INode inode, int snapshotId, FsAction access, boolean ignoreEmptyDir)\n      throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    // Each inode in the subtree has a level. The root inode has level 0.\n    // List subINodePath tracks the inode path in the subtree during\n    // traversal. The root inode is not stored because it is already in array\n    // components. The list index is (level - 1).\n    ArrayList\u003cINodeDirectory\u003e subINodePath \u003d new ArrayList\u003c\u003e();\n\n    // The stack of levels matches the stack of directory inodes.\n    Stack\u003cInteger\u003e levels \u003d new Stack\u003c\u003e();\n    levels.push(0);    // Level 0 is the root\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      int level \u003d levels.pop();\n      ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n      if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n        //TODO have to figure this out with inodeattribute provider\n        INodeAttributes inodeAttr \u003d\n            getINodeAttrs(components, pathIdx, d, snapshotId);\n        if (!hasPermission(inodeAttr, access)) {\n          throw new AccessControlException(\n              toAccessControlString(inodeAttr, d.getFullPathName(), access));\n        }\n\n        if (level \u003e 0) {\n          if (level - 1 \u003c subINodePath.size()) {\n            subINodePath.set(level - 1, d);\n          } else {\n            Preconditions.checkState(level - 1 \u003d\u003d subINodePath.size());\n            subINodePath.add(d);\n          }\n        }\n\n        if (inodeAttr.getFsPermission().getStickyBit()) {\n          for (INode child : cList) {\n            INodeAttributes childInodeAttr \u003d\n                getINodeAttrs(components, pathIdx, child, snapshotId);\n            if (isStickyBitViolated(inodeAttr, childInodeAttr)) {\n              List\u003cbyte[]\u003e allComponentList \u003d new ArrayList\u003c\u003e();\n              for (int i \u003d 0; i \u003c\u003d pathIdx; ++i) {\n                allComponentList.add(components[i]);\n              }\n              for (int i \u003d 0; i \u003c level; ++i) {\n                allComponentList.add(subINodePath.get(i).getLocalNameBytes());\n              }\n              allComponentList.add(child.getLocalNameBytes());\n              int index \u003d pathIdx + level;\n              byte[][] allComponents \u003d\n                  allComponentList.toArray(new byte[][]{});\n              throwStickyBitException(\n                  getPath(allComponents, 0, index + 1), child,\n                  getPath(allComponents, 0, index), inode);\n            }\n          }\n        }\n      }\n\n      for(INode child : cList) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n          levels.push(level + 1);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+      "extendedDetails": {}
+    },
+    "438a9f047eb6af2a4b916a4f6ef6f68adeab8068": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-10673. Optimize FSPermissionChecker\u0027s internal path usage. Contributed by Daryn Sharp.\n",
+      "commitDate": "04/08/16 2:14 PM",
+      "commitName": "438a9f047eb6af2a4b916a4f6ef6f68adeab8068",
+      "commitAuthor": "Kihwal Lee",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10673. Optimize FSPermissionChecker\u0027s internal path usage. Contributed by Daryn Sharp.\n",
+          "commitDate": "04/08/16 2:14 PM",
+          "commitName": "438a9f047eb6af2a4b916a4f6ef6f68adeab8068",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "27/05/16 10:02 AM",
+          "commitNameOld": "5ea6fd85c7aff6df28b87789f607bb57ee920639",
+          "commitAuthorOld": "Yongjun Zhang",
+          "daysBetweenCommits": 69.18,
+          "commitsBetweenForRepo": 580,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,28 @@\n-  private void checkSubAccess(byte[][] pathByNameArr, int pathIdx, INode inode,\n-      int snapshotId, FsAction access, boolean ignoreEmptyDir)\n+  private void checkSubAccess(byte[][] components, int pathIdx,\n+      INode inode, int snapshotId, FsAction access, boolean ignoreEmptyDir)\n       throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n     for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n       ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n       if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n         //TODO have to figure this out with inodeattribute provider\n-        check(getINodeAttrs(pathByNameArr, pathIdx, d, snapshotId),\n-            inode.getFullPathName(), access);\n+        INodeAttributes inodeAttr \u003d\n+            getINodeAttrs(components, pathIdx, d, snapshotId);\n+        if (!hasPermission(inodeAttr, access)) {\n+          throw new AccessControlException(\n+              toAccessControlString(inodeAttr, d.getFullPathName(), access));\n+        }\n       }\n \n       for(INode child : cList) {\n         if (child.isDirectory()) {\n           directories.push(child.asDirectory());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkSubAccess(byte[][] components, int pathIdx,\n      INode inode, int snapshotId, FsAction access, boolean ignoreEmptyDir)\n      throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n      if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n        //TODO have to figure this out with inodeattribute provider\n        INodeAttributes inodeAttr \u003d\n            getINodeAttrs(components, pathIdx, d, snapshotId);\n        if (!hasPermission(inodeAttr, access)) {\n          throw new AccessControlException(\n              toAccessControlString(inodeAttr, d.getFullPathName(), access));\n        }\n      }\n\n      for(INode child : cList) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+          "extendedDetails": {
+            "oldValue": "[pathByNameArr-byte[][], pathIdx-int, inode-INode, snapshotId-int, access-FsAction, ignoreEmptyDir-boolean]",
+            "newValue": "[components-byte[][], pathIdx-int, inode-INode, snapshotId-int, access-FsAction, ignoreEmptyDir-boolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10673. Optimize FSPermissionChecker\u0027s internal path usage. Contributed by Daryn Sharp.\n",
+          "commitDate": "04/08/16 2:14 PM",
+          "commitName": "438a9f047eb6af2a4b916a4f6ef6f68adeab8068",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "27/05/16 10:02 AM",
+          "commitNameOld": "5ea6fd85c7aff6df28b87789f607bb57ee920639",
+          "commitAuthorOld": "Yongjun Zhang",
+          "daysBetweenCommits": 69.18,
+          "commitsBetweenForRepo": 580,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,28 @@\n-  private void checkSubAccess(byte[][] pathByNameArr, int pathIdx, INode inode,\n-      int snapshotId, FsAction access, boolean ignoreEmptyDir)\n+  private void checkSubAccess(byte[][] components, int pathIdx,\n+      INode inode, int snapshotId, FsAction access, boolean ignoreEmptyDir)\n       throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n     for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n       ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n       if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n         //TODO have to figure this out with inodeattribute provider\n-        check(getINodeAttrs(pathByNameArr, pathIdx, d, snapshotId),\n-            inode.getFullPathName(), access);\n+        INodeAttributes inodeAttr \u003d\n+            getINodeAttrs(components, pathIdx, d, snapshotId);\n+        if (!hasPermission(inodeAttr, access)) {\n+          throw new AccessControlException(\n+              toAccessControlString(inodeAttr, d.getFullPathName(), access));\n+        }\n       }\n \n       for(INode child : cList) {\n         if (child.isDirectory()) {\n           directories.push(child.asDirectory());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkSubAccess(byte[][] components, int pathIdx,\n      INode inode, int snapshotId, FsAction access, boolean ignoreEmptyDir)\n      throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n      if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n        //TODO have to figure this out with inodeattribute provider\n        INodeAttributes inodeAttr \u003d\n            getINodeAttrs(components, pathIdx, d, snapshotId);\n        if (!hasPermission(inodeAttr, access)) {\n          throw new AccessControlException(\n              toAccessControlString(inodeAttr, d.getFullPathName(), access));\n        }\n      }\n\n      for(INode child : cList) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "53a28afe293e5bf185c8d4f2c7aea212e66015c2": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-6826. Plugin interface to enable delegation of HDFS authorization assertions. Contributed by Arun Suresh.\n",
+      "commitDate": "24/03/15 4:02 PM",
+      "commitName": "53a28afe293e5bf185c8d4f2c7aea212e66015c2",
+      "commitAuthor": "Jitendra Pandey",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-6826. Plugin interface to enable delegation of HDFS authorization assertions. Contributed by Arun Suresh.\n",
+          "commitDate": "24/03/15 4:02 PM",
+          "commitName": "53a28afe293e5bf185c8d4f2c7aea212e66015c2",
+          "commitAuthor": "Jitendra Pandey",
+          "commitDateOld": "09/12/14 6:57 PM",
+          "commitNameOld": "d93f3b9815f90d24c838574a56013e6dc60dc5ad",
+          "commitAuthorOld": "Vinayakumar B",
+          "daysBetweenCommits": 104.84,
+          "commitsBetweenForRepo": 828,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,24 @@\n-  private void checkSubAccess(INode inode, int snapshotId, FsAction access,\n-      boolean ignoreEmptyDir) throws AccessControlException {\n+  private void checkSubAccess(byte[][] pathByNameArr, int pathIdx, INode inode,\n+      int snapshotId, FsAction access, boolean ignoreEmptyDir)\n+      throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n     for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n       ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n       if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n-        check(d, snapshotId, access);\n+        //TODO have to figure this out with inodeattribute provider\n+        check(getINodeAttrs(pathByNameArr, pathIdx, d, snapshotId),\n+            inode.getFullPathName(), access);\n       }\n \n       for(INode child : cList) {\n         if (child.isDirectory()) {\n           directories.push(child.asDirectory());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkSubAccess(byte[][] pathByNameArr, int pathIdx, INode inode,\n      int snapshotId, FsAction access, boolean ignoreEmptyDir)\n      throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n      if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n        //TODO have to figure this out with inodeattribute provider\n        check(getINodeAttrs(pathByNameArr, pathIdx, d, snapshotId),\n            inode.getFullPathName(), access);\n      }\n\n      for(INode child : cList) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+          "extendedDetails": {
+            "oldValue": "[inode-INode, snapshotId-int, access-FsAction, ignoreEmptyDir-boolean]",
+            "newValue": "[pathByNameArr-byte[][], pathIdx-int, inode-INode, snapshotId-int, access-FsAction, ignoreEmptyDir-boolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6826. Plugin interface to enable delegation of HDFS authorization assertions. Contributed by Arun Suresh.\n",
+          "commitDate": "24/03/15 4:02 PM",
+          "commitName": "53a28afe293e5bf185c8d4f2c7aea212e66015c2",
+          "commitAuthor": "Jitendra Pandey",
+          "commitDateOld": "09/12/14 6:57 PM",
+          "commitNameOld": "d93f3b9815f90d24c838574a56013e6dc60dc5ad",
+          "commitAuthorOld": "Vinayakumar B",
+          "daysBetweenCommits": 104.84,
+          "commitsBetweenForRepo": 828,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,24 @@\n-  private void checkSubAccess(INode inode, int snapshotId, FsAction access,\n-      boolean ignoreEmptyDir) throws AccessControlException {\n+  private void checkSubAccess(byte[][] pathByNameArr, int pathIdx, INode inode,\n+      int snapshotId, FsAction access, boolean ignoreEmptyDir)\n+      throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n     for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n       ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n       if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n-        check(d, snapshotId, access);\n+        //TODO have to figure this out with inodeattribute provider\n+        check(getINodeAttrs(pathByNameArr, pathIdx, d, snapshotId),\n+            inode.getFullPathName(), access);\n       }\n \n       for(INode child : cList) {\n         if (child.isDirectory()) {\n           directories.push(child.asDirectory());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkSubAccess(byte[][] pathByNameArr, int pathIdx, INode inode,\n      int snapshotId, FsAction access, boolean ignoreEmptyDir)\n      throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n      if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n        //TODO have to figure this out with inodeattribute provider\n        check(getINodeAttrs(pathByNameArr, pathIdx, d, snapshotId),\n            inode.getFullPathName(), access);\n      }\n\n      for(INode child : cList) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e9c6840b24bab7d6c21243baa9b2353119b0f976": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "Command hdfs dfs -rm -r can\u0027t remove empty directory. Contributed by Yongjun Zhang.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1594036 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/05/14 10:54 AM",
+      "commitName": "e9c6840b24bab7d6c21243baa9b2353119b0f976",
+      "commitAuthor": "Andrew Wang",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "Command hdfs dfs -rm -r can\u0027t remove empty directory. Contributed by Yongjun Zhang.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1594036 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "12/05/14 10:54 AM",
+          "commitName": "e9c6840b24bab7d6c21243baa9b2353119b0f976",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "30/04/14 10:44 AM",
+          "commitNameOld": "0689363343a281a6f7f6f395227668bddc2663eb",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 12.01,
+          "commitsBetweenForRepo": 48,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,21 @@\n-  private void checkSubAccess(INode inode, int snapshotId, FsAction access\n-      ) throws AccessControlException {\n+  private void checkSubAccess(INode inode, int snapshotId, FsAction access,\n+      boolean ignoreEmptyDir) throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n     for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n-      check(d, snapshotId, access);\n+      ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n+      if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n+        check(d, snapshotId, access);\n+      }\n \n-      for(INode child : d.getChildrenList(snapshotId)) {\n+      for(INode child : cList) {\n         if (child.isDirectory()) {\n           directories.push(child.asDirectory());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkSubAccess(INode inode, int snapshotId, FsAction access,\n      boolean ignoreEmptyDir) throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n      if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n        check(d, snapshotId, access);\n      }\n\n      for(INode child : cList) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+          "extendedDetails": {
+            "oldValue": "[inode-INode, snapshotId-int, access-FsAction]",
+            "newValue": "[inode-INode, snapshotId-int, access-FsAction, ignoreEmptyDir-boolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "Command hdfs dfs -rm -r can\u0027t remove empty directory. Contributed by Yongjun Zhang.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1594036 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "12/05/14 10:54 AM",
+          "commitName": "e9c6840b24bab7d6c21243baa9b2353119b0f976",
+          "commitAuthor": "Andrew Wang",
+          "commitDateOld": "30/04/14 10:44 AM",
+          "commitNameOld": "0689363343a281a6f7f6f395227668bddc2663eb",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 12.01,
+          "commitsBetweenForRepo": 48,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,21 @@\n-  private void checkSubAccess(INode inode, int snapshotId, FsAction access\n-      ) throws AccessControlException {\n+  private void checkSubAccess(INode inode, int snapshotId, FsAction access,\n+      boolean ignoreEmptyDir) throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n     for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n-      check(d, snapshotId, access);\n+      ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n+      if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n+        check(d, snapshotId, access);\n+      }\n \n-      for(INode child : d.getChildrenList(snapshotId)) {\n+      for(INode child : cList) {\n         if (child.isDirectory()) {\n           directories.push(child.asDirectory());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkSubAccess(INode inode, int snapshotId, FsAction access,\n      boolean ignoreEmptyDir) throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      ReadOnlyList\u003cINode\u003e cList \u003d d.getChildrenList(snapshotId);\n      if (!(cList.isEmpty() \u0026\u0026 ignoreEmptyDir)) {\n        check(d, snapshotId, access);\n      }\n\n      for(INode child : cList) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "70cff9e2f0c8f78c1dc54a064182971bb2106795": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-5715. Use Snapshot ID to indicate the corresponding Snapshot for a FileDiff/DirectoryDiff. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1556353 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/01/14 12:52 PM",
+      "commitName": "70cff9e2f0c8f78c1dc54a064182971bb2106795",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-5715. Use Snapshot ID to indicate the corresponding Snapshot for a FileDiff/DirectoryDiff. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1556353 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "07/01/14 12:52 PM",
+          "commitName": "70cff9e2f0c8f78c1dc54a064182971bb2106795",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "12/11/13 3:52 PM",
+          "commitNameOld": "ce35e0950cef9250ce2ceffb3b8bfcff533c6b92",
+          "commitAuthorOld": "Colin McCabe",
+          "daysBetweenCommits": 55.88,
+          "commitsBetweenForRepo": 301,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,18 @@\n-  private void checkSubAccess(INode inode, Snapshot snapshot, FsAction access\n+  private void checkSubAccess(INode inode, int snapshotId, FsAction access\n       ) throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n     for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n-      check(d, snapshot, access);\n+      check(d, snapshotId, access);\n \n-      for(INode child : d.getChildrenList(snapshot)) {\n+      for(INode child : d.getChildrenList(snapshotId)) {\n         if (child.isDirectory()) {\n           directories.push(child.asDirectory());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkSubAccess(INode inode, int snapshotId, FsAction access\n      ) throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      check(d, snapshotId, access);\n\n      for(INode child : d.getChildrenList(snapshotId)) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+          "extendedDetails": {
+            "oldValue": "[inode-INode, snapshot-Snapshot, access-FsAction]",
+            "newValue": "[inode-INode, snapshotId-int, access-FsAction]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-5715. Use Snapshot ID to indicate the corresponding Snapshot for a FileDiff/DirectoryDiff. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1556353 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "07/01/14 12:52 PM",
+          "commitName": "70cff9e2f0c8f78c1dc54a064182971bb2106795",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "12/11/13 3:52 PM",
+          "commitNameOld": "ce35e0950cef9250ce2ceffb3b8bfcff533c6b92",
+          "commitAuthorOld": "Colin McCabe",
+          "daysBetweenCommits": 55.88,
+          "commitsBetweenForRepo": 301,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,18 @@\n-  private void checkSubAccess(INode inode, Snapshot snapshot, FsAction access\n+  private void checkSubAccess(INode inode, int snapshotId, FsAction access\n       ) throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n     for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n-      check(d, snapshot, access);\n+      check(d, snapshotId, access);\n \n-      for(INode child : d.getChildrenList(snapshot)) {\n+      for(INode child : d.getChildrenList(snapshotId)) {\n         if (child.isDirectory()) {\n           directories.push(child.asDirectory());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void checkSubAccess(INode inode, int snapshotId, FsAction access\n      ) throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      check(d, snapshotId, access);\n\n      for(INode child : d.getChildrenList(snapshotId)) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "b1333e5b561d01a010e2e1311e8501879f377bdc": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-4545. With snapshots, FSDirectory.unprotectedSetReplication(..) always changes file replication but it may or may not changes block replication.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-2802@1452636 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/03/13 6:23 PM",
+      "commitName": "b1333e5b561d01a010e2e1311e8501879f377bdc",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "25/02/13 4:10 PM",
+      "commitNameOld": "aa82b03823d809fb70cc3d420570ef20e3368bdf",
+      "commitAuthorOld": "",
+      "daysBetweenCommits": 7.09,
+      "commitsBetweenForRepo": 3,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,18 @@\n   private void checkSubAccess(INode inode, Snapshot snapshot, FsAction access\n       ) throws AccessControlException {\n     if (inode \u003d\u003d null || !inode.isDirectory()) {\n       return;\n     }\n \n     Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n-    for(directories.push((INodeDirectory)inode); !directories.isEmpty(); ) {\n+    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n       INodeDirectory d \u003d directories.pop();\n       check(d, snapshot, access);\n \n       for(INode child : d.getChildrenList(snapshot)) {\n         if (child.isDirectory()) {\n-          directories.push((INodeDirectory)child);\n+          directories.push(child.asDirectory());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void checkSubAccess(INode inode, Snapshot snapshot, FsAction access\n      ) throws AccessControlException {\n    if (inode \u003d\u003d null || !inode.isDirectory()) {\n      return;\n    }\n\n    Stack\u003cINodeDirectory\u003e directories \u003d new Stack\u003cINodeDirectory\u003e();\n    for(directories.push(inode.asDirectory()); !directories.isEmpty(); ) {\n      INodeDirectory d \u003d directories.pop();\n      check(d, snapshot, access);\n\n      for(INode child : d.getChildrenList(snapshot)) {\n        if (child.isDirectory()) {\n          directories.push(child.asDirectory());\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSPermissionChecker.java",
+      "extendedDetails": {}
+    }
+  }
+}

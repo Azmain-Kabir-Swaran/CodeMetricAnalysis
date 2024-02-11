@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ClientRMService.java",
+  "functionName": "verifyUserAccessForRMApp",
+  "functionId": "verifyUserAccessForRMApp___applicationId-ApplicationId__callerUGI-UserGroupInformation__operation-String__accessType-ApplicationAccessType__needCheckAccess-boolean",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/ClientRMService.java",
+  "functionStartLine": 1827,
+  "functionEndLine": 1859,
+  "numCommitsSeen": 227,
+  "timeTaken": 3788,
+  "changeHistory": [
+    "cffea251be4b73ca16e5e11f0be2d22651330f73",
+    "bcc15c6290b3912a054323695a6a931b0de163bd"
+  ],
+  "changeHistoryShort": {
+    "cffea251be4b73ca16e5e11f0be2d22651330f73": "Ymultichange(Yparameterchange,Ybodychange)",
+    "bcc15c6290b3912a054323695a6a931b0de163bd": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "cffea251be4b73ca16e5e11f0be2d22651330f73": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-5956. Refactor ClientRMService for unify error handling across apis. Contributed by Kai Sasaki.\n",
+      "commitDate": "25/03/17 9:56 AM",
+      "commitName": "cffea251be4b73ca16e5e11f0be2d22651330f73",
+      "commitAuthor": "Sunil G",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-5956. Refactor ClientRMService for unify error handling across apis. Contributed by Kai Sasaki.\n",
+          "commitDate": "25/03/17 9:56 AM",
+          "commitName": "cffea251be4b73ca16e5e11f0be2d22651330f73",
+          "commitAuthor": "Sunil G",
+          "commitDateOld": "28/02/17 11:04 AM",
+          "commitNameOld": "e0bb867c3fa638c9f689ee0b044b400481cf02b5",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 24.91,
+          "commitsBetweenForRepo": 150,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,33 @@\n   private RMApp verifyUserAccessForRMApp(ApplicationId applicationId,\n-      UserGroupInformation callerUGI, String operation) throws YarnException {\n+      UserGroupInformation callerUGI, String operation,\n+      ApplicationAccessType accessType,\n+      boolean needCheckAccess) throws YarnException {\n     RMApp application \u003d this.rmContext.getRMApps().get(applicationId);\n     if (application \u003d\u003d null) {\n       RMAuditLogger.logFailure(callerUGI.getUserName(), operation, \"UNKNOWN\",\n           \"ClientRMService\",\n           \"Trying to \" + operation + \" of an absent application\",\n           applicationId);\n-      throw new ApplicationNotFoundException(\"Trying to \" + operation\n-          + \" of an absent application \" + applicationId);\n+        // If the RM doesn\u0027t have the application, throw\n+        // ApplicationNotFoundException and let client to handle.\n+      throw new ApplicationNotFoundException(\"Application with id \u0027\"\n+              + applicationId + \"\u0027 doesn\u0027t exist in RM. \"\n+              + \"Please check that the job \"\n+              + \"submission was successful.\");\n     }\n \n-    if (!checkAccess(callerUGI, application.getUser(),\n-        ApplicationAccessType.MODIFY_APP, application)) {\n-      RMAuditLogger.logFailure(callerUGI.getShortUserName(), operation,\n-          \"User doesn\u0027t have permissions to \"\n-              + ApplicationAccessType.MODIFY_APP.toString(),\n-          \"ClientRMService\", AuditConstants.UNAUTHORIZED_USER, applicationId);\n-      throw RPCUtil.getRemoteException(new AccessControlException(\"User \"\n-          + callerUGI.getShortUserName() + \" cannot perform operation \"\n-          + ApplicationAccessType.MODIFY_APP.name() + \" on \" + applicationId));\n+    if (needCheckAccess) {\n+      if (!checkAccess(callerUGI, application.getUser(),\n+              accessType, application)) {\n+        RMAuditLogger.logFailure(callerUGI.getShortUserName(), operation,\n+                \"User doesn\u0027t have permissions to \"\n+                        + accessType.toString(),\n+                \"ClientRMService\", AuditConstants.UNAUTHORIZED_USER,\n+                applicationId);\n+        throw RPCUtil.getRemoteException(new AccessControlException(\"User \"\n+                + callerUGI.getShortUserName() + \" cannot perform operation \"\n+                + accessType.name() + \" on \" + applicationId));\n+      }\n     }\n     return application;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private RMApp verifyUserAccessForRMApp(ApplicationId applicationId,\n      UserGroupInformation callerUGI, String operation,\n      ApplicationAccessType accessType,\n      boolean needCheckAccess) throws YarnException {\n    RMApp application \u003d this.rmContext.getRMApps().get(applicationId);\n    if (application \u003d\u003d null) {\n      RMAuditLogger.logFailure(callerUGI.getUserName(), operation, \"UNKNOWN\",\n          \"ClientRMService\",\n          \"Trying to \" + operation + \" of an absent application\",\n          applicationId);\n        // If the RM doesn\u0027t have the application, throw\n        // ApplicationNotFoundException and let client to handle.\n      throw new ApplicationNotFoundException(\"Application with id \u0027\"\n              + applicationId + \"\u0027 doesn\u0027t exist in RM. \"\n              + \"Please check that the job \"\n              + \"submission was successful.\");\n    }\n\n    if (needCheckAccess) {\n      if (!checkAccess(callerUGI, application.getUser(),\n              accessType, application)) {\n        RMAuditLogger.logFailure(callerUGI.getShortUserName(), operation,\n                \"User doesn\u0027t have permissions to \"\n                        + accessType.toString(),\n                \"ClientRMService\", AuditConstants.UNAUTHORIZED_USER,\n                applicationId);\n        throw RPCUtil.getRemoteException(new AccessControlException(\"User \"\n                + callerUGI.getShortUserName() + \" cannot perform operation \"\n                + accessType.name() + \" on \" + applicationId));\n      }\n    }\n    return application;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/ClientRMService.java",
+          "extendedDetails": {
+            "oldValue": "[applicationId-ApplicationId, callerUGI-UserGroupInformation, operation-String]",
+            "newValue": "[applicationId-ApplicationId, callerUGI-UserGroupInformation, operation-String, accessType-ApplicationAccessType, needCheckAccess-boolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-5956. Refactor ClientRMService for unify error handling across apis. Contributed by Kai Sasaki.\n",
+          "commitDate": "25/03/17 9:56 AM",
+          "commitName": "cffea251be4b73ca16e5e11f0be2d22651330f73",
+          "commitAuthor": "Sunil G",
+          "commitDateOld": "28/02/17 11:04 AM",
+          "commitNameOld": "e0bb867c3fa638c9f689ee0b044b400481cf02b5",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 24.91,
+          "commitsBetweenForRepo": 150,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,33 @@\n   private RMApp verifyUserAccessForRMApp(ApplicationId applicationId,\n-      UserGroupInformation callerUGI, String operation) throws YarnException {\n+      UserGroupInformation callerUGI, String operation,\n+      ApplicationAccessType accessType,\n+      boolean needCheckAccess) throws YarnException {\n     RMApp application \u003d this.rmContext.getRMApps().get(applicationId);\n     if (application \u003d\u003d null) {\n       RMAuditLogger.logFailure(callerUGI.getUserName(), operation, \"UNKNOWN\",\n           \"ClientRMService\",\n           \"Trying to \" + operation + \" of an absent application\",\n           applicationId);\n-      throw new ApplicationNotFoundException(\"Trying to \" + operation\n-          + \" of an absent application \" + applicationId);\n+        // If the RM doesn\u0027t have the application, throw\n+        // ApplicationNotFoundException and let client to handle.\n+      throw new ApplicationNotFoundException(\"Application with id \u0027\"\n+              + applicationId + \"\u0027 doesn\u0027t exist in RM. \"\n+              + \"Please check that the job \"\n+              + \"submission was successful.\");\n     }\n \n-    if (!checkAccess(callerUGI, application.getUser(),\n-        ApplicationAccessType.MODIFY_APP, application)) {\n-      RMAuditLogger.logFailure(callerUGI.getShortUserName(), operation,\n-          \"User doesn\u0027t have permissions to \"\n-              + ApplicationAccessType.MODIFY_APP.toString(),\n-          \"ClientRMService\", AuditConstants.UNAUTHORIZED_USER, applicationId);\n-      throw RPCUtil.getRemoteException(new AccessControlException(\"User \"\n-          + callerUGI.getShortUserName() + \" cannot perform operation \"\n-          + ApplicationAccessType.MODIFY_APP.name() + \" on \" + applicationId));\n+    if (needCheckAccess) {\n+      if (!checkAccess(callerUGI, application.getUser(),\n+              accessType, application)) {\n+        RMAuditLogger.logFailure(callerUGI.getShortUserName(), operation,\n+                \"User doesn\u0027t have permissions to \"\n+                        + accessType.toString(),\n+                \"ClientRMService\", AuditConstants.UNAUTHORIZED_USER,\n+                applicationId);\n+        throw RPCUtil.getRemoteException(new AccessControlException(\"User \"\n+                + callerUGI.getShortUserName() + \" cannot perform operation \"\n+                + accessType.name() + \" on \" + applicationId));\n+      }\n     }\n     return application;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private RMApp verifyUserAccessForRMApp(ApplicationId applicationId,\n      UserGroupInformation callerUGI, String operation,\n      ApplicationAccessType accessType,\n      boolean needCheckAccess) throws YarnException {\n    RMApp application \u003d this.rmContext.getRMApps().get(applicationId);\n    if (application \u003d\u003d null) {\n      RMAuditLogger.logFailure(callerUGI.getUserName(), operation, \"UNKNOWN\",\n          \"ClientRMService\",\n          \"Trying to \" + operation + \" of an absent application\",\n          applicationId);\n        // If the RM doesn\u0027t have the application, throw\n        // ApplicationNotFoundException and let client to handle.\n      throw new ApplicationNotFoundException(\"Application with id \u0027\"\n              + applicationId + \"\u0027 doesn\u0027t exist in RM. \"\n              + \"Please check that the job \"\n              + \"submission was successful.\");\n    }\n\n    if (needCheckAccess) {\n      if (!checkAccess(callerUGI, application.getUser(),\n              accessType, application)) {\n        RMAuditLogger.logFailure(callerUGI.getShortUserName(), operation,\n                \"User doesn\u0027t have permissions to \"\n                        + accessType.toString(),\n                \"ClientRMService\", AuditConstants.UNAUTHORIZED_USER,\n                applicationId);\n        throw RPCUtil.getRemoteException(new AccessControlException(\"User \"\n                + callerUGI.getShortUserName() + \" cannot perform operation \"\n                + accessType.name() + \" on \" + applicationId));\n      }\n    }\n    return application;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/ClientRMService.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "bcc15c6290b3912a054323695a6a931b0de163bd": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5611. Provide an API to update lifetime of an application. Contributed by Rohith Sharma K S\n",
+      "commitDate": "09/11/16 4:08 PM",
+      "commitName": "bcc15c6290b3912a054323695a6a931b0de163bd",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,24 @@\n+  private RMApp verifyUserAccessForRMApp(ApplicationId applicationId,\n+      UserGroupInformation callerUGI, String operation) throws YarnException {\n+    RMApp application \u003d this.rmContext.getRMApps().get(applicationId);\n+    if (application \u003d\u003d null) {\n+      RMAuditLogger.logFailure(callerUGI.getUserName(), operation, \"UNKNOWN\",\n+          \"ClientRMService\",\n+          \"Trying to \" + operation + \" of an absent application\",\n+          applicationId);\n+      throw new ApplicationNotFoundException(\"Trying to \" + operation\n+          + \" of an absent application \" + applicationId);\n+    }\n+\n+    if (!checkAccess(callerUGI, application.getUser(),\n+        ApplicationAccessType.MODIFY_APP, application)) {\n+      RMAuditLogger.logFailure(callerUGI.getShortUserName(), operation,\n+          \"User doesn\u0027t have permissions to \"\n+              + ApplicationAccessType.MODIFY_APP.toString(),\n+          \"ClientRMService\", AuditConstants.UNAUTHORIZED_USER, applicationId);\n+      throw RPCUtil.getRemoteException(new AccessControlException(\"User \"\n+          + callerUGI.getShortUserName() + \" cannot perform operation \"\n+          + ApplicationAccessType.MODIFY_APP.name() + \" on \" + applicationId));\n+    }\n+    return application;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private RMApp verifyUserAccessForRMApp(ApplicationId applicationId,\n      UserGroupInformation callerUGI, String operation) throws YarnException {\n    RMApp application \u003d this.rmContext.getRMApps().get(applicationId);\n    if (application \u003d\u003d null) {\n      RMAuditLogger.logFailure(callerUGI.getUserName(), operation, \"UNKNOWN\",\n          \"ClientRMService\",\n          \"Trying to \" + operation + \" of an absent application\",\n          applicationId);\n      throw new ApplicationNotFoundException(\"Trying to \" + operation\n          + \" of an absent application \" + applicationId);\n    }\n\n    if (!checkAccess(callerUGI, application.getUser(),\n        ApplicationAccessType.MODIFY_APP, application)) {\n      RMAuditLogger.logFailure(callerUGI.getShortUserName(), operation,\n          \"User doesn\u0027t have permissions to \"\n              + ApplicationAccessType.MODIFY_APP.toString(),\n          \"ClientRMService\", AuditConstants.UNAUTHORIZED_USER, applicationId);\n      throw RPCUtil.getRemoteException(new AccessControlException(\"User \"\n          + callerUGI.getShortUserName() + \" cannot perform operation \"\n          + ApplicationAccessType.MODIFY_APP.name() + \" on \" + applicationId));\n    }\n    return application;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/ClientRMService.java"
+    }
+  }
+}

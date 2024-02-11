@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RawLocalFileSystem.java",
+  "functionName": "createSymlink",
+  "functionId": "createSymlink___target-Path__link-Path__createParent-boolean",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+  "functionStartLine": 932,
+  "functionEndLine": 953,
+  "numCommitsSeen": 53,
+  "timeTaken": 1673,
+  "changeHistory": [
+    "26971e52ae65590e618a23621be244e588845adc",
+    "f2942687d44caaaedae98132024f8fc1dc4a884a",
+    "e1a1c336323804e77265216da38a5e04e8214d85"
+  ],
+  "changeHistoryShort": {
+    "26971e52ae65590e618a23621be244e588845adc": "Ybodychange",
+    "f2942687d44caaaedae98132024f8fc1dc4a884a": "Ybodychange",
+    "e1a1c336323804e77265216da38a5e04e8214d85": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "26971e52ae65590e618a23621be244e588845adc": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11852. Disable symlinks in trunk.\n",
+      "commitDate": "23/04/15 11:47 AM",
+      "commitName": "26971e52ae65590e618a23621be244e588845adc",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "02/04/15 4:13 PM",
+      "commitNameOld": "5763b173d34dcf7372520076f00b576f493662cd",
+      "commitAuthorOld": "cnauroth",
+      "daysBetweenCommits": 20.82,
+      "commitsBetweenForRepo": 166,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,22 @@\n   public void createSymlink(Path target, Path link, boolean createParent)\n       throws IOException {\n+    if (!FileSystem.areSymlinksEnabled()) {\n+      throw new UnsupportedOperationException(\"Symlinks not supported\");\n+    }\n     final String targetScheme \u003d target.toUri().getScheme();\n     if (targetScheme !\u003d null \u0026\u0026 !\"file\".equals(targetScheme)) {\n       throw new IOException(\"Unable to create symlink to non-local file \"+\n                             \"system: \"+target.toString());\n     }\n     if (createParent) {\n       mkdirs(link.getParent());\n     }\n \n     // NB: Use createSymbolicLink in java.nio.file.Path once available\n     int result \u003d FileUtil.symLink(target.toString(),\n         makeAbsolute(link).toString());\n     if (result !\u003d 0) {\n       throw new IOException(\"Error \" + result + \" creating symlink \" +\n           link + \" to \" + target);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void createSymlink(Path target, Path link, boolean createParent)\n      throws IOException {\n    if (!FileSystem.areSymlinksEnabled()) {\n      throw new UnsupportedOperationException(\"Symlinks not supported\");\n    }\n    final String targetScheme \u003d target.toUri().getScheme();\n    if (targetScheme !\u003d null \u0026\u0026 !\"file\".equals(targetScheme)) {\n      throw new IOException(\"Unable to create symlink to non-local file \"+\n                            \"system: \"+target.toString());\n    }\n    if (createParent) {\n      mkdirs(link.getParent());\n    }\n\n    // NB: Use createSymbolicLink in java.nio.file.Path once available\n    int result \u003d FileUtil.symLink(target.toString(),\n        makeAbsolute(link).toString());\n    if (result !\u003d 0) {\n      throw new IOException(\"Error \" + result + \" creating symlink \" +\n          link + \" to \" + target);\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {}
+    },
+    "f2942687d44caaaedae98132024f8fc1dc4a884a": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-9527. Add symlink support to LocalFileSystem on Windows. Contributed by Arpit Agarwal.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1511118 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/08/13 1:35 PM",
+      "commitName": "f2942687d44caaaedae98132024f8fc1dc4a884a",
+      "commitAuthor": "Chris Nauroth",
+      "commitDateOld": "29/07/13 4:56 PM",
+      "commitNameOld": "f593d5729687ec1acc6b6a253303a2b5481dc962",
+      "commitAuthorOld": "Colin McCabe",
+      "daysBetweenCommits": 7.86,
+      "commitsBetweenForRepo": 51,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,19 @@\n   public void createSymlink(Path target, Path link, boolean createParent)\n       throws IOException {\n     final String targetScheme \u003d target.toUri().getScheme();\n     if (targetScheme !\u003d null \u0026\u0026 !\"file\".equals(targetScheme)) {\n       throw new IOException(\"Unable to create symlink to non-local file \"+\n                             \"system: \"+target.toString());\n     }\n     if (createParent) {\n       mkdirs(link.getParent());\n     }\n+\n     // NB: Use createSymbolicLink in java.nio.file.Path once available\n-    try {\n-      Shell.execCommand(Shell.getSymlinkCommand(\n-        Path.getPathWithoutSchemeAndAuthority(target).toString(),\n-        Path.getPathWithoutSchemeAndAuthority(makeAbsolute(link)).toString()));\n-    } catch (IOException x) {\n-      throw new IOException(\"Unable to create symlink: \"+x.getMessage());\n+    int result \u003d FileUtil.symLink(target.toString(),\n+        makeAbsolute(link).toString());\n+    if (result !\u003d 0) {\n+      throw new IOException(\"Error \" + result + \" creating symlink \" +\n+          link + \" to \" + target);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void createSymlink(Path target, Path link, boolean createParent)\n      throws IOException {\n    final String targetScheme \u003d target.toUri().getScheme();\n    if (targetScheme !\u003d null \u0026\u0026 !\"file\".equals(targetScheme)) {\n      throw new IOException(\"Unable to create symlink to non-local file \"+\n                            \"system: \"+target.toString());\n    }\n    if (createParent) {\n      mkdirs(link.getParent());\n    }\n\n    // NB: Use createSymbolicLink in java.nio.file.Path once available\n    int result \u003d FileUtil.symLink(target.toString(),\n        makeAbsolute(link).toString());\n    if (result !\u003d 0) {\n      throw new IOException(\"Error \" + result + \" creating symlink \" +\n          link + \" to \" + target);\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java",
+      "extendedDetails": {}
+    },
+    "e1a1c336323804e77265216da38a5e04e8214d85": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-9417.  Support for symlink resolution in LocalFileSystem / RawLocalFileSystem.  (Andrew Wang via Colin Patrick McCabe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1502307 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "11/07/13 11:10 AM",
+      "commitName": "e1a1c336323804e77265216da38a5e04e8214d85",
+      "commitAuthor": "Colin McCabe",
+      "diff": "@@ -0,0 +1,19 @@\n+  public void createSymlink(Path target, Path link, boolean createParent)\n+      throws IOException {\n+    final String targetScheme \u003d target.toUri().getScheme();\n+    if (targetScheme !\u003d null \u0026\u0026 !\"file\".equals(targetScheme)) {\n+      throw new IOException(\"Unable to create symlink to non-local file \"+\n+                            \"system: \"+target.toString());\n+    }\n+    if (createParent) {\n+      mkdirs(link.getParent());\n+    }\n+    // NB: Use createSymbolicLink in java.nio.file.Path once available\n+    try {\n+      Shell.execCommand(Shell.getSymlinkCommand(\n+        Path.getPathWithoutSchemeAndAuthority(target).toString(),\n+        Path.getPathWithoutSchemeAndAuthority(makeAbsolute(link)).toString()));\n+    } catch (IOException x) {\n+      throw new IOException(\"Unable to create symlink: \"+x.getMessage());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void createSymlink(Path target, Path link, boolean createParent)\n      throws IOException {\n    final String targetScheme \u003d target.toUri().getScheme();\n    if (targetScheme !\u003d null \u0026\u0026 !\"file\".equals(targetScheme)) {\n      throw new IOException(\"Unable to create symlink to non-local file \"+\n                            \"system: \"+target.toString());\n    }\n    if (createParent) {\n      mkdirs(link.getParent());\n    }\n    // NB: Use createSymbolicLink in java.nio.file.Path once available\n    try {\n      Shell.execCommand(Shell.getSymlinkCommand(\n        Path.getPathWithoutSchemeAndAuthority(target).toString(),\n        Path.getPathWithoutSchemeAndAuthority(makeAbsolute(link)).toString()));\n    } catch (IOException x) {\n      throw new IOException(\"Unable to create symlink: \"+x.getMessage());\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/RawLocalFileSystem.java"
+    }
+  }
+}

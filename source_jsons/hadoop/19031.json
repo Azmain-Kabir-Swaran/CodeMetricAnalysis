@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "JobClient.java",
+  "functionName": "submitJobInternal",
+  "functionId": "submitJobInternal___conf-JobConf(modifiers-final)",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/JobClient.java",
+  "functionStartLine": 566,
+  "functionEndLine": 596,
+  "numCommitsSeen": 30,
+  "timeTaken": 1107,
+  "changeHistory": [
+    "43e669b22d9ac0b81ab8cc397c5d6d92bac986c6",
+    "febf95122090cce77d9776f457c900088529cf99"
+  ],
+  "changeHistoryShort": {
+    "43e669b22d9ac0b81ab8cc397c5d6d92bac986c6": "Ybodychange",
+    "febf95122090cce77d9776f457c900088529cf99": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "43e669b22d9ac0b81ab8cc397c5d6d92bac986c6": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6621. Memory Leak in JobClient#submitJobInternal(). Contributed by Xuan Gong\n",
+      "commitDate": "02/02/16 11:30 AM",
+      "commitName": "43e669b22d9ac0b81ab8cc397c5d6d92bac986c6",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "27/01/16 5:11 PM",
+      "commitNameOld": "dca0dc8ac28e843acd8b79c9560245638a539fde",
+      "commitAuthorOld": "Robert Kanter",
+      "daysBetweenCommits": 5.76,
+      "commitsBetweenForRepo": 37,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,31 @@\n   public RunningJob submitJobInternal(final JobConf conf)\n       throws FileNotFoundException, IOException {\n     try {\n       conf.setBooleanIfUnset(\"mapred.mapper.new-api\", false);\n       conf.setBooleanIfUnset(\"mapred.reducer.new-api\", false);\n       Job job \u003d clientUgi.doAs(new PrivilegedExceptionAction\u003cJob\u003e () {\n         @Override\n         public Job run() throws IOException, ClassNotFoundException, \n           InterruptedException {\n           Job job \u003d Job.getInstance(conf);\n           job.submit();\n           return job;\n         }\n       });\n+\n+      Cluster prev \u003d cluster;\n       // update our Cluster instance with the one created by Job for submission\n       // (we can\u0027t pass our Cluster instance to Job, since Job wraps the config\n       // instance, and the two configs would then diverge)\n       cluster \u003d job.getCluster();\n+\n+      // It is important to close the previous cluster instance\n+      // to cleanup resources.\n+      if (prev !\u003d null) {\n+        prev.close();\n+      }\n       return new NetworkedJob(job);\n     } catch (InterruptedException ie) {\n       throw new IOException(\"interrupted\", ie);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public RunningJob submitJobInternal(final JobConf conf)\n      throws FileNotFoundException, IOException {\n    try {\n      conf.setBooleanIfUnset(\"mapred.mapper.new-api\", false);\n      conf.setBooleanIfUnset(\"mapred.reducer.new-api\", false);\n      Job job \u003d clientUgi.doAs(new PrivilegedExceptionAction\u003cJob\u003e () {\n        @Override\n        public Job run() throws IOException, ClassNotFoundException, \n          InterruptedException {\n          Job job \u003d Job.getInstance(conf);\n          job.submit();\n          return job;\n        }\n      });\n\n      Cluster prev \u003d cluster;\n      // update our Cluster instance with the one created by Job for submission\n      // (we can\u0027t pass our Cluster instance to Job, since Job wraps the config\n      // instance, and the two configs would then diverge)\n      cluster \u003d job.getCluster();\n\n      // It is important to close the previous cluster instance\n      // to cleanup resources.\n      if (prev !\u003d null) {\n        prev.close();\n      }\n      return new NetworkedJob(job);\n    } catch (InterruptedException ie) {\n      throw new IOException(\"interrupted\", ie);\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/JobClient.java",
+      "extendedDetails": {}
+    },
+    "febf95122090cce77d9776f457c900088529cf99": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-5222. Bring back some methods and constants in Jobclient for binary compatibility with mapred in 1.x. Contributed by Karthik Kambatla.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1482208 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "13/05/13 10:52 PM",
+      "commitName": "febf95122090cce77d9776f457c900088529cf99",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,23 @@\n+  public RunningJob submitJobInternal(final JobConf conf)\n+      throws FileNotFoundException, IOException {\n+    try {\n+      conf.setBooleanIfUnset(\"mapred.mapper.new-api\", false);\n+      conf.setBooleanIfUnset(\"mapred.reducer.new-api\", false);\n+      Job job \u003d clientUgi.doAs(new PrivilegedExceptionAction\u003cJob\u003e () {\n+        @Override\n+        public Job run() throws IOException, ClassNotFoundException, \n+          InterruptedException {\n+          Job job \u003d Job.getInstance(conf);\n+          job.submit();\n+          return job;\n+        }\n+      });\n+      // update our Cluster instance with the one created by Job for submission\n+      // (we can\u0027t pass our Cluster instance to Job, since Job wraps the config\n+      // instance, and the two configs would then diverge)\n+      cluster \u003d job.getCluster();\n+      return new NetworkedJob(job);\n+    } catch (InterruptedException ie) {\n+      throw new IOException(\"interrupted\", ie);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public RunningJob submitJobInternal(final JobConf conf)\n      throws FileNotFoundException, IOException {\n    try {\n      conf.setBooleanIfUnset(\"mapred.mapper.new-api\", false);\n      conf.setBooleanIfUnset(\"mapred.reducer.new-api\", false);\n      Job job \u003d clientUgi.doAs(new PrivilegedExceptionAction\u003cJob\u003e () {\n        @Override\n        public Job run() throws IOException, ClassNotFoundException, \n          InterruptedException {\n          Job job \u003d Job.getInstance(conf);\n          job.submit();\n          return job;\n        }\n      });\n      // update our Cluster instance with the one created by Job for submission\n      // (we can\u0027t pass our Cluster instance to Job, since Job wraps the config\n      // instance, and the two configs would then diverge)\n      cluster \u003d job.getCluster();\n      return new NetworkedJob(job);\n    } catch (InterruptedException ie) {\n      throw new IOException(\"interrupted\", ie);\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/JobClient.java"
+    }
+  }
+}

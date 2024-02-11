@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSImageFormatPBINode.java",
+  "functionName": "serializeFilesUCSection",
+  "functionId": "serializeFilesUCSection___out-OutputStream",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImageFormatPBINode.java",
+  "functionStartLine": 789,
+  "functionEndLine": 812,
+  "numCommitsSeen": 63,
+  "timeTaken": 2532,
+  "changeHistory": [
+    "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+    "a2edb11b68ae01a44092cb14ac2717a6aad93305"
+  ],
+  "changeHistoryShort": {
+    "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63": "Ybodychange",
+    "a2edb11b68ae01a44092cb14ac2717a6aad93305": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6757. Simplify lease manager with INodeID. Contributed by Haohui Mai.\n",
+      "commitDate": "08/05/15 11:04 PM",
+      "commitName": "00fe1ed3a4b3ee35fe24be257ec36445d2f44d63",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "21/02/15 3:38 PM",
+      "commitNameOld": "8b465b4b8caed31ca9daeaae108f9a868a30a455",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 76.27,
+      "commitsBetweenForRepo": 731,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,24 @@\n     void serializeFilesUCSection(OutputStream out) throws IOException {\n-      Map\u003cString, INodeFile\u003e ucMap \u003d fsn.getFilesUnderConstruction();\n-      for (Map.Entry\u003cString, INodeFile\u003e entry : ucMap.entrySet()) {\n-        String path \u003d entry.getKey();\n-        INodeFile file \u003d entry.getValue();\n+      Collection\u003cLong\u003e filesWithUC \u003d fsn.getLeaseManager()\n+              .getINodeIdWithLeases();\n+      for (Long id : filesWithUC) {\n+        INode inode \u003d fsn.getFSDirectory().getInode(id);\n+        if (inode \u003d\u003d null) {\n+          LOG.warn(\"Fail to find inode \" + id + \" when saving the leases.\");\n+          continue;\n+        }\n+        INodeFile file \u003d inode.asFile();\n+        if (!file.isUnderConstruction()) {\n+          LOG.warn(\"Fail to save the lease for inode id \" + id\n+                       + \" as the file is not under construction\");\n+          continue;\n+        }\n+        String path \u003d file.getFullPathName();\n         FileUnderConstructionEntry.Builder b \u003d FileUnderConstructionEntry\n             .newBuilder().setInodeId(file.getId()).setFullPath(path);\n         FileUnderConstructionEntry e \u003d b.build();\n         e.writeDelimitedTo(out);\n       }\n       parent.commitSection(summary,\n           FSImageFormatProtobuf.SectionName.FILES_UNDERCONSTRUCTION);\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    void serializeFilesUCSection(OutputStream out) throws IOException {\n      Collection\u003cLong\u003e filesWithUC \u003d fsn.getLeaseManager()\n              .getINodeIdWithLeases();\n      for (Long id : filesWithUC) {\n        INode inode \u003d fsn.getFSDirectory().getInode(id);\n        if (inode \u003d\u003d null) {\n          LOG.warn(\"Fail to find inode \" + id + \" when saving the leases.\");\n          continue;\n        }\n        INodeFile file \u003d inode.asFile();\n        if (!file.isUnderConstruction()) {\n          LOG.warn(\"Fail to save the lease for inode id \" + id\n                       + \" as the file is not under construction\");\n          continue;\n        }\n        String path \u003d file.getFullPathName();\n        FileUnderConstructionEntry.Builder b \u003d FileUnderConstructionEntry\n            .newBuilder().setInodeId(file.getId()).setFullPath(path);\n        FileUnderConstructionEntry e \u003d b.build();\n        e.writeDelimitedTo(out);\n      }\n      parent.commitSection(summary,\n          FSImageFormatProtobuf.SectionName.FILES_UNDERCONSTRUCTION);\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImageFormatPBINode.java",
+      "extendedDetails": {}
+    },
+    "a2edb11b68ae01a44092cb14ac2717a6aad93305": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-5698. Use protobuf to serialize / deserialize FSImage. Contributed by Haohui Mai.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1566359 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "09/02/14 11:18 AM",
+      "commitName": "a2edb11b68ae01a44092cb14ac2717a6aad93305",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,13 @@\n+    void serializeFilesUCSection(OutputStream out) throws IOException {\n+      Map\u003cString, INodeFile\u003e ucMap \u003d fsn.getFilesUnderConstruction();\n+      for (Map.Entry\u003cString, INodeFile\u003e entry : ucMap.entrySet()) {\n+        String path \u003d entry.getKey();\n+        INodeFile file \u003d entry.getValue();\n+        FileUnderConstructionEntry.Builder b \u003d FileUnderConstructionEntry\n+            .newBuilder().setInodeId(file.getId()).setFullPath(path);\n+        FileUnderConstructionEntry e \u003d b.build();\n+        e.writeDelimitedTo(out);\n+      }\n+      parent.commitSection(summary,\n+          FSImageFormatProtobuf.SectionName.FILES_UNDERCONSTRUCTION);\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    void serializeFilesUCSection(OutputStream out) throws IOException {\n      Map\u003cString, INodeFile\u003e ucMap \u003d fsn.getFilesUnderConstruction();\n      for (Map.Entry\u003cString, INodeFile\u003e entry : ucMap.entrySet()) {\n        String path \u003d entry.getKey();\n        INodeFile file \u003d entry.getValue();\n        FileUnderConstructionEntry.Builder b \u003d FileUnderConstructionEntry\n            .newBuilder().setInodeId(file.getId()).setFullPath(path);\n        FileUnderConstructionEntry e \u003d b.build();\n        e.writeDelimitedTo(out);\n      }\n      parent.commitSection(summary,\n          FSImageFormatProtobuf.SectionName.FILES_UNDERCONSTRUCTION);\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSImageFormatPBINode.java"
+    }
+  }
+}

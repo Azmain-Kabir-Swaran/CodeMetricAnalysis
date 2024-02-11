@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ReadaheadPool.java",
+  "functionName": "readaheadStream",
+  "functionId": "readaheadStream___identifier-String__fd-FileDescriptor__curPos-long__readaheadLength-long__maxOffsetToRead-long__lastReadahead-ReadaheadRequest",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/ReadaheadPool.java",
+  "functionStartLine": 91,
+  "functionEndLine": 138,
+  "numCommitsSeen": 9,
+  "timeTaken": 591,
+  "changeHistory": [
+    "78336e717be194683f863ca15a12cde90b9e936d"
+  ],
+  "changeHistoryShort": {
+    "78336e717be194683f863ca15a12cde90b9e936d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "78336e717be194683f863ca15a12cde90b9e936d": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7753. Support fadvise and sync_file_range in NativeIO. Add ReadaheadPool infrastructure for use in HDFS and MR. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1190067 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "27/10/11 3:19 PM",
+      "commitName": "78336e717be194683f863ca15a12cde90b9e936d",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,48 @@\n+  public ReadaheadRequest readaheadStream(\n+      String identifier,\n+      FileDescriptor fd,\n+      long curPos,\n+      long readaheadLength,\n+      long maxOffsetToRead,\n+      ReadaheadRequest lastReadahead) {\n+    \n+    Preconditions.checkArgument(curPos \u003c\u003d maxOffsetToRead,\n+        \"Readahead position %s higher than maxOffsetToRead %s\",\n+        curPos, maxOffsetToRead);\n+\n+    if (readaheadLength \u003c\u003d 0) {\n+      return null;\n+    }\n+    \n+    long lastOffset \u003d Long.MIN_VALUE;\n+    \n+    if (lastReadahead !\u003d null) {\n+      lastOffset \u003d lastReadahead.getOffset();\n+    }\n+\n+    // trigger each readahead when we have reached the halfway mark\n+    // in the previous readahead. This gives the system time\n+    // to satisfy the readahead before we start reading the data.\n+    long nextOffset \u003d lastOffset + readaheadLength / 2; \n+    if (curPos \u003e\u003d nextOffset) {\n+      // cancel any currently pending readahead, to avoid\n+      // piling things up in the queue. Each reader should have at most\n+      // one outstanding request in the queue.\n+      if (lastReadahead !\u003d null) {\n+        lastReadahead.cancel();\n+        lastReadahead \u003d null;\n+      }\n+      \n+      long length \u003d Math.min(readaheadLength,\n+          maxOffsetToRead - curPos);\n+\n+      if (length \u003c\u003d 0) {\n+        // we\u0027ve reached the end of the stream\n+        return null;\n+      }\n+      \n+      return submitReadahead(identifier, fd, curPos, length);\n+    } else {\n+      return lastReadahead;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public ReadaheadRequest readaheadStream(\n      String identifier,\n      FileDescriptor fd,\n      long curPos,\n      long readaheadLength,\n      long maxOffsetToRead,\n      ReadaheadRequest lastReadahead) {\n    \n    Preconditions.checkArgument(curPos \u003c\u003d maxOffsetToRead,\n        \"Readahead position %s higher than maxOffsetToRead %s\",\n        curPos, maxOffsetToRead);\n\n    if (readaheadLength \u003c\u003d 0) {\n      return null;\n    }\n    \n    long lastOffset \u003d Long.MIN_VALUE;\n    \n    if (lastReadahead !\u003d null) {\n      lastOffset \u003d lastReadahead.getOffset();\n    }\n\n    // trigger each readahead when we have reached the halfway mark\n    // in the previous readahead. This gives the system time\n    // to satisfy the readahead before we start reading the data.\n    long nextOffset \u003d lastOffset + readaheadLength / 2; \n    if (curPos \u003e\u003d nextOffset) {\n      // cancel any currently pending readahead, to avoid\n      // piling things up in the queue. Each reader should have at most\n      // one outstanding request in the queue.\n      if (lastReadahead !\u003d null) {\n        lastReadahead.cancel();\n        lastReadahead \u003d null;\n      }\n      \n      long length \u003d Math.min(readaheadLength,\n          maxOffsetToRead - curPos);\n\n      if (length \u003c\u003d 0) {\n        // we\u0027ve reached the end of the stream\n        return null;\n      }\n      \n      return submitReadahead(identifier, fd, curPos, length);\n    } else {\n      return lastReadahead;\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/ReadaheadPool.java"
+    }
+  }
+}

@@ -1,0 +1,121 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "Storage.java",
+  "functionName": "confirmFormat",
+  "functionId": "confirmFormat___items-Iterable__? extends FormatConfirmable____force-boolean__interactive-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/Storage.java",
+  "functionStartLine": 1161,
+  "functionEndLine": 1185,
+  "numCommitsSeen": 125,
+  "timeTaken": 2817,
+  "changeHistory": [
+    "9d0f8792a9a1d3d2b24adfc2c213247a099e7ad1",
+    "086fa860c01cdbee3369c20a34eacd32c1b4e8d1",
+    "1a75ec82885e45baf4d5cd56d6c738d8e68d8bc7"
+  ],
+  "changeHistoryShort": {
+    "9d0f8792a9a1d3d2b24adfc2c213247a099e7ad1": "Ymultichange(Ymovefromfile,Ybodychange,Yparameterchange)",
+    "086fa860c01cdbee3369c20a34eacd32c1b4e8d1": "Ybodychange",
+    "1a75ec82885e45baf4d5cd56d6c738d8e68d8bc7": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9d0f8792a9a1d3d2b24adfc2c213247a099e7ad1": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange,Yparameterchange)",
+      "commitMessage": "HDFS-3695. Genericize format() to non-file JournalManagers. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1371513 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "09/08/12 3:13 PM",
+      "commitName": "9d0f8792a9a1d3d2b24adfc2c213247a099e7ad1",
+      "commitAuthor": "Todd Lipcon",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-3695. Genericize format() to non-file JournalManagers. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1371513 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "09/08/12 3:13 PM",
+          "commitName": "9d0f8792a9a1d3d2b24adfc2c213247a099e7ad1",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "09/08/12 2:58 PM",
+          "commitNameOld": "0733adf670e50c7838d68eb17dcf1a76d71217eb",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,25 @@\n-  public static boolean confirmFormat(Collection\u003cURI\u003e dirsToFormat,\n-      boolean force, boolean interactive)\n-      throws IOException {\n-    for(Iterator\u003cURI\u003e it \u003d dirsToFormat.iterator(); it.hasNext();) {\n-      URI dirUri \u003d it.next();\n-      if (!dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME)) {\n-        System.err.println(\"Skipping format for directory \\\"\" + dirUri\n-            + \"\\\". Can only format local directories with scheme \\\"\"\n-            + NNStorage.LOCAL_URI_SCHEME + \"\\\".\");\n-        continue;\n-      }\n-      // To validate only file based schemes are formatted\n-      assert dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME) :\n-        \"formatting is not supported for \" + dirUri;\n-\n-      File curDir \u003d new File(dirUri.getPath());\n-      // Its alright for a dir not to exist, or to exist (properly accessible)\n-      // and be completely empty.\n-      if (!curDir.exists() ||\n-          (curDir.isDirectory() \u0026\u0026 FileUtil.listFiles(curDir).length \u003d\u003d 0))\n+  public static boolean confirmFormat(\n+      Iterable\u003c? extends FormatConfirmable\u003e items,\n+      boolean force, boolean interactive) throws IOException {\n+    for (FormatConfirmable item : items) {\n+      if (!item.hasSomeData())\n         continue;\n       if (force) { // Don\u0027t confirm, always format.\n         System.err.println(\n-            \"Storage directory exists in \" + curDir + \". Formatting anyway.\");\n+            \"Data exists in \" + item + \". Formatting anyway.\");\n         continue;\n       }\n       if (!interactive) { // Don\u0027t ask - always don\u0027t format\n         System.err.println(\n-            \"Running in non-interactive mode, and image appears to exist in \" +\n-            curDir + \". Not formatting.\");\n+            \"Running in non-interactive mode, and data appears to exist in \" +\n+            item + \". Not formatting.\");\n         return false;\n       }\n-      if (!confirmPrompt(\"Re-format filesystem in \" + curDir + \" ?\")) {\n-        System.err.println(\"Format aborted in \" + curDir);\n+      if (!ToolRunner.confirmPrompt(\"Re-format filesystem in \" + item + \" ?\")) {\n+        System.err.println(\"Format aborted in \" + item);\n         return false;\n       }\n     }\n+    \n     return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static boolean confirmFormat(\n      Iterable\u003c? extends FormatConfirmable\u003e items,\n      boolean force, boolean interactive) throws IOException {\n    for (FormatConfirmable item : items) {\n      if (!item.hasSomeData())\n        continue;\n      if (force) { // Don\u0027t confirm, always format.\n        System.err.println(\n            \"Data exists in \" + item + \". Formatting anyway.\");\n        continue;\n      }\n      if (!interactive) { // Don\u0027t ask - always don\u0027t format\n        System.err.println(\n            \"Running in non-interactive mode, and data appears to exist in \" +\n            item + \". Not formatting.\");\n        return false;\n      }\n      if (!ToolRunner.confirmPrompt(\"Re-format filesystem in \" + item + \" ?\")) {\n        System.err.println(\"Format aborted in \" + item);\n        return false;\n      }\n    }\n    \n    return true;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/Storage.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/Storage.java",
+            "oldMethodName": "confirmFormat",
+            "newMethodName": "confirmFormat"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3695. Genericize format() to non-file JournalManagers. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1371513 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "09/08/12 3:13 PM",
+          "commitName": "9d0f8792a9a1d3d2b24adfc2c213247a099e7ad1",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "09/08/12 2:58 PM",
+          "commitNameOld": "0733adf670e50c7838d68eb17dcf1a76d71217eb",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,25 @@\n-  public static boolean confirmFormat(Collection\u003cURI\u003e dirsToFormat,\n-      boolean force, boolean interactive)\n-      throws IOException {\n-    for(Iterator\u003cURI\u003e it \u003d dirsToFormat.iterator(); it.hasNext();) {\n-      URI dirUri \u003d it.next();\n-      if (!dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME)) {\n-        System.err.println(\"Skipping format for directory \\\"\" + dirUri\n-            + \"\\\". Can only format local directories with scheme \\\"\"\n-            + NNStorage.LOCAL_URI_SCHEME + \"\\\".\");\n-        continue;\n-      }\n-      // To validate only file based schemes are formatted\n-      assert dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME) :\n-        \"formatting is not supported for \" + dirUri;\n-\n-      File curDir \u003d new File(dirUri.getPath());\n-      // Its alright for a dir not to exist, or to exist (properly accessible)\n-      // and be completely empty.\n-      if (!curDir.exists() ||\n-          (curDir.isDirectory() \u0026\u0026 FileUtil.listFiles(curDir).length \u003d\u003d 0))\n+  public static boolean confirmFormat(\n+      Iterable\u003c? extends FormatConfirmable\u003e items,\n+      boolean force, boolean interactive) throws IOException {\n+    for (FormatConfirmable item : items) {\n+      if (!item.hasSomeData())\n         continue;\n       if (force) { // Don\u0027t confirm, always format.\n         System.err.println(\n-            \"Storage directory exists in \" + curDir + \". Formatting anyway.\");\n+            \"Data exists in \" + item + \". Formatting anyway.\");\n         continue;\n       }\n       if (!interactive) { // Don\u0027t ask - always don\u0027t format\n         System.err.println(\n-            \"Running in non-interactive mode, and image appears to exist in \" +\n-            curDir + \". Not formatting.\");\n+            \"Running in non-interactive mode, and data appears to exist in \" +\n+            item + \". Not formatting.\");\n         return false;\n       }\n-      if (!confirmPrompt(\"Re-format filesystem in \" + curDir + \" ?\")) {\n-        System.err.println(\"Format aborted in \" + curDir);\n+      if (!ToolRunner.confirmPrompt(\"Re-format filesystem in \" + item + \" ?\")) {\n+        System.err.println(\"Format aborted in \" + item);\n         return false;\n       }\n     }\n+    \n     return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static boolean confirmFormat(\n      Iterable\u003c? extends FormatConfirmable\u003e items,\n      boolean force, boolean interactive) throws IOException {\n    for (FormatConfirmable item : items) {\n      if (!item.hasSomeData())\n        continue;\n      if (force) { // Don\u0027t confirm, always format.\n        System.err.println(\n            \"Data exists in \" + item + \". Formatting anyway.\");\n        continue;\n      }\n      if (!interactive) { // Don\u0027t ask - always don\u0027t format\n        System.err.println(\n            \"Running in non-interactive mode, and data appears to exist in \" +\n            item + \". Not formatting.\");\n        return false;\n      }\n      if (!ToolRunner.confirmPrompt(\"Re-format filesystem in \" + item + \" ?\")) {\n        System.err.println(\"Format aborted in \" + item);\n        return false;\n      }\n    }\n    \n    return true;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/Storage.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-3695. Genericize format() to non-file JournalManagers. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1371513 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "09/08/12 3:13 PM",
+          "commitName": "9d0f8792a9a1d3d2b24adfc2c213247a099e7ad1",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "09/08/12 2:58 PM",
+          "commitNameOld": "0733adf670e50c7838d68eb17dcf1a76d71217eb",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,25 @@\n-  public static boolean confirmFormat(Collection\u003cURI\u003e dirsToFormat,\n-      boolean force, boolean interactive)\n-      throws IOException {\n-    for(Iterator\u003cURI\u003e it \u003d dirsToFormat.iterator(); it.hasNext();) {\n-      URI dirUri \u003d it.next();\n-      if (!dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME)) {\n-        System.err.println(\"Skipping format for directory \\\"\" + dirUri\n-            + \"\\\". Can only format local directories with scheme \\\"\"\n-            + NNStorage.LOCAL_URI_SCHEME + \"\\\".\");\n-        continue;\n-      }\n-      // To validate only file based schemes are formatted\n-      assert dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME) :\n-        \"formatting is not supported for \" + dirUri;\n-\n-      File curDir \u003d new File(dirUri.getPath());\n-      // Its alright for a dir not to exist, or to exist (properly accessible)\n-      // and be completely empty.\n-      if (!curDir.exists() ||\n-          (curDir.isDirectory() \u0026\u0026 FileUtil.listFiles(curDir).length \u003d\u003d 0))\n+  public static boolean confirmFormat(\n+      Iterable\u003c? extends FormatConfirmable\u003e items,\n+      boolean force, boolean interactive) throws IOException {\n+    for (FormatConfirmable item : items) {\n+      if (!item.hasSomeData())\n         continue;\n       if (force) { // Don\u0027t confirm, always format.\n         System.err.println(\n-            \"Storage directory exists in \" + curDir + \". Formatting anyway.\");\n+            \"Data exists in \" + item + \". Formatting anyway.\");\n         continue;\n       }\n       if (!interactive) { // Don\u0027t ask - always don\u0027t format\n         System.err.println(\n-            \"Running in non-interactive mode, and image appears to exist in \" +\n-            curDir + \". Not formatting.\");\n+            \"Running in non-interactive mode, and data appears to exist in \" +\n+            item + \". Not formatting.\");\n         return false;\n       }\n-      if (!confirmPrompt(\"Re-format filesystem in \" + curDir + \" ?\")) {\n-        System.err.println(\"Format aborted in \" + curDir);\n+      if (!ToolRunner.confirmPrompt(\"Re-format filesystem in \" + item + \" ?\")) {\n+        System.err.println(\"Format aborted in \" + item);\n         return false;\n       }\n     }\n+    \n     return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static boolean confirmFormat(\n      Iterable\u003c? extends FormatConfirmable\u003e items,\n      boolean force, boolean interactive) throws IOException {\n    for (FormatConfirmable item : items) {\n      if (!item.hasSomeData())\n        continue;\n      if (force) { // Don\u0027t confirm, always format.\n        System.err.println(\n            \"Data exists in \" + item + \". Formatting anyway.\");\n        continue;\n      }\n      if (!interactive) { // Don\u0027t ask - always don\u0027t format\n        System.err.println(\n            \"Running in non-interactive mode, and data appears to exist in \" +\n            item + \". Not formatting.\");\n        return false;\n      }\n      if (!ToolRunner.confirmPrompt(\"Re-format filesystem in \" + item + \" ?\")) {\n        System.err.println(\"Format aborted in \" + item);\n        return false;\n      }\n    }\n    \n    return true;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/common/Storage.java",
+          "extendedDetails": {
+            "oldValue": "[dirsToFormat-Collection\u003cURI\u003e, force-boolean, interactive-boolean]",
+            "newValue": "[items-Iterable\u003c? extends FormatConfirmable\u003e, force-boolean, interactive-boolean]"
+          }
+        }
+      ]
+    },
+    "086fa860c01cdbee3369c20a34eacd32c1b4e8d1": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3275. Skip format for non-file based directories. Contributed by Amith D K.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1332527 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "30/04/12 10:47 PM",
+      "commitName": "086fa860c01cdbee3369c20a34eacd32c1b4e8d1",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "commitDateOld": "19/04/12 1:43 PM",
+      "commitNameOld": "49ed783a3a68726264c68cdc6c958ba9ad26c2c9",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 11.38,
+      "commitsBetweenForRepo": 52,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,39 @@\n   public static boolean confirmFormat(Collection\u003cURI\u003e dirsToFormat,\n       boolean force, boolean interactive)\n       throws IOException {\n     for(Iterator\u003cURI\u003e it \u003d dirsToFormat.iterator(); it.hasNext();) {\n-      File curDir \u003d new File(it.next().getPath());\n+      URI dirUri \u003d it.next();\n+      if (!dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME)) {\n+        System.err.println(\"Skipping format for directory \\\"\" + dirUri\n+            + \"\\\". Can only format local directories with scheme \\\"\"\n+            + NNStorage.LOCAL_URI_SCHEME + \"\\\".\");\n+        continue;\n+      }\n+      // To validate only file based schemes are formatted\n+      assert dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME) :\n+        \"formatting is not supported for \" + dirUri;\n+\n+      File curDir \u003d new File(dirUri.getPath());\n       // Its alright for a dir not to exist, or to exist (properly accessible)\n       // and be completely empty.\n       if (!curDir.exists() ||\n           (curDir.isDirectory() \u0026\u0026 FileUtil.listFiles(curDir).length \u003d\u003d 0))\n         continue;\n       if (force) { // Don\u0027t confirm, always format.\n         System.err.println(\n             \"Storage directory exists in \" + curDir + \". Formatting anyway.\");\n         continue;\n       }\n       if (!interactive) { // Don\u0027t ask - always don\u0027t format\n         System.err.println(\n             \"Running in non-interactive mode, and image appears to exist in \" +\n             curDir + \". Not formatting.\");\n         return false;\n       }\n       if (!confirmPrompt(\"Re-format filesystem in \" + curDir + \" ?\")) {\n         System.err.println(\"Format aborted in \" + curDir);\n         return false;\n       }\n     }\n     return true;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static boolean confirmFormat(Collection\u003cURI\u003e dirsToFormat,\n      boolean force, boolean interactive)\n      throws IOException {\n    for(Iterator\u003cURI\u003e it \u003d dirsToFormat.iterator(); it.hasNext();) {\n      URI dirUri \u003d it.next();\n      if (!dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME)) {\n        System.err.println(\"Skipping format for directory \\\"\" + dirUri\n            + \"\\\". Can only format local directories with scheme \\\"\"\n            + NNStorage.LOCAL_URI_SCHEME + \"\\\".\");\n        continue;\n      }\n      // To validate only file based schemes are formatted\n      assert dirUri.getScheme().equals(NNStorage.LOCAL_URI_SCHEME) :\n        \"formatting is not supported for \" + dirUri;\n\n      File curDir \u003d new File(dirUri.getPath());\n      // Its alright for a dir not to exist, or to exist (properly accessible)\n      // and be completely empty.\n      if (!curDir.exists() ||\n          (curDir.isDirectory() \u0026\u0026 FileUtil.listFiles(curDir).length \u003d\u003d 0))\n        continue;\n      if (force) { // Don\u0027t confirm, always format.\n        System.err.println(\n            \"Storage directory exists in \" + curDir + \". Formatting anyway.\");\n        continue;\n      }\n      if (!interactive) { // Don\u0027t ask - always don\u0027t format\n        System.err.println(\n            \"Running in non-interactive mode, and image appears to exist in \" +\n            curDir + \". Not formatting.\");\n        return false;\n      }\n      if (!confirmPrompt(\"Re-format filesystem in \" + curDir + \" ?\")) {\n        System.err.println(\"Format aborted in \" + curDir);\n        return false;\n      }\n    }\n    return true;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+      "extendedDetails": {}
+    },
+    "1a75ec82885e45baf4d5cd56d6c738d8e68d8bc7": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-2731. Add command to bootstrap the Standby Node\u0027s name directories from the Active NameNode. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1299807 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/03/12 12:41 PM",
+      "commitName": "1a75ec82885e45baf4d5cd56d6c738d8e68d8bc7",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,28 @@\n+  public static boolean confirmFormat(Collection\u003cURI\u003e dirsToFormat,\n+      boolean force, boolean interactive)\n+      throws IOException {\n+    for(Iterator\u003cURI\u003e it \u003d dirsToFormat.iterator(); it.hasNext();) {\n+      File curDir \u003d new File(it.next().getPath());\n+      // Its alright for a dir not to exist, or to exist (properly accessible)\n+      // and be completely empty.\n+      if (!curDir.exists() ||\n+          (curDir.isDirectory() \u0026\u0026 FileUtil.listFiles(curDir).length \u003d\u003d 0))\n+        continue;\n+      if (force) { // Don\u0027t confirm, always format.\n+        System.err.println(\n+            \"Storage directory exists in \" + curDir + \". Formatting anyway.\");\n+        continue;\n+      }\n+      if (!interactive) { // Don\u0027t ask - always don\u0027t format\n+        System.err.println(\n+            \"Running in non-interactive mode, and image appears to exist in \" +\n+            curDir + \". Not formatting.\");\n+        return false;\n+      }\n+      if (!confirmPrompt(\"Re-format filesystem in \" + curDir + \" ?\")) {\n+        System.err.println(\"Format aborted in \" + curDir);\n+        return false;\n+      }\n+    }\n+    return true;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static boolean confirmFormat(Collection\u003cURI\u003e dirsToFormat,\n      boolean force, boolean interactive)\n      throws IOException {\n    for(Iterator\u003cURI\u003e it \u003d dirsToFormat.iterator(); it.hasNext();) {\n      File curDir \u003d new File(it.next().getPath());\n      // Its alright for a dir not to exist, or to exist (properly accessible)\n      // and be completely empty.\n      if (!curDir.exists() ||\n          (curDir.isDirectory() \u0026\u0026 FileUtil.listFiles(curDir).length \u003d\u003d 0))\n        continue;\n      if (force) { // Don\u0027t confirm, always format.\n        System.err.println(\n            \"Storage directory exists in \" + curDir + \". Formatting anyway.\");\n        continue;\n      }\n      if (!interactive) { // Don\u0027t ask - always don\u0027t format\n        System.err.println(\n            \"Running in non-interactive mode, and image appears to exist in \" +\n            curDir + \". Not formatting.\");\n        return false;\n      }\n      if (!confirmPrompt(\"Re-format filesystem in \" + curDir + \" ?\")) {\n        System.err.println(\"Format aborted in \" + curDir);\n        return false;\n      }\n    }\n    return true;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java"
+    }
+  }
+}

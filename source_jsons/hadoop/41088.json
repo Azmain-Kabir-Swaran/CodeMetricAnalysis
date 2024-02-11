@@ -1,0 +1,142 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "QueuePlacementPolicy.java",
+  "functionName": "fromConfiguration",
+  "functionId": "fromConfiguration___fs-FairScheduler",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueuePlacementPolicy.java",
+  "functionStartLine": 310,
+  "functionEndLine": 342,
+  "numCommitsSeen": 18,
+  "timeTaken": 6421,
+  "changeHistory": [
+    "5257f50abb71905ef3068fd45541d00ce9e8f355",
+    "cfc97a4e88dcebb3e1098e8915e57aaff072414d",
+    "6d5f8ebed60e59d772e0dcee0b069f8db95f6ccc"
+  ],
+  "changeHistoryShort": {
+    "5257f50abb71905ef3068fd45541d00ce9e8f355": "Ymultichange(Yparameterchange,Yreturntypechange,Ymodifierchange,Ybodychange)",
+    "cfc97a4e88dcebb3e1098e8915e57aaff072414d": "Yparameterchange",
+    "6d5f8ebed60e59d772e0dcee0b069f8db95f6ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5257f50abb71905ef3068fd45541d00ce9e8f355": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange,Ymodifierchange,Ybodychange)",
+      "commitMessage": "YARN-8967. Change FairScheduler to use PlacementRule interface. Contributed by Wilfred Spiegelenburg.\n",
+      "commitDate": "25/03/19 10:47 PM",
+      "commitName": "5257f50abb71905ef3068fd45541d00ce9e8f355",
+      "commitAuthor": "yufei",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-8967. Change FairScheduler to use PlacementRule interface. Contributed by Wilfred Spiegelenburg.\n",
+          "commitDate": "25/03/19 10:47 PM",
+          "commitName": "5257f50abb71905ef3068fd45541d00ce9e8f355",
+          "commitAuthor": "yufei",
+          "commitDateOld": "21/05/14 11:13 PM",
+          "commitNameOld": "619ec833fc75e596576e35fee8437aeb1639099d",
+          "commitAuthorOld": "Karthik Kambatla",
+          "daysBetweenCommits": 1768.98,
+          "commitsBetweenForRepo": 13695,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,33 @@\n-  public static QueuePlacementPolicy fromConfiguration(Configuration conf,\n-      Map\u003cFSQueueType, Set\u003cString\u003e\u003e configuredQueues) {\n+  static void fromConfiguration(FairScheduler fs) {\n+    LOG.debug(\"Creating base placement policy from config\");\n+    Configuration conf \u003d fs.getConfig();\n+\n     boolean create \u003d conf.getBoolean(\n         FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n         FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n     boolean userAsDefaultQueue \u003d conf.getBoolean(\n         FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n         FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n-    List\u003cQueuePlacementRule\u003e rules \u003d new ArrayList\u003cQueuePlacementRule\u003e();\n-    rules.add(new QueuePlacementRule.Specified().initialize(create, null));\n+    List\u003cPlacementRule\u003e newRules \u003d new ArrayList\u003c\u003e();\n+    List\u003cBoolean\u003e newTerminalState \u003d new ArrayList\u003c\u003e();\n+    Class\u003c? extends PlacementRule\u003e clazz \u003d\n+        RULES.get(\"specified\").ruleClass;\n+    newRules.add(getPlacementRule(clazz, create));\n+    newTerminalState.add(false);\n     if (userAsDefaultQueue) {\n-      rules.add(new QueuePlacementRule.User().initialize(create, null));\n+      clazz \u003d RULES.get(\"user\").ruleClass;\n+      newRules.add(getPlacementRule(clazz, create));\n+      newTerminalState.add(create);\n     }\n     if (!userAsDefaultQueue || !create) {\n-      rules.add(new QueuePlacementRule.Default().initialize(true, null));\n+      clazz \u003d RULES.get(\"default\").ruleClass;\n+      newRules.add(getPlacementRule(clazz, true));\n+      newTerminalState.add(true);\n     }\n     try {\n-      return new QueuePlacementPolicy(rules, configuredQueues, conf);\n+      updateRuleSet(newRules, newTerminalState, fs);\n     } catch (AllocationConfigurationException ex) {\n       throw new RuntimeException(\"Should never hit exception when loading\" +\n-      \t\t\"placement policy from conf\", ex);\n+          \"placement policy from conf\", ex);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void fromConfiguration(FairScheduler fs) {\n    LOG.debug(\"Creating base placement policy from config\");\n    Configuration conf \u003d fs.getConfig();\n\n    boolean create \u003d conf.getBoolean(\n        FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n        FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n    boolean userAsDefaultQueue \u003d conf.getBoolean(\n        FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n        FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n    List\u003cPlacementRule\u003e newRules \u003d new ArrayList\u003c\u003e();\n    List\u003cBoolean\u003e newTerminalState \u003d new ArrayList\u003c\u003e();\n    Class\u003c? extends PlacementRule\u003e clazz \u003d\n        RULES.get(\"specified\").ruleClass;\n    newRules.add(getPlacementRule(clazz, create));\n    newTerminalState.add(false);\n    if (userAsDefaultQueue) {\n      clazz \u003d RULES.get(\"user\").ruleClass;\n      newRules.add(getPlacementRule(clazz, create));\n      newTerminalState.add(create);\n    }\n    if (!userAsDefaultQueue || !create) {\n      clazz \u003d RULES.get(\"default\").ruleClass;\n      newRules.add(getPlacementRule(clazz, true));\n      newTerminalState.add(true);\n    }\n    try {\n      updateRuleSet(newRules, newTerminalState, fs);\n    } catch (AllocationConfigurationException ex) {\n      throw new RuntimeException(\"Should never hit exception when loading\" +\n          \"placement policy from conf\", ex);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueuePlacementPolicy.java",
+          "extendedDetails": {
+            "oldValue": "[conf-Configuration, configuredQueues-Map\u003cFSQueueType,Set\u003cString\u003e\u003e]",
+            "newValue": "[fs-FairScheduler]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "YARN-8967. Change FairScheduler to use PlacementRule interface. Contributed by Wilfred Spiegelenburg.\n",
+          "commitDate": "25/03/19 10:47 PM",
+          "commitName": "5257f50abb71905ef3068fd45541d00ce9e8f355",
+          "commitAuthor": "yufei",
+          "commitDateOld": "21/05/14 11:13 PM",
+          "commitNameOld": "619ec833fc75e596576e35fee8437aeb1639099d",
+          "commitAuthorOld": "Karthik Kambatla",
+          "daysBetweenCommits": 1768.98,
+          "commitsBetweenForRepo": 13695,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,33 @@\n-  public static QueuePlacementPolicy fromConfiguration(Configuration conf,\n-      Map\u003cFSQueueType, Set\u003cString\u003e\u003e configuredQueues) {\n+  static void fromConfiguration(FairScheduler fs) {\n+    LOG.debug(\"Creating base placement policy from config\");\n+    Configuration conf \u003d fs.getConfig();\n+\n     boolean create \u003d conf.getBoolean(\n         FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n         FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n     boolean userAsDefaultQueue \u003d conf.getBoolean(\n         FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n         FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n-    List\u003cQueuePlacementRule\u003e rules \u003d new ArrayList\u003cQueuePlacementRule\u003e();\n-    rules.add(new QueuePlacementRule.Specified().initialize(create, null));\n+    List\u003cPlacementRule\u003e newRules \u003d new ArrayList\u003c\u003e();\n+    List\u003cBoolean\u003e newTerminalState \u003d new ArrayList\u003c\u003e();\n+    Class\u003c? extends PlacementRule\u003e clazz \u003d\n+        RULES.get(\"specified\").ruleClass;\n+    newRules.add(getPlacementRule(clazz, create));\n+    newTerminalState.add(false);\n     if (userAsDefaultQueue) {\n-      rules.add(new QueuePlacementRule.User().initialize(create, null));\n+      clazz \u003d RULES.get(\"user\").ruleClass;\n+      newRules.add(getPlacementRule(clazz, create));\n+      newTerminalState.add(create);\n     }\n     if (!userAsDefaultQueue || !create) {\n-      rules.add(new QueuePlacementRule.Default().initialize(true, null));\n+      clazz \u003d RULES.get(\"default\").ruleClass;\n+      newRules.add(getPlacementRule(clazz, true));\n+      newTerminalState.add(true);\n     }\n     try {\n-      return new QueuePlacementPolicy(rules, configuredQueues, conf);\n+      updateRuleSet(newRules, newTerminalState, fs);\n     } catch (AllocationConfigurationException ex) {\n       throw new RuntimeException(\"Should never hit exception when loading\" +\n-      \t\t\"placement policy from conf\", ex);\n+          \"placement policy from conf\", ex);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void fromConfiguration(FairScheduler fs) {\n    LOG.debug(\"Creating base placement policy from config\");\n    Configuration conf \u003d fs.getConfig();\n\n    boolean create \u003d conf.getBoolean(\n        FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n        FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n    boolean userAsDefaultQueue \u003d conf.getBoolean(\n        FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n        FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n    List\u003cPlacementRule\u003e newRules \u003d new ArrayList\u003c\u003e();\n    List\u003cBoolean\u003e newTerminalState \u003d new ArrayList\u003c\u003e();\n    Class\u003c? extends PlacementRule\u003e clazz \u003d\n        RULES.get(\"specified\").ruleClass;\n    newRules.add(getPlacementRule(clazz, create));\n    newTerminalState.add(false);\n    if (userAsDefaultQueue) {\n      clazz \u003d RULES.get(\"user\").ruleClass;\n      newRules.add(getPlacementRule(clazz, create));\n      newTerminalState.add(create);\n    }\n    if (!userAsDefaultQueue || !create) {\n      clazz \u003d RULES.get(\"default\").ruleClass;\n      newRules.add(getPlacementRule(clazz, true));\n      newTerminalState.add(true);\n    }\n    try {\n      updateRuleSet(newRules, newTerminalState, fs);\n    } catch (AllocationConfigurationException ex) {\n      throw new RuntimeException(\"Should never hit exception when loading\" +\n          \"placement policy from conf\", ex);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueuePlacementPolicy.java",
+          "extendedDetails": {
+            "oldValue": "QueuePlacementPolicy",
+            "newValue": "void"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "YARN-8967. Change FairScheduler to use PlacementRule interface. Contributed by Wilfred Spiegelenburg.\n",
+          "commitDate": "25/03/19 10:47 PM",
+          "commitName": "5257f50abb71905ef3068fd45541d00ce9e8f355",
+          "commitAuthor": "yufei",
+          "commitDateOld": "21/05/14 11:13 PM",
+          "commitNameOld": "619ec833fc75e596576e35fee8437aeb1639099d",
+          "commitAuthorOld": "Karthik Kambatla",
+          "daysBetweenCommits": 1768.98,
+          "commitsBetweenForRepo": 13695,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,33 @@\n-  public static QueuePlacementPolicy fromConfiguration(Configuration conf,\n-      Map\u003cFSQueueType, Set\u003cString\u003e\u003e configuredQueues) {\n+  static void fromConfiguration(FairScheduler fs) {\n+    LOG.debug(\"Creating base placement policy from config\");\n+    Configuration conf \u003d fs.getConfig();\n+\n     boolean create \u003d conf.getBoolean(\n         FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n         FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n     boolean userAsDefaultQueue \u003d conf.getBoolean(\n         FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n         FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n-    List\u003cQueuePlacementRule\u003e rules \u003d new ArrayList\u003cQueuePlacementRule\u003e();\n-    rules.add(new QueuePlacementRule.Specified().initialize(create, null));\n+    List\u003cPlacementRule\u003e newRules \u003d new ArrayList\u003c\u003e();\n+    List\u003cBoolean\u003e newTerminalState \u003d new ArrayList\u003c\u003e();\n+    Class\u003c? extends PlacementRule\u003e clazz \u003d\n+        RULES.get(\"specified\").ruleClass;\n+    newRules.add(getPlacementRule(clazz, create));\n+    newTerminalState.add(false);\n     if (userAsDefaultQueue) {\n-      rules.add(new QueuePlacementRule.User().initialize(create, null));\n+      clazz \u003d RULES.get(\"user\").ruleClass;\n+      newRules.add(getPlacementRule(clazz, create));\n+      newTerminalState.add(create);\n     }\n     if (!userAsDefaultQueue || !create) {\n-      rules.add(new QueuePlacementRule.Default().initialize(true, null));\n+      clazz \u003d RULES.get(\"default\").ruleClass;\n+      newRules.add(getPlacementRule(clazz, true));\n+      newTerminalState.add(true);\n     }\n     try {\n-      return new QueuePlacementPolicy(rules, configuredQueues, conf);\n+      updateRuleSet(newRules, newTerminalState, fs);\n     } catch (AllocationConfigurationException ex) {\n       throw new RuntimeException(\"Should never hit exception when loading\" +\n-      \t\t\"placement policy from conf\", ex);\n+          \"placement policy from conf\", ex);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void fromConfiguration(FairScheduler fs) {\n    LOG.debug(\"Creating base placement policy from config\");\n    Configuration conf \u003d fs.getConfig();\n\n    boolean create \u003d conf.getBoolean(\n        FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n        FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n    boolean userAsDefaultQueue \u003d conf.getBoolean(\n        FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n        FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n    List\u003cPlacementRule\u003e newRules \u003d new ArrayList\u003c\u003e();\n    List\u003cBoolean\u003e newTerminalState \u003d new ArrayList\u003c\u003e();\n    Class\u003c? extends PlacementRule\u003e clazz \u003d\n        RULES.get(\"specified\").ruleClass;\n    newRules.add(getPlacementRule(clazz, create));\n    newTerminalState.add(false);\n    if (userAsDefaultQueue) {\n      clazz \u003d RULES.get(\"user\").ruleClass;\n      newRules.add(getPlacementRule(clazz, create));\n      newTerminalState.add(create);\n    }\n    if (!userAsDefaultQueue || !create) {\n      clazz \u003d RULES.get(\"default\").ruleClass;\n      newRules.add(getPlacementRule(clazz, true));\n      newTerminalState.add(true);\n    }\n    try {\n      updateRuleSet(newRules, newTerminalState, fs);\n    } catch (AllocationConfigurationException ex) {\n      throw new RuntimeException(\"Should never hit exception when loading\" +\n          \"placement policy from conf\", ex);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueuePlacementPolicy.java",
+          "extendedDetails": {
+            "oldValue": "[public, static]",
+            "newValue": "[static]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-8967. Change FairScheduler to use PlacementRule interface. Contributed by Wilfred Spiegelenburg.\n",
+          "commitDate": "25/03/19 10:47 PM",
+          "commitName": "5257f50abb71905ef3068fd45541d00ce9e8f355",
+          "commitAuthor": "yufei",
+          "commitDateOld": "21/05/14 11:13 PM",
+          "commitNameOld": "619ec833fc75e596576e35fee8437aeb1639099d",
+          "commitAuthorOld": "Karthik Kambatla",
+          "daysBetweenCommits": 1768.98,
+          "commitsBetweenForRepo": 13695,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,33 @@\n-  public static QueuePlacementPolicy fromConfiguration(Configuration conf,\n-      Map\u003cFSQueueType, Set\u003cString\u003e\u003e configuredQueues) {\n+  static void fromConfiguration(FairScheduler fs) {\n+    LOG.debug(\"Creating base placement policy from config\");\n+    Configuration conf \u003d fs.getConfig();\n+\n     boolean create \u003d conf.getBoolean(\n         FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n         FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n     boolean userAsDefaultQueue \u003d conf.getBoolean(\n         FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n         FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n-    List\u003cQueuePlacementRule\u003e rules \u003d new ArrayList\u003cQueuePlacementRule\u003e();\n-    rules.add(new QueuePlacementRule.Specified().initialize(create, null));\n+    List\u003cPlacementRule\u003e newRules \u003d new ArrayList\u003c\u003e();\n+    List\u003cBoolean\u003e newTerminalState \u003d new ArrayList\u003c\u003e();\n+    Class\u003c? extends PlacementRule\u003e clazz \u003d\n+        RULES.get(\"specified\").ruleClass;\n+    newRules.add(getPlacementRule(clazz, create));\n+    newTerminalState.add(false);\n     if (userAsDefaultQueue) {\n-      rules.add(new QueuePlacementRule.User().initialize(create, null));\n+      clazz \u003d RULES.get(\"user\").ruleClass;\n+      newRules.add(getPlacementRule(clazz, create));\n+      newTerminalState.add(create);\n     }\n     if (!userAsDefaultQueue || !create) {\n-      rules.add(new QueuePlacementRule.Default().initialize(true, null));\n+      clazz \u003d RULES.get(\"default\").ruleClass;\n+      newRules.add(getPlacementRule(clazz, true));\n+      newTerminalState.add(true);\n     }\n     try {\n-      return new QueuePlacementPolicy(rules, configuredQueues, conf);\n+      updateRuleSet(newRules, newTerminalState, fs);\n     } catch (AllocationConfigurationException ex) {\n       throw new RuntimeException(\"Should never hit exception when loading\" +\n-      \t\t\"placement policy from conf\", ex);\n+          \"placement policy from conf\", ex);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void fromConfiguration(FairScheduler fs) {\n    LOG.debug(\"Creating base placement policy from config\");\n    Configuration conf \u003d fs.getConfig();\n\n    boolean create \u003d conf.getBoolean(\n        FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n        FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n    boolean userAsDefaultQueue \u003d conf.getBoolean(\n        FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n        FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n    List\u003cPlacementRule\u003e newRules \u003d new ArrayList\u003c\u003e();\n    List\u003cBoolean\u003e newTerminalState \u003d new ArrayList\u003c\u003e();\n    Class\u003c? extends PlacementRule\u003e clazz \u003d\n        RULES.get(\"specified\").ruleClass;\n    newRules.add(getPlacementRule(clazz, create));\n    newTerminalState.add(false);\n    if (userAsDefaultQueue) {\n      clazz \u003d RULES.get(\"user\").ruleClass;\n      newRules.add(getPlacementRule(clazz, create));\n      newTerminalState.add(create);\n    }\n    if (!userAsDefaultQueue || !create) {\n      clazz \u003d RULES.get(\"default\").ruleClass;\n      newRules.add(getPlacementRule(clazz, true));\n      newTerminalState.add(true);\n    }\n    try {\n      updateRuleSet(newRules, newTerminalState, fs);\n    } catch (AllocationConfigurationException ex) {\n      throw new RuntimeException(\"Should never hit exception when loading\" +\n          \"placement policy from conf\", ex);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueuePlacementPolicy.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cfc97a4e88dcebb3e1098e8915e57aaff072414d": {
+      "type": "Yparameterchange",
+      "commitMessage": "YARN-1864. Fair Scheduler Dynamic Hierarchical User Queues (Ashwin Shankar via Sandy Ryza)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1593190 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "08/05/14 12:21 AM",
+      "commitName": "cfc97a4e88dcebb3e1098e8915e57aaff072414d",
+      "commitAuthor": "Sanford Ryza",
+      "commitDateOld": "22/01/14 10:51 AM",
+      "commitNameOld": "1a7e1588443071e497c6fea0224a78ca8de1cf3e",
+      "commitAuthorOld": "Sanford Ryza",
+      "daysBetweenCommits": 105.52,
+      "commitsBetweenForRepo": 807,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,23 @@\n   public static QueuePlacementPolicy fromConfiguration(Configuration conf,\n-      Set\u003cString\u003e configuredQueues) {\n+      Map\u003cFSQueueType, Set\u003cString\u003e\u003e configuredQueues) {\n     boolean create \u003d conf.getBoolean(\n         FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n         FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n     boolean userAsDefaultQueue \u003d conf.getBoolean(\n         FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n         FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n     List\u003cQueuePlacementRule\u003e rules \u003d new ArrayList\u003cQueuePlacementRule\u003e();\n     rules.add(new QueuePlacementRule.Specified().initialize(create, null));\n     if (userAsDefaultQueue) {\n       rules.add(new QueuePlacementRule.User().initialize(create, null));\n     }\n     if (!userAsDefaultQueue || !create) {\n       rules.add(new QueuePlacementRule.Default().initialize(true, null));\n     }\n     try {\n       return new QueuePlacementPolicy(rules, configuredQueues, conf);\n     } catch (AllocationConfigurationException ex) {\n       throw new RuntimeException(\"Should never hit exception when loading\" +\n       \t\t\"placement policy from conf\", ex);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static QueuePlacementPolicy fromConfiguration(Configuration conf,\n      Map\u003cFSQueueType, Set\u003cString\u003e\u003e configuredQueues) {\n    boolean create \u003d conf.getBoolean(\n        FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n        FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n    boolean userAsDefaultQueue \u003d conf.getBoolean(\n        FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n        FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n    List\u003cQueuePlacementRule\u003e rules \u003d new ArrayList\u003cQueuePlacementRule\u003e();\n    rules.add(new QueuePlacementRule.Specified().initialize(create, null));\n    if (userAsDefaultQueue) {\n      rules.add(new QueuePlacementRule.User().initialize(create, null));\n    }\n    if (!userAsDefaultQueue || !create) {\n      rules.add(new QueuePlacementRule.Default().initialize(true, null));\n    }\n    try {\n      return new QueuePlacementPolicy(rules, configuredQueues, conf);\n    } catch (AllocationConfigurationException ex) {\n      throw new RuntimeException(\"Should never hit exception when loading\" +\n      \t\t\"placement policy from conf\", ex);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueuePlacementPolicy.java",
+      "extendedDetails": {
+        "oldValue": "[conf-Configuration, configuredQueues-Set\u003cString\u003e]",
+        "newValue": "[conf-Configuration, configuredQueues-Map\u003cFSQueueType,Set\u003cString\u003e\u003e]"
+      }
+    },
+    "6d5f8ebed60e59d772e0dcee0b069f8db95f6ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-1403. Separate out configuration loading from QueueManager in the Fair Scheduler (Sandy Ryza)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1548006 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/12/13 7:26 PM",
+      "commitName": "6d5f8ebed60e59d772e0dcee0b069f8db95f6ccc",
+      "commitAuthor": "Sanford Ryza",
+      "diff": "@@ -0,0 +1,23 @@\n+  public static QueuePlacementPolicy fromConfiguration(Configuration conf,\n+      Set\u003cString\u003e configuredQueues) {\n+    boolean create \u003d conf.getBoolean(\n+        FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n+        FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n+    boolean userAsDefaultQueue \u003d conf.getBoolean(\n+        FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n+        FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n+    List\u003cQueuePlacementRule\u003e rules \u003d new ArrayList\u003cQueuePlacementRule\u003e();\n+    rules.add(new QueuePlacementRule.Specified().initialize(create, null));\n+    if (userAsDefaultQueue) {\n+      rules.add(new QueuePlacementRule.User().initialize(create, null));\n+    }\n+    if (!userAsDefaultQueue || !create) {\n+      rules.add(new QueuePlacementRule.Default().initialize(true, null));\n+    }\n+    try {\n+      return new QueuePlacementPolicy(rules, configuredQueues, conf);\n+    } catch (AllocationConfigurationException ex) {\n+      throw new RuntimeException(\"Should never hit exception when loading\" +\n+      \t\t\"placement policy from conf\", ex);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static QueuePlacementPolicy fromConfiguration(Configuration conf,\n      Set\u003cString\u003e configuredQueues) {\n    boolean create \u003d conf.getBoolean(\n        FairSchedulerConfiguration.ALLOW_UNDECLARED_POOLS,\n        FairSchedulerConfiguration.DEFAULT_ALLOW_UNDECLARED_POOLS);\n    boolean userAsDefaultQueue \u003d conf.getBoolean(\n        FairSchedulerConfiguration.USER_AS_DEFAULT_QUEUE,\n        FairSchedulerConfiguration.DEFAULT_USER_AS_DEFAULT_QUEUE);\n    List\u003cQueuePlacementRule\u003e rules \u003d new ArrayList\u003cQueuePlacementRule\u003e();\n    rules.add(new QueuePlacementRule.Specified().initialize(create, null));\n    if (userAsDefaultQueue) {\n      rules.add(new QueuePlacementRule.User().initialize(create, null));\n    }\n    if (!userAsDefaultQueue || !create) {\n      rules.add(new QueuePlacementRule.Default().initialize(true, null));\n    }\n    try {\n      return new QueuePlacementPolicy(rules, configuredQueues, conf);\n    } catch (AllocationConfigurationException ex) {\n      throw new RuntimeException(\"Should never hit exception when loading\" +\n      \t\t\"placement policy from conf\", ex);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/QueuePlacementPolicy.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TrafficControlBandwidthHandlerImpl.java",
+  "functionName": "preStart",
+  "functionId": "preStart___container-Container",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/TrafficControlBandwidthHandlerImpl.java",
+  "functionStartLine": 136,
+  "functionEndLine": 173,
+  "numCommitsSeen": 7,
+  "timeTaken": 684,
+  "changeHistory": [
+    "a100be685cc4521e9949589948219231aa5d2733"
+  ],
+  "changeHistoryShort": {
+    "a100be685cc4521e9949589948219231aa5d2733": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a100be685cc4521e9949589948219231aa5d2733": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3366. Enhanced NodeManager to support classifying/shaping outgoing network bandwidth traffic originating from YARN containers Contributed by Sidharta Seethana.\n",
+      "commitDate": "22/04/15 5:26 PM",
+      "commitName": "a100be685cc4521e9949589948219231aa5d2733",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,38 @@\n+  public List\u003cPrivilegedOperation\u003e preStart(Container container)\n+      throws ResourceHandlerException {\n+    String containerIdStr \u003d container.getContainerId().toString();\n+    int classId \u003d trafficController.getNextClassId();\n+    String classIdStr \u003d trafficController.getStringForNetClsClassId(classId);\n+\n+    cGroupsHandler.createCGroup(CGroupsHandler.CGroupController\n+            .NET_CLS,\n+        containerIdStr);\n+    cGroupsHandler.updateCGroupParam(CGroupsHandler.CGroupController.NET_CLS,\n+        containerIdStr, CGroupsHandler.CGROUP_PARAM_CLASSID, classIdStr);\n+    containerIdClassIdMap.put(container.getContainerId(), classId);\n+\n+    //Now create a privileged operation in order to update the tasks file with\n+    //the pid of the running container process (root of process tree). This can\n+    //only be done at the time of launching the container, in a privileged\n+    //executable.\n+    String tasksFile \u003d cGroupsHandler.getPathForCGroupTasks(\n+        CGroupsHandler.CGroupController.NET_CLS, containerIdStr);\n+    String opArg \u003d new StringBuffer(PrivilegedOperation.CGROUP_ARG_PREFIX)\n+        .append(tasksFile).toString();\n+    List\u003cPrivilegedOperation\u003e ops \u003d new ArrayList\u003c\u003e();\n+\n+    ops.add(new PrivilegedOperation(\n+        PrivilegedOperation.OperationType.ADD_PID_TO_CGROUP, opArg));\n+\n+    //Create a privileged operation to create a tc rule for this container\n+    //We\u0027ll return this to the calling (Linux) Container Executor\n+    //implementation for batching optimizations so that we don\u0027t fork/exec\n+    //additional times during container launch.\n+    TrafficController.BatchBuilder builder \u003d trafficController.new\n+        BatchBuilder(PrivilegedOperation.OperationType.TC_MODIFY_STATE);\n+\n+    builder.addContainerClass(classId, containerBandwidthMbit, strictMode);\n+    ops.add(builder.commitBatchToTempFile());\n+\n+    return ops;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public List\u003cPrivilegedOperation\u003e preStart(Container container)\n      throws ResourceHandlerException {\n    String containerIdStr \u003d container.getContainerId().toString();\n    int classId \u003d trafficController.getNextClassId();\n    String classIdStr \u003d trafficController.getStringForNetClsClassId(classId);\n\n    cGroupsHandler.createCGroup(CGroupsHandler.CGroupController\n            .NET_CLS,\n        containerIdStr);\n    cGroupsHandler.updateCGroupParam(CGroupsHandler.CGroupController.NET_CLS,\n        containerIdStr, CGroupsHandler.CGROUP_PARAM_CLASSID, classIdStr);\n    containerIdClassIdMap.put(container.getContainerId(), classId);\n\n    //Now create a privileged operation in order to update the tasks file with\n    //the pid of the running container process (root of process tree). This can\n    //only be done at the time of launching the container, in a privileged\n    //executable.\n    String tasksFile \u003d cGroupsHandler.getPathForCGroupTasks(\n        CGroupsHandler.CGroupController.NET_CLS, containerIdStr);\n    String opArg \u003d new StringBuffer(PrivilegedOperation.CGROUP_ARG_PREFIX)\n        .append(tasksFile).toString();\n    List\u003cPrivilegedOperation\u003e ops \u003d new ArrayList\u003c\u003e();\n\n    ops.add(new PrivilegedOperation(\n        PrivilegedOperation.OperationType.ADD_PID_TO_CGROUP, opArg));\n\n    //Create a privileged operation to create a tc rule for this container\n    //We\u0027ll return this to the calling (Linux) Container Executor\n    //implementation for batching optimizations so that we don\u0027t fork/exec\n    //additional times during container launch.\n    TrafficController.BatchBuilder builder \u003d trafficController.new\n        BatchBuilder(PrivilegedOperation.OperationType.TC_MODIFY_STATE);\n\n    builder.addContainerClass(classId, containerBandwidthMbit, strictMode);\n    ops.add(builder.commitBatchToTempFile());\n\n    return ops;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/TrafficControlBandwidthHandlerImpl.java"
+    }
+  }
+}

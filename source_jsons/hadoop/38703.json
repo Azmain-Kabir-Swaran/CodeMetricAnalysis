@@ -1,0 +1,348 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FiCaSchedulerApp.java",
+  "functionName": "internalUnreserve",
+  "functionId": "internalUnreserve___node-FiCaSchedulerNode__schedulerKey-SchedulerRequestKey",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+  "functionStartLine": 708,
+  "functionEndLine": 742,
+  "numCommitsSeen": 187,
+  "timeTaken": 11119,
+  "changeHistory": [
+    "5aace38b748ba71aaadd2c4d64eba8dc1f816828",
+    "89cab1ba5f0671f8ef30dbe7432079c18362b434",
+    "586348e4cbf197188057d6b843a6701cfffdaff3",
+    "85f0efb68f9d1d9ee3466e3939c4fc2f985ccf61",
+    "eff5d9b17e0853e82968a695b498b4be37148a05",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1",
+    "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76",
+    "b9a5fd51904a074a7a33f38266378f0f6f97b531",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517"
+  ],
+  "changeHistoryShort": {
+    "5aace38b748ba71aaadd2c4d64eba8dc1f816828": "Ymultichange(Yparameterchange,Ybodychange)",
+    "89cab1ba5f0671f8ef30dbe7432079c18362b434": "Ymultichange(Yrename,Ymodifierchange,Ybodychange)",
+    "586348e4cbf197188057d6b843a6701cfffdaff3": "Ybodychange",
+    "85f0efb68f9d1d9ee3466e3939c4fc2f985ccf61": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "eff5d9b17e0853e82968a695b498b4be37148a05": "Ybodychange",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": "Yfilerename",
+    "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76": "Ymultichange(Yfilerename,Yparameterchange)",
+    "b9a5fd51904a074a7a33f38266378f0f6f97b531": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5aace38b748ba71aaadd2c4d64eba8dc1f816828": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-5392. Replace use of Priority in the Scheduling infrastructure with an opaque ShedulerRequestKey. (asuresh and subru)\n",
+      "commitDate": "26/07/16 2:54 PM",
+      "commitName": "5aace38b748ba71aaadd2c4d64eba8dc1f816828",
+      "commitAuthor": "Arun Suresh",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-5392. Replace use of Priority in the Scheduling infrastructure with an opaque ShedulerRequestKey. (asuresh and subru)\n",
+          "commitDate": "26/07/16 2:54 PM",
+          "commitName": "5aace38b748ba71aaadd2c4d64eba8dc1f816828",
+          "commitAuthor": "Arun Suresh",
+          "commitDateOld": "05/05/16 12:56 PM",
+          "commitNameOld": "bb62e0592566b2fcae7136b30972aad2d3ac55b0",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 82.08,
+          "commitsBetweenForRepo": 671,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,35 @@\n-  private boolean internalUnreserve(FiCaSchedulerNode node, Priority priority) {\n+  private boolean internalUnreserve(FiCaSchedulerNode node,\n+      SchedulerRequestKey schedulerKey) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n-      this.reservedContainers.get(priority);\n+        this.reservedContainers.get(schedulerKey);\n \n     if (reservedContainers !\u003d null) {\n-      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n+      RMContainer reservedContainer \u003d\n+          reservedContainers.remove(node.getNodeID());\n \n       // unreserve is now triggered in new scenarios (preemption)\n       // as a consequence reservedcontainer might be null, adding NP-checks\n       if (reservedContainer !\u003d null\n           \u0026\u0026 reservedContainer.getContainer() !\u003d null\n           \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n \n         if (reservedContainers.isEmpty()) {\n-          this.reservedContainers.remove(priority);\n+          this.reservedContainers.remove(schedulerKey);\n         }\n         // Reset the re-reservation count\n-        resetReReservations(priority);\n+        resetReReservations(schedulerKey);\n \n         Resource resource \u003d reservedContainer.getReservedResource();\n         this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n \n         LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n             + \" on node \" + node + \", currently has \"\n-            + reservedContainers.size() + \" at priority \" + priority\n+            + reservedContainers.size()\n+            + \" at priority \" + schedulerKey.getPriority()\n             + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n             + \" on node-label\u003d\" + node.getPartition());\n         return true;\n       }\n     }\n     return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean internalUnreserve(FiCaSchedulerNode node,\n      SchedulerRequestKey schedulerKey) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n        this.reservedContainers.get(schedulerKey);\n\n    if (reservedContainers !\u003d null) {\n      RMContainer reservedContainer \u003d\n          reservedContainers.remove(node.getNodeID());\n\n      // unreserve is now triggered in new scenarios (preemption)\n      // as a consequence reservedcontainer might be null, adding NP-checks\n      if (reservedContainer !\u003d null\n          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n\n        if (reservedContainers.isEmpty()) {\n          this.reservedContainers.remove(schedulerKey);\n        }\n        // Reset the re-reservation count\n        resetReReservations(schedulerKey);\n\n        Resource resource \u003d reservedContainer.getReservedResource();\n        this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n\n        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n            + \" on node \" + node + \", currently has \"\n            + reservedContainers.size()\n            + \" at priority \" + schedulerKey.getPriority()\n            + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n            + \" on node-label\u003d\" + node.getPartition());\n        return true;\n      }\n    }\n    return false;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+          "extendedDetails": {
+            "oldValue": "[node-FiCaSchedulerNode, priority-Priority]",
+            "newValue": "[node-FiCaSchedulerNode, schedulerKey-SchedulerRequestKey]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-5392. Replace use of Priority in the Scheduling infrastructure with an opaque ShedulerRequestKey. (asuresh and subru)\n",
+          "commitDate": "26/07/16 2:54 PM",
+          "commitName": "5aace38b748ba71aaadd2c4d64eba8dc1f816828",
+          "commitAuthor": "Arun Suresh",
+          "commitDateOld": "05/05/16 12:56 PM",
+          "commitNameOld": "bb62e0592566b2fcae7136b30972aad2d3ac55b0",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 82.08,
+          "commitsBetweenForRepo": 671,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,35 @@\n-  private boolean internalUnreserve(FiCaSchedulerNode node, Priority priority) {\n+  private boolean internalUnreserve(FiCaSchedulerNode node,\n+      SchedulerRequestKey schedulerKey) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n-      this.reservedContainers.get(priority);\n+        this.reservedContainers.get(schedulerKey);\n \n     if (reservedContainers !\u003d null) {\n-      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n+      RMContainer reservedContainer \u003d\n+          reservedContainers.remove(node.getNodeID());\n \n       // unreserve is now triggered in new scenarios (preemption)\n       // as a consequence reservedcontainer might be null, adding NP-checks\n       if (reservedContainer !\u003d null\n           \u0026\u0026 reservedContainer.getContainer() !\u003d null\n           \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n \n         if (reservedContainers.isEmpty()) {\n-          this.reservedContainers.remove(priority);\n+          this.reservedContainers.remove(schedulerKey);\n         }\n         // Reset the re-reservation count\n-        resetReReservations(priority);\n+        resetReReservations(schedulerKey);\n \n         Resource resource \u003d reservedContainer.getReservedResource();\n         this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n \n         LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n             + \" on node \" + node + \", currently has \"\n-            + reservedContainers.size() + \" at priority \" + priority\n+            + reservedContainers.size()\n+            + \" at priority \" + schedulerKey.getPriority()\n             + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n             + \" on node-label\u003d\" + node.getPartition());\n         return true;\n       }\n     }\n     return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean internalUnreserve(FiCaSchedulerNode node,\n      SchedulerRequestKey schedulerKey) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n        this.reservedContainers.get(schedulerKey);\n\n    if (reservedContainers !\u003d null) {\n      RMContainer reservedContainer \u003d\n          reservedContainers.remove(node.getNodeID());\n\n      // unreserve is now triggered in new scenarios (preemption)\n      // as a consequence reservedcontainer might be null, adding NP-checks\n      if (reservedContainer !\u003d null\n          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n\n        if (reservedContainers.isEmpty()) {\n          this.reservedContainers.remove(schedulerKey);\n        }\n        // Reset the re-reservation count\n        resetReReservations(schedulerKey);\n\n        Resource resource \u003d reservedContainer.getReservedResource();\n        this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n\n        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n            + \" on node \" + node + \", currently has \"\n            + reservedContainers.size()\n            + \" at priority \" + schedulerKey.getPriority()\n            + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n            + \" on node-label\u003d\" + node.getPartition());\n        return true;\n      }\n    }\n    return false;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "89cab1ba5f0671f8ef30dbe7432079c18362b434": {
+      "type": "Ymultichange(Yrename,Ymodifierchange,Ybodychange)",
+      "commitMessage": "YARN-1651. CapacityScheduler side changes to support container resize. Contributed by Wangda Tan\n",
+      "commitDate": "23/09/15 1:29 PM",
+      "commitName": "89cab1ba5f0671f8ef30dbe7432079c18362b434",
+      "commitAuthor": "Jian He",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "YARN-1651. CapacityScheduler side changes to support container resize. Contributed by Wangda Tan\n",
+          "commitDate": "23/09/15 1:29 PM",
+          "commitName": "89cab1ba5f0671f8ef30dbe7432079c18362b434",
+          "commitAuthor": "Jian He",
+          "commitDateOld": "01/09/15 1:49 AM",
+          "commitNameOld": "bf669b6d9f8ba165e30b8823218d625a49958925",
+          "commitAuthorOld": "Varun Vasudev",
+          "daysBetweenCommits": 22.49,
+          "commitsBetweenForRepo": 147,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,32 @@\n-  public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {\n+  private boolean internalUnreserve(FiCaSchedulerNode node, Priority priority) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n       this.reservedContainers.get(priority);\n \n     if (reservedContainers !\u003d null) {\n       RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n \n       // unreserve is now triggered in new scenarios (preemption)\n       // as a consequence reservedcontainer might be null, adding NP-checks\n       if (reservedContainer !\u003d null\n           \u0026\u0026 reservedContainer.getContainer() !\u003d null\n           \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n \n         if (reservedContainers.isEmpty()) {\n           this.reservedContainers.remove(priority);\n         }\n         // Reset the re-reservation count\n         resetReReservations(priority);\n \n-        Resource resource \u003d reservedContainer.getContainer().getResource();\n+        Resource resource \u003d reservedContainer.getReservedResource();\n         this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n \n         LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n             + \" on node \" + node + \", currently has \"\n             + reservedContainers.size() + \" at priority \" + priority\n             + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n             + \" on node-label\u003d\" + node.getPartition());\n         return true;\n       }\n     }\n     return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean internalUnreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n      this.reservedContainers.get(priority);\n\n    if (reservedContainers !\u003d null) {\n      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n\n      // unreserve is now triggered in new scenarios (preemption)\n      // as a consequence reservedcontainer might be null, adding NP-checks\n      if (reservedContainer !\u003d null\n          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n\n        if (reservedContainers.isEmpty()) {\n          this.reservedContainers.remove(priority);\n        }\n        // Reset the re-reservation count\n        resetReReservations(priority);\n\n        Resource resource \u003d reservedContainer.getReservedResource();\n        this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n\n        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n            + \" on node \" + node + \", currently has \"\n            + reservedContainers.size() + \" at priority \" + priority\n            + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n            + \" on node-label\u003d\" + node.getPartition());\n        return true;\n      }\n    }\n    return false;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+          "extendedDetails": {
+            "oldValue": "unreserve",
+            "newValue": "internalUnreserve"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "YARN-1651. CapacityScheduler side changes to support container resize. Contributed by Wangda Tan\n",
+          "commitDate": "23/09/15 1:29 PM",
+          "commitName": "89cab1ba5f0671f8ef30dbe7432079c18362b434",
+          "commitAuthor": "Jian He",
+          "commitDateOld": "01/09/15 1:49 AM",
+          "commitNameOld": "bf669b6d9f8ba165e30b8823218d625a49958925",
+          "commitAuthorOld": "Varun Vasudev",
+          "daysBetweenCommits": 22.49,
+          "commitsBetweenForRepo": 147,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,32 @@\n-  public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {\n+  private boolean internalUnreserve(FiCaSchedulerNode node, Priority priority) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n       this.reservedContainers.get(priority);\n \n     if (reservedContainers !\u003d null) {\n       RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n \n       // unreserve is now triggered in new scenarios (preemption)\n       // as a consequence reservedcontainer might be null, adding NP-checks\n       if (reservedContainer !\u003d null\n           \u0026\u0026 reservedContainer.getContainer() !\u003d null\n           \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n \n         if (reservedContainers.isEmpty()) {\n           this.reservedContainers.remove(priority);\n         }\n         // Reset the re-reservation count\n         resetReReservations(priority);\n \n-        Resource resource \u003d reservedContainer.getContainer().getResource();\n+        Resource resource \u003d reservedContainer.getReservedResource();\n         this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n \n         LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n             + \" on node \" + node + \", currently has \"\n             + reservedContainers.size() + \" at priority \" + priority\n             + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n             + \" on node-label\u003d\" + node.getPartition());\n         return true;\n       }\n     }\n     return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean internalUnreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n      this.reservedContainers.get(priority);\n\n    if (reservedContainers !\u003d null) {\n      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n\n      // unreserve is now triggered in new scenarios (preemption)\n      // as a consequence reservedcontainer might be null, adding NP-checks\n      if (reservedContainer !\u003d null\n          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n\n        if (reservedContainers.isEmpty()) {\n          this.reservedContainers.remove(priority);\n        }\n        // Reset the re-reservation count\n        resetReReservations(priority);\n\n        Resource resource \u003d reservedContainer.getReservedResource();\n        this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n\n        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n            + \" on node \" + node + \", currently has \"\n            + reservedContainers.size() + \" at priority \" + priority\n            + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n            + \" on node-label\u003d\" + node.getPartition());\n        return true;\n      }\n    }\n    return false;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+          "extendedDetails": {
+            "oldValue": "[public, synchronized]",
+            "newValue": "[private]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-1651. CapacityScheduler side changes to support container resize. Contributed by Wangda Tan\n",
+          "commitDate": "23/09/15 1:29 PM",
+          "commitName": "89cab1ba5f0671f8ef30dbe7432079c18362b434",
+          "commitAuthor": "Jian He",
+          "commitDateOld": "01/09/15 1:49 AM",
+          "commitNameOld": "bf669b6d9f8ba165e30b8823218d625a49958925",
+          "commitAuthorOld": "Varun Vasudev",
+          "daysBetweenCommits": 22.49,
+          "commitsBetweenForRepo": 147,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,32 @@\n-  public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {\n+  private boolean internalUnreserve(FiCaSchedulerNode node, Priority priority) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n       this.reservedContainers.get(priority);\n \n     if (reservedContainers !\u003d null) {\n       RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n \n       // unreserve is now triggered in new scenarios (preemption)\n       // as a consequence reservedcontainer might be null, adding NP-checks\n       if (reservedContainer !\u003d null\n           \u0026\u0026 reservedContainer.getContainer() !\u003d null\n           \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n \n         if (reservedContainers.isEmpty()) {\n           this.reservedContainers.remove(priority);\n         }\n         // Reset the re-reservation count\n         resetReReservations(priority);\n \n-        Resource resource \u003d reservedContainer.getContainer().getResource();\n+        Resource resource \u003d reservedContainer.getReservedResource();\n         this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n \n         LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n             + \" on node \" + node + \", currently has \"\n             + reservedContainers.size() + \" at priority \" + priority\n             + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n             + \" on node-label\u003d\" + node.getPartition());\n         return true;\n       }\n     }\n     return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean internalUnreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n      this.reservedContainers.get(priority);\n\n    if (reservedContainers !\u003d null) {\n      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n\n      // unreserve is now triggered in new scenarios (preemption)\n      // as a consequence reservedcontainer might be null, adding NP-checks\n      if (reservedContainer !\u003d null\n          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n\n        if (reservedContainers.isEmpty()) {\n          this.reservedContainers.remove(priority);\n        }\n        // Reset the re-reservation count\n        resetReReservations(priority);\n\n        Resource resource \u003d reservedContainer.getReservedResource();\n        this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n\n        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n            + \" on node \" + node + \", currently has \"\n            + reservedContainers.size() + \" at priority \" + priority\n            + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n            + \" on node-label\u003d\" + node.getPartition());\n        return true;\n      }\n    }\n    return false;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "586348e4cbf197188057d6b843a6701cfffdaff3": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3356. Capacity Scheduler FiCaSchedulerApp should use ResourceUsage to track used-resources-by-label. Contributed by Wangda Tan\n",
+      "commitDate": "20/03/15 1:54 PM",
+      "commitName": "586348e4cbf197188057d6b843a6701cfffdaff3",
+      "commitAuthor": "Jian He",
+      "commitDateOld": "17/03/15 9:30 PM",
+      "commitNameOld": "658097d6da1b1aac8e01db459f0c3b456e99652f",
+      "commitAuthorOld": "Jian He",
+      "daysBetweenCommits": 2.68,
+      "commitsBetweenForRepo": 42,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,32 @@\n   public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n       this.reservedContainers.get(priority);\n \n     if (reservedContainers !\u003d null) {\n       RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n \n       // unreserve is now triggered in new scenarios (preemption)\n       // as a consequence reservedcontainer might be null, adding NP-checks\n       if (reservedContainer !\u003d null\n           \u0026\u0026 reservedContainer.getContainer() !\u003d null\n           \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n \n         if (reservedContainers.isEmpty()) {\n           this.reservedContainers.remove(priority);\n         }\n         // Reset the re-reservation count\n         resetReReservations(priority);\n \n         Resource resource \u003d reservedContainer.getContainer().getResource();\n-        Resources.subtractFrom(currentReservation, resource);\n+        this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n \n         LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n-            + \" on node \" + node + \", currently has \" + reservedContainers.size()\n-            + \" at priority \" + priority + \"; currentReservation \"\n-            + currentReservation);\n+            + \" on node \" + node + \", currently has \"\n+            + reservedContainers.size() + \" at priority \" + priority\n+            + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n+            + \" on node-label\u003d\" + node.getPartition());\n         return true;\n       }\n     }\n     return false;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n      this.reservedContainers.get(priority);\n\n    if (reservedContainers !\u003d null) {\n      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n\n      // unreserve is now triggered in new scenarios (preemption)\n      // as a consequence reservedcontainer might be null, adding NP-checks\n      if (reservedContainer !\u003d null\n          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n\n        if (reservedContainers.isEmpty()) {\n          this.reservedContainers.remove(priority);\n        }\n        // Reset the re-reservation count\n        resetReReservations(priority);\n\n        Resource resource \u003d reservedContainer.getContainer().getResource();\n        this.attemptResourceUsage.decReserved(node.getPartition(), resource);\n\n        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n            + \" on node \" + node + \", currently has \"\n            + reservedContainers.size() + \" at priority \" + priority\n            + \"; currentReservation \" + this.attemptResourceUsage.getReserved()\n            + \" on node-label\u003d\" + node.getPartition());\n        return true;\n      }\n    }\n    return false;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+      "extendedDetails": {}
+    },
+    "85f0efb68f9d1d9ee3466e3939c4fc2f985ccf61": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "YARN-569. Add support for requesting and enforcing preemption requests via\na capacity monitor. Contributed by Carlo Curino, Chris Douglas\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1502083 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/07/13 6:20 PM",
+      "commitName": "85f0efb68f9d1d9ee3466e3939c4fc2f985ccf61",
+      "commitAuthor": "Christopher Douglas",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "YARN-569. Add support for requesting and enforcing preemption requests via\na capacity monitor. Contributed by Carlo Curino, Chris Douglas\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1502083 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "10/07/13 6:20 PM",
+          "commitName": "85f0efb68f9d1d9ee3466e3939c4fc2f985ccf61",
+          "commitAuthor": "Christopher Douglas",
+          "commitDateOld": "04/07/13 4:31 PM",
+          "commitNameOld": "eff5d9b17e0853e82968a695b498b4be37148a05",
+          "commitAuthorOld": "Bikas Saha",
+          "daysBetweenCommits": 6.08,
+          "commitsBetweenForRepo": 25,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,31 @@\n-  public synchronized void unreserve(FiCaSchedulerNode node, Priority priority) {\n-    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n-        this.reservedContainers.get(priority);\n-    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n-    if (reservedContainers.isEmpty()) {\n-      this.reservedContainers.remove(priority);\n-    }\n-    \n-    // reservedContainer should not be null here\n-    if (reservedContainer \u003d\u003d null) {\n-      String errorMesssage \u003d\n-          \"Application \" + getApplicationId() + \" is trying to unreserve \"\n-              + \" on node \" + node + \", currently has \"\n-              + reservedContainers.size() + \" at priority \" + priority\n-              + \"; currentReservation \" + currentReservation;\n-      LOG.warn(errorMesssage);\n-      throw new YarnRuntimeException(errorMesssage);\n-    }\n-    // Reset the re-reservation count\n-    resetReReservations(priority);\n+  public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {\n+    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n+      this.reservedContainers.get(priority);\n \n-    Resource resource \u003d reservedContainer.getContainer().getResource();\n-    Resources.subtractFrom(currentReservation, resource);\n+    if (reservedContainers !\u003d null) {\n+      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n \n-    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n-        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n-        + priority + \"; currentReservation \" + currentReservation);\n+      // unreserve is now triggered in new scenarios (preemption)\n+      // as a consequence reservedcontainer might be null, adding NP-checks\n+      if (reservedContainer !\u003d null\n+          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n+          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n+\n+        if (reservedContainers.isEmpty()) {\n+          this.reservedContainers.remove(priority);\n+        }\n+        // Reset the re-reservation count\n+        resetReReservations(priority);\n+\n+        Resource resource \u003d reservedContainer.getContainer().getResource();\n+        Resources.subtractFrom(currentReservation, resource);\n+\n+        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n+            + \" on node \" + node + \", currently has \" + reservedContainers.size()\n+            + \" at priority \" + priority + \"; currentReservation \"\n+            + currentReservation);\n+        return true;\n+      }\n+    }\n+    return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n      this.reservedContainers.get(priority);\n\n    if (reservedContainers !\u003d null) {\n      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n\n      // unreserve is now triggered in new scenarios (preemption)\n      // as a consequence reservedcontainer might be null, adding NP-checks\n      if (reservedContainer !\u003d null\n          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n\n        if (reservedContainers.isEmpty()) {\n          this.reservedContainers.remove(priority);\n        }\n        // Reset the re-reservation count\n        resetReReservations(priority);\n\n        Resource resource \u003d reservedContainer.getContainer().getResource();\n        Resources.subtractFrom(currentReservation, resource);\n\n        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n            + \" on node \" + node + \", currently has \" + reservedContainers.size()\n            + \" at priority \" + priority + \"; currentReservation \"\n            + currentReservation);\n        return true;\n      }\n    }\n    return false;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "boolean"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-569. Add support for requesting and enforcing preemption requests via\na capacity monitor. Contributed by Carlo Curino, Chris Douglas\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1502083 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "10/07/13 6:20 PM",
+          "commitName": "85f0efb68f9d1d9ee3466e3939c4fc2f985ccf61",
+          "commitAuthor": "Christopher Douglas",
+          "commitDateOld": "04/07/13 4:31 PM",
+          "commitNameOld": "eff5d9b17e0853e82968a695b498b4be37148a05",
+          "commitAuthorOld": "Bikas Saha",
+          "daysBetweenCommits": 6.08,
+          "commitsBetweenForRepo": 25,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,31 @@\n-  public synchronized void unreserve(FiCaSchedulerNode node, Priority priority) {\n-    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n-        this.reservedContainers.get(priority);\n-    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n-    if (reservedContainers.isEmpty()) {\n-      this.reservedContainers.remove(priority);\n-    }\n-    \n-    // reservedContainer should not be null here\n-    if (reservedContainer \u003d\u003d null) {\n-      String errorMesssage \u003d\n-          \"Application \" + getApplicationId() + \" is trying to unreserve \"\n-              + \" on node \" + node + \", currently has \"\n-              + reservedContainers.size() + \" at priority \" + priority\n-              + \"; currentReservation \" + currentReservation;\n-      LOG.warn(errorMesssage);\n-      throw new YarnRuntimeException(errorMesssage);\n-    }\n-    // Reset the re-reservation count\n-    resetReReservations(priority);\n+  public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {\n+    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n+      this.reservedContainers.get(priority);\n \n-    Resource resource \u003d reservedContainer.getContainer().getResource();\n-    Resources.subtractFrom(currentReservation, resource);\n+    if (reservedContainers !\u003d null) {\n+      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n \n-    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n-        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n-        + priority + \"; currentReservation \" + currentReservation);\n+      // unreserve is now triggered in new scenarios (preemption)\n+      // as a consequence reservedcontainer might be null, adding NP-checks\n+      if (reservedContainer !\u003d null\n+          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n+          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n+\n+        if (reservedContainers.isEmpty()) {\n+          this.reservedContainers.remove(priority);\n+        }\n+        // Reset the re-reservation count\n+        resetReReservations(priority);\n+\n+        Resource resource \u003d reservedContainer.getContainer().getResource();\n+        Resources.subtractFrom(currentReservation, resource);\n+\n+        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n+            + \" on node \" + node + \", currently has \" + reservedContainers.size()\n+            + \" at priority \" + priority + \"; currentReservation \"\n+            + currentReservation);\n+        return true;\n+      }\n+    }\n+    return false;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized boolean unreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d\n      this.reservedContainers.get(priority);\n\n    if (reservedContainers !\u003d null) {\n      RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n\n      // unreserve is now triggered in new scenarios (preemption)\n      // as a consequence reservedcontainer might be null, adding NP-checks\n      if (reservedContainer !\u003d null\n          \u0026\u0026 reservedContainer.getContainer() !\u003d null\n          \u0026\u0026 reservedContainer.getContainer().getResource() !\u003d null) {\n\n        if (reservedContainers.isEmpty()) {\n          this.reservedContainers.remove(priority);\n        }\n        // Reset the re-reservation count\n        resetReReservations(priority);\n\n        Resource resource \u003d reservedContainer.getContainer().getResource();\n        Resources.subtractFrom(currentReservation, resource);\n\n        LOG.info(\"Application \" + getApplicationId() + \" unreserved \"\n            + \" on node \" + node + \", currently has \" + reservedContainers.size()\n            + \" at priority \" + priority + \"; currentReservation \"\n            + currentReservation);\n        return true;\n      }\n    }\n    return false;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "eff5d9b17e0853e82968a695b498b4be37148a05": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-845. RM crash with NPE on NODE_UPDATE (Mayank Bansal via bikas)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1499886 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/07/13 4:31 PM",
+      "commitName": "eff5d9b17e0853e82968a695b498b4be37148a05",
+      "commitAuthor": "Bikas Saha",
+      "commitDateOld": "21/06/13 11:28 AM",
+      "commitNameOld": "37d7935a9d7b86635c9c1ffc03f88b49857f88a0",
+      "commitAuthorOld": "Bikas Saha",
+      "daysBetweenCommits": 13.21,
+      "commitsBetweenForRepo": 47,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,28 @@\n   public synchronized void unreserve(FiCaSchedulerNode node, Priority priority) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n         this.reservedContainers.get(priority);\n     RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n     if (reservedContainers.isEmpty()) {\n       this.reservedContainers.remove(priority);\n     }\n     \n+    // reservedContainer should not be null here\n+    if (reservedContainer \u003d\u003d null) {\n+      String errorMesssage \u003d\n+          \"Application \" + getApplicationId() + \" is trying to unreserve \"\n+              + \" on node \" + node + \", currently has \"\n+              + reservedContainers.size() + \" at priority \" + priority\n+              + \"; currentReservation \" + currentReservation;\n+      LOG.warn(errorMesssage);\n+      throw new YarnRuntimeException(errorMesssage);\n+    }\n     // Reset the re-reservation count\n     resetReReservations(priority);\n \n     Resource resource \u003d reservedContainer.getContainer().getResource();\n     Resources.subtractFrom(currentReservation, resource);\n \n     LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n         + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n         + priority + \"; currentReservation \" + currentReservation);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void unreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n        this.reservedContainers.get(priority);\n    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n    if (reservedContainers.isEmpty()) {\n      this.reservedContainers.remove(priority);\n    }\n    \n    // reservedContainer should not be null here\n    if (reservedContainer \u003d\u003d null) {\n      String errorMesssage \u003d\n          \"Application \" + getApplicationId() + \" is trying to unreserve \"\n              + \" on node \" + node + \", currently has \"\n              + reservedContainers.size() + \" at priority \" + priority\n              + \"; currentReservation \" + currentReservation;\n      LOG.warn(errorMesssage);\n      throw new YarnRuntimeException(errorMesssage);\n    }\n    // Reset the re-reservation count\n    resetReReservations(priority);\n\n    Resource resource \u003d reservedContainer.getContainer().getResource();\n    Resources.subtractFrom(currentReservation, resource);\n\n    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n        + priority + \"; currentReservation \" + currentReservation);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+      "extendedDetails": {}
+    },
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-1. Promote YARN to be a sub-project of Apache Hadoop.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1370666 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/12 10:22 PM",
+      "commitName": "e1fdf62123625e4ba399af02f8aad500637d29d1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "07/08/12 7:53 PM",
+      "commitNameOld": "34554d1e11ee1d5b564d7d9ed3e6d55931d72749",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 0.1,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public synchronized void unreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n        this.reservedContainers.get(priority);\n    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n    if (reservedContainers.isEmpty()) {\n      this.reservedContainers.remove(priority);\n    }\n    \n    // Reset the re-reservation count\n    resetReReservations(priority);\n\n    Resource resource \u003d reservedContainer.getContainer().getResource();\n    Resources.subtractFrom(currentReservation, resource);\n\n    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n        + priority + \"; currentReservation \" + currentReservation);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java"
+      }
+    },
+    "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76": {
+      "type": "Ymultichange(Yfilerename,Yparameterchange)",
+      "commitMessage": "MAPREDUCE-4440. Changed SchedulerApp and SchedulerNode to be a minimal interface to allow schedulers to maintain their own.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1362332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/07/12 6:43 PM",
+      "commitName": "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76",
+      "commitAuthor": "Arun Murthy",
+      "subchanges": [
+        {
+          "type": "Yfilerename",
+          "commitMessage": "MAPREDUCE-4440. Changed SchedulerApp and SchedulerNode to be a minimal interface to allow schedulers to maintain their own.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1362332 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "16/07/12 6:43 PM",
+          "commitName": "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76",
+          "commitAuthor": "Arun Murthy",
+          "commitDateOld": "16/07/12 3:41 PM",
+          "commitNameOld": "30099efb3525265f8b9fccd2709d45327f5b6724",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 0.13,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,18 @@\n-  public synchronized void unreserve(SchedulerNode node, Priority priority) {\n+  public synchronized void unreserve(FiCaSchedulerNode node, Priority priority) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n         this.reservedContainers.get(priority);\n     RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n     if (reservedContainers.isEmpty()) {\n       this.reservedContainers.remove(priority);\n     }\n     \n     // Reset the re-reservation count\n     resetReReservations(priority);\n \n     Resource resource \u003d reservedContainer.getContainer().getResource();\n     Resources.subtractFrom(currentReservation, resource);\n \n     LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n         + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n         + priority + \"; currentReservation \" + currentReservation);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void unreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n        this.reservedContainers.get(priority);\n    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n    if (reservedContainers.isEmpty()) {\n      this.reservedContainers.remove(priority);\n    }\n    \n    // Reset the re-reservation count\n    resetReReservations(priority);\n\n    Resource resource \u003d reservedContainer.getContainer().getResource();\n    Resources.subtractFrom(currentReservation, resource);\n\n    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n        + priority + \"; currentReservation \" + currentReservation);\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApp.java",
+            "newPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "MAPREDUCE-4440. Changed SchedulerApp and SchedulerNode to be a minimal interface to allow schedulers to maintain their own.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1362332 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "16/07/12 6:43 PM",
+          "commitName": "7f2b1eadc1b0807ec1302a0c3488bf6e7a59bc76",
+          "commitAuthor": "Arun Murthy",
+          "commitDateOld": "16/07/12 3:41 PM",
+          "commitNameOld": "30099efb3525265f8b9fccd2709d45327f5b6724",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 0.13,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,18 @@\n-  public synchronized void unreserve(SchedulerNode node, Priority priority) {\n+  public synchronized void unreserve(FiCaSchedulerNode node, Priority priority) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n         this.reservedContainers.get(priority);\n     RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n     if (reservedContainers.isEmpty()) {\n       this.reservedContainers.remove(priority);\n     }\n     \n     // Reset the re-reservation count\n     resetReReservations(priority);\n \n     Resource resource \u003d reservedContainer.getContainer().getResource();\n     Resources.subtractFrom(currentReservation, resource);\n \n     LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n         + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n         + priority + \"; currentReservation \" + currentReservation);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void unreserve(FiCaSchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n        this.reservedContainers.get(priority);\n    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n    if (reservedContainers.isEmpty()) {\n      this.reservedContainers.remove(priority);\n    }\n    \n    // Reset the re-reservation count\n    resetReReservations(priority);\n\n    Resource resource \u003d reservedContainer.getContainer().getResource();\n    Resources.subtractFrom(currentReservation, resource);\n\n    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n        + priority + \"; currentReservation \" + currentReservation);\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/common/fica/FiCaSchedulerApp.java",
+          "extendedDetails": {
+            "oldValue": "[node-SchedulerNode, priority-Priority]",
+            "newValue": "[node-FiCaSchedulerNode, priority-Priority]"
+          }
+        }
+      ]
+    },
+    "b9a5fd51904a074a7a33f38266378f0f6f97b531": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-2917. Fixed corner case in container reservation which led to starvation and hung jobs. \n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1163768 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "31/08/11 12:52 PM",
+      "commitName": "b9a5fd51904a074a7a33f38266378f0f6f97b531",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "29/08/11 4:27 PM",
+      "commitNameOld": "fb6ecb9b27798a923ca290ba5d23368e3a820a6c",
+      "commitAuthorOld": "Mahadev Konar",
+      "daysBetweenCommits": 1.85,
+      "commitsBetweenForRepo": 9,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,18 @@\n   public synchronized void unreserve(SchedulerNode node, Priority priority) {\n     Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n         this.reservedContainers.get(priority);\n     RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n     if (reservedContainers.isEmpty()) {\n       this.reservedContainers.remove(priority);\n     }\n     \n+    // Reset the re-reservation count\n+    resetReReservations(priority);\n+\n     Resource resource \u003d reservedContainer.getContainer().getResource();\n     Resources.subtractFrom(currentReservation, resource);\n \n     LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n         + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n         + priority + \"; currentReservation \" + currentReservation);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void unreserve(SchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n        this.reservedContainers.get(priority);\n    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n    if (reservedContainers.isEmpty()) {\n      this.reservedContainers.remove(priority);\n    }\n    \n    // Reset the re-reservation count\n    resetReReservations(priority);\n\n    Resource resource \u003d reservedContainer.getContainer().getResource();\n    Resources.subtractFrom(currentReservation, resource);\n\n    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n        + priority + \"; currentReservation \" + currentReservation);\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApp.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public synchronized void unreserve(SchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n        this.reservedContainers.get(priority);\n    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n    if (reservedContainers.isEmpty()) {\n      this.reservedContainers.remove(priority);\n    }\n    \n    Resource resource \u003d reservedContainer.getContainer().getResource();\n    Resources.subtractFrom(currentReservation, resource);\n\n    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n        + priority + \"; currentReservation \" + currentReservation);\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApp.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApp.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApp.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,15 @@\n+  public synchronized void unreserve(SchedulerNode node, Priority priority) {\n+    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n+        this.reservedContainers.get(priority);\n+    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n+    if (reservedContainers.isEmpty()) {\n+      this.reservedContainers.remove(priority);\n+    }\n+    \n+    Resource resource \u003d reservedContainer.getContainer().getResource();\n+    Resources.subtractFrom(currentReservation, resource);\n+\n+    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n+        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n+        + priority + \"; currentReservation \" + currentReservation);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void unreserve(SchedulerNode node, Priority priority) {\n    Map\u003cNodeId, RMContainer\u003e reservedContainers \u003d \n        this.reservedContainers.get(priority);\n    RMContainer reservedContainer \u003d reservedContainers.remove(node.getNodeID());\n    if (reservedContainers.isEmpty()) {\n      this.reservedContainers.remove(priority);\n    }\n    \n    Resource resource \u003d reservedContainer.getContainer().getResource();\n    Resources.subtractFrom(currentReservation, resource);\n\n    LOG.info(\"Application \" + getApplicationId() + \" unreserved \" + \" on node \"\n        + node + \", currently has \" + reservedContainers.size() + \" at priority \"\n        + priority + \"; currentReservation \" + currentReservation);\n  }",
+      "path": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/SchedulerApp.java"
+    }
+  }
+}

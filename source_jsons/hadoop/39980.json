@@ -1,0 +1,321 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CapacitySchedulerQueueManager.java",
+  "functionName": "updateQueues",
+  "functionId": "updateQueues___existingQueues-CSQueueStore__newQueues-CSQueueStore",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+  "functionStartLine": 310,
+  "functionEndLine": 328,
+  "numCommitsSeen": 202,
+  "timeTaken": 13667,
+  "changeHistory": [
+    "cdb2107066a2d8557270888c0a9a75f29a6853bf",
+    "b38643c9a8dd2c53024ae830b9565a550d0ec39c",
+    "0987a7b8cbbbb2c1e4c2095821d98a7db19644df",
+    "0a3aa40fe7878c939dbf4e6b43466595159ff930",
+    "72054a817dfb43e93916d7036eba19cf2f49cea2",
+    "69fb70c31aa277f7fb14b05c0185ddc5cd90793d",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1",
+    "1f46b991da9b91585608a0babd3eda39485dce09",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517"
+  ],
+  "changeHistoryShort": {
+    "cdb2107066a2d8557270888c0a9a75f29a6853bf": "Ymultichange(Yparameterchange,Ybodychange)",
+    "b38643c9a8dd2c53024ae830b9565a550d0ec39c": "Ybodychange",
+    "0987a7b8cbbbb2c1e4c2095821d98a7db19644df": "Ybodychange",
+    "0a3aa40fe7878c939dbf4e6b43466595159ff930": "Ybodychange",
+    "72054a817dfb43e93916d7036eba19cf2f49cea2": "Ymultichange(Yrename,Yparameterchange,Ybodychange)",
+    "69fb70c31aa277f7fb14b05c0185ddc5cd90793d": "Ymovefromfile",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": "Yfilerename",
+    "1f46b991da9b91585608a0babd3eda39485dce09": "Ymultichange(Yparameterchange,Ybodychange)",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "cdb2107066a2d8557270888c0a9a75f29a6853bf": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-9879. Allow multiple leaf queues with the same name in CapacityScheduler. Contributed by Gergely Pollak.\n",
+      "commitDate": "25/03/20 4:20 AM",
+      "commitName": "cdb2107066a2d8557270888c0a9a75f29a6853bf",
+      "commitAuthor": "Sunil G",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-9879. Allow multiple leaf queues with the same name in CapacityScheduler. Contributed by Gergely Pollak.\n",
+          "commitDate": "25/03/20 4:20 AM",
+          "commitName": "cdb2107066a2d8557270888c0a9a75f29a6853bf",
+          "commitAuthor": "Sunil G",
+          "commitDateOld": "28/01/20 9:46 AM",
+          "commitNameOld": "1ab9c692fa9107f10c0d8fbfbb9e74f54bddc960",
+          "commitAuthorOld": "Prabhu Joseph",
+          "daysBetweenCommits": 56.73,
+          "commitsBetweenForRepo": 185,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,19 @@\n-  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n-      Map\u003cString, CSQueue\u003e newQueues) {\n+  private void updateQueues(CSQueueStore existingQueues,\n+                            CSQueueStore newQueues) {\n     CapacitySchedulerConfiguration conf \u003d csContext.getConfiguration();\n-    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n-      String queueName \u003d e.getKey();\n-      CSQueue queue \u003d e.getValue();\n-      if (!existingQueues.containsKey(queueName)) {\n-        existingQueues.put(queueName, queue);\n+    for (CSQueue queue : newQueues.getQueues()) {\n+      if (existingQueues.get(queue.getQueuePath()) \u003d\u003d null) {\n+        existingQueues.add(queue);\n       }\n     }\n-    for (Iterator\u003cMap.Entry\u003cString, CSQueue\u003e\u003e itr \u003d existingQueues.entrySet()\n-        .iterator(); itr.hasNext();) {\n-      Map.Entry\u003cString, CSQueue\u003e e \u003d itr.next();\n-      String queueName \u003d e.getKey();\n-      CSQueue existingQueue \u003d e.getValue();\n \n-      if (!newQueues.containsKey(queueName) \u0026\u0026 !(\n-          existingQueue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n+    for (CSQueue queue: existingQueues.getQueues()) {\n+      if (newQueues.get(queue.getQueuePath()) \u003d\u003d null \u0026\u0026 !(\n+          queue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n               .isAutoCreateChildQueueEnabled(\n-                  existingQueue.getParent().getQueuePath()))) {\n-        itr.remove();\n+                queue.getParent().getQueuePath()))) {\n+        existingQueues.remove(queue);\n       }\n     }\n+\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void updateQueues(CSQueueStore existingQueues,\n                            CSQueueStore newQueues) {\n    CapacitySchedulerConfiguration conf \u003d csContext.getConfiguration();\n    for (CSQueue queue : newQueues.getQueues()) {\n      if (existingQueues.get(queue.getQueuePath()) \u003d\u003d null) {\n        existingQueues.add(queue);\n      }\n    }\n\n    for (CSQueue queue: existingQueues.getQueues()) {\n      if (newQueues.get(queue.getQueuePath()) \u003d\u003d null \u0026\u0026 !(\n          queue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n              .isAutoCreateChildQueueEnabled(\n                queue.getParent().getQueuePath()))) {\n        existingQueues.remove(queue);\n      }\n    }\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+          "extendedDetails": {
+            "oldValue": "[existingQueues-Map\u003cString,CSQueue\u003e, newQueues-Map\u003cString,CSQueue\u003e]",
+            "newValue": "[existingQueues-CSQueueStore, newQueues-CSQueueStore]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-9879. Allow multiple leaf queues with the same name in CapacityScheduler. Contributed by Gergely Pollak.\n",
+          "commitDate": "25/03/20 4:20 AM",
+          "commitName": "cdb2107066a2d8557270888c0a9a75f29a6853bf",
+          "commitAuthor": "Sunil G",
+          "commitDateOld": "28/01/20 9:46 AM",
+          "commitNameOld": "1ab9c692fa9107f10c0d8fbfbb9e74f54bddc960",
+          "commitAuthorOld": "Prabhu Joseph",
+          "daysBetweenCommits": 56.73,
+          "commitsBetweenForRepo": 185,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,19 @@\n-  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n-      Map\u003cString, CSQueue\u003e newQueues) {\n+  private void updateQueues(CSQueueStore existingQueues,\n+                            CSQueueStore newQueues) {\n     CapacitySchedulerConfiguration conf \u003d csContext.getConfiguration();\n-    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n-      String queueName \u003d e.getKey();\n-      CSQueue queue \u003d e.getValue();\n-      if (!existingQueues.containsKey(queueName)) {\n-        existingQueues.put(queueName, queue);\n+    for (CSQueue queue : newQueues.getQueues()) {\n+      if (existingQueues.get(queue.getQueuePath()) \u003d\u003d null) {\n+        existingQueues.add(queue);\n       }\n     }\n-    for (Iterator\u003cMap.Entry\u003cString, CSQueue\u003e\u003e itr \u003d existingQueues.entrySet()\n-        .iterator(); itr.hasNext();) {\n-      Map.Entry\u003cString, CSQueue\u003e e \u003d itr.next();\n-      String queueName \u003d e.getKey();\n-      CSQueue existingQueue \u003d e.getValue();\n \n-      if (!newQueues.containsKey(queueName) \u0026\u0026 !(\n-          existingQueue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n+    for (CSQueue queue: existingQueues.getQueues()) {\n+      if (newQueues.get(queue.getQueuePath()) \u003d\u003d null \u0026\u0026 !(\n+          queue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n               .isAutoCreateChildQueueEnabled(\n-                  existingQueue.getParent().getQueuePath()))) {\n-        itr.remove();\n+                queue.getParent().getQueuePath()))) {\n+        existingQueues.remove(queue);\n       }\n     }\n+\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void updateQueues(CSQueueStore existingQueues,\n                            CSQueueStore newQueues) {\n    CapacitySchedulerConfiguration conf \u003d csContext.getConfiguration();\n    for (CSQueue queue : newQueues.getQueues()) {\n      if (existingQueues.get(queue.getQueuePath()) \u003d\u003d null) {\n        existingQueues.add(queue);\n      }\n    }\n\n    for (CSQueue queue: existingQueues.getQueues()) {\n      if (newQueues.get(queue.getQueuePath()) \u003d\u003d null \u0026\u0026 !(\n          queue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n              .isAutoCreateChildQueueEnabled(\n                queue.getParent().getQueuePath()))) {\n        existingQueues.remove(queue);\n      }\n    }\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "b38643c9a8dd2c53024ae830b9565a550d0ec39c": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7473. Implement Framework and policy for capacity management of auto created queues. (Suma Shivaprasad via wangda)\n\nChange-Id: Icca7805fe12f6f7fb335effff4b121b6f7f6337b\n",
+      "commitDate": "08/12/17 3:10 PM",
+      "commitName": "b38643c9a8dd2c53024ae830b9565a550d0ec39c",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "16/11/17 11:25 AM",
+      "commitNameOld": "0987a7b8cbbbb2c1e4c2095821d98a7db19644df",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 22.16,
+      "commitsBetweenForRepo": 110,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,24 @@\n   private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n       Map\u003cString, CSQueue\u003e newQueues) {\n     CapacitySchedulerConfiguration conf \u003d csContext.getConfiguration();\n     for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n       String queueName \u003d e.getKey();\n       CSQueue queue \u003d e.getValue();\n       if (!existingQueues.containsKey(queueName)) {\n         existingQueues.put(queueName, queue);\n       }\n     }\n     for (Iterator\u003cMap.Entry\u003cString, CSQueue\u003e\u003e itr \u003d existingQueues.entrySet()\n         .iterator(); itr.hasNext();) {\n       Map.Entry\u003cString, CSQueue\u003e e \u003d itr.next();\n       String queueName \u003d e.getKey();\n       CSQueue existingQueue \u003d e.getValue();\n \n-      //TODO - Handle case when auto create is disabled on parent queues\n       if (!newQueues.containsKey(queueName) \u0026\u0026 !(\n           existingQueue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n               .isAutoCreateChildQueueEnabled(\n                   existingQueue.getParent().getQueuePath()))) {\n         itr.remove();\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n      Map\u003cString, CSQueue\u003e newQueues) {\n    CapacitySchedulerConfiguration conf \u003d csContext.getConfiguration();\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!existingQueues.containsKey(queueName)) {\n        existingQueues.put(queueName, queue);\n      }\n    }\n    for (Iterator\u003cMap.Entry\u003cString, CSQueue\u003e\u003e itr \u003d existingQueues.entrySet()\n        .iterator(); itr.hasNext();) {\n      Map.Entry\u003cString, CSQueue\u003e e \u003d itr.next();\n      String queueName \u003d e.getKey();\n      CSQueue existingQueue \u003d e.getValue();\n\n      if (!newQueues.containsKey(queueName) \u0026\u0026 !(\n          existingQueue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n              .isAutoCreateChildQueueEnabled(\n                  existingQueue.getParent().getQueuePath()))) {\n        itr.remove();\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+      "extendedDetails": {}
+    },
+    "0987a7b8cbbbb2c1e4c2095821d98a7db19644df": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7419. CapacityScheduler: Allow auto leaf queue creation after queue mapping. (Suma Shivaprasad via wangda)\n\nChange-Id: Ia1704bb8cb5070e5b180b5a85787d7b9ca57ebc6\n",
+      "commitDate": "16/11/17 11:25 AM",
+      "commitName": "0987a7b8cbbbb2c1e4c2095821d98a7db19644df",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "06/11/17 9:38 PM",
+      "commitNameOld": "13fa2d4e3e55a849dcd7e472750f3e0422cc2ac9",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 9.57,
+      "commitsBetweenForRepo": 63,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,25 @@\n   private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n       Map\u003cString, CSQueue\u003e newQueues) {\n+    CapacitySchedulerConfiguration conf \u003d csContext.getConfiguration();\n     for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n       String queueName \u003d e.getKey();\n       CSQueue queue \u003d e.getValue();\n       if (!existingQueues.containsKey(queueName)) {\n         existingQueues.put(queueName, queue);\n       }\n     }\n     for (Iterator\u003cMap.Entry\u003cString, CSQueue\u003e\u003e itr \u003d existingQueues.entrySet()\n         .iterator(); itr.hasNext();) {\n       Map.Entry\u003cString, CSQueue\u003e e \u003d itr.next();\n       String queueName \u003d e.getKey();\n-      if (!newQueues.containsKey(queueName)) {\n+      CSQueue existingQueue \u003d e.getValue();\n+\n+      //TODO - Handle case when auto create is disabled on parent queues\n+      if (!newQueues.containsKey(queueName) \u0026\u0026 !(\n+          existingQueue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n+              .isAutoCreateChildQueueEnabled(\n+                  existingQueue.getParent().getQueuePath()))) {\n         itr.remove();\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n      Map\u003cString, CSQueue\u003e newQueues) {\n    CapacitySchedulerConfiguration conf \u003d csContext.getConfiguration();\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!existingQueues.containsKey(queueName)) {\n        existingQueues.put(queueName, queue);\n      }\n    }\n    for (Iterator\u003cMap.Entry\u003cString, CSQueue\u003e\u003e itr \u003d existingQueues.entrySet()\n        .iterator(); itr.hasNext();) {\n      Map.Entry\u003cString, CSQueue\u003e e \u003d itr.next();\n      String queueName \u003d e.getKey();\n      CSQueue existingQueue \u003d e.getValue();\n\n      //TODO - Handle case when auto create is disabled on parent queues\n      if (!newQueues.containsKey(queueName) \u0026\u0026 !(\n          existingQueue instanceof AutoCreatedLeafQueue \u0026\u0026 conf\n              .isAutoCreateChildQueueEnabled(\n                  existingQueue.getParent().getQueuePath()))) {\n        itr.remove();\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+      "extendedDetails": {}
+    },
+    "0a3aa40fe7878c939dbf4e6b43466595159ff930": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6327. Removing queues from CapacitySchedulerQueueManager and ParentQueue should be done with iterator. Contributed by Jonathan Hung.\n",
+      "commitDate": "14/03/17 12:52 PM",
+      "commitName": "0a3aa40fe7878c939dbf4e6b43466595159ff930",
+      "commitAuthor": "Naganarasimha",
+      "commitDateOld": "23/01/17 10:52 AM",
+      "commitNameOld": "ce832059db077fa95922198b066a737ed4f609fe",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 50.04,
+      "commitsBetweenForRepo": 268,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,18 @@\n   private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n       Map\u003cString, CSQueue\u003e newQueues) {\n     for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n       String queueName \u003d e.getKey();\n       CSQueue queue \u003d e.getValue();\n       if (!existingQueues.containsKey(queueName)) {\n         existingQueues.put(queueName, queue);\n       }\n     }\n-    for (Map.Entry\u003cString, CSQueue\u003e e : existingQueues.entrySet()) {\n+    for (Iterator\u003cMap.Entry\u003cString, CSQueue\u003e\u003e itr \u003d existingQueues.entrySet()\n+        .iterator(); itr.hasNext();) {\n+      Map.Entry\u003cString, CSQueue\u003e e \u003d itr.next();\n       String queueName \u003d e.getKey();\n       if (!newQueues.containsKey(queueName)) {\n-        existingQueues.remove(queueName);\n+        itr.remove();\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n      Map\u003cString, CSQueue\u003e newQueues) {\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!existingQueues.containsKey(queueName)) {\n        existingQueues.put(queueName, queue);\n      }\n    }\n    for (Iterator\u003cMap.Entry\u003cString, CSQueue\u003e\u003e itr \u003d existingQueues.entrySet()\n        .iterator(); itr.hasNext();) {\n      Map.Entry\u003cString, CSQueue\u003e e \u003d itr.next();\n      String queueName \u003d e.getKey();\n      if (!newQueues.containsKey(queueName)) {\n        itr.remove();\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+      "extendedDetails": {}
+    },
+    "72054a817dfb43e93916d7036eba19cf2f49cea2": {
+      "type": "Ymultichange(Yrename,Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-5556. CapacityScheduler: Support deleting queues without requiring a RM restart. (Naganarasimha G R via wangda)\n",
+      "commitDate": "18/01/17 1:31 PM",
+      "commitName": "72054a817dfb43e93916d7036eba19cf2f49cea2",
+      "commitAuthor": "Wangda Tan",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "YARN-5556. CapacityScheduler: Support deleting queues without requiring a RM restart. (Naganarasimha G R via wangda)\n",
+          "commitDate": "18/01/17 1:31 PM",
+          "commitName": "72054a817dfb43e93916d7036eba19cf2f49cea2",
+          "commitAuthor": "Wangda Tan",
+          "commitDateOld": "09/01/17 8:40 AM",
+          "commitNameOld": "287d3d6804a869723ae36605a3c2d2b3eae3941e",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 9.2,
+          "commitsBetweenForRepo": 52,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,16 @@\n-  private void addNewQueues(\n-      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) {\n+  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n+      Map\u003cString, CSQueue\u003e newQueues) {\n     for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n       String queueName \u003d e.getKey();\n       CSQueue queue \u003d e.getValue();\n-      if (!queues.containsKey(queueName)) {\n-        queues.put(queueName, queue);\n+      if (!existingQueues.containsKey(queueName)) {\n+        existingQueues.put(queueName, queue);\n+      }\n+    }\n+    for (Map.Entry\u003cString, CSQueue\u003e e : existingQueues.entrySet()) {\n+      String queueName \u003d e.getKey();\n+      if (!newQueues.containsKey(queueName)) {\n+        existingQueues.remove(queueName);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n      Map\u003cString, CSQueue\u003e newQueues) {\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!existingQueues.containsKey(queueName)) {\n        existingQueues.put(queueName, queue);\n      }\n    }\n    for (Map.Entry\u003cString, CSQueue\u003e e : existingQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      if (!newQueues.containsKey(queueName)) {\n        existingQueues.remove(queueName);\n      }\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+          "extendedDetails": {
+            "oldValue": "addNewQueues",
+            "newValue": "updateQueues"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-5556. CapacityScheduler: Support deleting queues without requiring a RM restart. (Naganarasimha G R via wangda)\n",
+          "commitDate": "18/01/17 1:31 PM",
+          "commitName": "72054a817dfb43e93916d7036eba19cf2f49cea2",
+          "commitAuthor": "Wangda Tan",
+          "commitDateOld": "09/01/17 8:40 AM",
+          "commitNameOld": "287d3d6804a869723ae36605a3c2d2b3eae3941e",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 9.2,
+          "commitsBetweenForRepo": 52,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,16 @@\n-  private void addNewQueues(\n-      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) {\n+  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n+      Map\u003cString, CSQueue\u003e newQueues) {\n     for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n       String queueName \u003d e.getKey();\n       CSQueue queue \u003d e.getValue();\n-      if (!queues.containsKey(queueName)) {\n-        queues.put(queueName, queue);\n+      if (!existingQueues.containsKey(queueName)) {\n+        existingQueues.put(queueName, queue);\n+      }\n+    }\n+    for (Map.Entry\u003cString, CSQueue\u003e e : existingQueues.entrySet()) {\n+      String queueName \u003d e.getKey();\n+      if (!newQueues.containsKey(queueName)) {\n+        existingQueues.remove(queueName);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n      Map\u003cString, CSQueue\u003e newQueues) {\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!existingQueues.containsKey(queueName)) {\n        existingQueues.put(queueName, queue);\n      }\n    }\n    for (Map.Entry\u003cString, CSQueue\u003e e : existingQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      if (!newQueues.containsKey(queueName)) {\n        existingQueues.remove(queueName);\n      }\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+          "extendedDetails": {
+            "oldValue": "[queues-Map\u003cString,CSQueue\u003e, newQueues-Map\u003cString,CSQueue\u003e]",
+            "newValue": "[existingQueues-Map\u003cString,CSQueue\u003e, newQueues-Map\u003cString,CSQueue\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-5556. CapacityScheduler: Support deleting queues without requiring a RM restart. (Naganarasimha G R via wangda)\n",
+          "commitDate": "18/01/17 1:31 PM",
+          "commitName": "72054a817dfb43e93916d7036eba19cf2f49cea2",
+          "commitAuthor": "Wangda Tan",
+          "commitDateOld": "09/01/17 8:40 AM",
+          "commitNameOld": "287d3d6804a869723ae36605a3c2d2b3eae3941e",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 9.2,
+          "commitsBetweenForRepo": 52,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,16 @@\n-  private void addNewQueues(\n-      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) {\n+  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n+      Map\u003cString, CSQueue\u003e newQueues) {\n     for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n       String queueName \u003d e.getKey();\n       CSQueue queue \u003d e.getValue();\n-      if (!queues.containsKey(queueName)) {\n-        queues.put(queueName, queue);\n+      if (!existingQueues.containsKey(queueName)) {\n+        existingQueues.put(queueName, queue);\n+      }\n+    }\n+    for (Map.Entry\u003cString, CSQueue\u003e e : existingQueues.entrySet()) {\n+      String queueName \u003d e.getKey();\n+      if (!newQueues.containsKey(queueName)) {\n+        existingQueues.remove(queueName);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void updateQueues(Map\u003cString, CSQueue\u003e existingQueues,\n      Map\u003cString, CSQueue\u003e newQueues) {\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!existingQueues.containsKey(queueName)) {\n        existingQueues.put(queueName, queue);\n      }\n    }\n    for (Map.Entry\u003cString, CSQueue\u003e e : existingQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      if (!newQueues.containsKey(queueName)) {\n        existingQueues.remove(queueName);\n      }\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "69fb70c31aa277f7fb14b05c0185ddc5cd90793d": {
+      "type": "Ymovefromfile",
+      "commitMessage": "YARN-5761. Separate QueueManager from Scheduler. (Xuan Gong via gtcarrera9)\n",
+      "commitDate": "30/11/16 1:38 PM",
+      "commitName": "69fb70c31aa277f7fb14b05c0185ddc5cd90793d",
+      "commitAuthor": "Li Lu",
+      "commitDateOld": "30/11/16 1:01 PM",
+      "commitNameOld": "3fd844b99fdfae6be6e5e261f371d175aad14229",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 0.03,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,11 +1,10 @@\n   private void addNewQueues(\n-      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues)\n-  {\n+      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) {\n     for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n       String queueName \u003d e.getKey();\n       CSQueue queue \u003d e.getValue();\n       if (!queues.containsKey(queueName)) {\n         queues.put(queueName, queue);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void addNewQueues(\n      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) {\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!queues.containsKey(queueName)) {\n        queues.put(queueName, queue);\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerQueueManager.java",
+        "oldMethodName": "addNewQueues",
+        "newMethodName": "addNewQueues"
+      }
+    },
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-1. Promote YARN to be a sub-project of Apache Hadoop.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1370666 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/12 10:22 PM",
+      "commitName": "e1fdf62123625e4ba399af02f8aad500637d29d1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "07/08/12 7:53 PM",
+      "commitNameOld": "34554d1e11ee1d5b564d7d9ed3e6d55931d72749",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 0.1,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void addNewQueues(\n      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) \n  {\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!queues.containsKey(queueName)) {\n        queues.put(queueName, queue);\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java"
+      }
+    },
+    "1f46b991da9b91585608a0babd3eda39485dce09": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "MAPREDUCE-2908. Fix all findbugs warnings. Contributed by Vinod K V. \n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1166838 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "08/09/11 11:26 AM",
+      "commitName": "1f46b991da9b91585608a0babd3eda39485dce09",
+      "commitAuthor": "Arun Murthy",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "MAPREDUCE-2908. Fix all findbugs warnings. Contributed by Vinod K V. \n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1166838 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/09/11 11:26 AM",
+          "commitName": "1f46b991da9b91585608a0babd3eda39485dce09",
+          "commitAuthor": "Arun Murthy",
+          "commitDateOld": "06/09/11 10:54 PM",
+          "commitNameOld": "0ecba04727b5c31182d29511646c8d3e6441300f",
+          "commitAuthorOld": "Arun Murthy",
+          "daysBetweenCommits": 1.52,
+          "commitsBetweenForRepo": 7,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,11 @@\n   private void addNewQueues(\n-      Map\u003cString, Queue\u003e queues, Map\u003cString, Queue\u003e newQueues) \n+      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) \n   {\n-    for (Map.Entry\u003cString, Queue\u003e e : newQueues.entrySet()) {\n+    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n       String queueName \u003d e.getKey();\n-      Queue queue \u003d e.getValue();\n+      CSQueue queue \u003d e.getValue();\n       if (!queues.containsKey(queueName)) {\n         queues.put(queueName, queue);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void addNewQueues(\n      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) \n  {\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!queues.containsKey(queueName)) {\n        queues.put(queueName, queue);\n      }\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java",
+          "extendedDetails": {
+            "oldValue": "[queues-Map\u003cString,Queue\u003e, newQueues-Map\u003cString,Queue\u003e]",
+            "newValue": "[queues-Map\u003cString,CSQueue\u003e, newQueues-Map\u003cString,CSQueue\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "MAPREDUCE-2908. Fix all findbugs warnings. Contributed by Vinod K V. \n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1166838 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/09/11 11:26 AM",
+          "commitName": "1f46b991da9b91585608a0babd3eda39485dce09",
+          "commitAuthor": "Arun Murthy",
+          "commitDateOld": "06/09/11 10:54 PM",
+          "commitNameOld": "0ecba04727b5c31182d29511646c8d3e6441300f",
+          "commitAuthorOld": "Arun Murthy",
+          "daysBetweenCommits": 1.52,
+          "commitsBetweenForRepo": 7,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,11 @@\n   private void addNewQueues(\n-      Map\u003cString, Queue\u003e queues, Map\u003cString, Queue\u003e newQueues) \n+      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) \n   {\n-    for (Map.Entry\u003cString, Queue\u003e e : newQueues.entrySet()) {\n+    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n       String queueName \u003d e.getKey();\n-      Queue queue \u003d e.getValue();\n+      CSQueue queue \u003d e.getValue();\n       if (!queues.containsKey(queueName)) {\n         queues.put(queueName, queue);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void addNewQueues(\n      Map\u003cString, CSQueue\u003e queues, Map\u003cString, CSQueue\u003e newQueues) \n  {\n    for (Map.Entry\u003cString, CSQueue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      CSQueue queue \u003d e.getValue();\n      if (!queues.containsKey(queueName)) {\n        queues.put(queueName, queue);\n      }\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void addNewQueues(\n      Map\u003cString, Queue\u003e queues, Map\u003cString, Queue\u003e newQueues) \n  {\n    for (Map.Entry\u003cString, Queue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      Queue queue \u003d e.getValue();\n      if (!queues.containsKey(queueName)) {\n        queues.put(queueName, queue);\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,11 @@\n+  private void addNewQueues(\n+      Map\u003cString, Queue\u003e queues, Map\u003cString, Queue\u003e newQueues) \n+  {\n+    for (Map.Entry\u003cString, Queue\u003e e : newQueues.entrySet()) {\n+      String queueName \u003d e.getKey();\n+      Queue queue \u003d e.getValue();\n+      if (!queues.containsKey(queueName)) {\n+        queues.put(queueName, queue);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void addNewQueues(\n      Map\u003cString, Queue\u003e queues, Map\u003cString, Queue\u003e newQueues) \n  {\n    for (Map.Entry\u003cString, Queue\u003e e : newQueues.entrySet()) {\n      String queueName \u003d e.getKey();\n      Queue queue \u003d e.getValue();\n      if (!queues.containsKey(queueName)) {\n        queues.put(queueName, queue);\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java"
+    }
+  }
+}

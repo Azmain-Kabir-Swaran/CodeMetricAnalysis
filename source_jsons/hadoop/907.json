@@ -1,0 +1,87 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSOutputStream.java",
+  "functionName": "addBlock",
+  "functionId": "addBlock___excludedNodes-DatanodeInfo[]__dfsClient-DFSClient__src-String__prevBlock-ExtendedBlock__fileId-long__favoredNodes-String[]__allocFlags-EnumSet__AddBlockFlag__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSOutputStream.java",
+  "functionStartLine": 1079,
+  "functionEndLine": 1128,
+  "numCommitsSeen": 40,
+  "timeTaken": 2038,
+  "changeHistory": [
+    "10185d9a77ce07080588f3c77399a07cd7ccf427",
+    "0a152103f19a3e8e1b7f33aeb9dd115ba231d7b7"
+  ],
+  "changeHistoryShort": {
+    "10185d9a77ce07080588f3c77399a07cd7ccf427": "Ybodychange",
+    "0a152103f19a3e8e1b7f33aeb9dd115ba231d7b7": "Ymultichange(Yparameterchange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "10185d9a77ce07080588f3c77399a07cd7ccf427": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13882. Set a maximum delay for retrying locateFollowingBlock. Contributed by Kitti Nanasi.\n\nSigned-off-by: Xiao Chen \u003cxiao@apache.org\u003e\n",
+      "commitDate": "10/10/18 8:55 AM",
+      "commitName": "10185d9a77ce07080588f3c77399a07cd7ccf427",
+      "commitAuthor": "Kitti Nanasi",
+      "commitDateOld": "24/07/18 4:05 PM",
+      "commitNameOld": "849c45db187224095b13fe297a4d7377fbb9d2cd",
+      "commitAuthorOld": "Daniel Templeton",
+      "daysBetweenCommits": 77.7,
+      "commitsBetweenForRepo": 692,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,49 +1,50 @@\n   static LocatedBlock addBlock(DatanodeInfo[] excludedNodes,\n       DFSClient dfsClient, String src, ExtendedBlock prevBlock, long fileId,\n       String[] favoredNodes, EnumSet\u003cAddBlockFlag\u003e allocFlags)\n       throws IOException {\n     final DfsClientConf conf \u003d dfsClient.getConf();\n     int retries \u003d conf.getNumBlockWriteLocateFollowingRetry();\n     long sleeptime \u003d conf.getBlockWriteLocateFollowingInitialDelayMs();\n+    long maxSleepTime \u003d conf.getBlockWriteLocateFollowingMaxDelayMs();\n     long localstart \u003d Time.monotonicNow();\n     while (true) {\n       try {\n         return dfsClient.namenode.addBlock(src, dfsClient.clientName, prevBlock,\n             excludedNodes, fileId, favoredNodes, allocFlags);\n       } catch (RemoteException e) {\n         IOException ue \u003d e.unwrapRemoteException(FileNotFoundException.class,\n             AccessControlException.class,\n             NSQuotaExceededException.class,\n             DSQuotaExceededException.class,\n             QuotaByStorageTypeExceededException.class,\n             UnresolvedPathException.class);\n         if (ue !\u003d e) {\n           throw ue; // no need to retry these exceptions\n         }\n         if (NotReplicatedYetException.class.getName()\n             .equals(e.getClassName())) {\n           if (retries \u003d\u003d 0) {\n             throw e;\n           } else {\n             --retries;\n             LOG.info(\"Exception while adding a block\", e);\n             long elapsed \u003d Time.monotonicNow() - localstart;\n             if (elapsed \u003e 5000) {\n               LOG.info(\"Waiting for replication for \" + (elapsed / 1000)\n                   + \" seconds\");\n             }\n             try {\n               LOG.warn(\"NotReplicatedYetException sleeping \" + src\n                   + \" retries left \" + retries);\n               Thread.sleep(sleeptime);\n-              sleeptime *\u003d 2;\n+              sleeptime \u003d calculateDelayForNextRetry(sleeptime, maxSleepTime);\n             } catch (InterruptedException ie) {\n               LOG.warn(\"Caught exception\", ie);\n             }\n           }\n         } else {\n           throw e;\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static LocatedBlock addBlock(DatanodeInfo[] excludedNodes,\n      DFSClient dfsClient, String src, ExtendedBlock prevBlock, long fileId,\n      String[] favoredNodes, EnumSet\u003cAddBlockFlag\u003e allocFlags)\n      throws IOException {\n    final DfsClientConf conf \u003d dfsClient.getConf();\n    int retries \u003d conf.getNumBlockWriteLocateFollowingRetry();\n    long sleeptime \u003d conf.getBlockWriteLocateFollowingInitialDelayMs();\n    long maxSleepTime \u003d conf.getBlockWriteLocateFollowingMaxDelayMs();\n    long localstart \u003d Time.monotonicNow();\n    while (true) {\n      try {\n        return dfsClient.namenode.addBlock(src, dfsClient.clientName, prevBlock,\n            excludedNodes, fileId, favoredNodes, allocFlags);\n      } catch (RemoteException e) {\n        IOException ue \u003d e.unwrapRemoteException(FileNotFoundException.class,\n            AccessControlException.class,\n            NSQuotaExceededException.class,\n            DSQuotaExceededException.class,\n            QuotaByStorageTypeExceededException.class,\n            UnresolvedPathException.class);\n        if (ue !\u003d e) {\n          throw ue; // no need to retry these exceptions\n        }\n        if (NotReplicatedYetException.class.getName()\n            .equals(e.getClassName())) {\n          if (retries \u003d\u003d 0) {\n            throw e;\n          } else {\n            --retries;\n            LOG.info(\"Exception while adding a block\", e);\n            long elapsed \u003d Time.monotonicNow() - localstart;\n            if (elapsed \u003e 5000) {\n              LOG.info(\"Waiting for replication for \" + (elapsed / 1000)\n                  + \" seconds\");\n            }\n            try {\n              LOG.warn(\"NotReplicatedYetException sleeping \" + src\n                  + \" retries left \" + retries);\n              Thread.sleep(sleeptime);\n              sleeptime \u003d calculateDelayForNextRetry(sleeptime, maxSleepTime);\n            } catch (InterruptedException ie) {\n              LOG.warn(\"Caught exception\", ie);\n            }\n          }\n        } else {\n          throw e;\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSOutputStream.java",
+      "extendedDetails": {}
+    },
+    "0a152103f19a3e8e1b7f33aeb9dd115ba231d7b7": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-3702. Add an option for NOT writing the blocks locally if there is a datanode on the same box as the client. (Contributed by Lei (Eddy) Xu)\n",
+      "commitDate": "27/04/16 2:22 PM",
+      "commitName": "0a152103f19a3e8e1b7f33aeb9dd115ba231d7b7",
+      "commitAuthor": "Lei Xu",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-3702. Add an option for NOT writing the blocks locally if there is a datanode on the same box as the client. (Contributed by Lei (Eddy) Xu)\n",
+          "commitDate": "27/04/16 2:22 PM",
+          "commitName": "0a152103f19a3e8e1b7f33aeb9dd115ba231d7b7",
+          "commitAuthor": "Lei Xu",
+          "commitDateOld": "14/04/16 12:25 PM",
+          "commitNameOld": "2c155afe2736a5571bbb3bdfb2fe6f9709227229",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 13.08,
+          "commitsBetweenForRepo": 77,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,48 +1,49 @@\n   static LocatedBlock addBlock(DatanodeInfo[] excludedNodes,\n       DFSClient dfsClient, String src, ExtendedBlock prevBlock, long fileId,\n-      String[] favoredNodes) throws IOException {\n+      String[] favoredNodes, EnumSet\u003cAddBlockFlag\u003e allocFlags)\n+      throws IOException {\n     final DfsClientConf conf \u003d dfsClient.getConf();\n     int retries \u003d conf.getNumBlockWriteLocateFollowingRetry();\n     long sleeptime \u003d conf.getBlockWriteLocateFollowingInitialDelayMs();\n     long localstart \u003d Time.monotonicNow();\n     while (true) {\n       try {\n         return dfsClient.namenode.addBlock(src, dfsClient.clientName, prevBlock,\n-            excludedNodes, fileId, favoredNodes);\n+            excludedNodes, fileId, favoredNodes, allocFlags);\n       } catch (RemoteException e) {\n         IOException ue \u003d e.unwrapRemoteException(FileNotFoundException.class,\n             AccessControlException.class,\n             NSQuotaExceededException.class,\n             DSQuotaExceededException.class,\n             QuotaByStorageTypeExceededException.class,\n             UnresolvedPathException.class);\n         if (ue !\u003d e) {\n           throw ue; // no need to retry these exceptions\n         }\n         if (NotReplicatedYetException.class.getName()\n             .equals(e.getClassName())) {\n           if (retries \u003d\u003d 0) {\n             throw e;\n           } else {\n             --retries;\n             LOG.info(\"Exception while adding a block\", e);\n             long elapsed \u003d Time.monotonicNow() - localstart;\n             if (elapsed \u003e 5000) {\n               LOG.info(\"Waiting for replication for \" + (elapsed / 1000)\n                   + \" seconds\");\n             }\n             try {\n               LOG.warn(\"NotReplicatedYetException sleeping \" + src\n                   + \" retries left \" + retries);\n               Thread.sleep(sleeptime);\n               sleeptime *\u003d 2;\n             } catch (InterruptedException ie) {\n               LOG.warn(\"Caught exception\", ie);\n             }\n           }\n         } else {\n           throw e;\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static LocatedBlock addBlock(DatanodeInfo[] excludedNodes,\n      DFSClient dfsClient, String src, ExtendedBlock prevBlock, long fileId,\n      String[] favoredNodes, EnumSet\u003cAddBlockFlag\u003e allocFlags)\n      throws IOException {\n    final DfsClientConf conf \u003d dfsClient.getConf();\n    int retries \u003d conf.getNumBlockWriteLocateFollowingRetry();\n    long sleeptime \u003d conf.getBlockWriteLocateFollowingInitialDelayMs();\n    long localstart \u003d Time.monotonicNow();\n    while (true) {\n      try {\n        return dfsClient.namenode.addBlock(src, dfsClient.clientName, prevBlock,\n            excludedNodes, fileId, favoredNodes, allocFlags);\n      } catch (RemoteException e) {\n        IOException ue \u003d e.unwrapRemoteException(FileNotFoundException.class,\n            AccessControlException.class,\n            NSQuotaExceededException.class,\n            DSQuotaExceededException.class,\n            QuotaByStorageTypeExceededException.class,\n            UnresolvedPathException.class);\n        if (ue !\u003d e) {\n          throw ue; // no need to retry these exceptions\n        }\n        if (NotReplicatedYetException.class.getName()\n            .equals(e.getClassName())) {\n          if (retries \u003d\u003d 0) {\n            throw e;\n          } else {\n            --retries;\n            LOG.info(\"Exception while adding a block\", e);\n            long elapsed \u003d Time.monotonicNow() - localstart;\n            if (elapsed \u003e 5000) {\n              LOG.info(\"Waiting for replication for \" + (elapsed / 1000)\n                  + \" seconds\");\n            }\n            try {\n              LOG.warn(\"NotReplicatedYetException sleeping \" + src\n                  + \" retries left \" + retries);\n              Thread.sleep(sleeptime);\n              sleeptime *\u003d 2;\n            } catch (InterruptedException ie) {\n              LOG.warn(\"Caught exception\", ie);\n            }\n          }\n        } else {\n          throw e;\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSOutputStream.java",
+          "extendedDetails": {
+            "oldValue": "[excludedNodes-DatanodeInfo[], dfsClient-DFSClient, src-String, prevBlock-ExtendedBlock, fileId-long, favoredNodes-String[]]",
+            "newValue": "[excludedNodes-DatanodeInfo[], dfsClient-DFSClient, src-String, prevBlock-ExtendedBlock, fileId-long, favoredNodes-String[], allocFlags-EnumSet\u003cAddBlockFlag\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3702. Add an option for NOT writing the blocks locally if there is a datanode on the same box as the client. (Contributed by Lei (Eddy) Xu)\n",
+          "commitDate": "27/04/16 2:22 PM",
+          "commitName": "0a152103f19a3e8e1b7f33aeb9dd115ba231d7b7",
+          "commitAuthor": "Lei Xu",
+          "commitDateOld": "14/04/16 12:25 PM",
+          "commitNameOld": "2c155afe2736a5571bbb3bdfb2fe6f9709227229",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 13.08,
+          "commitsBetweenForRepo": 77,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,48 +1,49 @@\n   static LocatedBlock addBlock(DatanodeInfo[] excludedNodes,\n       DFSClient dfsClient, String src, ExtendedBlock prevBlock, long fileId,\n-      String[] favoredNodes) throws IOException {\n+      String[] favoredNodes, EnumSet\u003cAddBlockFlag\u003e allocFlags)\n+      throws IOException {\n     final DfsClientConf conf \u003d dfsClient.getConf();\n     int retries \u003d conf.getNumBlockWriteLocateFollowingRetry();\n     long sleeptime \u003d conf.getBlockWriteLocateFollowingInitialDelayMs();\n     long localstart \u003d Time.monotonicNow();\n     while (true) {\n       try {\n         return dfsClient.namenode.addBlock(src, dfsClient.clientName, prevBlock,\n-            excludedNodes, fileId, favoredNodes);\n+            excludedNodes, fileId, favoredNodes, allocFlags);\n       } catch (RemoteException e) {\n         IOException ue \u003d e.unwrapRemoteException(FileNotFoundException.class,\n             AccessControlException.class,\n             NSQuotaExceededException.class,\n             DSQuotaExceededException.class,\n             QuotaByStorageTypeExceededException.class,\n             UnresolvedPathException.class);\n         if (ue !\u003d e) {\n           throw ue; // no need to retry these exceptions\n         }\n         if (NotReplicatedYetException.class.getName()\n             .equals(e.getClassName())) {\n           if (retries \u003d\u003d 0) {\n             throw e;\n           } else {\n             --retries;\n             LOG.info(\"Exception while adding a block\", e);\n             long elapsed \u003d Time.monotonicNow() - localstart;\n             if (elapsed \u003e 5000) {\n               LOG.info(\"Waiting for replication for \" + (elapsed / 1000)\n                   + \" seconds\");\n             }\n             try {\n               LOG.warn(\"NotReplicatedYetException sleeping \" + src\n                   + \" retries left \" + retries);\n               Thread.sleep(sleeptime);\n               sleeptime *\u003d 2;\n             } catch (InterruptedException ie) {\n               LOG.warn(\"Caught exception\", ie);\n             }\n           }\n         } else {\n           throw e;\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static LocatedBlock addBlock(DatanodeInfo[] excludedNodes,\n      DFSClient dfsClient, String src, ExtendedBlock prevBlock, long fileId,\n      String[] favoredNodes, EnumSet\u003cAddBlockFlag\u003e allocFlags)\n      throws IOException {\n    final DfsClientConf conf \u003d dfsClient.getConf();\n    int retries \u003d conf.getNumBlockWriteLocateFollowingRetry();\n    long sleeptime \u003d conf.getBlockWriteLocateFollowingInitialDelayMs();\n    long localstart \u003d Time.monotonicNow();\n    while (true) {\n      try {\n        return dfsClient.namenode.addBlock(src, dfsClient.clientName, prevBlock,\n            excludedNodes, fileId, favoredNodes, allocFlags);\n      } catch (RemoteException e) {\n        IOException ue \u003d e.unwrapRemoteException(FileNotFoundException.class,\n            AccessControlException.class,\n            NSQuotaExceededException.class,\n            DSQuotaExceededException.class,\n            QuotaByStorageTypeExceededException.class,\n            UnresolvedPathException.class);\n        if (ue !\u003d e) {\n          throw ue; // no need to retry these exceptions\n        }\n        if (NotReplicatedYetException.class.getName()\n            .equals(e.getClassName())) {\n          if (retries \u003d\u003d 0) {\n            throw e;\n          } else {\n            --retries;\n            LOG.info(\"Exception while adding a block\", e);\n            long elapsed \u003d Time.monotonicNow() - localstart;\n            if (elapsed \u003e 5000) {\n              LOG.info(\"Waiting for replication for \" + (elapsed / 1000)\n                  + \" seconds\");\n            }\n            try {\n              LOG.warn(\"NotReplicatedYetException sleeping \" + src\n                  + \" retries left \" + retries);\n              Thread.sleep(sleeptime);\n              sleeptime *\u003d 2;\n            } catch (InterruptedException ie) {\n              LOG.warn(\"Caught exception\", ie);\n            }\n          }\n        } else {\n          throw e;\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSOutputStream.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

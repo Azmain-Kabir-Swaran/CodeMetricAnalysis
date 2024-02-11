@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbfsClientThrottlingIntercept.java",
+  "functionName": "updateMetrics",
+  "functionId": "updateMetrics___operationType-AbfsRestOperationType__abfsHttpOperation-AbfsHttpOperation",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClientThrottlingIntercept.java",
+  "functionStartLine": 66,
+  "functionEndLine": 99,
+  "numCommitsSeen": 4,
+  "timeTaken": 1027,
+  "changeHistory": [
+    "d0b4624c88fc48932a7c2800185ed48bb1c5e0fe",
+    "97f06b3fc70ad509e601076c015bc244daa1243f"
+  ],
+  "changeHistoryShort": {
+    "d0b4624c88fc48932a7c2800185ed48bb1c5e0fe": "Ybodychange",
+    "97f06b3fc70ad509e601076c015bc244daa1243f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d0b4624c88fc48932a7c2800185ed48bb1c5e0fe": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15778. ABFS: Fix client side throttling for read.\nContributed by Sneha Varma.\n",
+      "commitDate": "21/09/18 3:06 AM",
+      "commitName": "d0b4624c88fc48932a7c2800185ed48bb1c5e0fe",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "17/09/18 12:54 PM",
+      "commitNameOld": "13c70e9ba3c168b6aa2184e183291411b346d531",
+      "commitAuthorOld": "Thomas Marquardt",
+      "daysBetweenCommits": 3.59,
+      "commitsBetweenForRepo": 11,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,33 +1,34 @@\n   static void updateMetrics(AbfsRestOperationType operationType,\n                             AbfsHttpOperation abfsHttpOperation) {\n     if (!isAutoThrottlingEnabled || abfsHttpOperation \u003d\u003d null) {\n       return;\n     }\n \n     int status \u003d abfsHttpOperation.getStatusCode();\n     long contentLength \u003d 0;\n     // If the socket is terminated prior to receiving a response, the HTTP\n     // status may be 0 or -1.  A status less than 200 or greater than or equal\n     // to 500 is considered an error.\n     boolean isFailedOperation \u003d (status \u003c HttpURLConnection.HTTP_OK\n         || status \u003e\u003d HttpURLConnection.HTTP_INTERNAL_ERROR);\n \n     switch (operationType) {\n       case Append:\n         contentLength \u003d abfsHttpOperation.getBytesSent();\n         if (contentLength \u003e 0) {\n           singleton.writeThrottler.addBytesTransferred(contentLength,\n               isFailedOperation);\n         }\n         break;\n       case ReadFile:\n-        contentLength \u003d abfsHttpOperation.getBytesReceived();\n+        String range \u003d abfsHttpOperation.getConnection().getRequestProperty(HttpHeaderConfigurations.RANGE);\n+        contentLength \u003d getContentLengthIfKnown(range);\n         if (contentLength \u003e 0) {\n           singleton.readThrottler.addBytesTransferred(contentLength,\n               isFailedOperation);\n         }\n         break;\n       default:\n         break;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static void updateMetrics(AbfsRestOperationType operationType,\n                            AbfsHttpOperation abfsHttpOperation) {\n    if (!isAutoThrottlingEnabled || abfsHttpOperation \u003d\u003d null) {\n      return;\n    }\n\n    int status \u003d abfsHttpOperation.getStatusCode();\n    long contentLength \u003d 0;\n    // If the socket is terminated prior to receiving a response, the HTTP\n    // status may be 0 or -1.  A status less than 200 or greater than or equal\n    // to 500 is considered an error.\n    boolean isFailedOperation \u003d (status \u003c HttpURLConnection.HTTP_OK\n        || status \u003e\u003d HttpURLConnection.HTTP_INTERNAL_ERROR);\n\n    switch (operationType) {\n      case Append:\n        contentLength \u003d abfsHttpOperation.getBytesSent();\n        if (contentLength \u003e 0) {\n          singleton.writeThrottler.addBytesTransferred(contentLength,\n              isFailedOperation);\n        }\n        break;\n      case ReadFile:\n        String range \u003d abfsHttpOperation.getConnection().getRequestProperty(HttpHeaderConfigurations.RANGE);\n        contentLength \u003d getContentLengthIfKnown(range);\n        if (contentLength \u003e 0) {\n          singleton.readThrottler.addBytesTransferred(contentLength,\n              isFailedOperation);\n        }\n        break;\n      default:\n        break;\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClientThrottlingIntercept.java",
+      "extendedDetails": {}
+    },
+    "97f06b3fc70ad509e601076c015bc244daa1243f": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15703. ABFS - Implement client-side throttling.\nContributed by Sneha Varma and Thomas Marquardt.\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "97f06b3fc70ad509e601076c015bc244daa1243f",
+      "commitAuthor": "Thomas Marquardt",
+      "diff": "@@ -0,0 +1,33 @@\n+  static void updateMetrics(AbfsRestOperationType operationType,\n+                            AbfsHttpOperation abfsHttpOperation) {\n+    if (!isAutoThrottlingEnabled || abfsHttpOperation \u003d\u003d null) {\n+      return;\n+    }\n+\n+    int status \u003d abfsHttpOperation.getStatusCode();\n+    long contentLength \u003d 0;\n+    // If the socket is terminated prior to receiving a response, the HTTP\n+    // status may be 0 or -1.  A status less than 200 or greater than or equal\n+    // to 500 is considered an error.\n+    boolean isFailedOperation \u003d (status \u003c HttpURLConnection.HTTP_OK\n+        || status \u003e\u003d HttpURLConnection.HTTP_INTERNAL_ERROR);\n+\n+    switch (operationType) {\n+      case Append:\n+        contentLength \u003d abfsHttpOperation.getBytesSent();\n+        if (contentLength \u003e 0) {\n+          singleton.writeThrottler.addBytesTransferred(contentLength,\n+              isFailedOperation);\n+        }\n+        break;\n+      case ReadFile:\n+        contentLength \u003d abfsHttpOperation.getBytesReceived();\n+        if (contentLength \u003e 0) {\n+          singleton.readThrottler.addBytesTransferred(contentLength,\n+              isFailedOperation);\n+        }\n+        break;\n+      default:\n+        break;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static void updateMetrics(AbfsRestOperationType operationType,\n                            AbfsHttpOperation abfsHttpOperation) {\n    if (!isAutoThrottlingEnabled || abfsHttpOperation \u003d\u003d null) {\n      return;\n    }\n\n    int status \u003d abfsHttpOperation.getStatusCode();\n    long contentLength \u003d 0;\n    // If the socket is terminated prior to receiving a response, the HTTP\n    // status may be 0 or -1.  A status less than 200 or greater than or equal\n    // to 500 is considered an error.\n    boolean isFailedOperation \u003d (status \u003c HttpURLConnection.HTTP_OK\n        || status \u003e\u003d HttpURLConnection.HTTP_INTERNAL_ERROR);\n\n    switch (operationType) {\n      case Append:\n        contentLength \u003d abfsHttpOperation.getBytesSent();\n        if (contentLength \u003e 0) {\n          singleton.writeThrottler.addBytesTransferred(contentLength,\n              isFailedOperation);\n        }\n        break;\n      case ReadFile:\n        contentLength \u003d abfsHttpOperation.getBytesReceived();\n        if (contentLength \u003e 0) {\n          singleton.readThrottler.addBytesTransferred(contentLength,\n              isFailedOperation);\n        }\n        break;\n      default:\n        break;\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClientThrottlingIntercept.java"
+    }
+  }
+}

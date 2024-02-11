@@ -1,0 +1,147 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AzureNativeFileSystemStore.java",
+  "functionName": "delete",
+  "functionId": "delete___key-String__lease-SelfRenewingLease",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/AzureNativeFileSystemStore.java",
+  "functionStartLine": 2654,
+  "functionEndLine": 2673,
+  "numCommitsSeen": 56,
+  "timeTaken": 4028,
+  "changeHistory": [
+    "c6b4e656b76b68cc1d0dbcc15a5aa5ea23335b7b",
+    "15dd1f3381069c5fdc6690e3ab1907a133ba14bf",
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40",
+    "81bc395deb3ba00567dc067d6ca71bacf9e3bc82"
+  ],
+  "changeHistoryShort": {
+    "c6b4e656b76b68cc1d0dbcc15a5aa5ea23335b7b": "Ybodychange",
+    "15dd1f3381069c5fdc6690e3ab1907a133ba14bf": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40": "Ymultichange(Yparameterchange,Ybodychange)",
+    "81bc395deb3ba00567dc067d6ca71bacf9e3bc82": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c6b4e656b76b68cc1d0dbcc15a5aa5ea23335b7b": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14769. WASB: delete recursive should not fail if a file is deleted.\nContributed by Thomas Marquardt\n",
+      "commitDate": "18/08/17 6:13 AM",
+      "commitName": "c6b4e656b76b68cc1d0dbcc15a5aa5ea23335b7b",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "01/08/17 1:36 PM",
+      "commitNameOld": "778d4edd9adbe9519c3d6df65e45ddc8bb0ab2da",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 16.69,
+      "commitsBetweenForRepo": 169,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,20 @@\n   public boolean delete(String key, SelfRenewingLease lease) throws IOException {\n     try {\n       if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n         // Container doesn\u0027t exist, no need to do anything\n         return true;\n       }\n-\n       // Get the blob reference and delete it.\n       CloudBlobWrapper blob \u003d getBlobReference(key);\n-      if (blob.exists(getInstrumentedContext())) {\n-        safeDelete(blob, lease);\n-        return true;\n-      } else {\n+      safeDelete(blob, lease);\n+      return true;\n+    } catch (Exception e) {\n+      if (e instanceof StorageException\n+          \u0026\u0026 NativeAzureFileSystemHelper.isFileNotFoundException(\n+              (StorageException) e)) {\n+        // the file or directory does not exist\n         return false;\n       }\n-    } catch (Exception e) {\n-      // Re-throw as an Azure storage exception.\n       throw new AzureException(e);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public boolean delete(String key, SelfRenewingLease lease) throws IOException {\n    try {\n      if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n        // Container doesn\u0027t exist, no need to do anything\n        return true;\n      }\n      // Get the blob reference and delete it.\n      CloudBlobWrapper blob \u003d getBlobReference(key);\n      safeDelete(blob, lease);\n      return true;\n    } catch (Exception e) {\n      if (e instanceof StorageException\n          \u0026\u0026 NativeAzureFileSystemHelper.isFileNotFoundException(\n              (StorageException) e)) {\n        // the file or directory does not exist\n        return false;\n      }\n      throw new AzureException(e);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/AzureNativeFileSystemStore.java",
+      "extendedDetails": {}
+    },
+    "15dd1f3381069c5fdc6690e3ab1907a133ba14bf": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HADOOP-13675. Bug in return value for delete() calls in WASB. Contributed by Dushyanth\n",
+      "commitDate": "05/12/16 12:04 PM",
+      "commitName": "15dd1f3381069c5fdc6690e3ab1907a133ba14bf",
+      "commitAuthor": "Mingliang Liu",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-13675. Bug in return value for delete() calls in WASB. Contributed by Dushyanth\n",
+          "commitDate": "05/12/16 12:04 PM",
+          "commitName": "15dd1f3381069c5fdc6690e3ab1907a133ba14bf",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "27/10/16 4:09 PM",
+          "commitNameOld": "5877f20f9c3f6f0afa505715e9a2ee312475af17",
+          "commitAuthorOld": "Robert Kanter",
+          "daysBetweenCommits": 38.87,
+          "commitsBetweenForRepo": 283,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,20 @@\n-  public void delete(String key, SelfRenewingLease lease) throws IOException {\n+  public boolean delete(String key, SelfRenewingLease lease) throws IOException {\n     try {\n       if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n         // Container doesn\u0027t exist, no need to do anything\n-        return;\n+        return true;\n       }\n \n       // Get the blob reference and delete it.\n       CloudBlobWrapper blob \u003d getBlobReference(key);\n       if (blob.exists(getInstrumentedContext())) {\n         safeDelete(blob, lease);\n+        return true;\n+      } else {\n+        return false;\n       }\n     } catch (Exception e) {\n       // Re-throw as an Azure storage exception.\n       throw new AzureException(e);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean delete(String key, SelfRenewingLease lease) throws IOException {\n    try {\n      if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n        // Container doesn\u0027t exist, no need to do anything\n        return true;\n      }\n\n      // Get the blob reference and delete it.\n      CloudBlobWrapper blob \u003d getBlobReference(key);\n      if (blob.exists(getInstrumentedContext())) {\n        safeDelete(blob, lease);\n        return true;\n      } else {\n        return false;\n      }\n    } catch (Exception e) {\n      // Re-throw as an Azure storage exception.\n      throw new AzureException(e);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/AzureNativeFileSystemStore.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "boolean"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13675. Bug in return value for delete() calls in WASB. Contributed by Dushyanth\n",
+          "commitDate": "05/12/16 12:04 PM",
+          "commitName": "15dd1f3381069c5fdc6690e3ab1907a133ba14bf",
+          "commitAuthor": "Mingliang Liu",
+          "commitDateOld": "27/10/16 4:09 PM",
+          "commitNameOld": "5877f20f9c3f6f0afa505715e9a2ee312475af17",
+          "commitAuthorOld": "Robert Kanter",
+          "daysBetweenCommits": 38.87,
+          "commitsBetweenForRepo": 283,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,20 @@\n-  public void delete(String key, SelfRenewingLease lease) throws IOException {\n+  public boolean delete(String key, SelfRenewingLease lease) throws IOException {\n     try {\n       if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n         // Container doesn\u0027t exist, no need to do anything\n-        return;\n+        return true;\n       }\n \n       // Get the blob reference and delete it.\n       CloudBlobWrapper blob \u003d getBlobReference(key);\n       if (blob.exists(getInstrumentedContext())) {\n         safeDelete(blob, lease);\n+        return true;\n+      } else {\n+        return false;\n       }\n     } catch (Exception e) {\n       // Re-throw as an Azure storage exception.\n       throw new AzureException(e);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean delete(String key, SelfRenewingLease lease) throws IOException {\n    try {\n      if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n        // Container doesn\u0027t exist, no need to do anything\n        return true;\n      }\n\n      // Get the blob reference and delete it.\n      CloudBlobWrapper blob \u003d getBlobReference(key);\n      if (blob.exists(getInstrumentedContext())) {\n        safeDelete(blob, lease);\n        return true;\n      } else {\n        return false;\n      }\n    } catch (Exception e) {\n      // Re-throw as an Azure storage exception.\n      throw new AzureException(e);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/AzureNativeFileSystemStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-10809. hadoop-azure: page blob support. Contributed by Dexter Bradshaw, Mostafa Elhemali, Eric Hanson, and Mike Liddell.\n",
+      "commitDate": "08/10/14 2:20 PM",
+      "commitName": "2217e2f8ff418b88eac6ad36cafe3a9795a11f40",
+      "commitAuthor": "cnauroth",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-10809. hadoop-azure: page blob support. Contributed by Dexter Bradshaw, Mostafa Elhemali, Eric Hanson, and Mike Liddell.\n",
+          "commitDate": "08/10/14 2:20 PM",
+          "commitName": "2217e2f8ff418b88eac6ad36cafe3a9795a11f40",
+          "commitAuthor": "cnauroth",
+          "commitDateOld": "24/06/14 1:52 PM",
+          "commitNameOld": "0d91576ec31f63402f2db6107a04155368e2632d",
+          "commitAuthorOld": "Chris Nauroth",
+          "daysBetweenCommits": 106.02,
+          "commitsBetweenForRepo": 1005,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,17 @@\n-  public void delete(String key) throws IOException {\n+  public void delete(String key, SelfRenewingLease lease) throws IOException {\n     try {\n       if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n         // Container doesn\u0027t exist, no need to do anything\n         return;\n       }\n \n-      // Get the blob reference an delete it.\n-      CloudBlockBlobWrapper blob \u003d getBlobReference(key);\n+      // Get the blob reference and delete it.\n+      CloudBlobWrapper blob \u003d getBlobReference(key);\n       if (blob.exists(getInstrumentedContext())) {\n-        safeDelete(blob);\n+        safeDelete(blob, lease);\n       }\n     } catch (Exception e) {\n       // Re-throw as an Azure storage exception.\n       throw new AzureException(e);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void delete(String key, SelfRenewingLease lease) throws IOException {\n    try {\n      if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n        // Container doesn\u0027t exist, no need to do anything\n        return;\n      }\n\n      // Get the blob reference and delete it.\n      CloudBlobWrapper blob \u003d getBlobReference(key);\n      if (blob.exists(getInstrumentedContext())) {\n        safeDelete(blob, lease);\n      }\n    } catch (Exception e) {\n      // Re-throw as an Azure storage exception.\n      throw new AzureException(e);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/AzureNativeFileSystemStore.java",
+          "extendedDetails": {
+            "oldValue": "[key-String]",
+            "newValue": "[key-String, lease-SelfRenewingLease]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-10809. hadoop-azure: page blob support. Contributed by Dexter Bradshaw, Mostafa Elhemali, Eric Hanson, and Mike Liddell.\n",
+          "commitDate": "08/10/14 2:20 PM",
+          "commitName": "2217e2f8ff418b88eac6ad36cafe3a9795a11f40",
+          "commitAuthor": "cnauroth",
+          "commitDateOld": "24/06/14 1:52 PM",
+          "commitNameOld": "0d91576ec31f63402f2db6107a04155368e2632d",
+          "commitAuthorOld": "Chris Nauroth",
+          "daysBetweenCommits": 106.02,
+          "commitsBetweenForRepo": 1005,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,17 +1,17 @@\n-  public void delete(String key) throws IOException {\n+  public void delete(String key, SelfRenewingLease lease) throws IOException {\n     try {\n       if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n         // Container doesn\u0027t exist, no need to do anything\n         return;\n       }\n \n-      // Get the blob reference an delete it.\n-      CloudBlockBlobWrapper blob \u003d getBlobReference(key);\n+      // Get the blob reference and delete it.\n+      CloudBlobWrapper blob \u003d getBlobReference(key);\n       if (blob.exists(getInstrumentedContext())) {\n-        safeDelete(blob);\n+        safeDelete(blob, lease);\n       }\n     } catch (Exception e) {\n       // Re-throw as an Azure storage exception.\n       throw new AzureException(e);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void delete(String key, SelfRenewingLease lease) throws IOException {\n    try {\n      if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n        // Container doesn\u0027t exist, no need to do anything\n        return;\n      }\n\n      // Get the blob reference and delete it.\n      CloudBlobWrapper blob \u003d getBlobReference(key);\n      if (blob.exists(getInstrumentedContext())) {\n        safeDelete(blob, lease);\n      }\n    } catch (Exception e) {\n      // Re-throw as an Azure storage exception.\n      throw new AzureException(e);\n    }\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/AzureNativeFileSystemStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "81bc395deb3ba00567dc067d6ca71bacf9e3bc82": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-9629. Support Windows Azure Storage - Blob as a file system in Hadoop. Contributed by Dexter Bradshaw, Mostafa Elhemali, Xi Fang, Johannes Klein, David Lao, Mike Liddell, Chuan Liu, Lengning Liu, Ivan Mitic, Michael Rys, Alexander Stojanovic, Brian Swan, and Min Wei.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1601781 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/06/14 3:26 PM",
+      "commitName": "81bc395deb3ba00567dc067d6ca71bacf9e3bc82",
+      "commitAuthor": "Chris Nauroth",
+      "diff": "@@ -0,0 +1,17 @@\n+  public void delete(String key) throws IOException {\n+    try {\n+      if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n+        // Container doesn\u0027t exist, no need to do anything\n+        return;\n+      }\n+\n+      // Get the blob reference an delete it.\n+      CloudBlockBlobWrapper blob \u003d getBlobReference(key);\n+      if (blob.exists(getInstrumentedContext())) {\n+        safeDelete(blob);\n+      }\n+    } catch (Exception e) {\n+      // Re-throw as an Azure storage exception.\n+      throw new AzureException(e);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void delete(String key) throws IOException {\n    try {\n      if (checkContainer(ContainerAccessType.ReadThenWrite) \u003d\u003d ContainerState.DoesntExist) {\n        // Container doesn\u0027t exist, no need to do anything\n        return;\n      }\n\n      // Get the blob reference an delete it.\n      CloudBlockBlobWrapper blob \u003d getBlobReference(key);\n      if (blob.exists(getInstrumentedContext())) {\n        safeDelete(blob);\n      }\n    } catch (Exception e) {\n      // Re-throw as an Azure storage exception.\n      throw new AzureException(e);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/AzureNativeFileSystemStore.java"
+    }
+  }
+}

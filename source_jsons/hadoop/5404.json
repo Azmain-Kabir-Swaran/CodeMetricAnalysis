@@ -1,0 +1,137 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSNamesystemLock.java",
+  "functionName": "writeUnlock",
+  "functionId": "writeUnlock___opName-String",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystemLock.java",
+  "functionStartLine": 252,
+  "functionEndLine": 254,
+  "numCommitsSeen": 25,
+  "timeTaken": 4516,
+  "changeHistory": [
+    "1824aee9da4056de0fb638906b2172e486bbebe7",
+    "d0b2c5850b523a3888b2fadcfcdf6edbed33f221",
+    "ad49098eb324e238d97db68d7239ed2c4d84afa0",
+    "ff0b99eafeda035ebe0dc82cfe689808047a8893",
+    "434c5ea75dc3d87513e49290ac9999148ff5163c"
+  ],
+  "changeHistoryShort": {
+    "1824aee9da4056de0fb638906b2172e486bbebe7": "Ybodychange",
+    "d0b2c5850b523a3888b2fadcfcdf6edbed33f221": "Ybodychange",
+    "ad49098eb324e238d97db68d7239ed2c4d84afa0": "Ybodychange",
+    "ff0b99eafeda035ebe0dc82cfe689808047a8893": "Ymultichange(Yparameterchange,Ybodychange)",
+    "434c5ea75dc3d87513e49290ac9999148ff5163c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1824aee9da4056de0fb638906b2172e486bbebe7": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-15217 Add more information to longest write/read lock held log\n\n",
+      "commitDate": "18/04/20 1:52 PM",
+      "commitName": "1824aee9da4056de0fb638906b2172e486bbebe7",
+      "commitAuthor": "Toshihiro Suzuki",
+      "commitDateOld": "24/03/20 2:50 PM",
+      "commitNameOld": "d353b30baf6da5b70685cf837cf7095636f345e1",
+      "commitAuthorOld": "Toshihiro Suzuki",
+      "daysBetweenCommits": 24.96,
+      "commitsBetweenForRepo": 83,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,3 +1,3 @@\n   public void writeUnlock(String opName) {\n-    writeUnlock(opName, false);\n+    writeUnlock(opName, false, null);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void writeUnlock(String opName) {\n    writeUnlock(opName, false, null);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystemLock.java",
+      "extendedDetails": {}
+    },
+    "d0b2c5850b523a3888b2fadcfcdf6edbed33f221": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12516. Suppress the fsnamesystem lock warning on nn startup. Contributed by Ajay Kumar.\n",
+      "commitDate": "24/09/17 9:03 PM",
+      "commitName": "d0b2c5850b523a3888b2fadcfcdf6edbed33f221",
+      "commitAuthor": "Anu Engineer",
+      "commitDateOld": "20/06/17 12:35 AM",
+      "commitNameOld": "2c769167dbdb66c52d2ba7b7193a686444085570",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 96.85,
+      "commitsBetweenForRepo": 748,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,46 +1,3 @@\n   public void writeUnlock(String opName) {\n-    final boolean needReport \u003d coarseLock.getWriteHoldCount() \u003d\u003d 1 \u0026\u0026\n-        coarseLock.isWriteLockedByCurrentThread();\n-    final long currentTimeNanos \u003d timer.monotonicNowNanos();\n-    final long writeLockIntervalNanos \u003d\n-        currentTimeNanos - writeLockHeldTimeStampNanos;\n-    final long currentTimeMs \u003d TimeUnit.NANOSECONDS.toMillis(currentTimeNanos);\n-    final long writeLockIntervalMs \u003d\n-        TimeUnit.NANOSECONDS.toMillis(writeLockIntervalNanos);\n-\n-    boolean logReport \u003d false;\n-    int numSuppressedWarnings \u003d 0;\n-    long longestLockHeldIntervalMs \u003d 0;\n-    if (needReport \u0026\u0026\n-        writeLockIntervalMs \u003e\u003d this.writeLockReportingThresholdMs) {\n-      if (writeLockIntervalMs \u003e longestWriteLockHeldIntervalMs) {\n-        longestWriteLockHeldIntervalMs \u003d writeLockIntervalMs;\n-      }\n-      if (currentTimeMs - timeStampOfLastWriteLockReportMs \u003e\n-          this.lockSuppressWarningIntervalMs) {\n-        logReport \u003d true;\n-        numSuppressedWarnings \u003d numWriteLockWarningsSuppressed;\n-        numWriteLockWarningsSuppressed \u003d 0;\n-        longestLockHeldIntervalMs \u003d longestWriteLockHeldIntervalMs;\n-        longestWriteLockHeldIntervalMs \u003d 0;\n-        timeStampOfLastWriteLockReportMs \u003d currentTimeMs;\n-      } else {\n-        numWriteLockWarningsSuppressed++;\n-      }\n-    }\n-\n-    coarseLock.writeLock().unlock();\n-\n-    if (needReport) {\n-      addMetric(opName, writeLockIntervalNanos, true);\n-    }\n-\n-    if (logReport) {\n-      FSNamesystem.LOG.info(\"FSNamesystem write lock held for \" +\n-          writeLockIntervalMs + \" ms via\\n\" +\n-          StringUtils.getStackTrace(Thread.currentThread()) +\n-          \"\\tNumber of suppressed write-lock reports: \" +\n-          numSuppressedWarnings + \"\\n\\tLongest write-lock held interval: \" +\n-          longestLockHeldIntervalMs);\n-    }\n+    writeUnlock(opName, false);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void writeUnlock(String opName) {\n    writeUnlock(opName, false);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystemLock.java",
+      "extendedDetails": {}
+    },
+    "ad49098eb324e238d97db68d7239ed2c4d84afa0": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11615. FSNamesystemLock metrics can be inaccurate due to millisecond precision. Contributed by Erik Krogen.\n",
+      "commitDate": "17/04/17 4:22 PM",
+      "commitName": "ad49098eb324e238d97db68d7239ed2c4d84afa0",
+      "commitAuthor": "Zhe Zhang",
+      "commitDateOld": "14/11/16 11:05 AM",
+      "commitNameOld": "ff0b99eafeda035ebe0dc82cfe689808047a8893",
+      "commitAuthorOld": "Zhe Zhang",
+      "daysBetweenCommits": 154.18,
+      "commitsBetweenForRepo": 832,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,41 +1,46 @@\n   public void writeUnlock(String opName) {\n     final boolean needReport \u003d coarseLock.getWriteHoldCount() \u003d\u003d 1 \u0026\u0026\n         coarseLock.isWriteLockedByCurrentThread();\n-    final long currentTime \u003d timer.monotonicNow();\n-    final long writeLockInterval \u003d currentTime - writeLockHeldTimeStamp;\n+    final long currentTimeNanos \u003d timer.monotonicNowNanos();\n+    final long writeLockIntervalNanos \u003d\n+        currentTimeNanos - writeLockHeldTimeStampNanos;\n+    final long currentTimeMs \u003d TimeUnit.NANOSECONDS.toMillis(currentTimeNanos);\n+    final long writeLockIntervalMs \u003d\n+        TimeUnit.NANOSECONDS.toMillis(writeLockIntervalNanos);\n \n     boolean logReport \u003d false;\n     int numSuppressedWarnings \u003d 0;\n-    long longestLockHeldInterval \u003d 0;\n-    if (needReport \u0026\u0026 writeLockInterval \u003e\u003d this.writeLockReportingThreshold) {\n-      if (writeLockInterval \u003e longestWriteLockHeldInterval) {\n-        longestWriteLockHeldInterval \u003d writeLockInterval;\n+    long longestLockHeldIntervalMs \u003d 0;\n+    if (needReport \u0026\u0026\n+        writeLockIntervalMs \u003e\u003d this.writeLockReportingThresholdMs) {\n+      if (writeLockIntervalMs \u003e longestWriteLockHeldIntervalMs) {\n+        longestWriteLockHeldIntervalMs \u003d writeLockIntervalMs;\n       }\n-      if (currentTime - timeStampOfLastWriteLockReport \u003e\n-          this.lockSuppressWarningInterval) {\n+      if (currentTimeMs - timeStampOfLastWriteLockReportMs \u003e\n+          this.lockSuppressWarningIntervalMs) {\n         logReport \u003d true;\n         numSuppressedWarnings \u003d numWriteLockWarningsSuppressed;\n         numWriteLockWarningsSuppressed \u003d 0;\n-        longestLockHeldInterval \u003d longestWriteLockHeldInterval;\n-        longestWriteLockHeldInterval \u003d 0;\n-        timeStampOfLastWriteLockReport \u003d currentTime;\n+        longestLockHeldIntervalMs \u003d longestWriteLockHeldIntervalMs;\n+        longestWriteLockHeldIntervalMs \u003d 0;\n+        timeStampOfLastWriteLockReportMs \u003d currentTimeMs;\n       } else {\n         numWriteLockWarningsSuppressed++;\n       }\n     }\n \n     coarseLock.writeLock().unlock();\n \n     if (needReport) {\n-      addMetric(opName, writeLockInterval, true);\n+      addMetric(opName, writeLockIntervalNanos, true);\n     }\n \n     if (logReport) {\n       FSNamesystem.LOG.info(\"FSNamesystem write lock held for \" +\n-          writeLockInterval + \" ms via\\n\" +\n+          writeLockIntervalMs + \" ms via\\n\" +\n           StringUtils.getStackTrace(Thread.currentThread()) +\n           \"\\tNumber of suppressed write-lock reports: \" +\n           numSuppressedWarnings + \"\\n\\tLongest write-lock held interval: \" +\n-          longestLockHeldInterval);\n+          longestLockHeldIntervalMs);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void writeUnlock(String opName) {\n    final boolean needReport \u003d coarseLock.getWriteHoldCount() \u003d\u003d 1 \u0026\u0026\n        coarseLock.isWriteLockedByCurrentThread();\n    final long currentTimeNanos \u003d timer.monotonicNowNanos();\n    final long writeLockIntervalNanos \u003d\n        currentTimeNanos - writeLockHeldTimeStampNanos;\n    final long currentTimeMs \u003d TimeUnit.NANOSECONDS.toMillis(currentTimeNanos);\n    final long writeLockIntervalMs \u003d\n        TimeUnit.NANOSECONDS.toMillis(writeLockIntervalNanos);\n\n    boolean logReport \u003d false;\n    int numSuppressedWarnings \u003d 0;\n    long longestLockHeldIntervalMs \u003d 0;\n    if (needReport \u0026\u0026\n        writeLockIntervalMs \u003e\u003d this.writeLockReportingThresholdMs) {\n      if (writeLockIntervalMs \u003e longestWriteLockHeldIntervalMs) {\n        longestWriteLockHeldIntervalMs \u003d writeLockIntervalMs;\n      }\n      if (currentTimeMs - timeStampOfLastWriteLockReportMs \u003e\n          this.lockSuppressWarningIntervalMs) {\n        logReport \u003d true;\n        numSuppressedWarnings \u003d numWriteLockWarningsSuppressed;\n        numWriteLockWarningsSuppressed \u003d 0;\n        longestLockHeldIntervalMs \u003d longestWriteLockHeldIntervalMs;\n        longestWriteLockHeldIntervalMs \u003d 0;\n        timeStampOfLastWriteLockReportMs \u003d currentTimeMs;\n      } else {\n        numWriteLockWarningsSuppressed++;\n      }\n    }\n\n    coarseLock.writeLock().unlock();\n\n    if (needReport) {\n      addMetric(opName, writeLockIntervalNanos, true);\n    }\n\n    if (logReport) {\n      FSNamesystem.LOG.info(\"FSNamesystem write lock held for \" +\n          writeLockIntervalMs + \" ms via\\n\" +\n          StringUtils.getStackTrace(Thread.currentThread()) +\n          \"\\tNumber of suppressed write-lock reports: \" +\n          numSuppressedWarnings + \"\\n\\tLongest write-lock held interval: \" +\n          longestLockHeldIntervalMs);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystemLock.java",
+      "extendedDetails": {}
+    },
+    "ff0b99eafeda035ebe0dc82cfe689808047a8893": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-10872. Add MutableRate metrics for FSNamesystemLock operations. Contributed by Erik Krogen.\n",
+      "commitDate": "14/11/16 11:05 AM",
+      "commitName": "ff0b99eafeda035ebe0dc82cfe689808047a8893",
+      "commitAuthor": "Zhe Zhang",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10872. Add MutableRate metrics for FSNamesystemLock operations. Contributed by Erik Krogen.\n",
+          "commitDate": "14/11/16 11:05 AM",
+          "commitName": "ff0b99eafeda035ebe0dc82cfe689808047a8893",
+          "commitAuthor": "Zhe Zhang",
+          "commitDateOld": "30/09/16 1:16 PM",
+          "commitNameOld": "434c5ea75dc3d87513e49290ac9999148ff5163c",
+          "commitAuthorOld": "Zhe Zhang",
+          "daysBetweenCommits": 44.95,
+          "commitsBetweenForRepo": 391,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,37 +1,41 @@\n-  public void writeUnlock() {\n+  public void writeUnlock(String opName) {\n     final boolean needReport \u003d coarseLock.getWriteHoldCount() \u003d\u003d 1 \u0026\u0026\n         coarseLock.isWriteLockedByCurrentThread();\n     final long currentTime \u003d timer.monotonicNow();\n     final long writeLockInterval \u003d currentTime - writeLockHeldTimeStamp;\n \n     boolean logReport \u003d false;\n     int numSuppressedWarnings \u003d 0;\n     long longestLockHeldInterval \u003d 0;\n     if (needReport \u0026\u0026 writeLockInterval \u003e\u003d this.writeLockReportingThreshold) {\n       if (writeLockInterval \u003e longestWriteLockHeldInterval) {\n         longestWriteLockHeldInterval \u003d writeLockInterval;\n       }\n       if (currentTime - timeStampOfLastWriteLockReport \u003e\n           this.lockSuppressWarningInterval) {\n         logReport \u003d true;\n         numSuppressedWarnings \u003d numWriteLockWarningsSuppressed;\n         numWriteLockWarningsSuppressed \u003d 0;\n         longestLockHeldInterval \u003d longestWriteLockHeldInterval;\n         longestWriteLockHeldInterval \u003d 0;\n         timeStampOfLastWriteLockReport \u003d currentTime;\n       } else {\n         numWriteLockWarningsSuppressed++;\n       }\n     }\n \n     coarseLock.writeLock().unlock();\n \n+    if (needReport) {\n+      addMetric(opName, writeLockInterval, true);\n+    }\n+\n     if (logReport) {\n       FSNamesystem.LOG.info(\"FSNamesystem write lock held for \" +\n           writeLockInterval + \" ms via\\n\" +\n           StringUtils.getStackTrace(Thread.currentThread()) +\n           \"\\tNumber of suppressed write-lock reports: \" +\n           numSuppressedWarnings + \"\\n\\tLongest write-lock held interval: \" +\n           longestLockHeldInterval);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void writeUnlock(String opName) {\n    final boolean needReport \u003d coarseLock.getWriteHoldCount() \u003d\u003d 1 \u0026\u0026\n        coarseLock.isWriteLockedByCurrentThread();\n    final long currentTime \u003d timer.monotonicNow();\n    final long writeLockInterval \u003d currentTime - writeLockHeldTimeStamp;\n\n    boolean logReport \u003d false;\n    int numSuppressedWarnings \u003d 0;\n    long longestLockHeldInterval \u003d 0;\n    if (needReport \u0026\u0026 writeLockInterval \u003e\u003d this.writeLockReportingThreshold) {\n      if (writeLockInterval \u003e longestWriteLockHeldInterval) {\n        longestWriteLockHeldInterval \u003d writeLockInterval;\n      }\n      if (currentTime - timeStampOfLastWriteLockReport \u003e\n          this.lockSuppressWarningInterval) {\n        logReport \u003d true;\n        numSuppressedWarnings \u003d numWriteLockWarningsSuppressed;\n        numWriteLockWarningsSuppressed \u003d 0;\n        longestLockHeldInterval \u003d longestWriteLockHeldInterval;\n        longestWriteLockHeldInterval \u003d 0;\n        timeStampOfLastWriteLockReport \u003d currentTime;\n      } else {\n        numWriteLockWarningsSuppressed++;\n      }\n    }\n\n    coarseLock.writeLock().unlock();\n\n    if (needReport) {\n      addMetric(opName, writeLockInterval, true);\n    }\n\n    if (logReport) {\n      FSNamesystem.LOG.info(\"FSNamesystem write lock held for \" +\n          writeLockInterval + \" ms via\\n\" +\n          StringUtils.getStackTrace(Thread.currentThread()) +\n          \"\\tNumber of suppressed write-lock reports: \" +\n          numSuppressedWarnings + \"\\n\\tLongest write-lock held interval: \" +\n          longestLockHeldInterval);\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystemLock.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[opName-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10872. Add MutableRate metrics for FSNamesystemLock operations. Contributed by Erik Krogen.\n",
+          "commitDate": "14/11/16 11:05 AM",
+          "commitName": "ff0b99eafeda035ebe0dc82cfe689808047a8893",
+          "commitAuthor": "Zhe Zhang",
+          "commitDateOld": "30/09/16 1:16 PM",
+          "commitNameOld": "434c5ea75dc3d87513e49290ac9999148ff5163c",
+          "commitAuthorOld": "Zhe Zhang",
+          "daysBetweenCommits": 44.95,
+          "commitsBetweenForRepo": 391,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,37 +1,41 @@\n-  public void writeUnlock() {\n+  public void writeUnlock(String opName) {\n     final boolean needReport \u003d coarseLock.getWriteHoldCount() \u003d\u003d 1 \u0026\u0026\n         coarseLock.isWriteLockedByCurrentThread();\n     final long currentTime \u003d timer.monotonicNow();\n     final long writeLockInterval \u003d currentTime - writeLockHeldTimeStamp;\n \n     boolean logReport \u003d false;\n     int numSuppressedWarnings \u003d 0;\n     long longestLockHeldInterval \u003d 0;\n     if (needReport \u0026\u0026 writeLockInterval \u003e\u003d this.writeLockReportingThreshold) {\n       if (writeLockInterval \u003e longestWriteLockHeldInterval) {\n         longestWriteLockHeldInterval \u003d writeLockInterval;\n       }\n       if (currentTime - timeStampOfLastWriteLockReport \u003e\n           this.lockSuppressWarningInterval) {\n         logReport \u003d true;\n         numSuppressedWarnings \u003d numWriteLockWarningsSuppressed;\n         numWriteLockWarningsSuppressed \u003d 0;\n         longestLockHeldInterval \u003d longestWriteLockHeldInterval;\n         longestWriteLockHeldInterval \u003d 0;\n         timeStampOfLastWriteLockReport \u003d currentTime;\n       } else {\n         numWriteLockWarningsSuppressed++;\n       }\n     }\n \n     coarseLock.writeLock().unlock();\n \n+    if (needReport) {\n+      addMetric(opName, writeLockInterval, true);\n+    }\n+\n     if (logReport) {\n       FSNamesystem.LOG.info(\"FSNamesystem write lock held for \" +\n           writeLockInterval + \" ms via\\n\" +\n           StringUtils.getStackTrace(Thread.currentThread()) +\n           \"\\tNumber of suppressed write-lock reports: \" +\n           numSuppressedWarnings + \"\\n\\tLongest write-lock held interval: \" +\n           longestLockHeldInterval);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void writeUnlock(String opName) {\n    final boolean needReport \u003d coarseLock.getWriteHoldCount() \u003d\u003d 1 \u0026\u0026\n        coarseLock.isWriteLockedByCurrentThread();\n    final long currentTime \u003d timer.monotonicNow();\n    final long writeLockInterval \u003d currentTime - writeLockHeldTimeStamp;\n\n    boolean logReport \u003d false;\n    int numSuppressedWarnings \u003d 0;\n    long longestLockHeldInterval \u003d 0;\n    if (needReport \u0026\u0026 writeLockInterval \u003e\u003d this.writeLockReportingThreshold) {\n      if (writeLockInterval \u003e longestWriteLockHeldInterval) {\n        longestWriteLockHeldInterval \u003d writeLockInterval;\n      }\n      if (currentTime - timeStampOfLastWriteLockReport \u003e\n          this.lockSuppressWarningInterval) {\n        logReport \u003d true;\n        numSuppressedWarnings \u003d numWriteLockWarningsSuppressed;\n        numWriteLockWarningsSuppressed \u003d 0;\n        longestLockHeldInterval \u003d longestWriteLockHeldInterval;\n        longestWriteLockHeldInterval \u003d 0;\n        timeStampOfLastWriteLockReport \u003d currentTime;\n      } else {\n        numWriteLockWarningsSuppressed++;\n      }\n    }\n\n    coarseLock.writeLock().unlock();\n\n    if (needReport) {\n      addMetric(opName, writeLockInterval, true);\n    }\n\n    if (logReport) {\n      FSNamesystem.LOG.info(\"FSNamesystem write lock held for \" +\n          writeLockInterval + \" ms via\\n\" +\n          StringUtils.getStackTrace(Thread.currentThread()) +\n          \"\\tNumber of suppressed write-lock reports: \" +\n          numSuppressedWarnings + \"\\n\\tLongest write-lock held interval: \" +\n          longestLockHeldInterval);\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystemLock.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "434c5ea75dc3d87513e49290ac9999148ff5163c": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10896. Move lock logging logic from FSNamesystem into FSNamesystemLock. Contributed by Erik Krogen.\n",
+      "commitDate": "30/09/16 1:16 PM",
+      "commitName": "434c5ea75dc3d87513e49290ac9999148ff5163c",
+      "commitAuthor": "Zhe Zhang",
+      "diff": "@@ -0,0 +1,37 @@\n+  public void writeUnlock() {\n+    final boolean needReport \u003d coarseLock.getWriteHoldCount() \u003d\u003d 1 \u0026\u0026\n+        coarseLock.isWriteLockedByCurrentThread();\n+    final long currentTime \u003d timer.monotonicNow();\n+    final long writeLockInterval \u003d currentTime - writeLockHeldTimeStamp;\n+\n+    boolean logReport \u003d false;\n+    int numSuppressedWarnings \u003d 0;\n+    long longestLockHeldInterval \u003d 0;\n+    if (needReport \u0026\u0026 writeLockInterval \u003e\u003d this.writeLockReportingThreshold) {\n+      if (writeLockInterval \u003e longestWriteLockHeldInterval) {\n+        longestWriteLockHeldInterval \u003d writeLockInterval;\n+      }\n+      if (currentTime - timeStampOfLastWriteLockReport \u003e\n+          this.lockSuppressWarningInterval) {\n+        logReport \u003d true;\n+        numSuppressedWarnings \u003d numWriteLockWarningsSuppressed;\n+        numWriteLockWarningsSuppressed \u003d 0;\n+        longestLockHeldInterval \u003d longestWriteLockHeldInterval;\n+        longestWriteLockHeldInterval \u003d 0;\n+        timeStampOfLastWriteLockReport \u003d currentTime;\n+      } else {\n+        numWriteLockWarningsSuppressed++;\n+      }\n+    }\n+\n+    coarseLock.writeLock().unlock();\n+\n+    if (logReport) {\n+      FSNamesystem.LOG.info(\"FSNamesystem write lock held for \" +\n+          writeLockInterval + \" ms via\\n\" +\n+          StringUtils.getStackTrace(Thread.currentThread()) +\n+          \"\\tNumber of suppressed write-lock reports: \" +\n+          numSuppressedWarnings + \"\\n\\tLongest write-lock held interval: \" +\n+          longestLockHeldInterval);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void writeUnlock() {\n    final boolean needReport \u003d coarseLock.getWriteHoldCount() \u003d\u003d 1 \u0026\u0026\n        coarseLock.isWriteLockedByCurrentThread();\n    final long currentTime \u003d timer.monotonicNow();\n    final long writeLockInterval \u003d currentTime - writeLockHeldTimeStamp;\n\n    boolean logReport \u003d false;\n    int numSuppressedWarnings \u003d 0;\n    long longestLockHeldInterval \u003d 0;\n    if (needReport \u0026\u0026 writeLockInterval \u003e\u003d this.writeLockReportingThreshold) {\n      if (writeLockInterval \u003e longestWriteLockHeldInterval) {\n        longestWriteLockHeldInterval \u003d writeLockInterval;\n      }\n      if (currentTime - timeStampOfLastWriteLockReport \u003e\n          this.lockSuppressWarningInterval) {\n        logReport \u003d true;\n        numSuppressedWarnings \u003d numWriteLockWarningsSuppressed;\n        numWriteLockWarningsSuppressed \u003d 0;\n        longestLockHeldInterval \u003d longestWriteLockHeldInterval;\n        longestWriteLockHeldInterval \u003d 0;\n        timeStampOfLastWriteLockReport \u003d currentTime;\n      } else {\n        numWriteLockWarningsSuppressed++;\n      }\n    }\n\n    coarseLock.writeLock().unlock();\n\n    if (logReport) {\n      FSNamesystem.LOG.info(\"FSNamesystem write lock held for \" +\n          writeLockInterval + \" ms via\\n\" +\n          StringUtils.getStackTrace(Thread.currentThread()) +\n          \"\\tNumber of suppressed write-lock reports: \" +\n          numSuppressedWarnings + \"\\n\\tLongest write-lock held interval: \" +\n          longestLockHeldInterval);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSNamesystemLock.java"
+    }
+  }
+}

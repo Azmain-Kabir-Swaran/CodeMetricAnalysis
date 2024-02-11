@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DatanodeAdminBackoffMonitor.java",
+  "functionName": "check",
+  "functionId": "check",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeAdminBackoffMonitor.java",
+  "functionStartLine": 265,
+  "functionEndLine": 304,
+  "numCommitsSeen": 1,
+  "timeTaken": 862,
+  "changeHistory": [
+    "c93cb6790e0f1c64efd03d859f907a0522010894"
+  ],
+  "changeHistoryShort": {
+    "c93cb6790e0f1c64efd03d859f907a0522010894": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c93cb6790e0f1c64efd03d859f907a0522010894": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-14854. Create improved decommission monitor implementation. Contributed by Stephen O\u0027Donnell.\n\nReviewed-by: Inigo Goiri \u003cinigoiri@apache.org\u003e\nSigned-off-by: Wei-Chiu Chuang \u003cweichiu@apache.org\u003e\n",
+      "commitDate": "10/12/19 5:16 PM",
+      "commitName": "c93cb6790e0f1c64efd03d859f907a0522010894",
+      "commitAuthor": "Stephen O\u0027Donnell",
+      "diff": "@@ -0,0 +1,40 @@\n+  private void check() {\n+    final List\u003cDatanodeDescriptor\u003e toRemove \u003d new ArrayList\u003c\u003e();\n+\n+    if (outOfServiceNodeBlocks.size() \u003d\u003d 0) {\n+      // No nodes currently being tracked so simply return\n+      return;\n+    }\n+\n+    // Check if there are any pending nodes to process, ie those where the\n+    // storage has not been scanned yet. For all which are pending, scan\n+    // the storage and load the under-replicated block list into\n+    // outOfServiceNodeBlocks. As this does not modify any external structures\n+    // it can be done under the namenode *read* lock, and the lock can be\n+    // dropped between each storage on each node.\n+    //\n+    // TODO - This is an expensive call, depending on how many nodes are\n+    //        to be processed, but it requires only the read lock and it will\n+    //        be dropped and re-taken frequently. We may want to throttle this\n+    //        to process only a few nodes per iteration.\n+    outOfServiceNodeBlocks.keySet()\n+        .stream()\n+        .filter(n -\u003e outOfServiceNodeBlocks.get(n) \u003d\u003d null)\n+        .forEach(n -\u003e scanDatanodeStorage(n, true));\n+\n+    processMaintenanceNodes();\n+    // First check the pending replication list and remove any blocks\n+    // which are now replicated OK. This list is constrained in size so this\n+    // call should not be overly expensive.\n+    processPendingReplication();\n+\n+    // Now move a limited number of blocks to pending\n+    moveBlocksToPending();\n+\n+    // Check if any nodes have reached zero blocks and also update the stats\n+    // exposed via JMX for all nodes still being processed.\n+    checkForCompletedNodes(toRemove);\n+\n+    // Finally move the nodes to their final state if they are ready.\n+    processCompletedNodes(toRemove);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void check() {\n    final List\u003cDatanodeDescriptor\u003e toRemove \u003d new ArrayList\u003c\u003e();\n\n    if (outOfServiceNodeBlocks.size() \u003d\u003d 0) {\n      // No nodes currently being tracked so simply return\n      return;\n    }\n\n    // Check if there are any pending nodes to process, ie those where the\n    // storage has not been scanned yet. For all which are pending, scan\n    // the storage and load the under-replicated block list into\n    // outOfServiceNodeBlocks. As this does not modify any external structures\n    // it can be done under the namenode *read* lock, and the lock can be\n    // dropped between each storage on each node.\n    //\n    // TODO - This is an expensive call, depending on how many nodes are\n    //        to be processed, but it requires only the read lock and it will\n    //        be dropped and re-taken frequently. We may want to throttle this\n    //        to process only a few nodes per iteration.\n    outOfServiceNodeBlocks.keySet()\n        .stream()\n        .filter(n -\u003e outOfServiceNodeBlocks.get(n) \u003d\u003d null)\n        .forEach(n -\u003e scanDatanodeStorage(n, true));\n\n    processMaintenanceNodes();\n    // First check the pending replication list and remove any blocks\n    // which are now replicated OK. This list is constrained in size so this\n    // call should not be overly expensive.\n    processPendingReplication();\n\n    // Now move a limited number of blocks to pending\n    moveBlocksToPending();\n\n    // Check if any nodes have reached zero blocks and also update the stats\n    // exposed via JMX for all nodes still being processed.\n    checkForCompletedNodes(toRemove);\n\n    // Finally move the nodes to their final state if they are ready.\n    processCompletedNodes(toRemove);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeAdminBackoffMonitor.java"
+    }
+  }
+}

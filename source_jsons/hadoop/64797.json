@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "InconsistentAmazonS3Client.java",
+  "functionName": "restoreListObjects",
+  "functionId": "restoreListObjects___request-ListObjectsRequest__rawListing-ObjectListing",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/InconsistentAmazonS3Client.java",
+  "functionStartLine": 344,
+  "functionEndLine": 355,
+  "numCommitsSeen": 7,
+  "timeTaken": 1486,
+  "changeHistory": [
+    "5bbca80428ffbe776650652de86a3bba885edb31",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "5bbca80428ffbe776650652de86a3bba885edb31": "Ybodychange",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5bbca80428ffbe776650652de86a3bba885edb31": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13421. Switch to v2 of the S3 List Objects API in S3A.\nContributed by Aaron Fabbri\n",
+      "commitDate": "08/09/17 4:07 AM",
+      "commitName": "5bbca80428ffbe776650652de86a3bba885edb31",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "01/09/17 6:13 AM",
+      "commitNameOld": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 6.91,
+      "commitsBetweenForRepo": 47,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,12 @@\n   private ObjectListing restoreListObjects(ListObjectsRequest request,\n       ObjectListing rawListing) {\n     List\u003cS3ObjectSummary\u003e outputList \u003d rawListing.getObjectSummaries();\n     List\u003cString\u003e outputPrefixes \u003d rawListing.getCommonPrefixes();\n     // recursive list has no delimiter, returns everything that matches a\n     // prefix.\n     boolean recursiveObjectList \u003d !(\"/\".equals(request.getDelimiter()));\n+    String prefix \u003d request.getPrefix();\n \n-    // Go through all deleted keys\n-    for (String key : new HashSet\u003c\u003e(delayedDeletes.keySet())) {\n-      Delete delete \u003d delayedDeletes.get(key);\n-      if (isKeyDelayed(delete.time(), key)) {\n-        if (isDescendant(request.getPrefix(), key, recursiveObjectList)) {\n-          if (delete.summary() !\u003d null) {\n-            addSummaryIfNotPresent(outputList, delete.summary());\n-          }\n-        }\n-        // Non-recursive list has delimiter: will return rolled-up prefixes for\n-        // all keys that are not direct children\n-        if (!recursiveObjectList) {\n-          if (isDescendant(request.getPrefix(), key, true)) {\n-            addPrefixIfNotPresent(outputPrefixes, request.getPrefix(), key);\n-          }\n-        }\n-      } else {\n-        // Clean up any expired entries\n-        delayedDeletes.remove(key);\n-      }\n-    }\n-\n+    restoreDeleted(outputList, outputPrefixes, recursiveObjectList, prefix);\n     return new CustomObjectListing(rawListing, outputList, outputPrefixes);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private ObjectListing restoreListObjects(ListObjectsRequest request,\n      ObjectListing rawListing) {\n    List\u003cS3ObjectSummary\u003e outputList \u003d rawListing.getObjectSummaries();\n    List\u003cString\u003e outputPrefixes \u003d rawListing.getCommonPrefixes();\n    // recursive list has no delimiter, returns everything that matches a\n    // prefix.\n    boolean recursiveObjectList \u003d !(\"/\".equals(request.getDelimiter()));\n    String prefix \u003d request.getPrefix();\n\n    restoreDeleted(outputList, outputPrefixes, recursiveObjectList, prefix);\n    return new CustomObjectListing(rawListing, outputList, outputPrefixes);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/InconsistentAmazonS3Client.java",
+      "extendedDetails": {}
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,32 @@\n+  private ObjectListing restoreListObjects(ListObjectsRequest request,\n+      ObjectListing rawListing) {\n+    List\u003cS3ObjectSummary\u003e outputList \u003d rawListing.getObjectSummaries();\n+    List\u003cString\u003e outputPrefixes \u003d rawListing.getCommonPrefixes();\n+    // recursive list has no delimiter, returns everything that matches a\n+    // prefix.\n+    boolean recursiveObjectList \u003d !(\"/\".equals(request.getDelimiter()));\n+\n+    // Go through all deleted keys\n+    for (String key : new HashSet\u003c\u003e(delayedDeletes.keySet())) {\n+      Delete delete \u003d delayedDeletes.get(key);\n+      if (isKeyDelayed(delete.time(), key)) {\n+        if (isDescendant(request.getPrefix(), key, recursiveObjectList)) {\n+          if (delete.summary() !\u003d null) {\n+            addSummaryIfNotPresent(outputList, delete.summary());\n+          }\n+        }\n+        // Non-recursive list has delimiter: will return rolled-up prefixes for\n+        // all keys that are not direct children\n+        if (!recursiveObjectList) {\n+          if (isDescendant(request.getPrefix(), key, true)) {\n+            addPrefixIfNotPresent(outputPrefixes, request.getPrefix(), key);\n+          }\n+        }\n+      } else {\n+        // Clean up any expired entries\n+        delayedDeletes.remove(key);\n+      }\n+    }\n+\n+    return new CustomObjectListing(rawListing, outputList, outputPrefixes);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private ObjectListing restoreListObjects(ListObjectsRequest request,\n      ObjectListing rawListing) {\n    List\u003cS3ObjectSummary\u003e outputList \u003d rawListing.getObjectSummaries();\n    List\u003cString\u003e outputPrefixes \u003d rawListing.getCommonPrefixes();\n    // recursive list has no delimiter, returns everything that matches a\n    // prefix.\n    boolean recursiveObjectList \u003d !(\"/\".equals(request.getDelimiter()));\n\n    // Go through all deleted keys\n    for (String key : new HashSet\u003c\u003e(delayedDeletes.keySet())) {\n      Delete delete \u003d delayedDeletes.get(key);\n      if (isKeyDelayed(delete.time(), key)) {\n        if (isDescendant(request.getPrefix(), key, recursiveObjectList)) {\n          if (delete.summary() !\u003d null) {\n            addSummaryIfNotPresent(outputList, delete.summary());\n          }\n        }\n        // Non-recursive list has delimiter: will return rolled-up prefixes for\n        // all keys that are not direct children\n        if (!recursiveObjectList) {\n          if (isDescendant(request.getPrefix(), key, true)) {\n            addPrefixIfNotPresent(outputPrefixes, request.getPrefix(), key);\n          }\n        }\n      } else {\n        // Clean up any expired entries\n        delayedDeletes.remove(key);\n      }\n    }\n\n    return new CustomObjectListing(rawListing, outputList, outputPrefixes);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/InconsistentAmazonS3Client.java"
+    }
+  }
+}

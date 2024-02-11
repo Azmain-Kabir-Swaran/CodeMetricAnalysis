@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMWebServices.java",
+  "functionName": "createDelegationToken",
+  "functionId": "createDelegationToken___tokenData-DelegationToken__hsr-HttpServletRequest__callerUGI-UserGroupInformation",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/webapp/RMWebServices.java",
+  "functionStartLine": 1878,
+  "functionEndLine": 1914,
+  "numCommitsSeen": 106,
+  "timeTaken": 3067,
+  "changeHistory": [
+    "030580387a4d8d97560a93da2fd7494b4366e3b6"
+  ],
+  "changeHistoryShort": {
+    "030580387a4d8d97560a93da2fd7494b4366e3b6": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "030580387a4d8d97560a93da2fd7494b4366e3b6": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2233. Implemented ResourceManager web-services to create, renew and cancel delegation tokens. Contributed by Varun Vasudev.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1610876 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "15/07/14 4:00 PM",
+      "commitName": "030580387a4d8d97560a93da2fd7494b4366e3b6",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,39 @@\n+  private Response createDelegationToken(DelegationToken tokenData,\n+      HttpServletRequest hsr, UserGroupInformation callerUGI)\n+      throws AuthorizationException, IOException, InterruptedException,\n+      Exception {\n+\n+    final String renewer \u003d tokenData.getRenewer();\n+    GetDelegationTokenResponse resp;\n+    try {\n+      resp \u003d\n+          callerUGI\n+            .doAs(new PrivilegedExceptionAction\u003cGetDelegationTokenResponse\u003e() {\n+              @Override\n+              public GetDelegationTokenResponse run() throws IOException,\n+                  YarnException {\n+                GetDelegationTokenRequest createReq \u003d\n+                    GetDelegationTokenRequest.newInstance(renewer);\n+                return rm.getClientRMService().getDelegationToken(createReq);\n+              }\n+            });\n+    } catch (Exception e) {\n+      LOG.info(\"Create delegation token request failed\", e);\n+      throw e;\n+    }\n+\n+    Token\u003cRMDelegationTokenIdentifier\u003e tk \u003d\n+        new Token\u003cRMDelegationTokenIdentifier\u003e(resp.getRMDelegationToken()\n+          .getIdentifier().array(), resp.getRMDelegationToken().getPassword()\n+          .array(), new Text(resp.getRMDelegationToken().getKind()), new Text(\n+          resp.getRMDelegationToken().getService()));\n+    RMDelegationTokenIdentifier identifier \u003d tk.decodeIdentifier();\n+    long currentExpiration \u003d\n+        rm.getRMContext().getRMDelegationTokenSecretManager()\n+          .getRenewDate(identifier);\n+    DelegationToken respToken \u003d\n+        new DelegationToken(tk.encodeToUrlString(), renewer, identifier\n+          .getOwner().toString(), tk.getKind().toString(), currentExpiration,\n+          identifier.getMaxDate());\n+    return Response.status(Status.OK).entity(respToken).build();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Response createDelegationToken(DelegationToken tokenData,\n      HttpServletRequest hsr, UserGroupInformation callerUGI)\n      throws AuthorizationException, IOException, InterruptedException,\n      Exception {\n\n    final String renewer \u003d tokenData.getRenewer();\n    GetDelegationTokenResponse resp;\n    try {\n      resp \u003d\n          callerUGI\n            .doAs(new PrivilegedExceptionAction\u003cGetDelegationTokenResponse\u003e() {\n              @Override\n              public GetDelegationTokenResponse run() throws IOException,\n                  YarnException {\n                GetDelegationTokenRequest createReq \u003d\n                    GetDelegationTokenRequest.newInstance(renewer);\n                return rm.getClientRMService().getDelegationToken(createReq);\n              }\n            });\n    } catch (Exception e) {\n      LOG.info(\"Create delegation token request failed\", e);\n      throw e;\n    }\n\n    Token\u003cRMDelegationTokenIdentifier\u003e tk \u003d\n        new Token\u003cRMDelegationTokenIdentifier\u003e(resp.getRMDelegationToken()\n          .getIdentifier().array(), resp.getRMDelegationToken().getPassword()\n          .array(), new Text(resp.getRMDelegationToken().getKind()), new Text(\n          resp.getRMDelegationToken().getService()));\n    RMDelegationTokenIdentifier identifier \u003d tk.decodeIdentifier();\n    long currentExpiration \u003d\n        rm.getRMContext().getRMDelegationTokenSecretManager()\n          .getRenewDate(identifier);\n    DelegationToken respToken \u003d\n        new DelegationToken(tk.encodeToUrlString(), renewer, identifier\n          .getOwner().toString(), tk.getKind().toString(), currentExpiration,\n          identifier.getMaxDate());\n    return Response.status(Status.OK).entity(respToken).build();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/webapp/RMWebServices.java"
+    }
+  }
+}

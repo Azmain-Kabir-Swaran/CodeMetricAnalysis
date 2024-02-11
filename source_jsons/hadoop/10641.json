@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockChecksumHelper.java",
+  "functionName": "setOrVerifyChecksumProperties",
+  "functionId": "setOrVerifyChecksumProperties___blockIdx-int__bpc-int__cpb-long(modifiers-final)__ct-DataChecksum.Type",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockChecksumHelper.java",
+  "functionStartLine": 723,
+  "functionEndLine": 758,
+  "numCommitsSeen": 8,
+  "timeTaken": 1928,
+  "changeHistory": [
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+    "e6cb07520f935efde3e881de8f84ee7f6e0a746f",
+    "d749cf65e1ab0e0daf5be86931507183f189e855"
+  ],
+  "changeHistoryShort": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": "Ybodychange",
+    "e6cb07520f935efde3e881de8f84ee7f6e0a746f": "Ybodychange",
+    "d749cf65e1ab0e0daf5be86931507183f189e855": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13056. Expose file-level composite CRCs in HDFS which are comparable across different instances/layouts. Contributed by Dennis Huo.\n",
+      "commitDate": "10/04/18 9:31 PM",
+      "commitName": "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+      "commitAuthor": "Xiao Chen",
+      "commitDateOld": "14/03/17 4:41 PM",
+      "commitNameOld": "cc1292e73acd39c1f1023ad4841ffe30176f7daf",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 392.2,
+      "commitsBetweenForRepo": 2722,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,36 @@\n     private void setOrVerifyChecksumProperties(int blockIdx, int bpc,\n         final long cpb, DataChecksum.Type ct) throws IOException {\n       //read byte-per-checksum\n       if (blockIdx \u003d\u003d 0) { //first block\n         setBytesPerCRC(bpc);\n       } else if (bpc !\u003d getBytesPerCRC()) {\n         throw new IOException(\"Byte-per-checksum not matched: bpc\u003d\" + bpc\n             + \" but bytesPerCRC\u003d\" + getBytesPerCRC());\n       }\n \n       //read crc-per-block\n       if (blockIdx \u003d\u003d 0) {\n         setCrcPerBlock(cpb);\n       }\n \n       if (blockIdx \u003d\u003d 0) { // first block\n         setCrcType(ct);\n       } else if (getCrcType() !\u003d DataChecksum.Type.MIXED \u0026\u0026\n           getCrcType() !\u003d ct) {\n-        // if crc types are mixed in a file\n-        setCrcType(DataChecksum.Type.MIXED);\n+        BlockChecksumType groupChecksumType \u003d\n+            getBlockChecksumOptions().getBlockChecksumType();\n+        if (groupChecksumType \u003d\u003d BlockChecksumType.COMPOSITE_CRC) {\n+          throw new IOException(String.format(\n+              \"BlockChecksumType COMPOSITE_CRC doesn\u0027t support MIXED \"\n+              + \"underlying types; previous block was %s, next block is %s\",\n+              getCrcType(), ct));\n+        } else {\n+          setCrcType(DataChecksum.Type.MIXED);\n+        }\n       }\n \n       if (blockIdx \u003d\u003d 0) {\n         LOG.debug(\"set bytesPerCRC\u003d{}, crcPerBlock\u003d{}\", getBytesPerCRC(),\n             getCrcPerBlock());\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private void setOrVerifyChecksumProperties(int blockIdx, int bpc,\n        final long cpb, DataChecksum.Type ct) throws IOException {\n      //read byte-per-checksum\n      if (blockIdx \u003d\u003d 0) { //first block\n        setBytesPerCRC(bpc);\n      } else if (bpc !\u003d getBytesPerCRC()) {\n        throw new IOException(\"Byte-per-checksum not matched: bpc\u003d\" + bpc\n            + \" but bytesPerCRC\u003d\" + getBytesPerCRC());\n      }\n\n      //read crc-per-block\n      if (blockIdx \u003d\u003d 0) {\n        setCrcPerBlock(cpb);\n      }\n\n      if (blockIdx \u003d\u003d 0) { // first block\n        setCrcType(ct);\n      } else if (getCrcType() !\u003d DataChecksum.Type.MIXED \u0026\u0026\n          getCrcType() !\u003d ct) {\n        BlockChecksumType groupChecksumType \u003d\n            getBlockChecksumOptions().getBlockChecksumType();\n        if (groupChecksumType \u003d\u003d BlockChecksumType.COMPOSITE_CRC) {\n          throw new IOException(String.format(\n              \"BlockChecksumType COMPOSITE_CRC doesn\u0027t support MIXED \"\n              + \"underlying types; previous block was %s, next block is %s\",\n              getCrcType(), ct));\n        } else {\n          setCrcType(DataChecksum.Type.MIXED);\n        }\n      }\n\n      if (blockIdx \u003d\u003d 0) {\n        LOG.debug(\"set bytesPerCRC\u003d{}, crcPerBlock\u003d{}\", getBytesPerCRC(),\n            getCrcPerBlock());\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockChecksumHelper.java",
+      "extendedDetails": {}
+    },
+    "e6cb07520f935efde3e881de8f84ee7f6e0a746f": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10460. Recompute block checksum for a particular range less than file size on the fly by reconstructing missed block. Contributed by Rakesh R\n",
+      "commitDate": "24/06/16 2:39 AM",
+      "commitName": "e6cb07520f935efde3e881de8f84ee7f6e0a746f",
+      "commitAuthor": "Kai Zheng",
+      "commitDateOld": "01/06/16 9:56 PM",
+      "commitNameOld": "d749cf65e1ab0e0daf5be86931507183f189e855",
+      "commitAuthorOld": "Kai Zheng",
+      "daysBetweenCommits": 22.2,
+      "commitsBetweenForRepo": 141,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,28 @@\n     private void setOrVerifyChecksumProperties(int blockIdx, int bpc,\n         final long cpb, DataChecksum.Type ct) throws IOException {\n       //read byte-per-checksum\n       if (blockIdx \u003d\u003d 0) { //first block\n         setBytesPerCRC(bpc);\n       } else if (bpc !\u003d getBytesPerCRC()) {\n         throw new IOException(\"Byte-per-checksum not matched: bpc\u003d\" + bpc\n             + \" but bytesPerCRC\u003d\" + getBytesPerCRC());\n       }\n \n       //read crc-per-block\n       if (blockIdx \u003d\u003d 0) {\n         setCrcPerBlock(cpb);\n       }\n \n       if (blockIdx \u003d\u003d 0) { // first block\n         setCrcType(ct);\n       } else if (getCrcType() !\u003d DataChecksum.Type.MIXED \u0026\u0026\n           getCrcType() !\u003d ct) {\n         // if crc types are mixed in a file\n         setCrcType(DataChecksum.Type.MIXED);\n       }\n \n-      if (LOG.isDebugEnabled()) {\n-        if (blockIdx \u003d\u003d 0) {\n-          LOG.debug(\"set bytesPerCRC\u003d\" + getBytesPerCRC()\n-              + \", crcPerBlock\u003d\" + getCrcPerBlock());\n-        }\n+      if (blockIdx \u003d\u003d 0) {\n+        LOG.debug(\"set bytesPerCRC\u003d{}, crcPerBlock\u003d{}\", getBytesPerCRC(),\n+            getCrcPerBlock());\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private void setOrVerifyChecksumProperties(int blockIdx, int bpc,\n        final long cpb, DataChecksum.Type ct) throws IOException {\n      //read byte-per-checksum\n      if (blockIdx \u003d\u003d 0) { //first block\n        setBytesPerCRC(bpc);\n      } else if (bpc !\u003d getBytesPerCRC()) {\n        throw new IOException(\"Byte-per-checksum not matched: bpc\u003d\" + bpc\n            + \" but bytesPerCRC\u003d\" + getBytesPerCRC());\n      }\n\n      //read crc-per-block\n      if (blockIdx \u003d\u003d 0) {\n        setCrcPerBlock(cpb);\n      }\n\n      if (blockIdx \u003d\u003d 0) { // first block\n        setCrcType(ct);\n      } else if (getCrcType() !\u003d DataChecksum.Type.MIXED \u0026\u0026\n          getCrcType() !\u003d ct) {\n        // if crc types are mixed in a file\n        setCrcType(DataChecksum.Type.MIXED);\n      }\n\n      if (blockIdx \u003d\u003d 0) {\n        LOG.debug(\"set bytesPerCRC\u003d{}, crcPerBlock\u003d{}\", getBytesPerCRC(),\n            getCrcPerBlock());\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockChecksumHelper.java",
+      "extendedDetails": {}
+    },
+    "d749cf65e1ab0e0daf5be86931507183f189e855": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9833. Erasure coding: recomputing block checksum on the fly by reconstructing the missed/corrupt block data. Contributed by Rakesh R.\n",
+      "commitDate": "01/06/16 9:56 PM",
+      "commitName": "d749cf65e1ab0e0daf5be86931507183f189e855",
+      "commitAuthor": "Kai Zheng",
+      "diff": "@@ -0,0 +1,30 @@\n+    private void setOrVerifyChecksumProperties(int blockIdx, int bpc,\n+        final long cpb, DataChecksum.Type ct) throws IOException {\n+      //read byte-per-checksum\n+      if (blockIdx \u003d\u003d 0) { //first block\n+        setBytesPerCRC(bpc);\n+      } else if (bpc !\u003d getBytesPerCRC()) {\n+        throw new IOException(\"Byte-per-checksum not matched: bpc\u003d\" + bpc\n+            + \" but bytesPerCRC\u003d\" + getBytesPerCRC());\n+      }\n+\n+      //read crc-per-block\n+      if (blockIdx \u003d\u003d 0) {\n+        setCrcPerBlock(cpb);\n+      }\n+\n+      if (blockIdx \u003d\u003d 0) { // first block\n+        setCrcType(ct);\n+      } else if (getCrcType() !\u003d DataChecksum.Type.MIXED \u0026\u0026\n+          getCrcType() !\u003d ct) {\n+        // if crc types are mixed in a file\n+        setCrcType(DataChecksum.Type.MIXED);\n+      }\n+\n+      if (LOG.isDebugEnabled()) {\n+        if (blockIdx \u003d\u003d 0) {\n+          LOG.debug(\"set bytesPerCRC\u003d\" + getBytesPerCRC()\n+              + \", crcPerBlock\u003d\" + getCrcPerBlock());\n+        }\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private void setOrVerifyChecksumProperties(int blockIdx, int bpc,\n        final long cpb, DataChecksum.Type ct) throws IOException {\n      //read byte-per-checksum\n      if (blockIdx \u003d\u003d 0) { //first block\n        setBytesPerCRC(bpc);\n      } else if (bpc !\u003d getBytesPerCRC()) {\n        throw new IOException(\"Byte-per-checksum not matched: bpc\u003d\" + bpc\n            + \" but bytesPerCRC\u003d\" + getBytesPerCRC());\n      }\n\n      //read crc-per-block\n      if (blockIdx \u003d\u003d 0) {\n        setCrcPerBlock(cpb);\n      }\n\n      if (blockIdx \u003d\u003d 0) { // first block\n        setCrcType(ct);\n      } else if (getCrcType() !\u003d DataChecksum.Type.MIXED \u0026\u0026\n          getCrcType() !\u003d ct) {\n        // if crc types are mixed in a file\n        setCrcType(DataChecksum.Type.MIXED);\n      }\n\n      if (LOG.isDebugEnabled()) {\n        if (blockIdx \u003d\u003d 0) {\n          LOG.debug(\"set bytesPerCRC\u003d\" + getBytesPerCRC()\n              + \", crcPerBlock\u003d\" + getCrcPerBlock());\n        }\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockChecksumHelper.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMContainerAllocator.java",
+  "functionName": "handleMapContainerRequest",
+  "functionId": "handleMapContainerRequest___reqEvent-ContainerRequestEvent",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/rm/RMContainerAllocator.java",
+  "functionStartLine": 475,
+  "functionEndLine": 516,
+  "numCommitsSeen": 82,
+  "timeTaken": 1052,
+  "changeHistory": [
+    "fc2b69eba1c5df59f6175205c27dc7b584df50c0"
+  ],
+  "changeHistoryShort": {
+    "fc2b69eba1c5df59f6175205c27dc7b584df50c0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fc2b69eba1c5df59f6175205c27dc7b584df50c0": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-6765. MR should not schedule container requests in cases where reducer or mapper containers demand resource larger than the maximum supported (haibochen via rkanter)\n",
+      "commitDate": "01/11/16 8:47 PM",
+      "commitName": "fc2b69eba1c5df59f6175205c27dc7b584df50c0",
+      "commitAuthor": "Robert Kanter",
+      "diff": "@@ -0,0 +1,42 @@\n+  private void handleMapContainerRequest(ContainerRequestEvent reqEvent) {\n+    assert(reqEvent.getAttemptID().getTaskId().getTaskType().equals(\n+        TaskType.MAP));\n+\n+    Resource supportedMaxContainerCapability \u003d getMaxContainerCapability();\n+    JobId jobId \u003d getJob().getID();\n+\n+    if (mapResourceRequest.equals(Resources.none())) {\n+      mapResourceRequest \u003d reqEvent.getCapability();\n+      eventHandler.handle(new JobHistoryEvent(jobId,\n+          new NormalizedResourceEvent(\n+              org.apache.hadoop.mapreduce.TaskType.MAP,\n+              mapResourceRequest.getMemorySize())));\n+      LOG.info(\"mapResourceRequest:\" + mapResourceRequest);\n+    }\n+\n+    boolean mapContainerRequestAccepted \u003d true;\n+    if (mapResourceRequest.getMemorySize() \u003e\n+        supportedMaxContainerCapability.getMemorySize()\n+        ||\n+        mapResourceRequest.getVirtualCores() \u003e\n+        supportedMaxContainerCapability.getVirtualCores()) {\n+      mapContainerRequestAccepted \u003d false;\n+    }\n+\n+    if(mapContainerRequestAccepted) {\n+      // set the resources\n+      reqEvent.getCapability().setMemorySize(\n+          mapResourceRequest.getMemorySize());\n+      reqEvent.getCapability().setVirtualCores(\n+          mapResourceRequest.getVirtualCores());\n+      scheduledRequests.addMap(reqEvent); //maps are immediately scheduled\n+    } else {\n+      String diagMsg \u003d \"The required MAP capability is more than the \" +\n+          \"supported max container capability in the cluster. Killing\" +\n+          \" the Job. mapResourceRequest: \" + mapResourceRequest +\n+          \" maxContainerCapability:\" + supportedMaxContainerCapability;\n+      LOG.info(diagMsg);\n+      eventHandler.handle(new JobDiagnosticsUpdateEvent(jobId, diagMsg));\n+      eventHandler.handle(new JobEvent(jobId, JobEventType.JOB_KILL));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void handleMapContainerRequest(ContainerRequestEvent reqEvent) {\n    assert(reqEvent.getAttemptID().getTaskId().getTaskType().equals(\n        TaskType.MAP));\n\n    Resource supportedMaxContainerCapability \u003d getMaxContainerCapability();\n    JobId jobId \u003d getJob().getID();\n\n    if (mapResourceRequest.equals(Resources.none())) {\n      mapResourceRequest \u003d reqEvent.getCapability();\n      eventHandler.handle(new JobHistoryEvent(jobId,\n          new NormalizedResourceEvent(\n              org.apache.hadoop.mapreduce.TaskType.MAP,\n              mapResourceRequest.getMemorySize())));\n      LOG.info(\"mapResourceRequest:\" + mapResourceRequest);\n    }\n\n    boolean mapContainerRequestAccepted \u003d true;\n    if (mapResourceRequest.getMemorySize() \u003e\n        supportedMaxContainerCapability.getMemorySize()\n        ||\n        mapResourceRequest.getVirtualCores() \u003e\n        supportedMaxContainerCapability.getVirtualCores()) {\n      mapContainerRequestAccepted \u003d false;\n    }\n\n    if(mapContainerRequestAccepted) {\n      // set the resources\n      reqEvent.getCapability().setMemorySize(\n          mapResourceRequest.getMemorySize());\n      reqEvent.getCapability().setVirtualCores(\n          mapResourceRequest.getVirtualCores());\n      scheduledRequests.addMap(reqEvent); //maps are immediately scheduled\n    } else {\n      String diagMsg \u003d \"The required MAP capability is more than the \" +\n          \"supported max container capability in the cluster. Killing\" +\n          \" the Job. mapResourceRequest: \" + mapResourceRequest +\n          \" maxContainerCapability:\" + supportedMaxContainerCapability;\n      LOG.info(diagMsg);\n      eventHandler.handle(new JobDiagnosticsUpdateEvent(jobId, diagMsg));\n      eventHandler.handle(new JobEvent(jobId, JobEventType.JOB_KILL));\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/rm/RMContainerAllocator.java"
+    }
+  }
+}

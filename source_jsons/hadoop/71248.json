@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AuditReplayMapper.java",
+  "functionName": "setup",
+  "functionId": "setup___context-Mapper.Context(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-dynamometer/hadoop-dynamometer-workload/src/main/java/org/apache/hadoop/tools/dynamometer/workloadgenerator/audit/AuditReplayMapper.java",
+  "functionStartLine": 208,
+  "functionEndLine": 244,
+  "numCommitsSeen": 3,
+  "timeTaken": 432,
+  "changeHistory": [
+    "ab0b180ddb5d0775a2452d5eeb7badd252aadb91"
+  ],
+  "changeHistoryShort": {
+    "ab0b180ddb5d0775a2452d5eeb7badd252aadb91": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ab0b180ddb5d0775a2452d5eeb7badd252aadb91": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-12345 Add Dynamometer to hadoop-tools, a tool for scale testing the HDFS NameNode with real metadata and workloads. Contributed by Erik Krogen.\n",
+      "commitDate": "25/06/19 8:07 AM",
+      "commitName": "ab0b180ddb5d0775a2452d5eeb7badd252aadb91",
+      "commitAuthor": "Erik Krogen",
+      "diff": "@@ -0,0 +1,37 @@\n+  public void setup(final Mapper.Context context) throws IOException {\n+    Configuration conf \u003d context.getConfiguration();\n+    // WorkloadDriver ensures that the starttimestamp is set\n+    startTimestampMs \u003d conf.getLong(WorkloadDriver.START_TIMESTAMP_MS, -1);\n+    numThreads \u003d conf.getInt(NUM_THREADS_KEY, NUM_THREADS_DEFAULT);\n+    rateFactor \u003d conf.getDouble(RATE_FACTOR_KEY, RATE_FACTOR_DEFAULT);\n+    try {\n+      commandParser \u003d conf.getClass(COMMAND_PARSER_KEY, COMMAND_PARSER_DEFAULT,\n+          AuditCommandParser.class).getConstructor().newInstance();\n+    } catch (NoSuchMethodException | InstantiationException\n+        | IllegalAccessException | InvocationTargetException e) {\n+      throw new IOException(\n+          \"Exception encountered while instantiating the command parser\", e);\n+    }\n+    commandParser.initialize(conf);\n+    relativeToAbsoluteTimestamp \u003d\n+        (input) -\u003e startTimestampMs + Math.round(input / rateFactor);\n+\n+    LOG.info(\"Starting \" + numThreads + \" threads\");\n+\n+    progressExecutor \u003d new ScheduledThreadPoolExecutor(1);\n+    // half of the timeout or once per minute if none specified\n+    long progressFrequencyMs \u003d conf.getLong(MRJobConfig.TASK_TIMEOUT,\n+        2 * 60 * 1000) / 2;\n+    progressExecutor.scheduleAtFixedRate(context::progress,\n+        progressFrequencyMs, progressFrequencyMs, TimeUnit.MILLISECONDS);\n+\n+    threads \u003d new ArrayList\u003c\u003e();\n+    ConcurrentMap\u003cString, FileSystem\u003e fsCache \u003d new ConcurrentHashMap\u003c\u003e();\n+    commandQueue \u003d new DelayQueue\u003c\u003e();\n+    for (int i \u003d 0; i \u003c numThreads; i++) {\n+      AuditReplayThread thread \u003d new AuditReplayThread(context, commandQueue,\n+          fsCache);\n+      threads.add(thread);\n+      thread.start();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void setup(final Mapper.Context context) throws IOException {\n    Configuration conf \u003d context.getConfiguration();\n    // WorkloadDriver ensures that the starttimestamp is set\n    startTimestampMs \u003d conf.getLong(WorkloadDriver.START_TIMESTAMP_MS, -1);\n    numThreads \u003d conf.getInt(NUM_THREADS_KEY, NUM_THREADS_DEFAULT);\n    rateFactor \u003d conf.getDouble(RATE_FACTOR_KEY, RATE_FACTOR_DEFAULT);\n    try {\n      commandParser \u003d conf.getClass(COMMAND_PARSER_KEY, COMMAND_PARSER_DEFAULT,\n          AuditCommandParser.class).getConstructor().newInstance();\n    } catch (NoSuchMethodException | InstantiationException\n        | IllegalAccessException | InvocationTargetException e) {\n      throw new IOException(\n          \"Exception encountered while instantiating the command parser\", e);\n    }\n    commandParser.initialize(conf);\n    relativeToAbsoluteTimestamp \u003d\n        (input) -\u003e startTimestampMs + Math.round(input / rateFactor);\n\n    LOG.info(\"Starting \" + numThreads + \" threads\");\n\n    progressExecutor \u003d new ScheduledThreadPoolExecutor(1);\n    // half of the timeout or once per minute if none specified\n    long progressFrequencyMs \u003d conf.getLong(MRJobConfig.TASK_TIMEOUT,\n        2 * 60 * 1000) / 2;\n    progressExecutor.scheduleAtFixedRate(context::progress,\n        progressFrequencyMs, progressFrequencyMs, TimeUnit.MILLISECONDS);\n\n    threads \u003d new ArrayList\u003c\u003e();\n    ConcurrentMap\u003cString, FileSystem\u003e fsCache \u003d new ConcurrentHashMap\u003c\u003e();\n    commandQueue \u003d new DelayQueue\u003c\u003e();\n    for (int i \u003d 0; i \u003c numThreads; i++) {\n      AuditReplayThread thread \u003d new AuditReplayThread(context, commandQueue,\n          fsCache);\n      threads.add(thread);\n      thread.start();\n    }\n  }",
+      "path": "hadoop-tools/hadoop-dynamometer/hadoop-dynamometer-workload/src/main/java/org/apache/hadoop/tools/dynamometer/workloadgenerator/audit/AuditReplayMapper.java"
+    }
+  }
+}

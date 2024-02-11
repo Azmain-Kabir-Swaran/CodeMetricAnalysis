@@ -1,0 +1,119 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DynamoDBMetadataStore.java",
+  "functionName": "close",
+  "functionId": "close",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+  "functionStartLine": 1498,
+  "functionEndLine": 1510,
+  "numCommitsSeen": 42,
+  "timeTaken": 3530,
+  "changeHistory": [
+    "b15ef7dc3d91c6d50fa515158104fba29f43e6b0",
+    "da9a39eed138210de29b59b90c449b28da1c04f9",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "b15ef7dc3d91c6d50fa515158104fba29f43e6b0": "Ymultichange(Ymodifierchange,Yexceptionschange,Ybodychange)",
+    "da9a39eed138210de29b59b90c449b28da1c04f9": "Ybodychange",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b15ef7dc3d91c6d50fa515158104fba29f43e6b0": {
+      "type": "Ymultichange(Ymodifierchange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-16384: S3A: Avoid inconsistencies between DDB and S3.\n\nContributed by Steve Loughran\n\nContains\n\n- HADOOP-16397. Hadoop S3Guard Prune command to support a -tombstone option.\n- HADOOP-16406. ITestDynamoDBMetadataStore.testProvisionTable times out intermittently\n\nThis patch doesn\u0027t fix the underlying problem but it\n\n* changes some tests to clean up better\n* does a lot more in logging operations in against DDB, if enabled\n* adds an entry point to dump the state of the metastore and s3 tables (precursor to fsck)\n* adds a purge entry point to help clean up after a test run has got a store into a mess\n* s3guard prune command adds -tombstone option to only clear tombstones\n\nThe outcome is that tests should pass consistently and if problems occur we have better diagnostics.\n\nChange-Id: I3eca3f5529d7f6fec398c0ff0472919f08f054eb\n",
+      "commitDate": "12/07/19 5:02 AM",
+      "commitName": "b15ef7dc3d91c6d50fa515158104fba29f43e6b0",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-16384: S3A: Avoid inconsistencies between DDB and S3.\n\nContributed by Steve Loughran\n\nContains\n\n- HADOOP-16397. Hadoop S3Guard Prune command to support a -tombstone option.\n- HADOOP-16406. ITestDynamoDBMetadataStore.testProvisionTable times out intermittently\n\nThis patch doesn\u0027t fix the underlying problem but it\n\n* changes some tests to clean up better\n* does a lot more in logging operations in against DDB, if enabled\n* adds an entry point to dump the state of the metastore and s3 tables (precursor to fsck)\n* adds a purge entry point to help clean up after a test run has got a store into a mess\n* s3guard prune command adds -tombstone option to only clear tombstones\n\nThe outcome is that tests should pass consistently and if problems occur we have better diagnostics.\n\nChange-Id: I3eca3f5529d7f6fec398c0ff0472919f08f054eb\n",
+          "commitDate": "12/07/19 5:02 AM",
+          "commitName": "b15ef7dc3d91c6d50fa515158104fba29f43e6b0",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "08/07/19 10:27 AM",
+          "commitNameOld": "de6b7bc67ace7744adb0320ee7de79cf28259d2d",
+          "commitAuthorOld": "Sean Mackrory",
+          "daysBetweenCommits": 3.77,
+          "commitsBetweenForRepo": 38,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,41 @@\n-  public synchronized void close() {\n-    if (instrumentation !\u003d null) {\n-      instrumentation.storeClosed();\n-    }\n-    try {\n-      if (dynamoDB !\u003d null) {\n-        LOG.debug(\"Shutting down {}\", this);\n-        dynamoDB.shutdown();\n-        dynamoDB \u003d null;\n+    public void close() throws IOException {\n+      if (LOG.isDebugEnabled() \u0026\u0026 store !\u003d null) {\n+        LOG.debug(\"Auditing {}\", stateAsString(this));\n+        for (Map.Entry\u003cPath, DDBPathMetadata\u003e entry : ancestry\n+            .entrySet()) {\n+          Path path \u003d entry.getKey();\n+          DDBPathMetadata expected \u003d entry.getValue();\n+          if (expected.isDeleted()) {\n+            // file was deleted in bulk op; we don\u0027t care about it\n+            // any more\n+            continue;\n+          }\n+          DDBPathMetadata actual;\n+          try {\n+            actual \u003d store.get(path);\n+          } catch (IOException e) {\n+            LOG.debug(\"Retrieving {}\", path, e);\n+            // this is for debug; don\u0027t be ambitious\n+            return;\n+          }\n+          if (actual \u003d\u003d null || actual.isDeleted()) {\n+            String message \u003d \"Metastore entry for path \"\n+                + path + \" deleted during bulk \"\n+                + getOperation() + \" operation\";\n+            LOG.debug(message);\n+          } else {\n+            if (actual.getFileStatus().isDirectory() !\u003d\n+                expected.getFileStatus().isDirectory()) {\n+              // the type of the entry has changed\n+              String message \u003d \"Metastore entry for path \"\n+                  + path + \" changed during bulk \"\n+                  + getOperation() + \" operation\"\n+                  + \" from \" + expected\n+                  + \" to \" + actual;\n+              LOG.debug(message);\n+            }\n+          }\n+\n+        }\n       }\n-    } finally {\n-      closeAutocloseables(LOG, credentials);\n-      credentials \u003d null;\n-    }\n-  }\n\\ No newline at end of file\n+    }\n\\ No newline at end of file\n",
+          "actualSource": "    public void close() throws IOException {\n      if (LOG.isDebugEnabled() \u0026\u0026 store !\u003d null) {\n        LOG.debug(\"Auditing {}\", stateAsString(this));\n        for (Map.Entry\u003cPath, DDBPathMetadata\u003e entry : ancestry\n            .entrySet()) {\n          Path path \u003d entry.getKey();\n          DDBPathMetadata expected \u003d entry.getValue();\n          if (expected.isDeleted()) {\n            // file was deleted in bulk op; we don\u0027t care about it\n            // any more\n            continue;\n          }\n          DDBPathMetadata actual;\n          try {\n            actual \u003d store.get(path);\n          } catch (IOException e) {\n            LOG.debug(\"Retrieving {}\", path, e);\n            // this is for debug; don\u0027t be ambitious\n            return;\n          }\n          if (actual \u003d\u003d null || actual.isDeleted()) {\n            String message \u003d \"Metastore entry for path \"\n                + path + \" deleted during bulk \"\n                + getOperation() + \" operation\";\n            LOG.debug(message);\n          } else {\n            if (actual.getFileStatus().isDirectory() !\u003d\n                expected.getFileStatus().isDirectory()) {\n              // the type of the entry has changed\n              String message \u003d \"Metastore entry for path \"\n                  + path + \" changed during bulk \"\n                  + getOperation() + \" operation\"\n                  + \" from \" + expected\n                  + \" to \" + actual;\n              LOG.debug(message);\n            }\n          }\n\n        }\n      }\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[public, synchronized]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-16384: S3A: Avoid inconsistencies between DDB and S3.\n\nContributed by Steve Loughran\n\nContains\n\n- HADOOP-16397. Hadoop S3Guard Prune command to support a -tombstone option.\n- HADOOP-16406. ITestDynamoDBMetadataStore.testProvisionTable times out intermittently\n\nThis patch doesn\u0027t fix the underlying problem but it\n\n* changes some tests to clean up better\n* does a lot more in logging operations in against DDB, if enabled\n* adds an entry point to dump the state of the metastore and s3 tables (precursor to fsck)\n* adds a purge entry point to help clean up after a test run has got a store into a mess\n* s3guard prune command adds -tombstone option to only clear tombstones\n\nThe outcome is that tests should pass consistently and if problems occur we have better diagnostics.\n\nChange-Id: I3eca3f5529d7f6fec398c0ff0472919f08f054eb\n",
+          "commitDate": "12/07/19 5:02 AM",
+          "commitName": "b15ef7dc3d91c6d50fa515158104fba29f43e6b0",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "08/07/19 10:27 AM",
+          "commitNameOld": "de6b7bc67ace7744adb0320ee7de79cf28259d2d",
+          "commitAuthorOld": "Sean Mackrory",
+          "daysBetweenCommits": 3.77,
+          "commitsBetweenForRepo": 38,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,41 @@\n-  public synchronized void close() {\n-    if (instrumentation !\u003d null) {\n-      instrumentation.storeClosed();\n-    }\n-    try {\n-      if (dynamoDB !\u003d null) {\n-        LOG.debug(\"Shutting down {}\", this);\n-        dynamoDB.shutdown();\n-        dynamoDB \u003d null;\n+    public void close() throws IOException {\n+      if (LOG.isDebugEnabled() \u0026\u0026 store !\u003d null) {\n+        LOG.debug(\"Auditing {}\", stateAsString(this));\n+        for (Map.Entry\u003cPath, DDBPathMetadata\u003e entry : ancestry\n+            .entrySet()) {\n+          Path path \u003d entry.getKey();\n+          DDBPathMetadata expected \u003d entry.getValue();\n+          if (expected.isDeleted()) {\n+            // file was deleted in bulk op; we don\u0027t care about it\n+            // any more\n+            continue;\n+          }\n+          DDBPathMetadata actual;\n+          try {\n+            actual \u003d store.get(path);\n+          } catch (IOException e) {\n+            LOG.debug(\"Retrieving {}\", path, e);\n+            // this is for debug; don\u0027t be ambitious\n+            return;\n+          }\n+          if (actual \u003d\u003d null || actual.isDeleted()) {\n+            String message \u003d \"Metastore entry for path \"\n+                + path + \" deleted during bulk \"\n+                + getOperation() + \" operation\";\n+            LOG.debug(message);\n+          } else {\n+            if (actual.getFileStatus().isDirectory() !\u003d\n+                expected.getFileStatus().isDirectory()) {\n+              // the type of the entry has changed\n+              String message \u003d \"Metastore entry for path \"\n+                  + path + \" changed during bulk \"\n+                  + getOperation() + \" operation\"\n+                  + \" from \" + expected\n+                  + \" to \" + actual;\n+              LOG.debug(message);\n+            }\n+          }\n+\n+        }\n       }\n-    } finally {\n-      closeAutocloseables(LOG, credentials);\n-      credentials \u003d null;\n-    }\n-  }\n\\ No newline at end of file\n+    }\n\\ No newline at end of file\n",
+          "actualSource": "    public void close() throws IOException {\n      if (LOG.isDebugEnabled() \u0026\u0026 store !\u003d null) {\n        LOG.debug(\"Auditing {}\", stateAsString(this));\n        for (Map.Entry\u003cPath, DDBPathMetadata\u003e entry : ancestry\n            .entrySet()) {\n          Path path \u003d entry.getKey();\n          DDBPathMetadata expected \u003d entry.getValue();\n          if (expected.isDeleted()) {\n            // file was deleted in bulk op; we don\u0027t care about it\n            // any more\n            continue;\n          }\n          DDBPathMetadata actual;\n          try {\n            actual \u003d store.get(path);\n          } catch (IOException e) {\n            LOG.debug(\"Retrieving {}\", path, e);\n            // this is for debug; don\u0027t be ambitious\n            return;\n          }\n          if (actual \u003d\u003d null || actual.isDeleted()) {\n            String message \u003d \"Metastore entry for path \"\n                + path + \" deleted during bulk \"\n                + getOperation() + \" operation\";\n            LOG.debug(message);\n          } else {\n            if (actual.getFileStatus().isDirectory() !\u003d\n                expected.getFileStatus().isDirectory()) {\n              // the type of the entry has changed\n              String message \u003d \"Metastore entry for path \"\n                  + path + \" changed during bulk \"\n                  + getOperation() + \" operation\"\n                  + \" from \" + expected\n                  + \" to \" + actual;\n              LOG.debug(message);\n            }\n          }\n\n        }\n      }\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16384: S3A: Avoid inconsistencies between DDB and S3.\n\nContributed by Steve Loughran\n\nContains\n\n- HADOOP-16397. Hadoop S3Guard Prune command to support a -tombstone option.\n- HADOOP-16406. ITestDynamoDBMetadataStore.testProvisionTable times out intermittently\n\nThis patch doesn\u0027t fix the underlying problem but it\n\n* changes some tests to clean up better\n* does a lot more in logging operations in against DDB, if enabled\n* adds an entry point to dump the state of the metastore and s3 tables (precursor to fsck)\n* adds a purge entry point to help clean up after a test run has got a store into a mess\n* s3guard prune command adds -tombstone option to only clear tombstones\n\nThe outcome is that tests should pass consistently and if problems occur we have better diagnostics.\n\nChange-Id: I3eca3f5529d7f6fec398c0ff0472919f08f054eb\n",
+          "commitDate": "12/07/19 5:02 AM",
+          "commitName": "b15ef7dc3d91c6d50fa515158104fba29f43e6b0",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "08/07/19 10:27 AM",
+          "commitNameOld": "de6b7bc67ace7744adb0320ee7de79cf28259d2d",
+          "commitAuthorOld": "Sean Mackrory",
+          "daysBetweenCommits": 3.77,
+          "commitsBetweenForRepo": 38,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,15 +1,41 @@\n-  public synchronized void close() {\n-    if (instrumentation !\u003d null) {\n-      instrumentation.storeClosed();\n-    }\n-    try {\n-      if (dynamoDB !\u003d null) {\n-        LOG.debug(\"Shutting down {}\", this);\n-        dynamoDB.shutdown();\n-        dynamoDB \u003d null;\n+    public void close() throws IOException {\n+      if (LOG.isDebugEnabled() \u0026\u0026 store !\u003d null) {\n+        LOG.debug(\"Auditing {}\", stateAsString(this));\n+        for (Map.Entry\u003cPath, DDBPathMetadata\u003e entry : ancestry\n+            .entrySet()) {\n+          Path path \u003d entry.getKey();\n+          DDBPathMetadata expected \u003d entry.getValue();\n+          if (expected.isDeleted()) {\n+            // file was deleted in bulk op; we don\u0027t care about it\n+            // any more\n+            continue;\n+          }\n+          DDBPathMetadata actual;\n+          try {\n+            actual \u003d store.get(path);\n+          } catch (IOException e) {\n+            LOG.debug(\"Retrieving {}\", path, e);\n+            // this is for debug; don\u0027t be ambitious\n+            return;\n+          }\n+          if (actual \u003d\u003d null || actual.isDeleted()) {\n+            String message \u003d \"Metastore entry for path \"\n+                + path + \" deleted during bulk \"\n+                + getOperation() + \" operation\";\n+            LOG.debug(message);\n+          } else {\n+            if (actual.getFileStatus().isDirectory() !\u003d\n+                expected.getFileStatus().isDirectory()) {\n+              // the type of the entry has changed\n+              String message \u003d \"Metastore entry for path \"\n+                  + path + \" changed during bulk \"\n+                  + getOperation() + \" operation\"\n+                  + \" from \" + expected\n+                  + \" to \" + actual;\n+              LOG.debug(message);\n+            }\n+          }\n+\n+        }\n       }\n-    } finally {\n-      closeAutocloseables(LOG, credentials);\n-      credentials \u003d null;\n-    }\n-  }\n\\ No newline at end of file\n+    }\n\\ No newline at end of file\n",
+          "actualSource": "    public void close() throws IOException {\n      if (LOG.isDebugEnabled() \u0026\u0026 store !\u003d null) {\n        LOG.debug(\"Auditing {}\", stateAsString(this));\n        for (Map.Entry\u003cPath, DDBPathMetadata\u003e entry : ancestry\n            .entrySet()) {\n          Path path \u003d entry.getKey();\n          DDBPathMetadata expected \u003d entry.getValue();\n          if (expected.isDeleted()) {\n            // file was deleted in bulk op; we don\u0027t care about it\n            // any more\n            continue;\n          }\n          DDBPathMetadata actual;\n          try {\n            actual \u003d store.get(path);\n          } catch (IOException e) {\n            LOG.debug(\"Retrieving {}\", path, e);\n            // this is for debug; don\u0027t be ambitious\n            return;\n          }\n          if (actual \u003d\u003d null || actual.isDeleted()) {\n            String message \u003d \"Metastore entry for path \"\n                + path + \" deleted during bulk \"\n                + getOperation() + \" operation\";\n            LOG.debug(message);\n          } else {\n            if (actual.getFileStatus().isDirectory() !\u003d\n                expected.getFileStatus().isDirectory()) {\n              // the type of the entry has changed\n              String message \u003d \"Metastore entry for path \"\n                  + path + \" changed during bulk \"\n                  + getOperation() + \" operation\"\n                  + \" from \" + expected\n                  + \" to \" + actual;\n              LOG.debug(message);\n            }\n          }\n\n        }\n      }\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "da9a39eed138210de29b59b90c449b28da1c04f9": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+      "commitDate": "08/08/18 10:57 PM",
+      "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "12/07/18 8:24 AM",
+      "commitNameOld": "a08812a1b10df059b26f6a216e6339490298ba28",
+      "commitAuthorOld": "Sean Mackrory",
+      "daysBetweenCommits": 27.61,
+      "commitsBetweenForRepo": 177,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,10 +1,15 @@\n   public synchronized void close() {\n     if (instrumentation !\u003d null) {\n       instrumentation.storeClosed();\n     }\n-    if (dynamoDB !\u003d null) {\n-      LOG.debug(\"Shutting down {}\", this);\n-      dynamoDB.shutdown();\n-      dynamoDB \u003d null;\n+    try {\n+      if (dynamoDB !\u003d null) {\n+        LOG.debug(\"Shutting down {}\", this);\n+        dynamoDB.shutdown();\n+        dynamoDB \u003d null;\n+      }\n+    } finally {\n+      closeAutocloseables(LOG, credentials);\n+      credentials \u003d null;\n     }\n-  }\n\\ No newline at end of file\n+}\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void close() {\n    if (instrumentation !\u003d null) {\n      instrumentation.storeClosed();\n    }\n    try {\n      if (dynamoDB !\u003d null) {\n        LOG.debug(\"Shutting down {}\", this);\n        dynamoDB.shutdown();\n        dynamoDB \u003d null;\n      }\n    } finally {\n      closeAutocloseables(LOG, credentials);\n      credentials \u003d null;\n    }\n}",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,10 @@\n+  public synchronized void close() {\n+    if (instrumentation !\u003d null) {\n+      instrumentation.storeClosed();\n+    }\n+    if (dynamoDB !\u003d null) {\n+      LOG.debug(\"Shutting down {}\", this);\n+      dynamoDB.shutdown();\n+      dynamoDB \u003d null;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void close() {\n    if (instrumentation !\u003d null) {\n      instrumentation.storeClosed();\n    }\n    if (dynamoDB !\u003d null) {\n      LOG.debug(\"Shutting down {}\", this);\n      dynamoDB.shutdown();\n      dynamoDB \u003d null;\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java"
+    }
+  }
+}

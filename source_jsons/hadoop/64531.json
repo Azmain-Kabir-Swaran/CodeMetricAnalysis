@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AFileSystem.java",
+  "functionName": "doBucketProbing",
+  "functionId": "doBucketProbing",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+  "functionStartLine": 479,
+  "functionEndLine": 503,
+  "numCommitsSeen": 141,
+  "timeTaken": 1645,
+  "changeHistory": [
+    "56350664a76b1ea8e1a942a251880ae3fab12f0c",
+    "e77767bb1e8dfb8b0bd7af4664c900f7238b4fa0"
+  ],
+  "changeHistoryShort": {
+    "56350664a76b1ea8e1a942a251880ae3fab12f0c": "Ybodychange",
+    "e77767bb1e8dfb8b0bd7af4664c900f7238b4fa0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "56350664a76b1ea8e1a942a251880ae3fab12f0c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13873. log DNS addresses on s3a initialization.\n\nContributed by Mukund Thakur.\n\nIf you set the log org.apache.hadoop.fs.s3a.impl.NetworkBinding\nto DEBUG, then when the S3A bucket probe is made -the DNS address\nof the S3 endpoint is calculated and printed.\n\nThis is useful to see if a large set of processes are all using\nthe same IP address from the pool of load balancers to which AWS\ndirects clients when an AWS S3 endpoint is resolved.\n\nThis can have implications for performance: if all clients\naccess the same load balancer performance may be suboptimal.\n\nNote: if bucket probes are disabled, fs.s3a.bucket.probe \u003d 0,\nthe DNS logging does not take place.\n\nChange-Id: I21b3ac429dc0b543f03e357fdeb94c2d2a328dd8\n",
+      "commitDate": "17/04/20 6:15 AM",
+      "commitName": "56350664a76b1ea8e1a942a251880ae3fab12f0c",
+      "commitAuthor": "Mukund Thakur",
+      "commitDateOld": "14/04/20 9:19 AM",
+      "commitNameOld": "7b2d84d19ce26a030da3a5dd674f763c95b310d9",
+      "commitAuthorOld": "Mukund Thakur",
+      "daysBetweenCommits": 2.87,
+      "commitsBetweenForRepo": 12,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,25 @@\n   private void doBucketProbing() throws IOException {\n     int bucketProbe \u003d getConf()\n             .getInt(S3A_BUCKET_PROBE, S3A_BUCKET_PROBE_DEFAULT);\n     Preconditions.checkArgument(bucketProbe \u003e\u003d 0,\n             \"Value of \" + S3A_BUCKET_PROBE + \" should be \u003e\u003d 0\");\n     switch (bucketProbe) {\n     case 0:\n       LOG.debug(\"skipping check for bucket existence\");\n       break;\n     case 1:\n+      logDnsLookup(getConf());\n       verifyBucketExists();\n       break;\n     case 2:\n+      logDnsLookup(getConf());\n       verifyBucketExistsV2();\n       break;\n     default:\n       // we have no idea what this is, assume it is from a later release.\n       LOG.warn(\"Unknown bucket probe option {}: {}; falling back to check #2\",\n           S3A_BUCKET_PROBE, bucketProbe);\n       verifyBucketExistsV2();\n       break;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void doBucketProbing() throws IOException {\n    int bucketProbe \u003d getConf()\n            .getInt(S3A_BUCKET_PROBE, S3A_BUCKET_PROBE_DEFAULT);\n    Preconditions.checkArgument(bucketProbe \u003e\u003d 0,\n            \"Value of \" + S3A_BUCKET_PROBE + \" should be \u003e\u003d 0\");\n    switch (bucketProbe) {\n    case 0:\n      LOG.debug(\"skipping check for bucket existence\");\n      break;\n    case 1:\n      logDnsLookup(getConf());\n      verifyBucketExists();\n      break;\n    case 2:\n      logDnsLookup(getConf());\n      verifyBucketExistsV2();\n      break;\n    default:\n      // we have no idea what this is, assume it is from a later release.\n      LOG.warn(\"Unknown bucket probe option {}: {}; falling back to check #2\",\n          S3A_BUCKET_PROBE, bucketProbe);\n      verifyBucketExistsV2();\n      break;\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "e77767bb1e8dfb8b0bd7af4664c900f7238b4fa0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-16711.\n\nThis adds a new option fs.s3a.bucket.probe, range (0-2) to\ncontrol which probe for a bucket existence to perform on startup.\n\n0: no checks\n1: v1 check (as has been performend until now)\n2: v2 bucket check, which also incudes a permission check. Default.\n\nWhen set to 0, bucket existence checks won\u0027t be done\nduring initialization thus making it faster.\nWhen the bucket is not available in S3,\nor if fs.s3a.endpoint points to the wrong instance of a private S3 store\nconsecutive calls like listing, read, write etc. will fail with\nan UnknownStoreException.\n\nContributed by:\n  * Mukund Thakur (main patch and tests)\n  * Rajesh Balamohan (v0 list and performance tests)\n  * lqjacklee (HADOOP-15990/v2 list)\n  * Steve Loughran (UnknownStoreException support)\n\n       modified:   hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/Constants.java\n       modified:   hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java\n       modified:   hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java\n       modified:   hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java\n       new file:   hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/UnknownStoreException.java\n       new file:   hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/ErrorTranslation.java\n       modified:   hadoop-tools/hadoop-aws/src/site/markdown/tools/hadoop-aws/index.md\n       modified:   hadoop-tools/hadoop-aws/src/site/markdown/tools/hadoop-aws/performance.md\n       modified:   hadoop-tools/hadoop-aws/src/site/markdown/tools/hadoop-aws/troubleshooting_s3a.md\n       modified:   hadoop-tools/hadoop-aws/src/test/java/org/apache/hadoop/fs/s3a/AbstractS3AMockTest.java\n       new file:   hadoop-tools/hadoop-aws/src/test/java/org/apache/hadoop/fs/s3a/ITestS3ABucketExistence.java\n       modified:   hadoop-tools/hadoop-aws/src/test/java/org/apache/hadoop/fs/s3a/MockS3ClientFactory.java\n       modified:   hadoop-tools/hadoop-aws/src/test/java/org/apache/hadoop/fs/s3a/TestS3AExceptionTranslation.java\n       modified:   hadoop-tools/hadoop-aws/src/test/java/org/apache/hadoop/fs/s3a/s3guard/AbstractS3GuardToolTestBase.java\n       modified:   hadoop-tools/hadoop-aws/src/test/java/org/apache/hadoop/fs/s3a/s3guard/ITestS3GuardToolDynamoDB.java\n       modified:   hadoop-tools/hadoop-aws/src/test/resources/core-site.xml\n\nChange-Id: Ic174f803e655af172d81c1274ed92b51bdceb384\n",
+      "commitDate": "21/02/20 5:44 AM",
+      "commitName": "e77767bb1e8dfb8b0bd7af4664c900f7238b4fa0",
+      "commitAuthor": "Mukund Thakur",
+      "diff": "@@ -0,0 +1,23 @@\n+  private void doBucketProbing() throws IOException {\n+    int bucketProbe \u003d getConf()\n+            .getInt(S3A_BUCKET_PROBE, S3A_BUCKET_PROBE_DEFAULT);\n+    Preconditions.checkArgument(bucketProbe \u003e\u003d 0,\n+            \"Value of \" + S3A_BUCKET_PROBE + \" should be \u003e\u003d 0\");\n+    switch (bucketProbe) {\n+    case 0:\n+      LOG.debug(\"skipping check for bucket existence\");\n+      break;\n+    case 1:\n+      verifyBucketExists();\n+      break;\n+    case 2:\n+      verifyBucketExistsV2();\n+      break;\n+    default:\n+      // we have no idea what this is, assume it is from a later release.\n+      LOG.warn(\"Unknown bucket probe option {}: {}; falling back to check #2\",\n+          S3A_BUCKET_PROBE, bucketProbe);\n+      verifyBucketExistsV2();\n+      break;\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void doBucketProbing() throws IOException {\n    int bucketProbe \u003d getConf()\n            .getInt(S3A_BUCKET_PROBE, S3A_BUCKET_PROBE_DEFAULT);\n    Preconditions.checkArgument(bucketProbe \u003e\u003d 0,\n            \"Value of \" + S3A_BUCKET_PROBE + \" should be \u003e\u003d 0\");\n    switch (bucketProbe) {\n    case 0:\n      LOG.debug(\"skipping check for bucket existence\");\n      break;\n    case 1:\n      verifyBucketExists();\n      break;\n    case 2:\n      verifyBucketExistsV2();\n      break;\n    default:\n      // we have no idea what this is, assume it is from a later release.\n      LOG.warn(\"Unknown bucket probe option {}: {}; falling back to check #2\",\n          S3A_BUCKET_PROBE, bucketProbe);\n      verifyBucketExistsV2();\n      break;\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java"
+    }
+  }
+}

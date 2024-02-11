@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BufferPullee.java",
+  "functionName": "load",
+  "functionId": "load",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/src/main/java/org/apache/hadoop/mapred/nativetask/handlers/BufferPullee.java",
+  "functionStartLine": 64,
+  "functionEndLine": 106,
+  "numCommitsSeen": 3,
+  "timeTaken": 639,
+  "changeHistory": [
+    "b2551c06a09fb80a9e69adbc01c4c34b93ad0139"
+  ],
+  "changeHistoryShort": {
+    "b2551c06a09fb80a9e69adbc01c4c34b93ad0139": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b2551c06a09fb80a9e69adbc01c4c34b93ad0139": {
+      "type": "Yintroduced",
+      "commitMessage": "Import initial code for MAPREDUCE-2841 (native output collector)\n\nContributed by:\n  Binglin Chang\n  Yang Dong\n  Sean Zhong\n  Manu Zhang\n  Zhongliang Zhu\n  Vincent Wang\n  Yan Dong\n  Cheng Lian\n  Xusen Yin\n  Fangqin Dai\n  Jiang Weihua\n  Gansha Wu\n  Avik Dey\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/MR-2841@1611413 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/07/14 10:44 AM",
+      "commitName": "b2551c06a09fb80a9e69adbc01c4c34b93ad0139",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,43 @@\n+  public int load() throws IOException {\n+    if (closed) {\n+      return 0;\n+    }\n+    \n+    if (null \u003d\u003d outputBuffer) {\n+      throw new IOException(\"output buffer not set\");\n+    }\n+\n+    this.nativeWriter \u003d new ByteBufferDataWriter(target);\n+    outputBuffer.rewind();\n+\n+    int written \u003d 0;\n+    boolean firstKV \u003d true;\n+\n+    if (inputKVBufferd) {\n+      written +\u003d serializer.serializeKV(nativeWriter, tmpInputKey, tmpInputValue);\n+      inputKVBufferd \u003d false;\n+      firstKV \u003d false;\n+    }\n+\n+    while (rIter.next()) {\n+      inputKVBufferd \u003d false;\n+      tmpInputKey.readFields(rIter.getKey());\n+      tmpInputValue.readFields(rIter.getValue());\n+      serializer.updateLength(tmpInputKey, tmpInputValue);\n+\n+      final int kvSize \u003d tmpInputKey.length + tmpInputValue.length + KV_HEADER_LENGTH;\n+\n+      if (!firstKV \u0026\u0026 nativeWriter.shortOfSpace(kvSize)) {\n+        inputKVBufferd \u003d true;\n+        break;\n+      } else {\n+        written +\u003d serializer.serializeKV(nativeWriter, tmpInputKey, tmpInputValue);\n+        firstKV \u003d false;\n+      }\n+    }\n+\n+    if (nativeWriter.hasUnFlushedData()) {\n+      nativeWriter.flush();\n+    }\n+    return written;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public int load() throws IOException {\n    if (closed) {\n      return 0;\n    }\n    \n    if (null \u003d\u003d outputBuffer) {\n      throw new IOException(\"output buffer not set\");\n    }\n\n    this.nativeWriter \u003d new ByteBufferDataWriter(target);\n    outputBuffer.rewind();\n\n    int written \u003d 0;\n    boolean firstKV \u003d true;\n\n    if (inputKVBufferd) {\n      written +\u003d serializer.serializeKV(nativeWriter, tmpInputKey, tmpInputValue);\n      inputKVBufferd \u003d false;\n      firstKV \u003d false;\n    }\n\n    while (rIter.next()) {\n      inputKVBufferd \u003d false;\n      tmpInputKey.readFields(rIter.getKey());\n      tmpInputValue.readFields(rIter.getValue());\n      serializer.updateLength(tmpInputKey, tmpInputValue);\n\n      final int kvSize \u003d tmpInputKey.length + tmpInputValue.length + KV_HEADER_LENGTH;\n\n      if (!firstKV \u0026\u0026 nativeWriter.shortOfSpace(kvSize)) {\n        inputKVBufferd \u003d true;\n        break;\n      } else {\n        written +\u003d serializer.serializeKV(nativeWriter, tmpInputKey, tmpInputValue);\n        firstKV \u003d false;\n      }\n    }\n\n    if (nativeWriter.hasUnFlushedData()) {\n      nativeWriter.flush();\n    }\n    return written;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-nativetask/src/main/java/org/apache/hadoop/mapred/nativetask/handlers/BufferPullee.java"
+    }
+  }
+}

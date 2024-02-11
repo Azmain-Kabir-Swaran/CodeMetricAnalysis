@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StandbyCheckpointer.java",
+  "functionName": "cancelAndPreventCheckpoints",
+  "functionId": "cancelAndPreventCheckpoints___msg-String",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/StandbyCheckpointer.java",
+  "functionStartLine": 354,
+  "functionEndLine": 370,
+  "numCommitsSeen": 44,
+  "timeTaken": 1991,
+  "changeHistory": [
+    "f43a20c529ac3f104add95b222de6580757b3763",
+    "15ddb6634f8bdab37ce43f99f8338d84422c7232",
+    "978a8050e28b2afb193a3e00d82a8475fa4d2428",
+    "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae"
+  ],
+  "changeHistoryShort": {
+    "f43a20c529ac3f104add95b222de6580757b3763": "Ybodychange",
+    "15ddb6634f8bdab37ce43f99f8338d84422c7232": "Ymultichange(Yparameterchange,Ybodychange)",
+    "978a8050e28b2afb193a3e00d82a8475fa4d2428": "Ybodychange",
+    "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f43a20c529ac3f104add95b222de6580757b3763": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7097. Allow block reports to be processed during checkpointing on standby name node. (kihwal via wang)\n",
+      "commitDate": "25/11/14 3:37 PM",
+      "commitName": "f43a20c529ac3f104add95b222de6580757b3763",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "13/05/14 6:15 PM",
+      "commitNameOld": "97f58955a6045b373ab73653bf26ab5922b00cf3",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 195.93,
+      "commitsBetweenForRepo": 1698,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,17 @@\n   public void cancelAndPreventCheckpoints(String msg) throws ServiceFailedException {\n-    thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n     synchronized (cancelLock) {\n+      // The checkpointer thread takes this lock and checks if checkpointing is\n+      // postponed. \n+      thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n+\n       // Before beginning a checkpoint, the checkpointer thread\n       // takes this lock, and creates a canceler object.\n       // If the canceler is non-null, then a checkpoint is in\n       // progress and we need to cancel it. If it\u0027s null, then\n       // the operation has not started, meaning that the above\n       // time-based prevention will take effect.\n       if (canceler !\u003d null) {\n         canceler.cancel(msg);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cancelAndPreventCheckpoints(String msg) throws ServiceFailedException {\n    synchronized (cancelLock) {\n      // The checkpointer thread takes this lock and checks if checkpointing is\n      // postponed. \n      thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n\n      // Before beginning a checkpoint, the checkpointer thread\n      // takes this lock, and creates a canceler object.\n      // If the canceler is non-null, then a checkpoint is in\n      // progress and we need to cancel it. If it\u0027s null, then\n      // the operation has not started, meaning that the above\n      // time-based prevention will take effect.\n      if (canceler !\u003d null) {\n        canceler.cancel(msg);\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/StandbyCheckpointer.java",
+      "extendedDetails": {}
+    },
+    "15ddb6634f8bdab37ce43f99f8338d84422c7232": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-2800. Fix cancellation of checkpoints in the standby node to be more reliable. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1339745 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/05/12 10:49 AM",
+      "commitName": "15ddb6634f8bdab37ce43f99f8338d84422c7232",
+      "commitAuthor": "Todd Lipcon",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-2800. Fix cancellation of checkpoints in the standby node to be more reliable. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1339745 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "17/05/12 10:49 AM",
+          "commitName": "15ddb6634f8bdab37ce43f99f8338d84422c7232",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "12/05/12 7:51 PM",
+          "commitNameOld": "f22341ab1a9060a727abb0924a4cd996b2bd7fe7",
+          "commitAuthorOld": "Aaron Myers",
+          "daysBetweenCommits": 4.62,
+          "commitsBetweenForRepo": 29,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,14 @@\n-  public void cancelAndPreventCheckpoints() throws ServiceFailedException {\n-    try {\n-      thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n-      // TODO(HA): there is a really narrow race here if we are just\n-      // about to start a checkpoint - this won\u0027t cancel it!\n-      namesystem.getFSImage().cancelSaveNamespace(\n-          \"About to exit standby state\");\n-    } catch (InterruptedException e) {\n-      throw new ServiceFailedException(\n-          \"Interrupted while trying to cancel checkpoint\");\n+  public void cancelAndPreventCheckpoints(String msg) throws ServiceFailedException {\n+    thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n+    synchronized (cancelLock) {\n+      // Before beginning a checkpoint, the checkpointer thread\n+      // takes this lock, and creates a canceler object.\n+      // If the canceler is non-null, then a checkpoint is in\n+      // progress and we need to cancel it. If it\u0027s null, then\n+      // the operation has not started, meaning that the above\n+      // time-based prevention will take effect.\n+      if (canceler !\u003d null) {\n+        canceler.cancel(msg);\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void cancelAndPreventCheckpoints(String msg) throws ServiceFailedException {\n    thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n    synchronized (cancelLock) {\n      // Before beginning a checkpoint, the checkpointer thread\n      // takes this lock, and creates a canceler object.\n      // If the canceler is non-null, then a checkpoint is in\n      // progress and we need to cancel it. If it\u0027s null, then\n      // the operation has not started, meaning that the above\n      // time-based prevention will take effect.\n      if (canceler !\u003d null) {\n        canceler.cancel(msg);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/StandbyCheckpointer.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[msg-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-2800. Fix cancellation of checkpoints in the standby node to be more reliable. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1339745 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "17/05/12 10:49 AM",
+          "commitName": "15ddb6634f8bdab37ce43f99f8338d84422c7232",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "12/05/12 7:51 PM",
+          "commitNameOld": "f22341ab1a9060a727abb0924a4cd996b2bd7fe7",
+          "commitAuthorOld": "Aaron Myers",
+          "daysBetweenCommits": 4.62,
+          "commitsBetweenForRepo": 29,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,14 @@\n-  public void cancelAndPreventCheckpoints() throws ServiceFailedException {\n-    try {\n-      thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n-      // TODO(HA): there is a really narrow race here if we are just\n-      // about to start a checkpoint - this won\u0027t cancel it!\n-      namesystem.getFSImage().cancelSaveNamespace(\n-          \"About to exit standby state\");\n-    } catch (InterruptedException e) {\n-      throw new ServiceFailedException(\n-          \"Interrupted while trying to cancel checkpoint\");\n+  public void cancelAndPreventCheckpoints(String msg) throws ServiceFailedException {\n+    thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n+    synchronized (cancelLock) {\n+      // Before beginning a checkpoint, the checkpointer thread\n+      // takes this lock, and creates a canceler object.\n+      // If the canceler is non-null, then a checkpoint is in\n+      // progress and we need to cancel it. If it\u0027s null, then\n+      // the operation has not started, meaning that the above\n+      // time-based prevention will take effect.\n+      if (canceler !\u003d null) {\n+        canceler.cancel(msg);\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void cancelAndPreventCheckpoints(String msg) throws ServiceFailedException {\n    thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n    synchronized (cancelLock) {\n      // Before beginning a checkpoint, the checkpointer thread\n      // takes this lock, and creates a canceler object.\n      // If the canceler is non-null, then a checkpoint is in\n      // progress and we need to cancel it. If it\u0027s null, then\n      // the operation has not started, meaning that the above\n      // time-based prevention will take effect.\n      if (canceler !\u003d null) {\n        canceler.cancel(msg);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/StandbyCheckpointer.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "978a8050e28b2afb193a3e00d82a8475fa4d2428": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-2920. fix remaining TODO items. Contributed by Aaron T. Myers and Todd Lipcon.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-1623@1294923 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "28/02/12 5:09 PM",
+      "commitName": "978a8050e28b2afb193a3e00d82a8475fa4d2428",
+      "commitAuthor": "Aaron Myers",
+      "commitDateOld": "09/02/12 10:22 AM",
+      "commitNameOld": "5e26de982b1ab68fffeb897fef4c97458ad46708",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 19.28,
+      "commitsBetweenForRepo": 138,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,12 @@\n   public void cancelAndPreventCheckpoints() throws ServiceFailedException {\n     try {\n       thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n-      // TODO: there is a really narrow race here if we are just\n+      // TODO(HA): there is a really narrow race here if we are just\n       // about to start a checkpoint - this won\u0027t cancel it!\n       namesystem.getFSImage().cancelSaveNamespace(\n           \"About to exit standby state\");\n     } catch (InterruptedException e) {\n       throw new ServiceFailedException(\n           \"Interrupted while trying to cancel checkpoint\");\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cancelAndPreventCheckpoints() throws ServiceFailedException {\n    try {\n      thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n      // TODO(HA): there is a really narrow race here if we are just\n      // about to start a checkpoint - this won\u0027t cancel it!\n      namesystem.getFSImage().cancelSaveNamespace(\n          \"About to exit standby state\");\n    } catch (InterruptedException e) {\n      throw new ServiceFailedException(\n          \"Interrupted while trying to cancel checkpoint\");\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/StandbyCheckpointer.java",
+      "extendedDetails": {}
+    },
+    "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-2291. Allow the StandbyNode to make checkpoints in an HA setup. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-1623@1227411 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/01/12 4:22 PM",
+      "commitName": "5b8dcb20a2fad2e7e9dee56c451f68f9d865b5ae",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,12 @@\n+  public void cancelAndPreventCheckpoints() throws ServiceFailedException {\n+    try {\n+      thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n+      // TODO: there is a really narrow race here if we are just\n+      // about to start a checkpoint - this won\u0027t cancel it!\n+      namesystem.getFSImage().cancelSaveNamespace(\n+          \"About to exit standby state\");\n+    } catch (InterruptedException e) {\n+      throw new ServiceFailedException(\n+          \"Interrupted while trying to cancel checkpoint\");\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void cancelAndPreventCheckpoints() throws ServiceFailedException {\n    try {\n      thread.preventCheckpointsFor(PREVENT_AFTER_CANCEL_MS);\n      // TODO: there is a really narrow race here if we are just\n      // about to start a checkpoint - this won\u0027t cancel it!\n      namesystem.getFSImage().cancelSaveNamespace(\n          \"About to exit standby state\");\n    } catch (InterruptedException e) {\n      throw new ServiceFailedException(\n          \"Interrupted while trying to cancel checkpoint\");\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/StandbyCheckpointer.java"
+    }
+  }
+}

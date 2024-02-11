@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RollingFileSystemSink.java",
+  "functionName": "putMetrics",
+  "functionId": "putMetrics___record-MetricsRecord",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java",
+  "functionStartLine": 823,
+  "functionEndLine": 861,
+  "numCommitsSeen": 9,
+  "timeTaken": 1202,
+  "changeHistory": [
+    "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc",
+    "5b59a0ea85c923384e36ad7c036e751551774142",
+    "ee005e010cff3f97a5daa8000ac2cd151e2631ca"
+  ],
+  "changeHistoryShort": {
+    "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc": "Ybodychange",
+    "5b59a0ea85c923384e36ad7c036e751551774142": "Ybodychange",
+    "ee005e010cff3f97a5daa8000ac2cd151e2631ca": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9782. RollingFileSystemSink should have configurable roll interval. (Daniel Templeton via kasha)\n",
+      "commitDate": "24/05/16 10:37 AM",
+      "commitName": "57c31a3fef625f1ec609d7e8873d4941f7ed5cbc",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "25/02/16 4:31 PM",
+      "commitNameOld": "c2460dad642feee1086442d33c30c24ec77236b9",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 88.71,
+      "commitsBetweenForRepo": 545,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,39 +1,39 @@\n   public void putMetrics(MetricsRecord record) {\n     synchronized (lock) {\n       rollLogDirIfNeeded();\n \n       if (currentOutStream !\u003d null) {\n         currentOutStream.printf(\"%d %s.%s\", record.timestamp(),\n             record.context(), record.name());\n \n         String separator \u003d \": \";\n \n         for (MetricsTag tag : record.tags()) {\n           currentOutStream.printf(\"%s%s\u003d%s\", separator, tag.name(),\n               tag.value());\n           separator \u003d \", \";\n         }\n \n         for (AbstractMetric metric : record.metrics()) {\n           currentOutStream.printf(\"%s%s\u003d%s\", separator, metric.name(),\n               metric.value());\n         }\n \n         currentOutStream.println();\n \n         // If we don\u0027t hflush(), the data may not be written until the file is\n-        // closed. The file won\u0027t be closed until the top of the hour *AND*\n+        // closed. The file won\u0027t be closed until the end of the interval *AND*\n         // another record is received. Calling hflush() makes sure that the data\n-        // is complete at the top of the hour.\n+        // is complete at the end of the interval.\n         try {\n           currentFSOutStream.hflush();\n         } catch (IOException ex) {\n           throwMetricsException(\"Failed flushing the stream\", ex);\n         }\n \n         checkForErrors(\"Unable to write to log file\");\n       } else if (!ignoreError) {\n         throwMetricsException(\"Unable to write to log file\");\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void putMetrics(MetricsRecord record) {\n    synchronized (lock) {\n      rollLogDirIfNeeded();\n\n      if (currentOutStream !\u003d null) {\n        currentOutStream.printf(\"%d %s.%s\", record.timestamp(),\n            record.context(), record.name());\n\n        String separator \u003d \": \";\n\n        for (MetricsTag tag : record.tags()) {\n          currentOutStream.printf(\"%s%s\u003d%s\", separator, tag.name(),\n              tag.value());\n          separator \u003d \", \";\n        }\n\n        for (AbstractMetric metric : record.metrics()) {\n          currentOutStream.printf(\"%s%s\u003d%s\", separator, metric.name(),\n              metric.value());\n        }\n\n        currentOutStream.println();\n\n        // If we don\u0027t hflush(), the data may not be written until the file is\n        // closed. The file won\u0027t be closed until the end of the interval *AND*\n        // another record is received. Calling hflush() makes sure that the data\n        // is complete at the end of the interval.\n        try {\n          currentFSOutStream.hflush();\n        } catch (IOException ex) {\n          throwMetricsException(\"Failed flushing the stream\", ex);\n        }\n\n        checkForErrors(\"Unable to write to log file\");\n      } else if (!ignoreError) {\n        throwMetricsException(\"Unable to write to log file\");\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java",
+      "extendedDetails": {}
+    },
+    "5b59a0ea85c923384e36ad7c036e751551774142": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-12759. RollingFileSystemSink should eagerly rotate directories. Contributed by Daniel Templeton.\n",
+      "commitDate": "06/02/16 8:52 PM",
+      "commitName": "5b59a0ea85c923384e36ad7c036e751551774142",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "28/01/16 5:43 PM",
+      "commitNameOld": "ee005e010cff3f97a5daa8000ac2cd151e2631ca",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 9.13,
+      "commitsBetweenForRepo": 63,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,39 @@\n   public void putMetrics(MetricsRecord record) {\n-    rollLogDirIfNeeded();\n+    synchronized (lock) {\n+      rollLogDirIfNeeded();\n \n-    if (currentOutStream !\u003d null) {\n-      currentOutStream.printf(\"%d %s.%s\", record.timestamp(),\n-          record.context(), record.name());\n+      if (currentOutStream !\u003d null) {\n+        currentOutStream.printf(\"%d %s.%s\", record.timestamp(),\n+            record.context(), record.name());\n \n-      String separator \u003d \": \";\n+        String separator \u003d \": \";\n \n-      for (MetricsTag tag : record.tags()) {\n-        currentOutStream.printf(\"%s%s\u003d%s\", separator, tag.name(), tag.value());\n-        separator \u003d \", \";\n+        for (MetricsTag tag : record.tags()) {\n+          currentOutStream.printf(\"%s%s\u003d%s\", separator, tag.name(),\n+              tag.value());\n+          separator \u003d \", \";\n+        }\n+\n+        for (AbstractMetric metric : record.metrics()) {\n+          currentOutStream.printf(\"%s%s\u003d%s\", separator, metric.name(),\n+              metric.value());\n+        }\n+\n+        currentOutStream.println();\n+\n+        // If we don\u0027t hflush(), the data may not be written until the file is\n+        // closed. The file won\u0027t be closed until the top of the hour *AND*\n+        // another record is received. Calling hflush() makes sure that the data\n+        // is complete at the top of the hour.\n+        try {\n+          currentFSOutStream.hflush();\n+        } catch (IOException ex) {\n+          throwMetricsException(\"Failed flushing the stream\", ex);\n+        }\n+\n+        checkForErrors(\"Unable to write to log file\");\n+      } else if (!ignoreError) {\n+        throwMetricsException(\"Unable to write to log file\");\n       }\n-\n-      for (AbstractMetric metric : record.metrics()) {\n-        currentOutStream.printf(\"%s%s\u003d%s\", separator, metric.name(),\n-            metric.value());\n-      }\n-\n-      currentOutStream.println();\n-\n-      // If we don\u0027t hflush(), the data may not be written until the file is\n-      // closed. The file won\u0027t be closed until the top of the hour *AND*\n-      // another record is received. Calling hflush() makes sure that the data\n-      // is complete at the top of the hour.\n-      try {\n-        currentFSOutStream.hflush();\n-      } catch (IOException ex) {\n-        throwMetricsException(\"Failed flushing the stream\", ex);\n-      }\n-\n-      checkForErrors(\"Unable to write to log file\");\n-    } else if (!ignoreError) {\n-      throwMetricsException(\"Unable to write to log file\");\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void putMetrics(MetricsRecord record) {\n    synchronized (lock) {\n      rollLogDirIfNeeded();\n\n      if (currentOutStream !\u003d null) {\n        currentOutStream.printf(\"%d %s.%s\", record.timestamp(),\n            record.context(), record.name());\n\n        String separator \u003d \": \";\n\n        for (MetricsTag tag : record.tags()) {\n          currentOutStream.printf(\"%s%s\u003d%s\", separator, tag.name(),\n              tag.value());\n          separator \u003d \", \";\n        }\n\n        for (AbstractMetric metric : record.metrics()) {\n          currentOutStream.printf(\"%s%s\u003d%s\", separator, metric.name(),\n              metric.value());\n        }\n\n        currentOutStream.println();\n\n        // If we don\u0027t hflush(), the data may not be written until the file is\n        // closed. The file won\u0027t be closed until the top of the hour *AND*\n        // another record is received. Calling hflush() makes sure that the data\n        // is complete at the top of the hour.\n        try {\n          currentFSOutStream.hflush();\n        } catch (IOException ex) {\n          throwMetricsException(\"Failed flushing the stream\", ex);\n        }\n\n        checkForErrors(\"Unable to write to log file\");\n      } else if (!ignoreError) {\n        throwMetricsException(\"Unable to write to log file\");\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java",
+      "extendedDetails": {}
+    },
+    "ee005e010cff3f97a5daa8000ac2cd151e2631ca": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12702. Add an HDFS metrics sink. (Daniel Templeton via kasha)\n",
+      "commitDate": "28/01/16 5:43 PM",
+      "commitName": "ee005e010cff3f97a5daa8000ac2cd151e2631ca",
+      "commitAuthor": "Karthik Kambatla",
+      "diff": "@@ -0,0 +1,36 @@\n+  public void putMetrics(MetricsRecord record) {\n+    rollLogDirIfNeeded();\n+\n+    if (currentOutStream !\u003d null) {\n+      currentOutStream.printf(\"%d %s.%s\", record.timestamp(),\n+          record.context(), record.name());\n+\n+      String separator \u003d \": \";\n+\n+      for (MetricsTag tag : record.tags()) {\n+        currentOutStream.printf(\"%s%s\u003d%s\", separator, tag.name(), tag.value());\n+        separator \u003d \", \";\n+      }\n+\n+      for (AbstractMetric metric : record.metrics()) {\n+        currentOutStream.printf(\"%s%s\u003d%s\", separator, metric.name(),\n+            metric.value());\n+      }\n+\n+      currentOutStream.println();\n+\n+      // If we don\u0027t hflush(), the data may not be written until the file is\n+      // closed. The file won\u0027t be closed until the top of the hour *AND*\n+      // another record is received. Calling hflush() makes sure that the data\n+      // is complete at the top of the hour.\n+      try {\n+        currentFSOutStream.hflush();\n+      } catch (IOException ex) {\n+        throwMetricsException(\"Failed flushing the stream\", ex);\n+      }\n+\n+      checkForErrors(\"Unable to write to log file\");\n+    } else if (!ignoreError) {\n+      throwMetricsException(\"Unable to write to log file\");\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void putMetrics(MetricsRecord record) {\n    rollLogDirIfNeeded();\n\n    if (currentOutStream !\u003d null) {\n      currentOutStream.printf(\"%d %s.%s\", record.timestamp(),\n          record.context(), record.name());\n\n      String separator \u003d \": \";\n\n      for (MetricsTag tag : record.tags()) {\n        currentOutStream.printf(\"%s%s\u003d%s\", separator, tag.name(), tag.value());\n        separator \u003d \", \";\n      }\n\n      for (AbstractMetric metric : record.metrics()) {\n        currentOutStream.printf(\"%s%s\u003d%s\", separator, metric.name(),\n            metric.value());\n      }\n\n      currentOutStream.println();\n\n      // If we don\u0027t hflush(), the data may not be written until the file is\n      // closed. The file won\u0027t be closed until the top of the hour *AND*\n      // another record is received. Calling hflush() makes sure that the data\n      // is complete at the top of the hour.\n      try {\n        currentFSOutStream.hflush();\n      } catch (IOException ex) {\n        throwMetricsException(\"Failed flushing the stream\", ex);\n      }\n\n      checkForErrors(\"Unable to write to log file\");\n    } else if (!ignoreError) {\n      throwMetricsException(\"Unable to write to log file\");\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/metrics2/sink/RollingFileSystemSink.java"
+    }
+  }
+}

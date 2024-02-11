@@ -1,0 +1,58 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSStripedOutputStream.java",
+  "functionName": "markExternalErrorOnStreamers",
+  "functionId": "markExternalErrorOnStreamers",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+  "functionStartLine": 632,
+  "functionEndLine": 650,
+  "numCommitsSeen": 38,
+  "timeTaken": 1583,
+  "changeHistory": [
+    "db6252b6c3959220c6f985f940e2e731f99d8e30",
+    "a8b4d0ff283a0af1075aaa94904d4c6e63a9a3dd"
+  ],
+  "changeHistoryShort": {
+    "db6252b6c3959220c6f985f940e2e731f99d8e30": "Ybodychange",
+    "a8b4d0ff283a0af1075aaa94904d4c6e63a9a3dd": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "db6252b6c3959220c6f985f940e2e731f99d8e30": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-15210. EC : File write hanged when DN is shutdown by admin command. Contributed by Surendra Singh Lilhore.\n",
+      "commitDate": "28/04/20 10:28 PM",
+      "commitName": "db6252b6c3959220c6f985f940e2e731f99d8e30",
+      "commitAuthor": "Surendra Singh Lilhore",
+      "commitDateOld": "15/03/20 8:14 AM",
+      "commitNameOld": "1d772dc5429bfffa015a1209e6f4a864505c871a",
+      "commitAuthorOld": "Surendra Singh Lilhore",
+      "daysBetweenCommits": 44.59,
+      "commitsBetweenForRepo": 143,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,19 @@\n   private Set\u003cStripedDataStreamer\u003e markExternalErrorOnStreamers() {\n     Set\u003cStripedDataStreamer\u003e healthySet \u003d new HashSet\u003c\u003e();\n     for (int i \u003d 0; i \u003c numAllBlocks; i++) {\n       final StripedDataStreamer streamer \u003d getStripedDataStreamer(i);\n       if (streamer.isHealthy() \u0026\u0026 isStreamerWriting(i)) {\n         Preconditions.checkState(\n             streamer.getStage() \u003d\u003d BlockConstructionStage.DATA_STREAMING,\n             \"streamer: \" + streamer);\n         streamer.setExternalError();\n         healthySet.add(streamer);\n+      } else if (!streamer.streamerClosed()\n+          \u0026\u0026 streamer.getErrorState().hasDatanodeError()\n+          \u0026\u0026 streamer.getErrorState().doWaitForRestart()) {\n+        healthySet.add(streamer);\n+        failedStreamers.remove(streamer);\n       }\n     }\n     return healthySet;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Set\u003cStripedDataStreamer\u003e markExternalErrorOnStreamers() {\n    Set\u003cStripedDataStreamer\u003e healthySet \u003d new HashSet\u003c\u003e();\n    for (int i \u003d 0; i \u003c numAllBlocks; i++) {\n      final StripedDataStreamer streamer \u003d getStripedDataStreamer(i);\n      if (streamer.isHealthy() \u0026\u0026 isStreamerWriting(i)) {\n        Preconditions.checkState(\n            streamer.getStage() \u003d\u003d BlockConstructionStage.DATA_STREAMING,\n            \"streamer: \" + streamer);\n        streamer.setExternalError();\n        healthySet.add(streamer);\n      } else if (!streamer.streamerClosed()\n          \u0026\u0026 streamer.getErrorState().hasDatanodeError()\n          \u0026\u0026 streamer.getErrorState().doWaitForRestart()) {\n        healthySet.add(streamer);\n        failedStreamers.remove(streamer);\n      }\n    }\n    return healthySet;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+      "extendedDetails": {}
+    },
+    "a8b4d0ff283a0af1075aaa94904d4c6e63a9a3dd": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9180. Update excluded DataNodes in DFSStripedOutputStream based on failures in data streamers. Contributed by Jing Zhao.\n",
+      "commitDate": "06/10/15 10:56 AM",
+      "commitName": "a8b4d0ff283a0af1075aaa94904d4c6e63a9a3dd",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "03/10/15 11:38 AM",
+      "commitNameOld": "7136e8c5582dc4061b566cb9f11a0d6a6d08bb93",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 2.97,
+      "commitsBetweenForRepo": 12,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,11 +1,14 @@\n   private Set\u003cStripedDataStreamer\u003e markExternalErrorOnStreamers() {\n     Set\u003cStripedDataStreamer\u003e healthySet \u003d new HashSet\u003c\u003e();\n-    for (StripedDataStreamer streamer : streamers) {\n-      if (streamer.isHealthy() \u0026\u0026\n-          streamer.getStage() \u003d\u003d BlockConstructionStage.DATA_STREAMING) {\n+    for (int i \u003d 0; i \u003c numAllBlocks; i++) {\n+      final StripedDataStreamer streamer \u003d getStripedDataStreamer(i);\n+      if (streamer.isHealthy() \u0026\u0026 isStreamerWriting(i)) {\n+        Preconditions.checkState(\n+            streamer.getStage() \u003d\u003d BlockConstructionStage.DATA_STREAMING,\n+            \"streamer: \" + streamer);\n         streamer.setExternalError();\n         healthySet.add(streamer);\n       }\n     }\n     return healthySet;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Set\u003cStripedDataStreamer\u003e markExternalErrorOnStreamers() {\n    Set\u003cStripedDataStreamer\u003e healthySet \u003d new HashSet\u003c\u003e();\n    for (int i \u003d 0; i \u003c numAllBlocks; i++) {\n      final StripedDataStreamer streamer \u003d getStripedDataStreamer(i);\n      if (streamer.isHealthy() \u0026\u0026 isStreamerWriting(i)) {\n        Preconditions.checkState(\n            streamer.getStage() \u003d\u003d BlockConstructionStage.DATA_STREAMING,\n            \"streamer: \" + streamer);\n        streamer.setExternalError();\n        healthySet.add(streamer);\n      }\n    }\n    return healthySet;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+      "extendedDetails": {}
+    }
+  }
+}

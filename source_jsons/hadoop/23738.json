@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CachedHistoryStorage.java",
+  "functionName": "getPartialJobs",
+  "functionId": "getPartialJobs___jobs-Collection__Job____offset-Long__count-Long__user-String__queue-String__sBegin-Long__sEnd-Long__fBegin-Long__fEnd-Long__jobState-JobState",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-hs/src/main/java/org/apache/hadoop/mapreduce/v2/hs/CachedHistoryStorage.java",
+  "functionStartLine": 238,
+  "functionEndLine": 306,
+  "numCommitsSeen": 10,
+  "timeTaken": 886,
+  "changeHistory": [
+    "cbb5f6109097a77f18f5fb0ba62ac132b8fa980f"
+  ],
+  "changeHistoryShort": {
+    "cbb5f6109097a77f18f5fb0ba62ac132b8fa980f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "cbb5f6109097a77f18f5fb0ba62ac132b8fa980f": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-4059. The history server should have a separate pluggable storage/query interface. (Robert Evans via tgraves).\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1311896 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/04/12 11:11 AM",
+      "commitName": "cbb5f6109097a77f18f5fb0ba62ac132b8fa980f",
+      "commitAuthor": "Thomas Graves",
+      "diff": "@@ -0,0 +1,68 @@\n+  public static JobsInfo getPartialJobs(Collection\u003cJob\u003e jobs, Long offset,\n+      Long count, String user, String queue, Long sBegin, Long sEnd,\n+      Long fBegin, Long fEnd, JobState jobState) {\n+    JobsInfo allJobs \u003d new JobsInfo();\n+\n+    if (sBegin \u003d\u003d null || sBegin \u003c 0)\n+      sBegin \u003d 0l;\n+    if (sEnd \u003d\u003d null)\n+      sEnd \u003d Long.MAX_VALUE;\n+    if (fBegin \u003d\u003d null || fBegin \u003c 0)\n+      fBegin \u003d 0l;\n+    if (fEnd \u003d\u003d null)\n+      fEnd \u003d Long.MAX_VALUE;\n+    if (offset \u003d\u003d null || offset \u003c 0)\n+      offset \u003d 0l;\n+    if (count \u003d\u003d null)\n+      count \u003d Long.MAX_VALUE;\n+\n+    if (offset \u003e jobs.size()) {\n+      return allJobs;\n+    }\n+\n+    long at \u003d 0;\n+    long end \u003d offset + count - 1;\n+    if (end \u003c 0) { // due to overflow\n+      end \u003d Long.MAX_VALUE;\n+    }\n+    for (Job job : jobs) {\n+      if (at \u003e end) {\n+        break;\n+      }\n+\n+      // can\u0027t really validate queue is a valid one since queues could change\n+      if (queue !\u003d null \u0026\u0026 !queue.isEmpty()) {\n+        if (!job.getQueueName().equals(queue)) {\n+          continue;\n+        }\n+      }\n+\n+      if (user !\u003d null \u0026\u0026 !user.isEmpty()) {\n+        if (!job.getUserName().equals(user)) {\n+          continue;\n+        }\n+      }\n+\n+      JobReport report \u003d job.getReport();\n+\n+      if (report.getStartTime() \u003c sBegin || report.getStartTime() \u003e sEnd) {\n+        continue;\n+      }\n+      if (report.getFinishTime() \u003c fBegin || report.getFinishTime() \u003e fEnd) {\n+        continue;\n+      }\n+      if (jobState !\u003d null \u0026\u0026 jobState !\u003d report.getJobState()) {\n+        continue;\n+      }\n+\n+      at++;\n+      if ((at - 1) \u003c offset) {\n+        continue;\n+      }\n+\n+      JobInfo jobInfo \u003d new JobInfo(job);\n+\n+      allJobs.add(jobInfo);\n+    }\n+    return allJobs;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static JobsInfo getPartialJobs(Collection\u003cJob\u003e jobs, Long offset,\n      Long count, String user, String queue, Long sBegin, Long sEnd,\n      Long fBegin, Long fEnd, JobState jobState) {\n    JobsInfo allJobs \u003d new JobsInfo();\n\n    if (sBegin \u003d\u003d null || sBegin \u003c 0)\n      sBegin \u003d 0l;\n    if (sEnd \u003d\u003d null)\n      sEnd \u003d Long.MAX_VALUE;\n    if (fBegin \u003d\u003d null || fBegin \u003c 0)\n      fBegin \u003d 0l;\n    if (fEnd \u003d\u003d null)\n      fEnd \u003d Long.MAX_VALUE;\n    if (offset \u003d\u003d null || offset \u003c 0)\n      offset \u003d 0l;\n    if (count \u003d\u003d null)\n      count \u003d Long.MAX_VALUE;\n\n    if (offset \u003e jobs.size()) {\n      return allJobs;\n    }\n\n    long at \u003d 0;\n    long end \u003d offset + count - 1;\n    if (end \u003c 0) { // due to overflow\n      end \u003d Long.MAX_VALUE;\n    }\n    for (Job job : jobs) {\n      if (at \u003e end) {\n        break;\n      }\n\n      // can\u0027t really validate queue is a valid one since queues could change\n      if (queue !\u003d null \u0026\u0026 !queue.isEmpty()) {\n        if (!job.getQueueName().equals(queue)) {\n          continue;\n        }\n      }\n\n      if (user !\u003d null \u0026\u0026 !user.isEmpty()) {\n        if (!job.getUserName().equals(user)) {\n          continue;\n        }\n      }\n\n      JobReport report \u003d job.getReport();\n\n      if (report.getStartTime() \u003c sBegin || report.getStartTime() \u003e sEnd) {\n        continue;\n      }\n      if (report.getFinishTime() \u003c fBegin || report.getFinishTime() \u003e fEnd) {\n        continue;\n      }\n      if (jobState !\u003d null \u0026\u0026 jobState !\u003d report.getJobState()) {\n        continue;\n      }\n\n      at++;\n      if ((at - 1) \u003c offset) {\n        continue;\n      }\n\n      JobInfo jobInfo \u003d new JobInfo(job);\n\n      allJobs.add(jobInfo);\n    }\n    return allJobs;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-hs/src/main/java/org/apache/hadoop/mapreduce/v2/hs/CachedHistoryStorage.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FsVolumeImpl.java",
+  "functionName": "save",
+  "functionId": "save",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+  "functionStartLine": 852,
+  "functionEndLine": 872,
+  "numCommitsSeen": 71,
+  "timeTaken": 3055,
+  "changeHistory": [
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+    "e6a7044b8530afded8f8e86ff309dd0e4d39238a",
+    "6e62a1a6728b1f782f64065424f92b292c3f163a"
+  ],
+  "changeHistoryShort": {
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389": "Ybodychange",
+    "e6a7044b8530afded8f8e86ff309dd0e4d39238a": "Ybodychange",
+    "6e62a1a6728b1f782f64065424f92b292c3f163a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10958. Add instrumentation hooks around Datanode disk IO.\n",
+      "commitDate": "14/12/16 11:18 AM",
+      "commitName": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+      "commitAuthor": "Arpit Agarwal",
+      "commitDateOld": "12/12/16 6:11 PM",
+      "commitNameOld": "2d4731c067ff64cd88f496eac8faaf302faa2ccc",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 1.71,
+      "commitsBetweenForRepo": 10,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,21 @@\n     public void save() throws IOException {\n       state.lastSavedMs \u003d Time.now();\n       boolean success \u003d false;\n-      try (BufferedWriter writer \u003d new BufferedWriter(new OutputStreamWriter(\n-                new FileOutputStream(getTempSaveFile(), false), \"UTF-8\"))) {\n+      try (BufferedWriter writer \u003d new BufferedWriter(\n+          new OutputStreamWriter(fileIoProvider.getFileOutputStream(\n+              FsVolumeImpl.this, getTempSaveFile()), \"UTF-8\"))) {\n         WRITER.writeValue(writer, state);\n         success \u003d true;\n       } finally {\n         if (!success) {\n-          if (getTempSaveFile().delete()) {\n-            LOG.debug(\"save({}, {}): error deleting temporary file.\",\n-                storageID, bpid);\n-          }\n+          fileIoProvider.delete(FsVolumeImpl.this, getTempSaveFile());\n         }\n       }\n-      Files.move(getTempSaveFile().toPath(), getSaveFile().toPath(),\n+      fileIoProvider.move(FsVolumeImpl.this,\n+          getTempSaveFile().toPath(), getSaveFile().toPath(),\n           StandardCopyOption.ATOMIC_MOVE);\n       if (LOG.isTraceEnabled()) {\n         LOG.trace(\"save({}, {}): saved {}\", storageID, bpid,\n             WRITER.writeValueAsString(state));\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void save() throws IOException {\n      state.lastSavedMs \u003d Time.now();\n      boolean success \u003d false;\n      try (BufferedWriter writer \u003d new BufferedWriter(\n          new OutputStreamWriter(fileIoProvider.getFileOutputStream(\n              FsVolumeImpl.this, getTempSaveFile()), \"UTF-8\"))) {\n        WRITER.writeValue(writer, state);\n        success \u003d true;\n      } finally {\n        if (!success) {\n          fileIoProvider.delete(FsVolumeImpl.this, getTempSaveFile());\n        }\n      }\n      fileIoProvider.move(FsVolumeImpl.this,\n          getTempSaveFile().toPath(), getSaveFile().toPath(),\n          StandardCopyOption.ATOMIC_MOVE);\n      if (LOG.isTraceEnabled()) {\n        LOG.trace(\"save({}, {}): saved {}\", storageID, bpid,\n            WRITER.writeValueAsString(state));\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "e6a7044b8530afded8f8e86ff309dd0e4d39238a": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9768. Reuse ObjectMapper instance in HDFS to improve the performance. Contributed by Lin Yiqun.\n",
+      "commitDate": "12/02/16 8:57 AM",
+      "commitName": "e6a7044b8530afded8f8e86ff309dd0e4d39238a",
+      "commitAuthor": "Akira Ajisaka",
+      "commitDateOld": "01/02/16 12:56 PM",
+      "commitNameOld": "e50aa53eed3d0ff1bc8fe60381524bb3bbe53bc1",
+      "commitAuthorOld": "Lei Xu",
+      "daysBetweenCommits": 10.83,
+      "commitsBetweenForRepo": 91,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,22 @@\n     public void save() throws IOException {\n       state.lastSavedMs \u003d Time.now();\n       boolean success \u003d false;\n-      ObjectMapper mapper \u003d new ObjectMapper();\n       try (BufferedWriter writer \u003d new BufferedWriter(new OutputStreamWriter(\n                 new FileOutputStream(getTempSaveFile(), false), \"UTF-8\"))) {\n-        mapper.writerWithDefaultPrettyPrinter().writeValue(writer, state);\n+        WRITER.writeValue(writer, state);\n         success \u003d true;\n       } finally {\n         if (!success) {\n           if (getTempSaveFile().delete()) {\n             LOG.debug(\"save({}, {}): error deleting temporary file.\",\n                 storageID, bpid);\n           }\n         }\n       }\n       Files.move(getTempSaveFile().toPath(), getSaveFile().toPath(),\n           StandardCopyOption.ATOMIC_MOVE);\n       if (LOG.isTraceEnabled()) {\n         LOG.trace(\"save({}, {}): saved {}\", storageID, bpid,\n-            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(state));\n+            WRITER.writeValueAsString(state));\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void save() throws IOException {\n      state.lastSavedMs \u003d Time.now();\n      boolean success \u003d false;\n      try (BufferedWriter writer \u003d new BufferedWriter(new OutputStreamWriter(\n                new FileOutputStream(getTempSaveFile(), false), \"UTF-8\"))) {\n        WRITER.writeValue(writer, state);\n        success \u003d true;\n      } finally {\n        if (!success) {\n          if (getTempSaveFile().delete()) {\n            LOG.debug(\"save({}, {}): error deleting temporary file.\",\n                storageID, bpid);\n          }\n        }\n      }\n      Files.move(getTempSaveFile().toPath(), getSaveFile().toPath(),\n          StandardCopyOption.ATOMIC_MOVE);\n      if (LOG.isTraceEnabled()) {\n        LOG.trace(\"save({}, {}): saved {}\", storageID, bpid,\n            WRITER.writeValueAsString(state));\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "6e62a1a6728b1f782f64065424f92b292c3f163a": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7430. Refactor the BlockScanner to use O(1) memory and use multiple threads (cmccabe)\n",
+      "commitDate": "21/01/15 7:00 PM",
+      "commitName": "6e62a1a6728b1f782f64065424f92b292c3f163a",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "diff": "@@ -0,0 +1,23 @@\n+    public void save() throws IOException {\n+      state.lastSavedMs \u003d Time.now();\n+      boolean success \u003d false;\n+      ObjectMapper mapper \u003d new ObjectMapper();\n+      try (BufferedWriter writer \u003d new BufferedWriter(new OutputStreamWriter(\n+                new FileOutputStream(getTempSaveFile(), false), \"UTF-8\"))) {\n+        mapper.writerWithDefaultPrettyPrinter().writeValue(writer, state);\n+        success \u003d true;\n+      } finally {\n+        if (!success) {\n+          if (getTempSaveFile().delete()) {\n+            LOG.debug(\"save({}, {}): error deleting temporary file.\",\n+                storageID, bpid);\n+          }\n+        }\n+      }\n+      Files.move(getTempSaveFile().toPath(), getSaveFile().toPath(),\n+          StandardCopyOption.ATOMIC_MOVE);\n+      if (LOG.isTraceEnabled()) {\n+        LOG.trace(\"save({}, {}): saved {}\", storageID, bpid,\n+            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(state));\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void save() throws IOException {\n      state.lastSavedMs \u003d Time.now();\n      boolean success \u003d false;\n      ObjectMapper mapper \u003d new ObjectMapper();\n      try (BufferedWriter writer \u003d new BufferedWriter(new OutputStreamWriter(\n                new FileOutputStream(getTempSaveFile(), false), \"UTF-8\"))) {\n        mapper.writerWithDefaultPrettyPrinter().writeValue(writer, state);\n        success \u003d true;\n      } finally {\n        if (!success) {\n          if (getTempSaveFile().delete()) {\n            LOG.debug(\"save({}, {}): error deleting temporary file.\",\n                storageID, bpid);\n          }\n        }\n      }\n      Files.move(getTempSaveFile().toPath(), getSaveFile().toPath(),\n          StandardCopyOption.ATOMIC_MOVE);\n      if (LOG.isTraceEnabled()) {\n        LOG.trace(\"save({}, {}): saved {}\", storageID, bpid,\n            mapper.writerWithDefaultPrettyPrinter().writeValueAsString(state));\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java"
+    }
+  }
+}

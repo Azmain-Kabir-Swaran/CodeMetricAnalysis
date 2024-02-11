@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSEditLogOp.java",
+  "functionName": "scanOp",
+  "functionId": "scanOp",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+  "functionStartLine": 5168,
+  "functionEndLine": 5170,
+  "numCommitsSeen": 100,
+  "timeTaken": 4392,
+  "changeHistory": [
+    "24f6a7c9563757234f53ca23e12f9c9208b53082",
+    "6ae2a0d048e133b43249c248a75a4d77d9abb80d",
+    "9dab514b22f49322738935cfd915c2b4eba50b88"
+  ],
+  "changeHistoryShort": {
+    "24f6a7c9563757234f53ca23e12f9c9208b53082": "Ybodychange",
+    "6ae2a0d048e133b43249c248a75a4d77d9abb80d": "Ybodychange",
+    "9dab514b22f49322738935cfd915c2b4eba50b88": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "24f6a7c9563757234f53ca23e12f9c9208b53082": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8965. Harden edit log reading code against out of memory errors (cmccabe)\n",
+      "commitDate": "31/08/15 6:06 PM",
+      "commitName": "24f6a7c9563757234f53ca23e12f9c9208b53082",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "commitDateOld": "08/07/15 10:37 AM",
+      "commitNameOld": "fc6182d5ed92ac70de1f4633edd5265b7be1a8dc",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 54.31,
+      "commitsBetweenForRepo": 294,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,9 @@\n     public long scanOp() throws IOException {\n-      if (supportEditLogLength) {\n-        limiter.setLimit(maxOpSize);\n-        in.mark(maxOpSize);\n-\n-        final byte opCodeByte;\n-        try {\n-          opCodeByte \u003d in.readByte(); // op code\n-        } catch (EOFException e) {\n-          return HdfsServerConstants.INVALID_TXID;\n-        }\n-\n-        FSEditLogOpCodes opCode \u003d FSEditLogOpCodes.fromByte(opCodeByte);\n-        if (opCode \u003d\u003d OP_INVALID) {\n-          verifyTerminator();\n-          return HdfsServerConstants.INVALID_TXID;\n-        }\n-\n-        int length \u003d in.readInt(); // read the length of the op\n-        long txid \u003d in.readLong(); // read the txid\n-\n-        // skip the remaining content\n-        IOUtils.skipFully(in, length - 8); \n-        // TODO: do we want to verify checksum for JN? For now we don\u0027t.\n-        return txid;\n-      } else {\n-        FSEditLogOp op \u003d decodeOp();\n-        return op \u003d\u003d null ? HdfsServerConstants.INVALID_TXID : op.getTransactionId();\n+      if (!NameNodeLayoutVersion.supports(\n+          LayoutVersion.Feature.STORED_TXIDS, logVersion)) {\n+        throw new IOException(\"Can\u0027t scan a pre-transactional edit log.\");\n       }\n+      FSEditLogOp op \u003d decodeOp();\n+      return op \u003d\u003d null ?\n+          HdfsServerConstants.INVALID_TXID : op.getTransactionId();\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public long scanOp() throws IOException {\n      if (!NameNodeLayoutVersion.supports(\n          LayoutVersion.Feature.STORED_TXIDS, logVersion)) {\n        throw new IOException(\"Can\u0027t scan a pre-transactional edit log.\");\n      }\n      FSEditLogOp op \u003d decodeOp();\n      return op \u003d\u003d null ?\n          HdfsServerConstants.INVALID_TXID : op.getTransactionId();\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+      "extendedDetails": {}
+    },
+    "6ae2a0d048e133b43249c248a75a4d77d9abb80d": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8249. Separate HdfsConstants into the client and the server side class. Contributed by Haohui Mai.\n",
+      "commitDate": "02/05/15 10:03 AM",
+      "commitName": "6ae2a0d048e133b43249c248a75a4d77d9abb80d",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "20/04/15 12:36 AM",
+      "commitNameOld": "5c97db07fb306842f49d73a67a90cecec19a7833",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 12.39,
+      "commitsBetweenForRepo": 126,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,30 @@\n     public long scanOp() throws IOException {\n       if (supportEditLogLength) {\n         limiter.setLimit(maxOpSize);\n         in.mark(maxOpSize);\n \n         final byte opCodeByte;\n         try {\n           opCodeByte \u003d in.readByte(); // op code\n         } catch (EOFException e) {\n-          return HdfsConstants.INVALID_TXID;\n+          return HdfsServerConstants.INVALID_TXID;\n         }\n \n         FSEditLogOpCodes opCode \u003d FSEditLogOpCodes.fromByte(opCodeByte);\n         if (opCode \u003d\u003d OP_INVALID) {\n           verifyTerminator();\n-          return HdfsConstants.INVALID_TXID;\n+          return HdfsServerConstants.INVALID_TXID;\n         }\n \n         int length \u003d in.readInt(); // read the length of the op\n         long txid \u003d in.readLong(); // read the txid\n \n         // skip the remaining content\n         IOUtils.skipFully(in, length - 8); \n         // TODO: do we want to verify checksum for JN? For now we don\u0027t.\n         return txid;\n       } else {\n         FSEditLogOp op \u003d decodeOp();\n-        return op \u003d\u003d null ? HdfsConstants.INVALID_TXID : op.getTransactionId();\n+        return op \u003d\u003d null ? HdfsServerConstants.INVALID_TXID : op.getTransactionId();\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public long scanOp() throws IOException {\n      if (supportEditLogLength) {\n        limiter.setLimit(maxOpSize);\n        in.mark(maxOpSize);\n\n        final byte opCodeByte;\n        try {\n          opCodeByte \u003d in.readByte(); // op code\n        } catch (EOFException e) {\n          return HdfsServerConstants.INVALID_TXID;\n        }\n\n        FSEditLogOpCodes opCode \u003d FSEditLogOpCodes.fromByte(opCodeByte);\n        if (opCode \u003d\u003d OP_INVALID) {\n          verifyTerminator();\n          return HdfsServerConstants.INVALID_TXID;\n        }\n\n        int length \u003d in.readInt(); // read the length of the op\n        long txid \u003d in.readLong(); // read the txid\n\n        // skip the remaining content\n        IOUtils.skipFully(in, length - 8); \n        // TODO: do we want to verify checksum for JN? For now we don\u0027t.\n        return txid;\n      } else {\n        FSEditLogOp op \u003d decodeOp();\n        return op \u003d\u003d null ? HdfsServerConstants.INVALID_TXID : op.getTransactionId();\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+      "extendedDetails": {}
+    },
+    "9dab514b22f49322738935cfd915c2b4eba50b88": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-6038. Allow JournalNode to handle editlog produced by new release with future layoutversion. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1579813 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "20/03/14 4:06 PM",
+      "commitName": "9dab514b22f49322738935cfd915c2b4eba50b88",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,30 @@\n+    public long scanOp() throws IOException {\n+      if (supportEditLogLength) {\n+        limiter.setLimit(maxOpSize);\n+        in.mark(maxOpSize);\n+\n+        final byte opCodeByte;\n+        try {\n+          opCodeByte \u003d in.readByte(); // op code\n+        } catch (EOFException e) {\n+          return HdfsConstants.INVALID_TXID;\n+        }\n+\n+        FSEditLogOpCodes opCode \u003d FSEditLogOpCodes.fromByte(opCodeByte);\n+        if (opCode \u003d\u003d OP_INVALID) {\n+          verifyTerminator();\n+          return HdfsConstants.INVALID_TXID;\n+        }\n+\n+        int length \u003d in.readInt(); // read the length of the op\n+        long txid \u003d in.readLong(); // read the txid\n+\n+        // skip the remaining content\n+        IOUtils.skipFully(in, length - 8); \n+        // TODO: do we want to verify checksum for JN? For now we don\u0027t.\n+        return txid;\n+      } else {\n+        FSEditLogOp op \u003d decodeOp();\n+        return op \u003d\u003d null ? HdfsConstants.INVALID_TXID : op.getTransactionId();\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public long scanOp() throws IOException {\n      if (supportEditLogLength) {\n        limiter.setLimit(maxOpSize);\n        in.mark(maxOpSize);\n\n        final byte opCodeByte;\n        try {\n          opCodeByte \u003d in.readByte(); // op code\n        } catch (EOFException e) {\n          return HdfsConstants.INVALID_TXID;\n        }\n\n        FSEditLogOpCodes opCode \u003d FSEditLogOpCodes.fromByte(opCodeByte);\n        if (opCode \u003d\u003d OP_INVALID) {\n          verifyTerminator();\n          return HdfsConstants.INVALID_TXID;\n        }\n\n        int length \u003d in.readInt(); // read the length of the op\n        long txid \u003d in.readLong(); // read the txid\n\n        // skip the remaining content\n        IOUtils.skipFully(in, length - 8); \n        // TODO: do we want to verify checksum for JN? For now we don\u0027t.\n        return txid;\n      } else {\n        FSEditLogOp op \u003d decodeOp();\n        return op \u003d\u003d null ? HdfsConstants.INVALID_TXID : op.getTransactionId();\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java"
+    }
+  }
+}

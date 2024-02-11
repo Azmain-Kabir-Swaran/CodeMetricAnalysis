@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSAdmin.java",
+  "functionName": "listOpenFiles",
+  "functionId": "listOpenFiles___argv-String[]",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSAdmin.java",
+  "functionStartLine": 973,
+  "functionEndLine": 1009,
+  "numCommitsSeen": 216,
+  "timeTaken": 4757,
+  "changeHistory": [
+    "01bd6ab18fa48f4c7cac1497905b52e547962599",
+    "bf5c94899537011465350d5d999fad9ffaeb605d",
+    "42a1c98597e6dba2e371510a6b2b6b1fb94e4090",
+    "fb68980959f95f0d89e86f91909867724ad01791"
+  ],
+  "changeHistoryShort": {
+    "01bd6ab18fa48f4c7cac1497905b52e547962599": "Ybodychange",
+    "bf5c94899537011465350d5d999fad9ffaeb605d": "Ybodychange",
+    "42a1c98597e6dba2e371510a6b2b6b1fb94e4090": "Ymultichange(Yparameterchange,Ybodychange)",
+    "fb68980959f95f0d89e86f91909867724ad01791": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "01bd6ab18fa48f4c7cac1497905b52e547962599": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12935. Get ambiguous result for DFSAdmin command in HA mode when only one namenode is up. Contributed by Jianfei Jiang.\n",
+      "commitDate": "07/02/18 9:40 AM",
+      "commitName": "01bd6ab18fa48f4c7cac1497905b52e547962599",
+      "commitAuthor": "Brahma Reddy Battula",
+      "commitDateOld": "05/01/18 10:31 PM",
+      "commitNameOld": "bf5c94899537011465350d5d999fad9ffaeb605d",
+      "commitAuthorOld": "Yiqun Lin",
+      "daysBetweenCommits": 32.46,
+      "commitsBetweenForRepo": 204,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,44 +1,37 @@\n   public int listOpenFiles(String[] argv) throws IOException {\n     String path \u003d null;\n     List\u003cOpenFilesType\u003e types \u003d new ArrayList\u003c\u003e();\n     if (argv !\u003d null) {\n       List\u003cString\u003e args \u003d new ArrayList\u003c\u003e(Arrays.asList(argv));\n       if (StringUtils.popOption(\"-blockingDecommission\", args)) {\n         types.add(OpenFilesType.BLOCKING_DECOMMISSION);\n       }\n \n       path \u003d StringUtils.popOptionWithArgument(\"-path\", args);\n     }\n     if (types.isEmpty()) {\n       types.add(OpenFilesType.ALL_OPEN_FILES);\n     }\n \n     if (path !\u003d null) {\n       path \u003d path.trim();\n       if (path.length() \u003d\u003d 0) {\n         path \u003d OpenFilesIterator.FILTER_PATH_DEFAULT;\n       }\n     } else {\n       path \u003d OpenFilesIterator.FILTER_PATH_DEFAULT;\n     }\n \n     EnumSet\u003cOpenFilesType\u003e openFilesTypes \u003d EnumSet.copyOf(types);\n \n     DistributedFileSystem dfs \u003d getDFS();\n-    Configuration dfsConf \u003d dfs.getConf();\n-    URI dfsUri \u003d dfs.getUri();\n-    boolean isHaEnabled \u003d HAUtilClient.isLogicalUri(dfsConf, dfsUri);\n-\n     RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n-    if (isHaEnabled) {\n-      ProxyAndInfo\u003cClientProtocol\u003e proxy \u003d NameNodeProxies.createNonHAProxy(\n-          dfsConf, HAUtil.getAddressOfActive(getDFS()), ClientProtocol.class,\n-          UserGroupInformation.getCurrentUser(), false);\n-      openFilesRemoteIterator \u003d new OpenFilesIterator(proxy.getProxy(),\n-          FsTracer.get(dfsConf), openFilesTypes, path);\n-    } else {\n+    try{\n       openFilesRemoteIterator \u003d dfs.listOpenFiles(openFilesTypes, path);\n+      printOpenFiles(openFilesRemoteIterator);\n+    } catch (IOException ioe){\n+      System.out.println(\"List open files failed.\");\n+      throw ioe;\n     }\n-    printOpenFiles(openFilesRemoteIterator);\n     return 0;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public int listOpenFiles(String[] argv) throws IOException {\n    String path \u003d null;\n    List\u003cOpenFilesType\u003e types \u003d new ArrayList\u003c\u003e();\n    if (argv !\u003d null) {\n      List\u003cString\u003e args \u003d new ArrayList\u003c\u003e(Arrays.asList(argv));\n      if (StringUtils.popOption(\"-blockingDecommission\", args)) {\n        types.add(OpenFilesType.BLOCKING_DECOMMISSION);\n      }\n\n      path \u003d StringUtils.popOptionWithArgument(\"-path\", args);\n    }\n    if (types.isEmpty()) {\n      types.add(OpenFilesType.ALL_OPEN_FILES);\n    }\n\n    if (path !\u003d null) {\n      path \u003d path.trim();\n      if (path.length() \u003d\u003d 0) {\n        path \u003d OpenFilesIterator.FILTER_PATH_DEFAULT;\n      }\n    } else {\n      path \u003d OpenFilesIterator.FILTER_PATH_DEFAULT;\n    }\n\n    EnumSet\u003cOpenFilesType\u003e openFilesTypes \u003d EnumSet.copyOf(types);\n\n    DistributedFileSystem dfs \u003d getDFS();\n    RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n    try{\n      openFilesRemoteIterator \u003d dfs.listOpenFiles(openFilesTypes, path);\n      printOpenFiles(openFilesRemoteIterator);\n    } catch (IOException ioe){\n      System.out.println(\"List open files failed.\");\n      throw ioe;\n    }\n    return 0;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSAdmin.java",
+      "extendedDetails": {}
+    },
+    "bf5c94899537011465350d5d999fad9ffaeb605d": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11848. Enhance dfsadmin listOpenFiles command to list files under a given path. Contributed by Yiqun Lin.\n",
+      "commitDate": "05/01/18 10:31 PM",
+      "commitName": "bf5c94899537011465350d5d999fad9ffaeb605d",
+      "commitAuthor": "Yiqun Lin",
+      "commitDateOld": "02/01/18 2:59 PM",
+      "commitNameOld": "42a1c98597e6dba2e371510a6b2b6b1fb94e4090",
+      "commitAuthorOld": "Manoj Govindassamy",
+      "daysBetweenCommits": 3.31,
+      "commitsBetweenForRepo": 26,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,44 @@\n   public int listOpenFiles(String[] argv) throws IOException {\n+    String path \u003d null;\n     List\u003cOpenFilesType\u003e types \u003d new ArrayList\u003c\u003e();\n     if (argv !\u003d null) {\n       List\u003cString\u003e args \u003d new ArrayList\u003c\u003e(Arrays.asList(argv));\n       if (StringUtils.popOption(\"-blockingDecommission\", args)) {\n         types.add(OpenFilesType.BLOCKING_DECOMMISSION);\n       }\n+\n+      path \u003d StringUtils.popOptionWithArgument(\"-path\", args);\n     }\n     if (types.isEmpty()) {\n       types.add(OpenFilesType.ALL_OPEN_FILES);\n     }\n+\n+    if (path !\u003d null) {\n+      path \u003d path.trim();\n+      if (path.length() \u003d\u003d 0) {\n+        path \u003d OpenFilesIterator.FILTER_PATH_DEFAULT;\n+      }\n+    } else {\n+      path \u003d OpenFilesIterator.FILTER_PATH_DEFAULT;\n+    }\n+\n     EnumSet\u003cOpenFilesType\u003e openFilesTypes \u003d EnumSet.copyOf(types);\n \n     DistributedFileSystem dfs \u003d getDFS();\n     Configuration dfsConf \u003d dfs.getConf();\n     URI dfsUri \u003d dfs.getUri();\n     boolean isHaEnabled \u003d HAUtilClient.isLogicalUri(dfsConf, dfsUri);\n \n     RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n     if (isHaEnabled) {\n       ProxyAndInfo\u003cClientProtocol\u003e proxy \u003d NameNodeProxies.createNonHAProxy(\n           dfsConf, HAUtil.getAddressOfActive(getDFS()), ClientProtocol.class,\n           UserGroupInformation.getCurrentUser(), false);\n       openFilesRemoteIterator \u003d new OpenFilesIterator(proxy.getProxy(),\n-          FsTracer.get(dfsConf), openFilesTypes);\n+          FsTracer.get(dfsConf), openFilesTypes, path);\n     } else {\n-      openFilesRemoteIterator \u003d dfs.listOpenFiles(openFilesTypes);\n+      openFilesRemoteIterator \u003d dfs.listOpenFiles(openFilesTypes, path);\n     }\n     printOpenFiles(openFilesRemoteIterator);\n     return 0;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public int listOpenFiles(String[] argv) throws IOException {\n    String path \u003d null;\n    List\u003cOpenFilesType\u003e types \u003d new ArrayList\u003c\u003e();\n    if (argv !\u003d null) {\n      List\u003cString\u003e args \u003d new ArrayList\u003c\u003e(Arrays.asList(argv));\n      if (StringUtils.popOption(\"-blockingDecommission\", args)) {\n        types.add(OpenFilesType.BLOCKING_DECOMMISSION);\n      }\n\n      path \u003d StringUtils.popOptionWithArgument(\"-path\", args);\n    }\n    if (types.isEmpty()) {\n      types.add(OpenFilesType.ALL_OPEN_FILES);\n    }\n\n    if (path !\u003d null) {\n      path \u003d path.trim();\n      if (path.length() \u003d\u003d 0) {\n        path \u003d OpenFilesIterator.FILTER_PATH_DEFAULT;\n      }\n    } else {\n      path \u003d OpenFilesIterator.FILTER_PATH_DEFAULT;\n    }\n\n    EnumSet\u003cOpenFilesType\u003e openFilesTypes \u003d EnumSet.copyOf(types);\n\n    DistributedFileSystem dfs \u003d getDFS();\n    Configuration dfsConf \u003d dfs.getConf();\n    URI dfsUri \u003d dfs.getUri();\n    boolean isHaEnabled \u003d HAUtilClient.isLogicalUri(dfsConf, dfsUri);\n\n    RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n    if (isHaEnabled) {\n      ProxyAndInfo\u003cClientProtocol\u003e proxy \u003d NameNodeProxies.createNonHAProxy(\n          dfsConf, HAUtil.getAddressOfActive(getDFS()), ClientProtocol.class,\n          UserGroupInformation.getCurrentUser(), false);\n      openFilesRemoteIterator \u003d new OpenFilesIterator(proxy.getProxy(),\n          FsTracer.get(dfsConf), openFilesTypes, path);\n    } else {\n      openFilesRemoteIterator \u003d dfs.listOpenFiles(openFilesTypes, path);\n    }\n    printOpenFiles(openFilesRemoteIterator);\n    return 0;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSAdmin.java",
+      "extendedDetails": {}
+    },
+    "42a1c98597e6dba2e371510a6b2b6b1fb94e4090": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-11847. Enhance dfsadmin listOpenFiles command to list files blocking datanode decommissioning.\n",
+      "commitDate": "02/01/18 2:59 PM",
+      "commitName": "42a1c98597e6dba2e371510a6b2b6b1fb94e4090",
+      "commitAuthor": "Manoj Govindassamy",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-11847. Enhance dfsadmin listOpenFiles command to list files blocking datanode decommissioning.\n",
+          "commitDate": "02/01/18 2:59 PM",
+          "commitName": "42a1c98597e6dba2e371510a6b2b6b1fb94e4090",
+          "commitAuthor": "Manoj Govindassamy",
+          "commitDateOld": "25/10/17 2:11 PM",
+          "commitNameOld": "f66ad1fab958a28ef40c684366c23695237a8e60",
+          "commitAuthorOld": "Xiao Chen",
+          "daysBetweenCommits": 69.08,
+          "commitsBetweenForRepo": 482,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,31 @@\n-  public int listOpenFiles() throws IOException {\n+  public int listOpenFiles(String[] argv) throws IOException {\n+    List\u003cOpenFilesType\u003e types \u003d new ArrayList\u003c\u003e();\n+    if (argv !\u003d null) {\n+      List\u003cString\u003e args \u003d new ArrayList\u003c\u003e(Arrays.asList(argv));\n+      if (StringUtils.popOption(\"-blockingDecommission\", args)) {\n+        types.add(OpenFilesType.BLOCKING_DECOMMISSION);\n+      }\n+    }\n+    if (types.isEmpty()) {\n+      types.add(OpenFilesType.ALL_OPEN_FILES);\n+    }\n+    EnumSet\u003cOpenFilesType\u003e openFilesTypes \u003d EnumSet.copyOf(types);\n+\n     DistributedFileSystem dfs \u003d getDFS();\n     Configuration dfsConf \u003d dfs.getConf();\n     URI dfsUri \u003d dfs.getUri();\n     boolean isHaEnabled \u003d HAUtilClient.isLogicalUri(dfsConf, dfsUri);\n \n     RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n     if (isHaEnabled) {\n       ProxyAndInfo\u003cClientProtocol\u003e proxy \u003d NameNodeProxies.createNonHAProxy(\n           dfsConf, HAUtil.getAddressOfActive(getDFS()), ClientProtocol.class,\n           UserGroupInformation.getCurrentUser(), false);\n       openFilesRemoteIterator \u003d new OpenFilesIterator(proxy.getProxy(),\n-          FsTracer.get(dfsConf));\n+          FsTracer.get(dfsConf), openFilesTypes);\n     } else {\n-      openFilesRemoteIterator \u003d dfs.listOpenFiles();\n+      openFilesRemoteIterator \u003d dfs.listOpenFiles(openFilesTypes);\n     }\n     printOpenFiles(openFilesRemoteIterator);\n     return 0;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public int listOpenFiles(String[] argv) throws IOException {\n    List\u003cOpenFilesType\u003e types \u003d new ArrayList\u003c\u003e();\n    if (argv !\u003d null) {\n      List\u003cString\u003e args \u003d new ArrayList\u003c\u003e(Arrays.asList(argv));\n      if (StringUtils.popOption(\"-blockingDecommission\", args)) {\n        types.add(OpenFilesType.BLOCKING_DECOMMISSION);\n      }\n    }\n    if (types.isEmpty()) {\n      types.add(OpenFilesType.ALL_OPEN_FILES);\n    }\n    EnumSet\u003cOpenFilesType\u003e openFilesTypes \u003d EnumSet.copyOf(types);\n\n    DistributedFileSystem dfs \u003d getDFS();\n    Configuration dfsConf \u003d dfs.getConf();\n    URI dfsUri \u003d dfs.getUri();\n    boolean isHaEnabled \u003d HAUtilClient.isLogicalUri(dfsConf, dfsUri);\n\n    RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n    if (isHaEnabled) {\n      ProxyAndInfo\u003cClientProtocol\u003e proxy \u003d NameNodeProxies.createNonHAProxy(\n          dfsConf, HAUtil.getAddressOfActive(getDFS()), ClientProtocol.class,\n          UserGroupInformation.getCurrentUser(), false);\n      openFilesRemoteIterator \u003d new OpenFilesIterator(proxy.getProxy(),\n          FsTracer.get(dfsConf), openFilesTypes);\n    } else {\n      openFilesRemoteIterator \u003d dfs.listOpenFiles(openFilesTypes);\n    }\n    printOpenFiles(openFilesRemoteIterator);\n    return 0;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSAdmin.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[argv-String[]]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-11847. Enhance dfsadmin listOpenFiles command to list files blocking datanode decommissioning.\n",
+          "commitDate": "02/01/18 2:59 PM",
+          "commitName": "42a1c98597e6dba2e371510a6b2b6b1fb94e4090",
+          "commitAuthor": "Manoj Govindassamy",
+          "commitDateOld": "25/10/17 2:11 PM",
+          "commitNameOld": "f66ad1fab958a28ef40c684366c23695237a8e60",
+          "commitAuthorOld": "Xiao Chen",
+          "daysBetweenCommits": 69.08,
+          "commitsBetweenForRepo": 482,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,31 @@\n-  public int listOpenFiles() throws IOException {\n+  public int listOpenFiles(String[] argv) throws IOException {\n+    List\u003cOpenFilesType\u003e types \u003d new ArrayList\u003c\u003e();\n+    if (argv !\u003d null) {\n+      List\u003cString\u003e args \u003d new ArrayList\u003c\u003e(Arrays.asList(argv));\n+      if (StringUtils.popOption(\"-blockingDecommission\", args)) {\n+        types.add(OpenFilesType.BLOCKING_DECOMMISSION);\n+      }\n+    }\n+    if (types.isEmpty()) {\n+      types.add(OpenFilesType.ALL_OPEN_FILES);\n+    }\n+    EnumSet\u003cOpenFilesType\u003e openFilesTypes \u003d EnumSet.copyOf(types);\n+\n     DistributedFileSystem dfs \u003d getDFS();\n     Configuration dfsConf \u003d dfs.getConf();\n     URI dfsUri \u003d dfs.getUri();\n     boolean isHaEnabled \u003d HAUtilClient.isLogicalUri(dfsConf, dfsUri);\n \n     RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n     if (isHaEnabled) {\n       ProxyAndInfo\u003cClientProtocol\u003e proxy \u003d NameNodeProxies.createNonHAProxy(\n           dfsConf, HAUtil.getAddressOfActive(getDFS()), ClientProtocol.class,\n           UserGroupInformation.getCurrentUser(), false);\n       openFilesRemoteIterator \u003d new OpenFilesIterator(proxy.getProxy(),\n-          FsTracer.get(dfsConf));\n+          FsTracer.get(dfsConf), openFilesTypes);\n     } else {\n-      openFilesRemoteIterator \u003d dfs.listOpenFiles();\n+      openFilesRemoteIterator \u003d dfs.listOpenFiles(openFilesTypes);\n     }\n     printOpenFiles(openFilesRemoteIterator);\n     return 0;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public int listOpenFiles(String[] argv) throws IOException {\n    List\u003cOpenFilesType\u003e types \u003d new ArrayList\u003c\u003e();\n    if (argv !\u003d null) {\n      List\u003cString\u003e args \u003d new ArrayList\u003c\u003e(Arrays.asList(argv));\n      if (StringUtils.popOption(\"-blockingDecommission\", args)) {\n        types.add(OpenFilesType.BLOCKING_DECOMMISSION);\n      }\n    }\n    if (types.isEmpty()) {\n      types.add(OpenFilesType.ALL_OPEN_FILES);\n    }\n    EnumSet\u003cOpenFilesType\u003e openFilesTypes \u003d EnumSet.copyOf(types);\n\n    DistributedFileSystem dfs \u003d getDFS();\n    Configuration dfsConf \u003d dfs.getConf();\n    URI dfsUri \u003d dfs.getUri();\n    boolean isHaEnabled \u003d HAUtilClient.isLogicalUri(dfsConf, dfsUri);\n\n    RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n    if (isHaEnabled) {\n      ProxyAndInfo\u003cClientProtocol\u003e proxy \u003d NameNodeProxies.createNonHAProxy(\n          dfsConf, HAUtil.getAddressOfActive(getDFS()), ClientProtocol.class,\n          UserGroupInformation.getCurrentUser(), false);\n      openFilesRemoteIterator \u003d new OpenFilesIterator(proxy.getProxy(),\n          FsTracer.get(dfsConf), openFilesTypes);\n    } else {\n      openFilesRemoteIterator \u003d dfs.listOpenFiles(openFilesTypes);\n    }\n    printOpenFiles(openFilesRemoteIterator);\n    return 0;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSAdmin.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "fb68980959f95f0d89e86f91909867724ad01791": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10480. Add an admin command to list currently open files. Contributed by Manoj Govindassamy.\n",
+      "commitDate": "15/06/17 2:46 PM",
+      "commitName": "fb68980959f95f0d89e86f91909867724ad01791",
+      "commitAuthor": "Andrew Wang",
+      "diff": "@@ -0,0 +1,19 @@\n+  public int listOpenFiles() throws IOException {\n+    DistributedFileSystem dfs \u003d getDFS();\n+    Configuration dfsConf \u003d dfs.getConf();\n+    URI dfsUri \u003d dfs.getUri();\n+    boolean isHaEnabled \u003d HAUtilClient.isLogicalUri(dfsConf, dfsUri);\n+\n+    RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n+    if (isHaEnabled) {\n+      ProxyAndInfo\u003cClientProtocol\u003e proxy \u003d NameNodeProxies.createNonHAProxy(\n+          dfsConf, HAUtil.getAddressOfActive(getDFS()), ClientProtocol.class,\n+          UserGroupInformation.getCurrentUser(), false);\n+      openFilesRemoteIterator \u003d new OpenFilesIterator(proxy.getProxy(),\n+          FsTracer.get(dfsConf));\n+    } else {\n+      openFilesRemoteIterator \u003d dfs.listOpenFiles();\n+    }\n+    printOpenFiles(openFilesRemoteIterator);\n+    return 0;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public int listOpenFiles() throws IOException {\n    DistributedFileSystem dfs \u003d getDFS();\n    Configuration dfsConf \u003d dfs.getConf();\n    URI dfsUri \u003d dfs.getUri();\n    boolean isHaEnabled \u003d HAUtilClient.isLogicalUri(dfsConf, dfsUri);\n\n    RemoteIterator\u003cOpenFileEntry\u003e openFilesRemoteIterator;\n    if (isHaEnabled) {\n      ProxyAndInfo\u003cClientProtocol\u003e proxy \u003d NameNodeProxies.createNonHAProxy(\n          dfsConf, HAUtil.getAddressOfActive(getDFS()), ClientProtocol.class,\n          UserGroupInformation.getCurrentUser(), false);\n      openFilesRemoteIterator \u003d new OpenFilesIterator(proxy.getProxy(),\n          FsTracer.get(dfsConf));\n    } else {\n      openFilesRemoteIterator \u003d dfs.listOpenFiles();\n    }\n    printOpenFiles(openFilesRemoteIterator);\n    return 0;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/DFSAdmin.java"
+    }
+  }
+}

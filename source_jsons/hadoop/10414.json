@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DataXceiver.java",
+  "functionName": "checkAndWaitForBP",
+  "functionId": "checkAndWaitForBP___block-ExtendedBlock(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+  "functionStartLine": 1380,
+  "functionEndLine": 1413,
+  "numCommitsSeen": 114,
+  "timeTaken": 1636,
+  "changeHistory": [
+    "38c4c14472996562eb3d610649246770c2888c6b"
+  ],
+  "changeHistoryShort": {
+    "38c4c14472996562eb3d610649246770c2888c6b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "38c4c14472996562eb3d610649246770c2888c6b": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9574. Reduce client failures during datanode restart. Contributed by Kihwal Lee.\n",
+      "commitDate": "08/01/16 9:13 AM",
+      "commitName": "38c4c14472996562eb3d610649246770c2888c6b",
+      "commitAuthor": "Kihwal Lee",
+      "diff": "@@ -0,0 +1,34 @@\n+  void checkAndWaitForBP(final ExtendedBlock block)\n+      throws IOException {\n+    String bpId \u003d block.getBlockPoolId();\n+\n+    // The registration is only missing in relatively short time window.\n+    // Optimistically perform this first.\n+    try {\n+      datanode.getDNRegistrationForBP(bpId);\n+      return;\n+    } catch (IOException ioe) {\n+      // not registered\n+    }\n+\n+    // retry\n+    long bpReadyTimeout \u003d dnConf.getBpReadyTimeout();\n+    StopWatch sw \u003d new StopWatch();\n+    sw.start();\n+    while (sw.now(TimeUnit.SECONDS) \u003c\u003d bpReadyTimeout) {\n+      try {\n+        datanode.getDNRegistrationForBP(bpId);\n+        return;\n+      } catch (IOException ioe) {\n+        // not registered\n+      }\n+      // sleep before trying again\n+      try {\n+        Thread.sleep(1000);\n+      } catch (InterruptedException ie) {\n+        throw new IOException(\"Interrupted while serving request. Aborting.\");\n+      }\n+    }\n+    // failed to obtain registration.\n+    throw new IOException(\"Not ready to serve the block pool, \" + bpId + \".\");\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void checkAndWaitForBP(final ExtendedBlock block)\n      throws IOException {\n    String bpId \u003d block.getBlockPoolId();\n\n    // The registration is only missing in relatively short time window.\n    // Optimistically perform this first.\n    try {\n      datanode.getDNRegistrationForBP(bpId);\n      return;\n    } catch (IOException ioe) {\n      // not registered\n    }\n\n    // retry\n    long bpReadyTimeout \u003d dnConf.getBpReadyTimeout();\n    StopWatch sw \u003d new StopWatch();\n    sw.start();\n    while (sw.now(TimeUnit.SECONDS) \u003c\u003d bpReadyTimeout) {\n      try {\n        datanode.getDNRegistrationForBP(bpId);\n        return;\n      } catch (IOException ioe) {\n        // not registered\n      }\n      // sleep before trying again\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        throw new IOException(\"Interrupted while serving request. Aborting.\");\n      }\n    }\n    // failed to obtain registration.\n    throw new IOException(\"Not ready to serve the block pool, \" + bpId + \".\");\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java"
+    }
+  }
+}

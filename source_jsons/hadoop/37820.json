@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMServerUtils.java",
+  "functionName": "getApplicableNodeCountForAM",
+  "functionId": "getApplicableNodeCountForAM___rmContext-RMContext__conf-Configuration__amReqs-List__ResourceRequest__",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/RMServerUtils.java",
+  "functionStartLine": 581,
+  "functionEndLine": 623,
+  "numCommitsSeen": 84,
+  "timeTaken": 2380,
+  "changeHistory": [
+    "9bae6720cb8432efd78c909dc624c00e367cedf5",
+    "b7613e0f406fb2b9bd5b1b3c79658e801f63c587"
+  ],
+  "changeHistoryShort": {
+    "9bae6720cb8432efd78c909dc624c00e367cedf5": "Ymultichange(Yparameterchange,Ybodychange)",
+    "b7613e0f406fb2b9bd5b1b3c79658e801f63c587": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9bae6720cb8432efd78c909dc624c00e367cedf5": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-6050. AMs can\u0027t be scheduled on racks or nodes (rkanter)\n",
+      "commitDate": "27/03/17 5:23 PM",
+      "commitName": "9bae6720cb8432efd78c909dc624c00e367cedf5",
+      "commitAuthor": "Robert Kanter",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-6050. AMs can\u0027t be scheduled on racks or nodes (rkanter)\n",
+          "commitDate": "27/03/17 5:23 PM",
+          "commitName": "9bae6720cb8432efd78c909dc624c00e367cedf5",
+          "commitAuthor": "Robert Kanter",
+          "commitDateOld": "28/02/17 10:35 AM",
+          "commitNameOld": "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 27.24,
+          "commitsBetweenForRepo": 165,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,43 @@\n   public static int getApplicableNodeCountForAM(RMContext rmContext,\n-      Configuration conf, ResourceRequest amreq) {\n-    if (YarnConfiguration.areNodeLabelsEnabled(conf)) {\n-      RMNodeLabelsManager labelManager \u003d rmContext.getNodeLabelManager();\n-      String amNodeLabelExpression \u003d amreq.getNodeLabelExpression();\n-      amNodeLabelExpression \u003d (amNodeLabelExpression \u003d\u003d null\n-          || amNodeLabelExpression.trim().isEmpty())\n-              ? RMNodeLabelsManager.NO_LABEL : amNodeLabelExpression;\n-      return labelManager.getActiveNMCountPerLabel(amNodeLabelExpression);\n+      Configuration conf, List\u003cResourceRequest\u003e amReqs) {\n+    // Determine the list of nodes that are eligible based on the strict\n+    // resource requests\n+    Set\u003cNodeId\u003e nodesForReqs \u003d new HashSet\u003c\u003e();\n+    for (ResourceRequest amReq : amReqs) {\n+      if (amReq.getRelaxLocality() \u0026\u0026\n+          !amReq.getResourceName().equals(ResourceRequest.ANY)) {\n+        nodesForReqs.addAll(\n+            rmContext.getScheduler().getNodeIds(amReq.getResourceName()));\n+      }\n     }\n-    return rmContext.getScheduler().getNumClusterNodes();\n+\n+    if (YarnConfiguration.areNodeLabelsEnabled(conf)) {\n+      // Determine the list of nodes that are eligible based on the node label\n+      String amNodeLabelExpression \u003d amReqs.get(0).getNodeLabelExpression();\n+      Set\u003cNodeId\u003e nodesForLabels \u003d\n+          getNodeIdsForLabel(rmContext, amNodeLabelExpression);\n+      if (nodesForLabels !\u003d null \u0026\u0026 !nodesForLabels.isEmpty()) {\n+        // If only node labels, strip out any wildcard NodeIds and return\n+        if (nodesForReqs.isEmpty()) {\n+          for (Iterator\u003cNodeId\u003e it \u003d nodesForLabels.iterator(); it.hasNext();) {\n+            if (it.next().getPort() \u003d\u003d 0) {\n+              it.remove();\n+            }\n+          }\n+          return nodesForLabels.size();\n+        } else {\n+          // The NodeIds common to both the strict resource requests and the\n+          // node label is the eligible set\n+          return Sets.intersection(nodesForReqs, nodesForLabels).size();\n+        }\n+      }\n+    }\n+\n+    // If no strict resource request NodeIds nor node label NodeIds, then just\n+    // return the entire cluster\n+    if (nodesForReqs.isEmpty()) {\n+      return rmContext.getScheduler().getNumClusterNodes();\n+    }\n+    // No node label NodeIds, so return the strict resource request NodeIds\n+    return nodesForReqs.size();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static int getApplicableNodeCountForAM(RMContext rmContext,\n      Configuration conf, List\u003cResourceRequest\u003e amReqs) {\n    // Determine the list of nodes that are eligible based on the strict\n    // resource requests\n    Set\u003cNodeId\u003e nodesForReqs \u003d new HashSet\u003c\u003e();\n    for (ResourceRequest amReq : amReqs) {\n      if (amReq.getRelaxLocality() \u0026\u0026\n          !amReq.getResourceName().equals(ResourceRequest.ANY)) {\n        nodesForReqs.addAll(\n            rmContext.getScheduler().getNodeIds(amReq.getResourceName()));\n      }\n    }\n\n    if (YarnConfiguration.areNodeLabelsEnabled(conf)) {\n      // Determine the list of nodes that are eligible based on the node label\n      String amNodeLabelExpression \u003d amReqs.get(0).getNodeLabelExpression();\n      Set\u003cNodeId\u003e nodesForLabels \u003d\n          getNodeIdsForLabel(rmContext, amNodeLabelExpression);\n      if (nodesForLabels !\u003d null \u0026\u0026 !nodesForLabels.isEmpty()) {\n        // If only node labels, strip out any wildcard NodeIds and return\n        if (nodesForReqs.isEmpty()) {\n          for (Iterator\u003cNodeId\u003e it \u003d nodesForLabels.iterator(); it.hasNext();) {\n            if (it.next().getPort() \u003d\u003d 0) {\n              it.remove();\n            }\n          }\n          return nodesForLabels.size();\n        } else {\n          // The NodeIds common to both the strict resource requests and the\n          // node label is the eligible set\n          return Sets.intersection(nodesForReqs, nodesForLabels).size();\n        }\n      }\n    }\n\n    // If no strict resource request NodeIds nor node label NodeIds, then just\n    // return the entire cluster\n    if (nodesForReqs.isEmpty()) {\n      return rmContext.getScheduler().getNumClusterNodes();\n    }\n    // No node label NodeIds, so return the strict resource request NodeIds\n    return nodesForReqs.size();\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/RMServerUtils.java",
+          "extendedDetails": {
+            "oldValue": "[rmContext-RMContext, conf-Configuration, amreq-ResourceRequest]",
+            "newValue": "[rmContext-RMContext, conf-Configuration, amReqs-List\u003cResourceRequest\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-6050. AMs can\u0027t be scheduled on racks or nodes (rkanter)\n",
+          "commitDate": "27/03/17 5:23 PM",
+          "commitName": "9bae6720cb8432efd78c909dc624c00e367cedf5",
+          "commitAuthor": "Robert Kanter",
+          "commitDateOld": "28/02/17 10:35 AM",
+          "commitNameOld": "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 27.24,
+          "commitsBetweenForRepo": 165,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,43 @@\n   public static int getApplicableNodeCountForAM(RMContext rmContext,\n-      Configuration conf, ResourceRequest amreq) {\n-    if (YarnConfiguration.areNodeLabelsEnabled(conf)) {\n-      RMNodeLabelsManager labelManager \u003d rmContext.getNodeLabelManager();\n-      String amNodeLabelExpression \u003d amreq.getNodeLabelExpression();\n-      amNodeLabelExpression \u003d (amNodeLabelExpression \u003d\u003d null\n-          || amNodeLabelExpression.trim().isEmpty())\n-              ? RMNodeLabelsManager.NO_LABEL : amNodeLabelExpression;\n-      return labelManager.getActiveNMCountPerLabel(amNodeLabelExpression);\n+      Configuration conf, List\u003cResourceRequest\u003e amReqs) {\n+    // Determine the list of nodes that are eligible based on the strict\n+    // resource requests\n+    Set\u003cNodeId\u003e nodesForReqs \u003d new HashSet\u003c\u003e();\n+    for (ResourceRequest amReq : amReqs) {\n+      if (amReq.getRelaxLocality() \u0026\u0026\n+          !amReq.getResourceName().equals(ResourceRequest.ANY)) {\n+        nodesForReqs.addAll(\n+            rmContext.getScheduler().getNodeIds(amReq.getResourceName()));\n+      }\n     }\n-    return rmContext.getScheduler().getNumClusterNodes();\n+\n+    if (YarnConfiguration.areNodeLabelsEnabled(conf)) {\n+      // Determine the list of nodes that are eligible based on the node label\n+      String amNodeLabelExpression \u003d amReqs.get(0).getNodeLabelExpression();\n+      Set\u003cNodeId\u003e nodesForLabels \u003d\n+          getNodeIdsForLabel(rmContext, amNodeLabelExpression);\n+      if (nodesForLabels !\u003d null \u0026\u0026 !nodesForLabels.isEmpty()) {\n+        // If only node labels, strip out any wildcard NodeIds and return\n+        if (nodesForReqs.isEmpty()) {\n+          for (Iterator\u003cNodeId\u003e it \u003d nodesForLabels.iterator(); it.hasNext();) {\n+            if (it.next().getPort() \u003d\u003d 0) {\n+              it.remove();\n+            }\n+          }\n+          return nodesForLabels.size();\n+        } else {\n+          // The NodeIds common to both the strict resource requests and the\n+          // node label is the eligible set\n+          return Sets.intersection(nodesForReqs, nodesForLabels).size();\n+        }\n+      }\n+    }\n+\n+    // If no strict resource request NodeIds nor node label NodeIds, then just\n+    // return the entire cluster\n+    if (nodesForReqs.isEmpty()) {\n+      return rmContext.getScheduler().getNumClusterNodes();\n+    }\n+    // No node label NodeIds, so return the strict resource request NodeIds\n+    return nodesForReqs.size();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static int getApplicableNodeCountForAM(RMContext rmContext,\n      Configuration conf, List\u003cResourceRequest\u003e amReqs) {\n    // Determine the list of nodes that are eligible based on the strict\n    // resource requests\n    Set\u003cNodeId\u003e nodesForReqs \u003d new HashSet\u003c\u003e();\n    for (ResourceRequest amReq : amReqs) {\n      if (amReq.getRelaxLocality() \u0026\u0026\n          !amReq.getResourceName().equals(ResourceRequest.ANY)) {\n        nodesForReqs.addAll(\n            rmContext.getScheduler().getNodeIds(amReq.getResourceName()));\n      }\n    }\n\n    if (YarnConfiguration.areNodeLabelsEnabled(conf)) {\n      // Determine the list of nodes that are eligible based on the node label\n      String amNodeLabelExpression \u003d amReqs.get(0).getNodeLabelExpression();\n      Set\u003cNodeId\u003e nodesForLabels \u003d\n          getNodeIdsForLabel(rmContext, amNodeLabelExpression);\n      if (nodesForLabels !\u003d null \u0026\u0026 !nodesForLabels.isEmpty()) {\n        // If only node labels, strip out any wildcard NodeIds and return\n        if (nodesForReqs.isEmpty()) {\n          for (Iterator\u003cNodeId\u003e it \u003d nodesForLabels.iterator(); it.hasNext();) {\n            if (it.next().getPort() \u003d\u003d 0) {\n              it.remove();\n            }\n          }\n          return nodesForLabels.size();\n        } else {\n          // The NodeIds common to both the strict resource requests and the\n          // node label is the eligible set\n          return Sets.intersection(nodesForReqs, nodesForLabels).size();\n        }\n      }\n    }\n\n    // If no strict resource request NodeIds nor node label NodeIds, then just\n    // return the entire cluster\n    if (nodesForReqs.isEmpty()) {\n      return rmContext.getScheduler().getNumClusterNodes();\n    }\n    // No node label NodeIds, so return the strict resource request NodeIds\n    return nodesForReqs.size();\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/RMServerUtils.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "b7613e0f406fb2b9bd5b1b3c79658e801f63c587": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6156. AM blacklisting to consider node label partition (Bibin A Chundatt via Varun Saxena)\n",
+      "commitDate": "15/02/17 1:18 AM",
+      "commitName": "b7613e0f406fb2b9bd5b1b3c79658e801f63c587",
+      "commitAuthor": "Varun Saxena",
+      "diff": "@@ -0,0 +1,12 @@\n+  public static int getApplicableNodeCountForAM(RMContext rmContext,\n+      Configuration conf, ResourceRequest amreq) {\n+    if (YarnConfiguration.areNodeLabelsEnabled(conf)) {\n+      RMNodeLabelsManager labelManager \u003d rmContext.getNodeLabelManager();\n+      String amNodeLabelExpression \u003d amreq.getNodeLabelExpression();\n+      amNodeLabelExpression \u003d (amNodeLabelExpression \u003d\u003d null\n+          || amNodeLabelExpression.trim().isEmpty())\n+              ? RMNodeLabelsManager.NO_LABEL : amNodeLabelExpression;\n+      return labelManager.getActiveNMCountPerLabel(amNodeLabelExpression);\n+    }\n+    return rmContext.getScheduler().getNumClusterNodes();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static int getApplicableNodeCountForAM(RMContext rmContext,\n      Configuration conf, ResourceRequest amreq) {\n    if (YarnConfiguration.areNodeLabelsEnabled(conf)) {\n      RMNodeLabelsManager labelManager \u003d rmContext.getNodeLabelManager();\n      String amNodeLabelExpression \u003d amreq.getNodeLabelExpression();\n      amNodeLabelExpression \u003d (amNodeLabelExpression \u003d\u003d null\n          || amNodeLabelExpression.trim().isEmpty())\n              ? RMNodeLabelsManager.NO_LABEL : amNodeLabelExpression;\n      return labelManager.getActiveNMCountPerLabel(amNodeLabelExpression);\n    }\n    return rmContext.getScheduler().getNumClusterNodes();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/RMServerUtils.java"
+    }
+  }
+}

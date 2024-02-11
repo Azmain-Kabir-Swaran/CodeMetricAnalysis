@@ -1,0 +1,140 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TreePath.java",
+  "functionName": "toFile",
+  "functionId": "toFile___ugi-UGIResolver__blk-BlockResolver__out-BlockAliasMap.Writer__FileRegion__",
+  "sourceFilePath": "hadoop-tools/hadoop-fs2img/src/main/java/org/apache/hadoop/hdfs/server/namenode/TreePath.java",
+  "functionStartLine": 138,
+  "functionEndLine": 179,
+  "numCommitsSeen": 13,
+  "timeTaken": 2280,
+  "changeHistory": [
+    "fabd41fa480303f86bfe7b6ae0277bc0b6015f80",
+    "8239e3afb31d3c4485817d4b8b8b195b554acbe7",
+    "4531588a94dcd2b4141b12828cb60ca3b953a58c",
+    "98f5ed5aa377ddd3f35b763b20c499d2ccac2ed5",
+    "8da3a6e314609f9124bd9979cd09cddbc2a10d36"
+  ],
+  "changeHistoryShort": {
+    "fabd41fa480303f86bfe7b6ae0277bc0b6015f80": "Ybodychange",
+    "8239e3afb31d3c4485817d4b8b8b195b554acbe7": "Ybodychange",
+    "4531588a94dcd2b4141b12828cb60ca3b953a58c": "Ymultichange(Yparameterchange,Ybodychange)",
+    "98f5ed5aa377ddd3f35b763b20c499d2ccac2ed5": "Yparameterchange",
+    "8da3a6e314609f9124bd9979cd09cddbc2a10d36": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fabd41fa480303f86bfe7b6ae0277bc0b6015f80": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14856. Fetch file ACLs while mounting external store. (#1478)\n\n",
+      "commitDate": "14/10/19 9:44 AM",
+      "commitName": "fabd41fa480303f86bfe7b6ae0277bc0b6015f80",
+      "commitAuthor": "Ashvin",
+      "commitDateOld": "15/12/17 5:51 PM",
+      "commitNameOld": "8239e3afb31d3c4485817d4b8b8b195b554acbe7",
+      "commitAuthorOld": "Virajith Jalaparti",
+      "daysBetweenCommits": 667.62,
+      "commitsBetweenForRepo": 5576,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,38 +1,42 @@\n   INode toFile(UGIResolver ugi, BlockResolver blk,\n       BlockAliasMap.Writer\u003cFileRegion\u003e out) throws IOException {\n     final FileStatus s \u003d getFileStatus();\n-    ugi.addUser(s.getOwner());\n-    ugi.addGroup(s.getGroup());\n+    final AclStatus aclStatus \u003d getAclStatus();\n+    long permissions \u003d ugi.getPermissionsProto(s, aclStatus);\n     INodeFile.Builder b \u003d INodeFile.newBuilder()\n         .setReplication(blk.getReplication(s))\n         .setModificationTime(s.getModificationTime())\n         .setAccessTime(s.getAccessTime())\n         .setPreferredBlockSize(blk.preferredBlockSize(s))\n-        .setPermission(ugi.resolve(s))\n+        .setPermission(permissions)\n         .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n \n     // pathhandle allows match as long as the file matches exactly.\n     PathHandle pathHandle \u003d null;\n     if (fs !\u003d null) {\n       try {\n         pathHandle \u003d fs.getPathHandle(s, Options.HandleOpt.exact());\n       } catch (UnsupportedOperationException e) {\n         LOG.warn(\n             \"Exact path handle not supported by filesystem \" + fs.toString());\n       }\n     }\n-    // TODO: storage policy should be configurable per path; use BlockResolver\n+    if (aclStatus !\u003d null) {\n+      throw new UnsupportedOperationException(\n+          \"ACLs not supported by ImageWriter\");\n+    }\n+    //TODO: storage policy should be configurable per path; use BlockResolver\n     long off \u003d 0L;\n     for (BlockProto block : blk.resolve(s)) {\n       b.addBlocks(block);\n       writeBlock(block.getBlockId(), off, block.getNumBytes(),\n           block.getGenStamp(), pathHandle, out);\n       off +\u003d block.getNumBytes();\n     }\n     INode.Builder ib \u003d INode.newBuilder()\n         .setType(INode.Type.FILE)\n         .setId(id)\n         .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n         .setFile(b);\n     return ib.build();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  INode toFile(UGIResolver ugi, BlockResolver blk,\n      BlockAliasMap.Writer\u003cFileRegion\u003e out) throws IOException {\n    final FileStatus s \u003d getFileStatus();\n    final AclStatus aclStatus \u003d getAclStatus();\n    long permissions \u003d ugi.getPermissionsProto(s, aclStatus);\n    INodeFile.Builder b \u003d INodeFile.newBuilder()\n        .setReplication(blk.getReplication(s))\n        .setModificationTime(s.getModificationTime())\n        .setAccessTime(s.getAccessTime())\n        .setPreferredBlockSize(blk.preferredBlockSize(s))\n        .setPermission(permissions)\n        .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n\n    // pathhandle allows match as long as the file matches exactly.\n    PathHandle pathHandle \u003d null;\n    if (fs !\u003d null) {\n      try {\n        pathHandle \u003d fs.getPathHandle(s, Options.HandleOpt.exact());\n      } catch (UnsupportedOperationException e) {\n        LOG.warn(\n            \"Exact path handle not supported by filesystem \" + fs.toString());\n      }\n    }\n    if (aclStatus !\u003d null) {\n      throw new UnsupportedOperationException(\n          \"ACLs not supported by ImageWriter\");\n    }\n    //TODO: storage policy should be configurable per path; use BlockResolver\n    long off \u003d 0L;\n    for (BlockProto block : blk.resolve(s)) {\n      b.addBlocks(block);\n      writeBlock(block.getBlockId(), off, block.getNumBytes(),\n          block.getGenStamp(), pathHandle, out);\n      off +\u003d block.getNumBytes();\n    }\n    INode.Builder ib \u003d INode.newBuilder()\n        .setType(INode.Type.FILE)\n        .setId(id)\n        .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n        .setFile(b);\n    return ib.build();\n  }",
+      "path": "hadoop-tools/hadoop-fs2img/src/main/java/org/apache/hadoop/hdfs/server/namenode/TreePath.java",
+      "extendedDetails": {}
+    },
+    "8239e3afb31d3c4485817d4b8b8b195b554acbe7": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12712. [9806] Code style cleanup\n",
+      "commitDate": "15/12/17 5:51 PM",
+      "commitName": "8239e3afb31d3c4485817d4b8b8b195b554acbe7",
+      "commitAuthor": "Virajith Jalaparti",
+      "commitDateOld": "15/12/17 5:51 PM",
+      "commitNameOld": "4531588a94dcd2b4141b12828cb60ca3b953a58c",
+      "commitAuthorOld": "Virajith Jalaparti",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 7,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,39 +1,38 @@\n   INode toFile(UGIResolver ugi, BlockResolver blk,\n       BlockAliasMap.Writer\u003cFileRegion\u003e out) throws IOException {\n     final FileStatus s \u003d getFileStatus();\n-    // TODO should this store resolver\u0027s user/group?\n     ugi.addUser(s.getOwner());\n     ugi.addGroup(s.getGroup());\n     INodeFile.Builder b \u003d INodeFile.newBuilder()\n         .setReplication(blk.getReplication(s))\n         .setModificationTime(s.getModificationTime())\n         .setAccessTime(s.getAccessTime())\n         .setPreferredBlockSize(blk.preferredBlockSize(s))\n         .setPermission(ugi.resolve(s))\n         .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n \n     // pathhandle allows match as long as the file matches exactly.\n     PathHandle pathHandle \u003d null;\n     if (fs !\u003d null) {\n       try {\n         pathHandle \u003d fs.getPathHandle(s, Options.HandleOpt.exact());\n       } catch (UnsupportedOperationException e) {\n         LOG.warn(\n             \"Exact path handle not supported by filesystem \" + fs.toString());\n       }\n     }\n-    //TODO: storage policy should be configurable per path; use BlockResolver\n+    // TODO: storage policy should be configurable per path; use BlockResolver\n     long off \u003d 0L;\n     for (BlockProto block : blk.resolve(s)) {\n       b.addBlocks(block);\n       writeBlock(block.getBlockId(), off, block.getNumBytes(),\n           block.getGenStamp(), pathHandle, out);\n       off +\u003d block.getNumBytes();\n     }\n     INode.Builder ib \u003d INode.newBuilder()\n         .setType(INode.Type.FILE)\n         .setId(id)\n         .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n         .setFile(b);\n     return ib.build();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  INode toFile(UGIResolver ugi, BlockResolver blk,\n      BlockAliasMap.Writer\u003cFileRegion\u003e out) throws IOException {\n    final FileStatus s \u003d getFileStatus();\n    ugi.addUser(s.getOwner());\n    ugi.addGroup(s.getGroup());\n    INodeFile.Builder b \u003d INodeFile.newBuilder()\n        .setReplication(blk.getReplication(s))\n        .setModificationTime(s.getModificationTime())\n        .setAccessTime(s.getAccessTime())\n        .setPreferredBlockSize(blk.preferredBlockSize(s))\n        .setPermission(ugi.resolve(s))\n        .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n\n    // pathhandle allows match as long as the file matches exactly.\n    PathHandle pathHandle \u003d null;\n    if (fs !\u003d null) {\n      try {\n        pathHandle \u003d fs.getPathHandle(s, Options.HandleOpt.exact());\n      } catch (UnsupportedOperationException e) {\n        LOG.warn(\n            \"Exact path handle not supported by filesystem \" + fs.toString());\n      }\n    }\n    // TODO: storage policy should be configurable per path; use BlockResolver\n    long off \u003d 0L;\n    for (BlockProto block : blk.resolve(s)) {\n      b.addBlocks(block);\n      writeBlock(block.getBlockId(), off, block.getNumBytes(),\n          block.getGenStamp(), pathHandle, out);\n      off +\u003d block.getNumBytes();\n    }\n    INode.Builder ib \u003d INode.newBuilder()\n        .setType(INode.Type.FILE)\n        .setId(id)\n        .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n        .setFile(b);\n    return ib.build();\n  }",
+      "path": "hadoop-tools/hadoop-fs2img/src/main/java/org/apache/hadoop/hdfs/server/namenode/TreePath.java",
+      "extendedDetails": {}
+    },
+    "4531588a94dcd2b4141b12828cb60ca3b953a58c": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-11640. [READ] Datanodes should use a unique identifier when reading from external stores\n",
+      "commitDate": "15/12/17 5:51 PM",
+      "commitName": "4531588a94dcd2b4141b12828cb60ca3b953a58c",
+      "commitAuthor": "Virajith Jalaparti",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-11640. [READ] Datanodes should use a unique identifier when reading from external stores\n",
+          "commitDate": "15/12/17 5:51 PM",
+          "commitName": "4531588a94dcd2b4141b12828cb60ca3b953a58c",
+          "commitAuthor": "Virajith Jalaparti",
+          "commitDateOld": "15/12/17 5:51 PM",
+          "commitNameOld": "9c35be86e17021202823bfd3c2067ff3b312ce5c",
+          "commitAuthorOld": "Virajith Jalaparti",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 2,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,39 @@\n   INode toFile(UGIResolver ugi, BlockResolver blk,\n-               BlockAliasMap.Writer\u003cFileRegion\u003e out, String blockPoolID)\n-          throws IOException {\n+      BlockAliasMap.Writer\u003cFileRegion\u003e out) throws IOException {\n     final FileStatus s \u003d getFileStatus();\n     // TODO should this store resolver\u0027s user/group?\n     ugi.addUser(s.getOwner());\n     ugi.addGroup(s.getGroup());\n     INodeFile.Builder b \u003d INodeFile.newBuilder()\n         .setReplication(blk.getReplication(s))\n         .setModificationTime(s.getModificationTime())\n         .setAccessTime(s.getAccessTime())\n         .setPreferredBlockSize(blk.preferredBlockSize(s))\n         .setPermission(ugi.resolve(s))\n         .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n+\n+    // pathhandle allows match as long as the file matches exactly.\n+    PathHandle pathHandle \u003d null;\n+    if (fs !\u003d null) {\n+      try {\n+        pathHandle \u003d fs.getPathHandle(s, Options.HandleOpt.exact());\n+      } catch (UnsupportedOperationException e) {\n+        LOG.warn(\n+            \"Exact path handle not supported by filesystem \" + fs.toString());\n+      }\n+    }\n     //TODO: storage policy should be configurable per path; use BlockResolver\n     long off \u003d 0L;\n     for (BlockProto block : blk.resolve(s)) {\n       b.addBlocks(block);\n       writeBlock(block.getBlockId(), off, block.getNumBytes(),\n-          block.getGenStamp(), blockPoolID, out);\n+          block.getGenStamp(), pathHandle, out);\n       off +\u003d block.getNumBytes();\n     }\n     INode.Builder ib \u003d INode.newBuilder()\n         .setType(INode.Type.FILE)\n         .setId(id)\n         .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n         .setFile(b);\n     return ib.build();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  INode toFile(UGIResolver ugi, BlockResolver blk,\n      BlockAliasMap.Writer\u003cFileRegion\u003e out) throws IOException {\n    final FileStatus s \u003d getFileStatus();\n    // TODO should this store resolver\u0027s user/group?\n    ugi.addUser(s.getOwner());\n    ugi.addGroup(s.getGroup());\n    INodeFile.Builder b \u003d INodeFile.newBuilder()\n        .setReplication(blk.getReplication(s))\n        .setModificationTime(s.getModificationTime())\n        .setAccessTime(s.getAccessTime())\n        .setPreferredBlockSize(blk.preferredBlockSize(s))\n        .setPermission(ugi.resolve(s))\n        .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n\n    // pathhandle allows match as long as the file matches exactly.\n    PathHandle pathHandle \u003d null;\n    if (fs !\u003d null) {\n      try {\n        pathHandle \u003d fs.getPathHandle(s, Options.HandleOpt.exact());\n      } catch (UnsupportedOperationException e) {\n        LOG.warn(\n            \"Exact path handle not supported by filesystem \" + fs.toString());\n      }\n    }\n    //TODO: storage policy should be configurable per path; use BlockResolver\n    long off \u003d 0L;\n    for (BlockProto block : blk.resolve(s)) {\n      b.addBlocks(block);\n      writeBlock(block.getBlockId(), off, block.getNumBytes(),\n          block.getGenStamp(), pathHandle, out);\n      off +\u003d block.getNumBytes();\n    }\n    INode.Builder ib \u003d INode.newBuilder()\n        .setType(INode.Type.FILE)\n        .setId(id)\n        .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n        .setFile(b);\n    return ib.build();\n  }",
+          "path": "hadoop-tools/hadoop-fs2img/src/main/java/org/apache/hadoop/hdfs/server/namenode/TreePath.java",
+          "extendedDetails": {
+            "oldValue": "[ugi-UGIResolver, blk-BlockResolver, out-BlockAliasMap.Writer\u003cFileRegion\u003e, blockPoolID-String]",
+            "newValue": "[ugi-UGIResolver, blk-BlockResolver, out-BlockAliasMap.Writer\u003cFileRegion\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-11640. [READ] Datanodes should use a unique identifier when reading from external stores\n",
+          "commitDate": "15/12/17 5:51 PM",
+          "commitName": "4531588a94dcd2b4141b12828cb60ca3b953a58c",
+          "commitAuthor": "Virajith Jalaparti",
+          "commitDateOld": "15/12/17 5:51 PM",
+          "commitNameOld": "9c35be86e17021202823bfd3c2067ff3b312ce5c",
+          "commitAuthorOld": "Virajith Jalaparti",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 2,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,39 @@\n   INode toFile(UGIResolver ugi, BlockResolver blk,\n-               BlockAliasMap.Writer\u003cFileRegion\u003e out, String blockPoolID)\n-          throws IOException {\n+      BlockAliasMap.Writer\u003cFileRegion\u003e out) throws IOException {\n     final FileStatus s \u003d getFileStatus();\n     // TODO should this store resolver\u0027s user/group?\n     ugi.addUser(s.getOwner());\n     ugi.addGroup(s.getGroup());\n     INodeFile.Builder b \u003d INodeFile.newBuilder()\n         .setReplication(blk.getReplication(s))\n         .setModificationTime(s.getModificationTime())\n         .setAccessTime(s.getAccessTime())\n         .setPreferredBlockSize(blk.preferredBlockSize(s))\n         .setPermission(ugi.resolve(s))\n         .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n+\n+    // pathhandle allows match as long as the file matches exactly.\n+    PathHandle pathHandle \u003d null;\n+    if (fs !\u003d null) {\n+      try {\n+        pathHandle \u003d fs.getPathHandle(s, Options.HandleOpt.exact());\n+      } catch (UnsupportedOperationException e) {\n+        LOG.warn(\n+            \"Exact path handle not supported by filesystem \" + fs.toString());\n+      }\n+    }\n     //TODO: storage policy should be configurable per path; use BlockResolver\n     long off \u003d 0L;\n     for (BlockProto block : blk.resolve(s)) {\n       b.addBlocks(block);\n       writeBlock(block.getBlockId(), off, block.getNumBytes(),\n-          block.getGenStamp(), blockPoolID, out);\n+          block.getGenStamp(), pathHandle, out);\n       off +\u003d block.getNumBytes();\n     }\n     INode.Builder ib \u003d INode.newBuilder()\n         .setType(INode.Type.FILE)\n         .setId(id)\n         .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n         .setFile(b);\n     return ib.build();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  INode toFile(UGIResolver ugi, BlockResolver blk,\n      BlockAliasMap.Writer\u003cFileRegion\u003e out) throws IOException {\n    final FileStatus s \u003d getFileStatus();\n    // TODO should this store resolver\u0027s user/group?\n    ugi.addUser(s.getOwner());\n    ugi.addGroup(s.getGroup());\n    INodeFile.Builder b \u003d INodeFile.newBuilder()\n        .setReplication(blk.getReplication(s))\n        .setModificationTime(s.getModificationTime())\n        .setAccessTime(s.getAccessTime())\n        .setPreferredBlockSize(blk.preferredBlockSize(s))\n        .setPermission(ugi.resolve(s))\n        .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n\n    // pathhandle allows match as long as the file matches exactly.\n    PathHandle pathHandle \u003d null;\n    if (fs !\u003d null) {\n      try {\n        pathHandle \u003d fs.getPathHandle(s, Options.HandleOpt.exact());\n      } catch (UnsupportedOperationException e) {\n        LOG.warn(\n            \"Exact path handle not supported by filesystem \" + fs.toString());\n      }\n    }\n    //TODO: storage policy should be configurable per path; use BlockResolver\n    long off \u003d 0L;\n    for (BlockProto block : blk.resolve(s)) {\n      b.addBlocks(block);\n      writeBlock(block.getBlockId(), off, block.getNumBytes(),\n          block.getGenStamp(), pathHandle, out);\n      off +\u003d block.getNumBytes();\n    }\n    INode.Builder ib \u003d INode.newBuilder()\n        .setType(INode.Type.FILE)\n        .setId(id)\n        .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n        .setFile(b);\n    return ib.build();\n  }",
+          "path": "hadoop-tools/hadoop-fs2img/src/main/java/org/apache/hadoop/hdfs/server/namenode/TreePath.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "98f5ed5aa377ddd3f35b763b20c499d2ccac2ed5": {
+      "type": "Yparameterchange",
+      "commitMessage": "HDFS-11902. [READ] Merge BlockFormatProvider and FileRegionProvider.\n",
+      "commitDate": "15/12/17 5:51 PM",
+      "commitName": "98f5ed5aa377ddd3f35b763b20c499d2ccac2ed5",
+      "commitAuthor": "Virajith Jalaparti",
+      "commitDateOld": "15/12/17 5:51 PM",
+      "commitNameOld": "8da3a6e314609f9124bd9979cd09cddbc2a10d36",
+      "commitAuthorOld": "Virajith Jalaparti",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 13,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,29 @@\n   INode toFile(UGIResolver ugi, BlockResolver blk,\n-      BlockFormat.Writer\u003cFileRegion\u003e out, String blockPoolID)\n+               BlockAliasMap.Writer\u003cFileRegion\u003e out, String blockPoolID)\n           throws IOException {\n     final FileStatus s \u003d getFileStatus();\n     // TODO should this store resolver\u0027s user/group?\n     ugi.addUser(s.getOwner());\n     ugi.addGroup(s.getGroup());\n     INodeFile.Builder b \u003d INodeFile.newBuilder()\n         .setReplication(blk.getReplication(s))\n         .setModificationTime(s.getModificationTime())\n         .setAccessTime(s.getAccessTime())\n         .setPreferredBlockSize(blk.preferredBlockSize(s))\n         .setPermission(ugi.resolve(s))\n         .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n     //TODO: storage policy should be configurable per path; use BlockResolver\n     long off \u003d 0L;\n     for (BlockProto block : blk.resolve(s)) {\n       b.addBlocks(block);\n       writeBlock(block.getBlockId(), off, block.getNumBytes(),\n           block.getGenStamp(), blockPoolID, out);\n       off +\u003d block.getNumBytes();\n     }\n     INode.Builder ib \u003d INode.newBuilder()\n         .setType(INode.Type.FILE)\n         .setId(id)\n         .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n         .setFile(b);\n     return ib.build();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  INode toFile(UGIResolver ugi, BlockResolver blk,\n               BlockAliasMap.Writer\u003cFileRegion\u003e out, String blockPoolID)\n          throws IOException {\n    final FileStatus s \u003d getFileStatus();\n    // TODO should this store resolver\u0027s user/group?\n    ugi.addUser(s.getOwner());\n    ugi.addGroup(s.getGroup());\n    INodeFile.Builder b \u003d INodeFile.newBuilder()\n        .setReplication(blk.getReplication(s))\n        .setModificationTime(s.getModificationTime())\n        .setAccessTime(s.getAccessTime())\n        .setPreferredBlockSize(blk.preferredBlockSize(s))\n        .setPermission(ugi.resolve(s))\n        .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n    //TODO: storage policy should be configurable per path; use BlockResolver\n    long off \u003d 0L;\n    for (BlockProto block : blk.resolve(s)) {\n      b.addBlocks(block);\n      writeBlock(block.getBlockId(), off, block.getNumBytes(),\n          block.getGenStamp(), blockPoolID, out);\n      off +\u003d block.getNumBytes();\n    }\n    INode.Builder ib \u003d INode.newBuilder()\n        .setType(INode.Type.FILE)\n        .setId(id)\n        .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n        .setFile(b);\n    return ib.build();\n  }",
+      "path": "hadoop-tools/hadoop-fs2img/src/main/java/org/apache/hadoop/hdfs/server/namenode/TreePath.java",
+      "extendedDetails": {
+        "oldValue": "[ugi-UGIResolver, blk-BlockResolver, out-BlockFormat.Writer\u003cFileRegion\u003e, blockPoolID-String]",
+        "newValue": "[ugi-UGIResolver, blk-BlockResolver, out-BlockAliasMap.Writer\u003cFileRegion\u003e, blockPoolID-String]"
+      }
+    },
+    "8da3a6e314609f9124bd9979cd09cddbc2a10d36": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10706. [READ] Add tool generating FSImage from external store\n",
+      "commitDate": "15/12/17 5:51 PM",
+      "commitName": "8da3a6e314609f9124bd9979cd09cddbc2a10d36",
+      "commitAuthor": "Virajith Jalaparti",
+      "diff": "@@ -0,0 +1,29 @@\n+  INode toFile(UGIResolver ugi, BlockResolver blk,\n+      BlockFormat.Writer\u003cFileRegion\u003e out, String blockPoolID)\n+          throws IOException {\n+    final FileStatus s \u003d getFileStatus();\n+    // TODO should this store resolver\u0027s user/group?\n+    ugi.addUser(s.getOwner());\n+    ugi.addGroup(s.getGroup());\n+    INodeFile.Builder b \u003d INodeFile.newBuilder()\n+        .setReplication(blk.getReplication(s))\n+        .setModificationTime(s.getModificationTime())\n+        .setAccessTime(s.getAccessTime())\n+        .setPreferredBlockSize(blk.preferredBlockSize(s))\n+        .setPermission(ugi.resolve(s))\n+        .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n+    //TODO: storage policy should be configurable per path; use BlockResolver\n+    long off \u003d 0L;\n+    for (BlockProto block : blk.resolve(s)) {\n+      b.addBlocks(block);\n+      writeBlock(block.getBlockId(), off, block.getNumBytes(),\n+          block.getGenStamp(), blockPoolID, out);\n+      off +\u003d block.getNumBytes();\n+    }\n+    INode.Builder ib \u003d INode.newBuilder()\n+        .setType(INode.Type.FILE)\n+        .setId(id)\n+        .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n+        .setFile(b);\n+    return ib.build();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  INode toFile(UGIResolver ugi, BlockResolver blk,\n      BlockFormat.Writer\u003cFileRegion\u003e out, String blockPoolID)\n          throws IOException {\n    final FileStatus s \u003d getFileStatus();\n    // TODO should this store resolver\u0027s user/group?\n    ugi.addUser(s.getOwner());\n    ugi.addGroup(s.getGroup());\n    INodeFile.Builder b \u003d INodeFile.newBuilder()\n        .setReplication(blk.getReplication(s))\n        .setModificationTime(s.getModificationTime())\n        .setAccessTime(s.getAccessTime())\n        .setPreferredBlockSize(blk.preferredBlockSize(s))\n        .setPermission(ugi.resolve(s))\n        .setStoragePolicyID(HdfsConstants.PROVIDED_STORAGE_POLICY_ID);\n    //TODO: storage policy should be configurable per path; use BlockResolver\n    long off \u003d 0L;\n    for (BlockProto block : blk.resolve(s)) {\n      b.addBlocks(block);\n      writeBlock(block.getBlockId(), off, block.getNumBytes(),\n          block.getGenStamp(), blockPoolID, out);\n      off +\u003d block.getNumBytes();\n    }\n    INode.Builder ib \u003d INode.newBuilder()\n        .setType(INode.Type.FILE)\n        .setId(id)\n        .setName(ByteString.copyFrom(string2Bytes(s.getPath().getName())))\n        .setFile(b);\n    return ib.build();\n  }",
+      "path": "hadoop-tools/hadoop-fs2img/src/main/java/org/apache/hadoop/hdfs/server/namenode/TreePath.java"
+    }
+  }
+}

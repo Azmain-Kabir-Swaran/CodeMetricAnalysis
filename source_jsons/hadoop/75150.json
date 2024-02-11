@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "UserGroupInformation.java",
+  "functionName": "fixKerberosTicketOrder",
+  "functionId": "fixKerberosTicketOrder",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/UserGroupInformation.java",
+  "functionStartLine": 1182,
+  "functionEndLine": 1210,
+  "numCommitsSeen": 104,
+  "timeTaken": 1693,
+  "changeHistory": [
+    "d31c9d8c495794a803fb20729b5ed6b374e23eb4",
+    "7fc3e68a876132563aa2321519fc6941e37b2cae"
+  ],
+  "changeHistoryShort": {
+    "d31c9d8c495794a803fb20729b5ed6b374e23eb4": "Ybodychange",
+    "7fc3e68a876132563aa2321519fc6941e37b2cae": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d31c9d8c495794a803fb20729b5ed6b374e23eb4": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15143. NPE due to Invalid KerberosTicket in UGI. Contributed by Mukul Kumar Singh.\n",
+      "commitDate": "27/12/17 11:17 PM",
+      "commitName": "d31c9d8c495794a803fb20729b5ed6b374e23eb4",
+      "commitAuthor": "Jitendra Pandey",
+      "commitDateOld": "03/11/17 4:10 PM",
+      "commitNameOld": "59d78a5088700350a5122c3a3ba5e76cd26d6a80",
+      "commitAuthorOld": "Xiaoyu Yao",
+      "daysBetweenCommits": 54.34,
+      "commitsBetweenForRepo": 402,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,29 @@\n   void fixKerberosTicketOrder() {\n     Set\u003cObject\u003e creds \u003d getSubject().getPrivateCredentials();\n     synchronized (creds) {\n       for (Iterator\u003cObject\u003e iter \u003d creds.iterator(); iter.hasNext();) {\n         Object cred \u003d iter.next();\n         if (cred instanceof KerberosTicket) {\n           KerberosTicket ticket \u003d (KerberosTicket) cred;\n-          if (!ticket.getServer().getName().startsWith(\"krbtgt\")) {\n+          if (ticket.isDestroyed() || ticket.getServer() \u003d\u003d null) {\n+            LOG.warn(\"Ticket is already destroyed, remove it.\");\n+            iter.remove();\n+          } else if (!ticket.getServer().getName().startsWith(\"krbtgt\")) {\n             LOG.warn(\n                 \"The first kerberos ticket is not TGT\"\n                     + \"(the server principal is {}), remove and destroy it.\",\n                 ticket.getServer());\n             iter.remove();\n             try {\n               ticket.destroy();\n             } catch (DestroyFailedException e) {\n               LOG.warn(\"destroy ticket failed\", e);\n             }\n           } else {\n             return;\n           }\n         }\n       }\n     }\n     LOG.warn(\"Warning, no kerberos ticket found while attempting to renew ticket\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void fixKerberosTicketOrder() {\n    Set\u003cObject\u003e creds \u003d getSubject().getPrivateCredentials();\n    synchronized (creds) {\n      for (Iterator\u003cObject\u003e iter \u003d creds.iterator(); iter.hasNext();) {\n        Object cred \u003d iter.next();\n        if (cred instanceof KerberosTicket) {\n          KerberosTicket ticket \u003d (KerberosTicket) cred;\n          if (ticket.isDestroyed() || ticket.getServer() \u003d\u003d null) {\n            LOG.warn(\"Ticket is already destroyed, remove it.\");\n            iter.remove();\n          } else if (!ticket.getServer().getName().startsWith(\"krbtgt\")) {\n            LOG.warn(\n                \"The first kerberos ticket is not TGT\"\n                    + \"(the server principal is {}), remove and destroy it.\",\n                ticket.getServer());\n            iter.remove();\n            try {\n              ticket.destroy();\n            } catch (DestroyFailedException e) {\n              LOG.warn(\"destroy ticket failed\", e);\n            }\n          } else {\n            return;\n          }\n        }\n      }\n    }\n    LOG.warn(\"Warning, no kerberos ticket found while attempting to renew ticket\");\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/UserGroupInformation.java",
+      "extendedDetails": {}
+    },
+    "7fc3e68a876132563aa2321519fc6941e37b2cae": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13433 Race in UGI.reloginFromKeytab. Contributed by Duo Zhang.\n",
+      "commitDate": "25/01/17 1:29 PM",
+      "commitName": "7fc3e68a876132563aa2321519fc6941e37b2cae",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,26 @@\n+  void fixKerberosTicketOrder() {\n+    Set\u003cObject\u003e creds \u003d getSubject().getPrivateCredentials();\n+    synchronized (creds) {\n+      for (Iterator\u003cObject\u003e iter \u003d creds.iterator(); iter.hasNext();) {\n+        Object cred \u003d iter.next();\n+        if (cred instanceof KerberosTicket) {\n+          KerberosTicket ticket \u003d (KerberosTicket) cred;\n+          if (!ticket.getServer().getName().startsWith(\"krbtgt\")) {\n+            LOG.warn(\n+                \"The first kerberos ticket is not TGT\"\n+                    + \"(the server principal is {}), remove and destroy it.\",\n+                ticket.getServer());\n+            iter.remove();\n+            try {\n+              ticket.destroy();\n+            } catch (DestroyFailedException e) {\n+              LOG.warn(\"destroy ticket failed\", e);\n+            }\n+          } else {\n+            return;\n+          }\n+        }\n+      }\n+    }\n+    LOG.warn(\"Warning, no kerberos ticket found while attempting to renew ticket\");\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void fixKerberosTicketOrder() {\n    Set\u003cObject\u003e creds \u003d getSubject().getPrivateCredentials();\n    synchronized (creds) {\n      for (Iterator\u003cObject\u003e iter \u003d creds.iterator(); iter.hasNext();) {\n        Object cred \u003d iter.next();\n        if (cred instanceof KerberosTicket) {\n          KerberosTicket ticket \u003d (KerberosTicket) cred;\n          if (!ticket.getServer().getName().startsWith(\"krbtgt\")) {\n            LOG.warn(\n                \"The first kerberos ticket is not TGT\"\n                    + \"(the server principal is {}), remove and destroy it.\",\n                ticket.getServer());\n            iter.remove();\n            try {\n              ticket.destroy();\n            } catch (DestroyFailedException e) {\n              LOG.warn(\"destroy ticket failed\", e);\n            }\n          } else {\n            return;\n          }\n        }\n      }\n    }\n    LOG.warn(\"Warning, no kerberos ticket found while attempting to renew ticket\");\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/UserGroupInformation.java"
+    }
+  }
+}

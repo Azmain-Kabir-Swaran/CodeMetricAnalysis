@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PageBlobInputStream.java",
+  "functionName": "skipImpl",
+  "functionId": "skipImpl___n-long",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobInputStream.java",
+  "functionStartLine": 351,
+  "functionEndLine": 395,
+  "numCommitsSeen": 5,
+  "timeTaken": 2076,
+  "changeHistory": [
+    "5b11b9fd413470e134ecdc7c50468f8c7b39fa50",
+    "0ea182d0faa35c726dcb37249d48786bfc8ca04c",
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40"
+  ],
+  "changeHistoryShort": {
+    "5b11b9fd413470e134ecdc7c50468f8c7b39fa50": "Ybodychange",
+    "0ea182d0faa35c726dcb37249d48786bfc8ca04c": "Ybodychange",
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5b11b9fd413470e134ecdc7c50468f8c7b39fa50": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15446. WASB: PageBlobInputStream.skip breaks HBASE replication.\nContributed by Thomas Marquardt\n",
+      "commitDate": "07/05/18 3:54 AM",
+      "commitName": "5b11b9fd413470e134ecdc7c50468f8c7b39fa50",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "28/11/17 3:52 AM",
+      "commitNameOld": "0ea182d0faa35c726dcb37249d48786bfc8ca04c",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 159.96,
+      "commitsBetweenForRepo": 1638,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,40 +1,45 @@\n   private long skipImpl(long n) throws IOException {\n \n     if (n \u003d\u003d 0) {\n       return 0;\n     }\n \n     // First skip within the current buffer as much as possible.\n     long skippedWithinBuffer \u003d skipWithinBuffer(n);\n     if (skippedWithinBuffer \u003e n) {\n       // TO CONSIDER: Using a contracts framework such as Google\u0027s cofoja for\n       // these post-conditions.\n       throw new AssertionError(String.format(\n           \"Bug in skipWithinBuffer: it skipped over %d bytes when asked to \"\n           + \"skip %d bytes.\", skippedWithinBuffer, n));\n     }\n     n -\u003d skippedWithinBuffer;\n     long skipped \u003d skippedWithinBuffer;\n \n-    // Empty the current buffer, we\u0027re going beyond it.\n-    currentBuffer \u003d null;\n+    if (n \u003d\u003d 0) {\n+      return skipped;\n+    }\n \n-    // Skip over whole pages as necessary without retrieving them from the\n-    // server.\n-    long pagesToSkipOver \u003d Math.max(0, Math.min(\n-        n / PAGE_DATA_SIZE,\n-        numberOfPagesRemaining - 1));\n-    numberOfPagesRemaining -\u003d pagesToSkipOver;\n-    currentOffsetInBlob +\u003d pagesToSkipOver * PAGE_SIZE;\n-    skipped +\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n-    n -\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n+    if (numberOfPagesRemaining \u003d\u003d 0) {\n+      throw new EOFException(FSExceptionMessages.CANNOT_SEEK_PAST_EOF);\n+    } else if (numberOfPagesRemaining \u003e 1) {\n+      // skip over as many pages as we can, but we must read the last\n+      // page as it may not be full\n+      long pagesToSkipOver \u003d Math.min(n / PAGE_DATA_SIZE,\n+          numberOfPagesRemaining - 1);\n+      numberOfPagesRemaining -\u003d pagesToSkipOver;\n+      currentOffsetInBlob +\u003d pagesToSkipOver * PAGE_SIZE;\n+      skipped +\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n+      n -\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n+    }\n+\n     if (n \u003d\u003d 0) {\n       return skipped;\n     }\n \n     // Now read in at the current position, and skip within current buffer.\n     if (!ensureDataInBuffer()) {\n       return skipped;\n     }\n     return skipped + skipWithinBuffer(n);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private long skipImpl(long n) throws IOException {\n\n    if (n \u003d\u003d 0) {\n      return 0;\n    }\n\n    // First skip within the current buffer as much as possible.\n    long skippedWithinBuffer \u003d skipWithinBuffer(n);\n    if (skippedWithinBuffer \u003e n) {\n      // TO CONSIDER: Using a contracts framework such as Google\u0027s cofoja for\n      // these post-conditions.\n      throw new AssertionError(String.format(\n          \"Bug in skipWithinBuffer: it skipped over %d bytes when asked to \"\n          + \"skip %d bytes.\", skippedWithinBuffer, n));\n    }\n    n -\u003d skippedWithinBuffer;\n    long skipped \u003d skippedWithinBuffer;\n\n    if (n \u003d\u003d 0) {\n      return skipped;\n    }\n\n    if (numberOfPagesRemaining \u003d\u003d 0) {\n      throw new EOFException(FSExceptionMessages.CANNOT_SEEK_PAST_EOF);\n    } else if (numberOfPagesRemaining \u003e 1) {\n      // skip over as many pages as we can, but we must read the last\n      // page as it may not be full\n      long pagesToSkipOver \u003d Math.min(n / PAGE_DATA_SIZE,\n          numberOfPagesRemaining - 1);\n      numberOfPagesRemaining -\u003d pagesToSkipOver;\n      currentOffsetInBlob +\u003d pagesToSkipOver * PAGE_SIZE;\n      skipped +\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n      n -\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n    }\n\n    if (n \u003d\u003d 0) {\n      return skipped;\n    }\n\n    // Now read in at the current position, and skip within current buffer.\n    if (!ensureDataInBuffer()) {\n      return skipped;\n    }\n    return skipped + skipWithinBuffer(n);\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobInputStream.java",
+      "extendedDetails": {}
+    },
+    "0ea182d0faa35c726dcb37249d48786bfc8ca04c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15042. Azure PageBlobInputStream.skip() can return negative value when numberOfPagesRemaining is 0.\nContributed by Rajesh Balamohan\n",
+      "commitDate": "28/11/17 3:52 AM",
+      "commitName": "0ea182d0faa35c726dcb37249d48786bfc8ca04c",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "08/06/15 10:42 PM",
+      "commitNameOld": "c45784bc9031353b938f4756473937cca759b3dc",
+      "commitAuthorOld": "cnauroth",
+      "daysBetweenCommits": 903.26,
+      "commitsBetweenForRepo": 6089,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,40 +1,40 @@\n   private long skipImpl(long n) throws IOException {\n \n     if (n \u003d\u003d 0) {\n       return 0;\n     }\n \n     // First skip within the current buffer as much as possible.\n     long skippedWithinBuffer \u003d skipWithinBuffer(n);\n     if (skippedWithinBuffer \u003e n) {\n       // TO CONSIDER: Using a contracts framework such as Google\u0027s cofoja for\n       // these post-conditions.\n       throw new AssertionError(String.format(\n           \"Bug in skipWithinBuffer: it skipped over %d bytes when asked to \"\n           + \"skip %d bytes.\", skippedWithinBuffer, n));\n     }\n     n -\u003d skippedWithinBuffer;\n     long skipped \u003d skippedWithinBuffer;\n \n     // Empty the current buffer, we\u0027re going beyond it.\n     currentBuffer \u003d null;\n \n     // Skip over whole pages as necessary without retrieving them from the\n     // server.\n-    long pagesToSkipOver \u003d Math.min(\n+    long pagesToSkipOver \u003d Math.max(0, Math.min(\n         n / PAGE_DATA_SIZE,\n-        numberOfPagesRemaining - 1);\n+        numberOfPagesRemaining - 1));\n     numberOfPagesRemaining -\u003d pagesToSkipOver;\n     currentOffsetInBlob +\u003d pagesToSkipOver * PAGE_SIZE;\n     skipped +\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n     n -\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n     if (n \u003d\u003d 0) {\n       return skipped;\n     }\n \n     // Now read in at the current position, and skip within current buffer.\n     if (!ensureDataInBuffer()) {\n       return skipped;\n     }\n     return skipped + skipWithinBuffer(n);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private long skipImpl(long n) throws IOException {\n\n    if (n \u003d\u003d 0) {\n      return 0;\n    }\n\n    // First skip within the current buffer as much as possible.\n    long skippedWithinBuffer \u003d skipWithinBuffer(n);\n    if (skippedWithinBuffer \u003e n) {\n      // TO CONSIDER: Using a contracts framework such as Google\u0027s cofoja for\n      // these post-conditions.\n      throw new AssertionError(String.format(\n          \"Bug in skipWithinBuffer: it skipped over %d bytes when asked to \"\n          + \"skip %d bytes.\", skippedWithinBuffer, n));\n    }\n    n -\u003d skippedWithinBuffer;\n    long skipped \u003d skippedWithinBuffer;\n\n    // Empty the current buffer, we\u0027re going beyond it.\n    currentBuffer \u003d null;\n\n    // Skip over whole pages as necessary without retrieving them from the\n    // server.\n    long pagesToSkipOver \u003d Math.max(0, Math.min(\n        n / PAGE_DATA_SIZE,\n        numberOfPagesRemaining - 1));\n    numberOfPagesRemaining -\u003d pagesToSkipOver;\n    currentOffsetInBlob +\u003d pagesToSkipOver * PAGE_SIZE;\n    skipped +\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n    n -\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n    if (n \u003d\u003d 0) {\n      return skipped;\n    }\n\n    // Now read in at the current position, and skip within current buffer.\n    if (!ensureDataInBuffer()) {\n      return skipped;\n    }\n    return skipped + skipWithinBuffer(n);\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobInputStream.java",
+      "extendedDetails": {}
+    },
+    "2217e2f8ff418b88eac6ad36cafe3a9795a11f40": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10809. hadoop-azure: page blob support. Contributed by Dexter Bradshaw, Mostafa Elhemali, Eric Hanson, and Mike Liddell.\n",
+      "commitDate": "08/10/14 2:20 PM",
+      "commitName": "2217e2f8ff418b88eac6ad36cafe3a9795a11f40",
+      "commitAuthor": "cnauroth",
+      "diff": "@@ -0,0 +1,40 @@\n+  private long skipImpl(long n) throws IOException {\n+\n+    if (n \u003d\u003d 0) {\n+      return 0;\n+    }\n+\n+    // First skip within the current buffer as much as possible.\n+    long skippedWithinBuffer \u003d skipWithinBuffer(n);\n+    if (skippedWithinBuffer \u003e n) {\n+      // TO CONSIDER: Using a contracts framework such as Google\u0027s cofoja for\n+      // these post-conditions.\n+      throw new AssertionError(String.format(\n+          \"Bug in skipWithinBuffer: it skipped over %d bytes when asked to \"\n+          + \"skip %d bytes.\", skippedWithinBuffer, n));\n+    }\n+    n -\u003d skippedWithinBuffer;\n+    long skipped \u003d skippedWithinBuffer;\n+\n+    // Empty the current buffer, we\u0027re going beyond it.\n+    currentBuffer \u003d null;\n+\n+    // Skip over whole pages as necessary without retrieving them from the\n+    // server.\n+    long pagesToSkipOver \u003d Math.min(\n+        n / PAGE_DATA_SIZE,\n+        numberOfPagesRemaining - 1);\n+    numberOfPagesRemaining -\u003d pagesToSkipOver;\n+    currentOffsetInBlob +\u003d pagesToSkipOver * PAGE_SIZE;\n+    skipped +\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n+    n -\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n+    if (n \u003d\u003d 0) {\n+      return skipped;\n+    }\n+\n+    // Now read in at the current position, and skip within current buffer.\n+    if (!ensureDataInBuffer()) {\n+      return skipped;\n+    }\n+    return skipped + skipWithinBuffer(n);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private long skipImpl(long n) throws IOException {\n\n    if (n \u003d\u003d 0) {\n      return 0;\n    }\n\n    // First skip within the current buffer as much as possible.\n    long skippedWithinBuffer \u003d skipWithinBuffer(n);\n    if (skippedWithinBuffer \u003e n) {\n      // TO CONSIDER: Using a contracts framework such as Google\u0027s cofoja for\n      // these post-conditions.\n      throw new AssertionError(String.format(\n          \"Bug in skipWithinBuffer: it skipped over %d bytes when asked to \"\n          + \"skip %d bytes.\", skippedWithinBuffer, n));\n    }\n    n -\u003d skippedWithinBuffer;\n    long skipped \u003d skippedWithinBuffer;\n\n    // Empty the current buffer, we\u0027re going beyond it.\n    currentBuffer \u003d null;\n\n    // Skip over whole pages as necessary without retrieving them from the\n    // server.\n    long pagesToSkipOver \u003d Math.min(\n        n / PAGE_DATA_SIZE,\n        numberOfPagesRemaining - 1);\n    numberOfPagesRemaining -\u003d pagesToSkipOver;\n    currentOffsetInBlob +\u003d pagesToSkipOver * PAGE_SIZE;\n    skipped +\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n    n -\u003d pagesToSkipOver * PAGE_DATA_SIZE;\n    if (n \u003d\u003d 0) {\n      return skipped;\n    }\n\n    // Now read in at the current position, and skip within current buffer.\n    if (!ensureDataInBuffer()) {\n      return skipped;\n    }\n    return skipped + skipWithinBuffer(n);\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/PageBlobInputStream.java"
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SimpleExponentialSmoothing.java",
+  "functionName": "append",
+  "functionId": "append___newTimeStamp-long(modifiers-final)__rData-double(modifiers-final)",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/speculate/forecast/SimpleExponentialSmoothing.java",
+  "functionStartLine": 101,
+  "functionEndLine": 128,
+  "numCommitsSeen": 4,
+  "timeTaken": 1951,
+  "changeHistory": [
+    "cdd6efd3ab6917e30b4c5c7b261f61838901bb37",
+    "ed302f1fed6d124d682486d24dae958946dba9be"
+  ],
+  "changeHistoryShort": {
+    "cdd6efd3ab6917e30b4c5c7b261f61838901bb37": "Ymultichange(Ybodychange,Yparametermetachange)",
+    "ed302f1fed6d124d682486d24dae958946dba9be": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "cdd6efd3ab6917e30b4c5c7b261f61838901bb37": {
+      "type": "Ymultichange(Ybodychange,Yparametermetachange)",
+      "commitMessage": "MAPREDUCE-7252. Handling 0 progress in SimpleExponential task runtime estimator\n\nSigned-off-by: Jonathan Eagles \u003cjeagles@gmail.com\u003e\n",
+      "commitDate": "08/01/20 9:08 AM",
+      "commitName": "cdd6efd3ab6917e30b4c5c7b261f61838901bb37",
+      "commitAuthor": "Ahmed Hussein",
+      "subchanges": [
+        {
+          "type": "Ybodychange",
+          "commitMessage": "MAPREDUCE-7252. Handling 0 progress in SimpleExponential task runtime estimator\n\nSigned-off-by: Jonathan Eagles \u003cjeagles@gmail.com\u003e\n",
+          "commitDate": "08/01/20 9:08 AM",
+          "commitName": "cdd6efd3ab6917e30b4c5c7b261f61838901bb37",
+          "commitAuthor": "Ahmed Hussein",
+          "commitDateOld": "05/11/19 12:55 PM",
+          "commitNameOld": "ed302f1fed6d124d682486d24dae958946dba9be",
+          "commitAuthorOld": "Ahmed Hussein",
+          "daysBetweenCommits": 63.84,
+          "commitsBetweenForRepo": 225,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,28 @@\n-    public ForecastRecord append(long newTimeStamp, double rData) {\n-      if (this.timeStamp \u003e newTimeStamp) {\n+    public ForecastRecord append(final long newTimeStamp, final double rData) {\n+      if (this.timeStamp \u003e\u003d newTimeStamp\n+          \u0026\u0026 Double.compare(this.rawData, rData) \u003e\u003d 0) {\n+        // progress reported twice. Do nothing.\n         return this;\n       }\n-      double newSample \u003d preProcessRawData(rData, newTimeStamp);\n+      ForecastRecord refRecord \u003d this;\n+      if (newTimeStamp \u003d\u003d this.timeStamp) {\n+        // we need to restore old value if possible\n+        if (this.prevRec !\u003d null) {\n+          refRecord \u003d this.prevRec;\n+        }\n+      }\n+      double newSample \u003d refRecord.preProcessRawData(rData, newTimeStamp);\n       long deltaTime \u003d this.timeStamp - newTimeStamp;\n-      if (this.myIndex \u003d\u003d kMinimumReads) {\n+      if (refRecord.myIndex \u003d\u003d kMinimumReads) {\n         timeConstant \u003d Math.max(timeConstant, newTimeStamp - startTime);\n       }\n       double smoothFactor \u003d\n           1 - Math.exp(((double) deltaTime) / timeConstant);\n       double forecastVal \u003d\n-          smoothFactor * newSample + (1.0 - smoothFactor) * this.forecast;\n+          smoothFactor * newSample + (1.0 - smoothFactor) * refRecord.forecast;\n       double newSSEError \u003d\n-          this.sseError + Math.pow(newSample - this.forecast, 2);\n-      return new ForecastRecord(smoothFactor, newSample, rData, forecastVal,\n-          newTimeStamp, newSSEError, this.myIndex + 1);\n+          refRecord.sseError + Math.pow(newSample - refRecord.forecast, 2);\n+      return refRecord\n+          .createForecastRecord(smoothFactor, newSample, rData, forecastVal,\n+              newTimeStamp, newSSEError, refRecord.myIndex + 1, refRecord);\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public ForecastRecord append(final long newTimeStamp, final double rData) {\n      if (this.timeStamp \u003e\u003d newTimeStamp\n          \u0026\u0026 Double.compare(this.rawData, rData) \u003e\u003d 0) {\n        // progress reported twice. Do nothing.\n        return this;\n      }\n      ForecastRecord refRecord \u003d this;\n      if (newTimeStamp \u003d\u003d this.timeStamp) {\n        // we need to restore old value if possible\n        if (this.prevRec !\u003d null) {\n          refRecord \u003d this.prevRec;\n        }\n      }\n      double newSample \u003d refRecord.preProcessRawData(rData, newTimeStamp);\n      long deltaTime \u003d this.timeStamp - newTimeStamp;\n      if (refRecord.myIndex \u003d\u003d kMinimumReads) {\n        timeConstant \u003d Math.max(timeConstant, newTimeStamp - startTime);\n      }\n      double smoothFactor \u003d\n          1 - Math.exp(((double) deltaTime) / timeConstant);\n      double forecastVal \u003d\n          smoothFactor * newSample + (1.0 - smoothFactor) * refRecord.forecast;\n      double newSSEError \u003d\n          refRecord.sseError + Math.pow(newSample - refRecord.forecast, 2);\n      return refRecord\n          .createForecastRecord(smoothFactor, newSample, rData, forecastVal,\n              newTimeStamp, newSSEError, refRecord.myIndex + 1, refRecord);\n    }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/speculate/forecast/SimpleExponentialSmoothing.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "MAPREDUCE-7252. Handling 0 progress in SimpleExponential task runtime estimator\n\nSigned-off-by: Jonathan Eagles \u003cjeagles@gmail.com\u003e\n",
+          "commitDate": "08/01/20 9:08 AM",
+          "commitName": "cdd6efd3ab6917e30b4c5c7b261f61838901bb37",
+          "commitAuthor": "Ahmed Hussein",
+          "commitDateOld": "05/11/19 12:55 PM",
+          "commitNameOld": "ed302f1fed6d124d682486d24dae958946dba9be",
+          "commitAuthorOld": "Ahmed Hussein",
+          "daysBetweenCommits": 63.84,
+          "commitsBetweenForRepo": 225,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,28 @@\n-    public ForecastRecord append(long newTimeStamp, double rData) {\n-      if (this.timeStamp \u003e newTimeStamp) {\n+    public ForecastRecord append(final long newTimeStamp, final double rData) {\n+      if (this.timeStamp \u003e\u003d newTimeStamp\n+          \u0026\u0026 Double.compare(this.rawData, rData) \u003e\u003d 0) {\n+        // progress reported twice. Do nothing.\n         return this;\n       }\n-      double newSample \u003d preProcessRawData(rData, newTimeStamp);\n+      ForecastRecord refRecord \u003d this;\n+      if (newTimeStamp \u003d\u003d this.timeStamp) {\n+        // we need to restore old value if possible\n+        if (this.prevRec !\u003d null) {\n+          refRecord \u003d this.prevRec;\n+        }\n+      }\n+      double newSample \u003d refRecord.preProcessRawData(rData, newTimeStamp);\n       long deltaTime \u003d this.timeStamp - newTimeStamp;\n-      if (this.myIndex \u003d\u003d kMinimumReads) {\n+      if (refRecord.myIndex \u003d\u003d kMinimumReads) {\n         timeConstant \u003d Math.max(timeConstant, newTimeStamp - startTime);\n       }\n       double smoothFactor \u003d\n           1 - Math.exp(((double) deltaTime) / timeConstant);\n       double forecastVal \u003d\n-          smoothFactor * newSample + (1.0 - smoothFactor) * this.forecast;\n+          smoothFactor * newSample + (1.0 - smoothFactor) * refRecord.forecast;\n       double newSSEError \u003d\n-          this.sseError + Math.pow(newSample - this.forecast, 2);\n-      return new ForecastRecord(smoothFactor, newSample, rData, forecastVal,\n-          newTimeStamp, newSSEError, this.myIndex + 1);\n+          refRecord.sseError + Math.pow(newSample - refRecord.forecast, 2);\n+      return refRecord\n+          .createForecastRecord(smoothFactor, newSample, rData, forecastVal,\n+              newTimeStamp, newSSEError, refRecord.myIndex + 1, refRecord);\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public ForecastRecord append(final long newTimeStamp, final double rData) {\n      if (this.timeStamp \u003e\u003d newTimeStamp\n          \u0026\u0026 Double.compare(this.rawData, rData) \u003e\u003d 0) {\n        // progress reported twice. Do nothing.\n        return this;\n      }\n      ForecastRecord refRecord \u003d this;\n      if (newTimeStamp \u003d\u003d this.timeStamp) {\n        // we need to restore old value if possible\n        if (this.prevRec !\u003d null) {\n          refRecord \u003d this.prevRec;\n        }\n      }\n      double newSample \u003d refRecord.preProcessRawData(rData, newTimeStamp);\n      long deltaTime \u003d this.timeStamp - newTimeStamp;\n      if (refRecord.myIndex \u003d\u003d kMinimumReads) {\n        timeConstant \u003d Math.max(timeConstant, newTimeStamp - startTime);\n      }\n      double smoothFactor \u003d\n          1 - Math.exp(((double) deltaTime) / timeConstant);\n      double forecastVal \u003d\n          smoothFactor * newSample + (1.0 - smoothFactor) * refRecord.forecast;\n      double newSSEError \u003d\n          refRecord.sseError + Math.pow(newSample - refRecord.forecast, 2);\n      return refRecord\n          .createForecastRecord(smoothFactor, newSample, rData, forecastVal,\n              newTimeStamp, newSSEError, refRecord.myIndex + 1, refRecord);\n    }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/speculate/forecast/SimpleExponentialSmoothing.java",
+          "extendedDetails": {
+            "oldValue": "[newTimeStamp-long, rData-double]",
+            "newValue": "[newTimeStamp-long(modifiers-final), rData-double(modifiers-final)]"
+          }
+        }
+      ]
+    },
+    "ed302f1fed6d124d682486d24dae958946dba9be": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-7208. Tuning TaskRuntimeEstimator. (Ahmed Hussein via jeagles)\n\nSigned-off-by: Jonathan Eagles \u003cjeagles@gmail.com\u003e\n",
+      "commitDate": "05/11/19 12:55 PM",
+      "commitName": "ed302f1fed6d124d682486d24dae958946dba9be",
+      "commitAuthor": "Ahmed Hussein",
+      "diff": "@@ -0,0 +1,18 @@\n+    public ForecastRecord append(long newTimeStamp, double rData) {\n+      if (this.timeStamp \u003e newTimeStamp) {\n+        return this;\n+      }\n+      double newSample \u003d preProcessRawData(rData, newTimeStamp);\n+      long deltaTime \u003d this.timeStamp - newTimeStamp;\n+      if (this.myIndex \u003d\u003d kMinimumReads) {\n+        timeConstant \u003d Math.max(timeConstant, newTimeStamp - startTime);\n+      }\n+      double smoothFactor \u003d\n+          1 - Math.exp(((double) deltaTime) / timeConstant);\n+      double forecastVal \u003d\n+          smoothFactor * newSample + (1.0 - smoothFactor) * this.forecast;\n+      double newSSEError \u003d\n+          this.sseError + Math.pow(newSample - this.forecast, 2);\n+      return new ForecastRecord(smoothFactor, newSample, rData, forecastVal,\n+          newTimeStamp, newSSEError, this.myIndex + 1);\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public ForecastRecord append(long newTimeStamp, double rData) {\n      if (this.timeStamp \u003e newTimeStamp) {\n        return this;\n      }\n      double newSample \u003d preProcessRawData(rData, newTimeStamp);\n      long deltaTime \u003d this.timeStamp - newTimeStamp;\n      if (this.myIndex \u003d\u003d kMinimumReads) {\n        timeConstant \u003d Math.max(timeConstant, newTimeStamp - startTime);\n      }\n      double smoothFactor \u003d\n          1 - Math.exp(((double) deltaTime) / timeConstant);\n      double forecastVal \u003d\n          smoothFactor * newSample + (1.0 - smoothFactor) * this.forecast;\n      double newSSEError \u003d\n          this.sseError + Math.pow(newSample - this.forecast, 2);\n      return new ForecastRecord(smoothFactor, newSample, rData, forecastVal,\n          newTimeStamp, newSSEError, this.myIndex + 1);\n    }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/speculate/forecast/SimpleExponentialSmoothing.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TimeoutFuture.java",
+  "functionName": "run",
+  "functionId": "run",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/TimeoutFuture.java",
+  "functionStartLine": 106,
+  "functionEndLine": 143,
+  "numCommitsSeen": 1,
+  "timeTaken": 678,
+  "changeHistory": [
+    "d69a82c89c1e857a2a86ff614ae11fb5df993614"
+  ],
+  "changeHistoryShort": {
+    "d69a82c89c1e857a2a86ff614ae11fb5df993614": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d69a82c89c1e857a2a86ff614ae11fb5df993614": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11511. Support Timeout when checking single disk. Contributed by Hanisha Koneru.\n",
+      "commitDate": "15/03/17 6:01 PM",
+      "commitName": "d69a82c89c1e857a2a86ff614ae11fb5df993614",
+      "commitAuthor": "Hanisha Koneru",
+      "diff": "@@ -0,0 +1,38 @@\n+    public void run() {\n+      // If either of these reads return null then we must be after a\n+      // successful cancel or another call to this method.\n+      TimeoutFuture\u003cV\u003e timeoutFuture \u003d timeoutFutureRef;\n+      if (timeoutFuture \u003d\u003d null) {\n+        return;\n+      }\n+      ListenableFuture\u003cV\u003e delegate \u003d timeoutFuture.delegateRef;\n+      if (delegate \u003d\u003d null) {\n+        return;\n+      }\n+\n+      /*\n+       * If we\u0027re about to complete the TimeoutFuture, we want to release our\n+       * reference to it. Otherwise, we\u0027ll pin it (and its result) in memory\n+       * until the timeout task is GCed. (The need to clear our reference to\n+       * the TimeoutFuture is the reason we use a *static* nested class with\n+       * a manual reference back to the \"containing\" class.)\n+       *\n+       * This has the nice-ish side effect of limiting reentrancy: run() calls\n+       * timeoutFuture.setException() calls run(). That reentrancy would\n+       * already be harmless, since timeoutFuture can be set (and delegate\n+       * cancelled) only once. (And \"set only once\" is important for other\n+       * reasons: run() can still be invoked concurrently in different threads,\n+       * even with the above null checks.)\n+       */\n+      timeoutFutureRef \u003d null;\n+      if (delegate.isDone()) {\n+        timeoutFuture.setFuture(delegate);\n+      } else {\n+        try {\n+          timeoutFuture.setException(\n+              new TimeoutException(\"Future timed out: \" + delegate));\n+        } finally {\n+          delegate.cancel(true);\n+        }\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void run() {\n      // If either of these reads return null then we must be after a\n      // successful cancel or another call to this method.\n      TimeoutFuture\u003cV\u003e timeoutFuture \u003d timeoutFutureRef;\n      if (timeoutFuture \u003d\u003d null) {\n        return;\n      }\n      ListenableFuture\u003cV\u003e delegate \u003d timeoutFuture.delegateRef;\n      if (delegate \u003d\u003d null) {\n        return;\n      }\n\n      /*\n       * If we\u0027re about to complete the TimeoutFuture, we want to release our\n       * reference to it. Otherwise, we\u0027ll pin it (and its result) in memory\n       * until the timeout task is GCed. (The need to clear our reference to\n       * the TimeoutFuture is the reason we use a *static* nested class with\n       * a manual reference back to the \"containing\" class.)\n       *\n       * This has the nice-ish side effect of limiting reentrancy: run() calls\n       * timeoutFuture.setException() calls run(). That reentrancy would\n       * already be harmless, since timeoutFuture can be set (and delegate\n       * cancelled) only once. (And \"set only once\" is important for other\n       * reasons: run() can still be invoked concurrently in different threads,\n       * even with the above null checks.)\n       */\n      timeoutFutureRef \u003d null;\n      if (delegate.isDone()) {\n        timeoutFuture.setFuture(delegate);\n      } else {\n        try {\n          timeoutFuture.setException(\n              new TimeoutException(\"Future timed out: \" + delegate));\n        } finally {\n          delegate.cancel(true);\n        }\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/TimeoutFuture.java"
+    }
+  }
+}

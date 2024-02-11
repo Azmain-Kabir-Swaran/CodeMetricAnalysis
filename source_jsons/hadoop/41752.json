@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbstractYarnScheduler.java",
+  "functionName": "signalContainersIfOvercommitted",
+  "functionId": "signalContainersIfOvercommitted___schedulerNode-SchedulerNode__kill-boolean",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+  "functionStartLine": 1234,
+  "functionEndLine": 1277,
+  "numCommitsSeen": 115,
+  "timeTaken": 1411,
+  "changeHistory": [
+    "cfec455c452d85229ef2f9d83e6f7fc827946b59"
+  ],
+  "changeHistoryShort": {
+    "cfec455c452d85229ef2f9d83e6f7fc827946b59": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "cfec455c452d85229ef2f9d83e6f7fc827946b59": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-999. In case of long running tasks, reduce node resource should balloon out resource quickly by calling preemption API and suspending running task. Contributed by Inigo Goiri.\n",
+      "commitDate": "09/04/19 10:59 AM",
+      "commitName": "cfec455c452d85229ef2f9d83e6f7fc827946b59",
+      "commitAuthor": "Giovanni Matteo Fumarola",
+      "diff": "@@ -0,0 +1,44 @@\n+  private void signalContainersIfOvercommitted(\n+      SchedulerNode schedulerNode, boolean kill) {\n+\n+    // If there is no time out, we don\u0027t do anything\n+    if (!schedulerNode.isOvercommitTimeOutSet()) {\n+      return;\n+    }\n+\n+    SchedulerEventType eventType \u003d\n+        SchedulerEventType.MARK_CONTAINER_FOR_PREEMPTION;\n+    if (kill) {\n+      eventType \u003d SchedulerEventType.MARK_CONTAINER_FOR_KILLABLE;\n+\n+      // If it hasn\u0027t timed out yet, don\u0027t kill\n+      if (!schedulerNode.isOvercommitTimedOut()) {\n+        return;\n+      }\n+    }\n+\n+    // Check if the node is overcommitted (negative resources)\n+    ResourceCalculator rc \u003d getResourceCalculator();\n+    Resource unallocated \u003d Resource.newInstance(\n+        schedulerNode.getUnallocatedResource());\n+    if (Resources.fitsIn(rc, ZERO_RESOURCE, unallocated)) {\n+      return;\n+    }\n+\n+    LOG.info(\"{} is overcommitted ({}), preempt/kill containers\",\n+        schedulerNode.getNodeID(), unallocated);\n+    for (RMContainer container : schedulerNode.getContainersToKill()) {\n+      LOG.info(\"Send {} to {} to free up {}\", eventType,\n+          container.getContainerId(), container.getAllocatedResource());\n+      ApplicationAttemptId appId \u003d container.getApplicationAttemptId();\n+      ContainerPreemptEvent event \u003d\n+          new ContainerPreemptEvent(appId, container, eventType);\n+      this.rmContext.getDispatcher().getEventHandler().handle(event);\n+      Resources.addTo(unallocated, container.getAllocatedResource());\n+\n+      if (Resources.fitsIn(rc, ZERO_RESOURCE, unallocated)) {\n+        LOG.debug(\"Enough unallocated resources {}\", unallocated);\n+        break;\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void signalContainersIfOvercommitted(\n      SchedulerNode schedulerNode, boolean kill) {\n\n    // If there is no time out, we don\u0027t do anything\n    if (!schedulerNode.isOvercommitTimeOutSet()) {\n      return;\n    }\n\n    SchedulerEventType eventType \u003d\n        SchedulerEventType.MARK_CONTAINER_FOR_PREEMPTION;\n    if (kill) {\n      eventType \u003d SchedulerEventType.MARK_CONTAINER_FOR_KILLABLE;\n\n      // If it hasn\u0027t timed out yet, don\u0027t kill\n      if (!schedulerNode.isOvercommitTimedOut()) {\n        return;\n      }\n    }\n\n    // Check if the node is overcommitted (negative resources)\n    ResourceCalculator rc \u003d getResourceCalculator();\n    Resource unallocated \u003d Resource.newInstance(\n        schedulerNode.getUnallocatedResource());\n    if (Resources.fitsIn(rc, ZERO_RESOURCE, unallocated)) {\n      return;\n    }\n\n    LOG.info(\"{} is overcommitted ({}), preempt/kill containers\",\n        schedulerNode.getNodeID(), unallocated);\n    for (RMContainer container : schedulerNode.getContainersToKill()) {\n      LOG.info(\"Send {} to {} to free up {}\", eventType,\n          container.getContainerId(), container.getAllocatedResource());\n      ApplicationAttemptId appId \u003d container.getApplicationAttemptId();\n      ContainerPreemptEvent event \u003d\n          new ContainerPreemptEvent(appId, container, eventType);\n      this.rmContext.getDispatcher().getEventHandler().handle(event);\n      Resources.addTo(unallocated, container.getAllocatedResource());\n\n      if (Resources.fitsIn(rc, ZERO_RESOURCE, unallocated)) {\n        LOG.debug(\"Enough unallocated resources {}\", unallocated);\n        break;\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java"
+    }
+  }
+}

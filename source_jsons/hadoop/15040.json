@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PBImageCorruptionDetector.java",
+  "functionName": "buildNamespace",
+  "functionId": "buildNamespace___in-InputStream__refIdList-List__Long__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/offlineImageViewer/PBImageCorruptionDetector.java",
+  "functionStartLine": 267,
+  "functionEndLine": 313,
+  "numCommitsSeen": 1,
+  "timeTaken": 747,
+  "changeHistory": [
+    "fb10803dfa67394650072bdea327296f8ad2a744"
+  ],
+  "changeHistoryShort": {
+    "fb10803dfa67394650072bdea327296f8ad2a744": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fb10803dfa67394650072bdea327296f8ad2a744": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13818. Extend OIV to detect FSImage corruption. Contributed by Adam Antal.\n\nSigned-off-by: Wei-Chiu Chuang \u003cweichiu@apache.org\u003e\n",
+      "commitDate": "03/12/18 10:34 AM",
+      "commitName": "fb10803dfa67394650072bdea327296f8ad2a744",
+      "commitAuthor": "Adam Antal",
+      "diff": "@@ -0,0 +1,47 @@\n+  protected void buildNamespace(InputStream in, List\u003cLong\u003e refIdList)\n+      throws IOException {\n+    corrChecker.saveNodeRefIds(refIdList);\n+    LOG.debug(\"Saved INodeReference ids of size {}.\", refIdList.size());\n+    int count \u003d 0;\n+    while (true) {\n+      FsImageProto.INodeDirectorySection.DirEntry e \u003d\n+          FsImageProto.INodeDirectorySection.DirEntry.parseDelimitedFrom(in);\n+      if (e \u003d\u003d null) {\n+        break;\n+      }\n+      count++;\n+      if (LOG.isDebugEnabled() \u0026\u0026 count % 10000 \u003d\u003d 0) {\n+        LOG.debug(\"Scanned {} directories.\", count);\n+      }\n+      long parentId \u003d e.getParent();\n+      if (!corrChecker.isNodeIdExist(parentId)) {\n+        LOG.debug(\"Corruption detected! Parent node is not contained \" +\n+            \"in the list of known ids!\");\n+        addCorruptedNode(parentId);\n+      }\n+      int numOfCorruption \u003d 0;\n+      for (int i \u003d 0; i \u003c e.getChildrenCount(); i++) {\n+        long childId \u003d e.getChildren(i);\n+        putDirChildToMetadataMap(parentId, childId);\n+        if (!corrChecker.isNodeIdExist(childId)) {\n+          addCorruptedNode(childId);\n+          numOfCorruption++;\n+        }\n+      }\n+      if (numOfCorruption \u003e 0) {\n+        if (LOG.isDebugEnabled()) {\n+          LOG.debug(\"{} corruption detected! Child nodes are missing.\",\n+              numOfCorruption);\n+        }\n+        addCorruptedParent(parentId, numOfCorruption);\n+      }\n+      for (int i \u003d e.getChildrenCount();\n+           i \u003c e.getChildrenCount() + e.getRefChildrenCount(); i++) {\n+        int refId \u003d e.getRefChildren(i - e.getChildrenCount());\n+        // In this case the refNode is referred directly (by its position),\n+        // so we couldn\u0027t make sure of the correctness\n+        putDirChildToMetadataMap(parentId, refIdList.get(refId));\n+      }\n+    }\n+    LOG.info(\"Scanned {} INode directories to build namespace.\", count);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void buildNamespace(InputStream in, List\u003cLong\u003e refIdList)\n      throws IOException {\n    corrChecker.saveNodeRefIds(refIdList);\n    LOG.debug(\"Saved INodeReference ids of size {}.\", refIdList.size());\n    int count \u003d 0;\n    while (true) {\n      FsImageProto.INodeDirectorySection.DirEntry e \u003d\n          FsImageProto.INodeDirectorySection.DirEntry.parseDelimitedFrom(in);\n      if (e \u003d\u003d null) {\n        break;\n      }\n      count++;\n      if (LOG.isDebugEnabled() \u0026\u0026 count % 10000 \u003d\u003d 0) {\n        LOG.debug(\"Scanned {} directories.\", count);\n      }\n      long parentId \u003d e.getParent();\n      if (!corrChecker.isNodeIdExist(parentId)) {\n        LOG.debug(\"Corruption detected! Parent node is not contained \" +\n            \"in the list of known ids!\");\n        addCorruptedNode(parentId);\n      }\n      int numOfCorruption \u003d 0;\n      for (int i \u003d 0; i \u003c e.getChildrenCount(); i++) {\n        long childId \u003d e.getChildren(i);\n        putDirChildToMetadataMap(parentId, childId);\n        if (!corrChecker.isNodeIdExist(childId)) {\n          addCorruptedNode(childId);\n          numOfCorruption++;\n        }\n      }\n      if (numOfCorruption \u003e 0) {\n        if (LOG.isDebugEnabled()) {\n          LOG.debug(\"{} corruption detected! Child nodes are missing.\",\n              numOfCorruption);\n        }\n        addCorruptedParent(parentId, numOfCorruption);\n      }\n      for (int i \u003d e.getChildrenCount();\n           i \u003c e.getChildrenCount() + e.getRefChildrenCount(); i++) {\n        int refId \u003d e.getRefChildren(i - e.getChildrenCount());\n        // In this case the refNode is referred directly (by its position),\n        // so we couldn\u0027t make sure of the correctness\n        putDirChildToMetadataMap(parentId, refIdList.get(refId));\n      }\n    }\n    LOG.info(\"Scanned {} INode directories to build namespace.\", count);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/tools/offlineImageViewer/PBImageCorruptionDetector.java"
+    }
+  }
+}

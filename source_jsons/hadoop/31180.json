@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DefaultClientRequestInterceptor.java",
+  "functionName": "init",
+  "functionId": "init___userName-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/clientrm/DefaultClientRequestInterceptor.java",
+  "functionStartLine": 113,
+  "functionEndLine": 130,
+  "numCommitsSeen": 7,
+  "timeTaken": 1090,
+  "changeHistory": [
+    "43a97174fe49aa0c25d03b8a970a46d4bebf1aa8",
+    "80e1904000923819c98ae68456cb0452c255d5f3"
+  ],
+  "changeHistoryShort": {
+    "43a97174fe49aa0c25d03b8a970a46d4bebf1aa8": "Ybodychange",
+    "80e1904000923819c98ae68456cb0452c255d5f3": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "43a97174fe49aa0c25d03b8a970a46d4bebf1aa8": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3659. Federation: routing client invocations transparently to multiple RMs. (Giovanni Matteo Fumarola via Subru).\n\n(cherry picked from commit 52daa6d971ae408d121b3737ea8c0575e7e8516d)\n",
+      "commitDate": "01/08/17 5:28 PM",
+      "commitName": "43a97174fe49aa0c25d03b8a970a46d4bebf1aa8",
+      "commitAuthor": "Subru Krishnan",
+      "commitDateOld": "01/08/17 5:28 PM",
+      "commitNameOld": "7444406d6d48846d06b04e82587885bb8632a16c",
+      "commitAuthorOld": "Subru Krishnan",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 9,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,35 +1,18 @@\n   public void init(String userName) {\n     super.init(userName);\n+\n+    final Configuration conf \u003d this.getConf();\n     try {\n-      // Do not create a proxy user if user name matches the user name on\n-      // current UGI\n-      if (userName.equalsIgnoreCase(\n-          UserGroupInformation.getCurrentUser().getUserName())) {\n-        user \u003d UserGroupInformation.getCurrentUser();\n-      } else {\n-        user \u003d UserGroupInformation.createProxyUser(userName,\n-            UserGroupInformation.getCurrentUser());\n-      }\n-\n-      final Configuration conf \u003d this.getConf();\n-\n       clientRMProxy \u003d\n           user.doAs(new PrivilegedExceptionAction\u003cApplicationClientProtocol\u003e() {\n             @Override\n             public ApplicationClientProtocol run() throws Exception {\n               return ClientRMProxy.createRMProxy(conf,\n                   ApplicationClientProtocol.class);\n             }\n           });\n-    } catch (IOException e) {\n-      String message \u003d \"Error while creating Router ClientRM Service for user:\";\n-      if (user !\u003d null) {\n-        message +\u003d \", user: \" + user;\n-      }\n-\n-      LOG.info(message);\n-      throw new YarnRuntimeException(message, e);\n     } catch (Exception e) {\n-      throw new YarnRuntimeException(e);\n+      throw new YarnRuntimeException(\n+          \"Unable to create the interface to reach the YarnRM\", e);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void init(String userName) {\n    super.init(userName);\n\n    final Configuration conf \u003d this.getConf();\n    try {\n      clientRMProxy \u003d\n          user.doAs(new PrivilegedExceptionAction\u003cApplicationClientProtocol\u003e() {\n            @Override\n            public ApplicationClientProtocol run() throws Exception {\n              return ClientRMProxy.createRMProxy(conf,\n                  ApplicationClientProtocol.class);\n            }\n          });\n    } catch (Exception e) {\n      throw new YarnRuntimeException(\n          \"Unable to create the interface to reach the YarnRM\", e);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/clientrm/DefaultClientRequestInterceptor.java",
+      "extendedDetails": {}
+    },
+    "80e1904000923819c98ae68456cb0452c255d5f3": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5411. Create a proxy chain for ApplicationClientProtocol in the Router. (Giovanni Matteo Fumarola via Subru).\n\n(cherry picked from commit 4846069061b6baa06da3b524b9e36567dd368388)\n",
+      "commitDate": "01/08/17 5:28 PM",
+      "commitName": "80e1904000923819c98ae68456cb0452c255d5f3",
+      "commitAuthor": "Subru Krishnan",
+      "diff": "@@ -0,0 +1,35 @@\n+  public void init(String userName) {\n+    super.init(userName);\n+    try {\n+      // Do not create a proxy user if user name matches the user name on\n+      // current UGI\n+      if (userName.equalsIgnoreCase(\n+          UserGroupInformation.getCurrentUser().getUserName())) {\n+        user \u003d UserGroupInformation.getCurrentUser();\n+      } else {\n+        user \u003d UserGroupInformation.createProxyUser(userName,\n+            UserGroupInformation.getCurrentUser());\n+      }\n+\n+      final Configuration conf \u003d this.getConf();\n+\n+      clientRMProxy \u003d\n+          user.doAs(new PrivilegedExceptionAction\u003cApplicationClientProtocol\u003e() {\n+            @Override\n+            public ApplicationClientProtocol run() throws Exception {\n+              return ClientRMProxy.createRMProxy(conf,\n+                  ApplicationClientProtocol.class);\n+            }\n+          });\n+    } catch (IOException e) {\n+      String message \u003d \"Error while creating Router ClientRM Service for user:\";\n+      if (user !\u003d null) {\n+        message +\u003d \", user: \" + user;\n+      }\n+\n+      LOG.info(message);\n+      throw new YarnRuntimeException(message, e);\n+    } catch (Exception e) {\n+      throw new YarnRuntimeException(e);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void init(String userName) {\n    super.init(userName);\n    try {\n      // Do not create a proxy user if user name matches the user name on\n      // current UGI\n      if (userName.equalsIgnoreCase(\n          UserGroupInformation.getCurrentUser().getUserName())) {\n        user \u003d UserGroupInformation.getCurrentUser();\n      } else {\n        user \u003d UserGroupInformation.createProxyUser(userName,\n            UserGroupInformation.getCurrentUser());\n      }\n\n      final Configuration conf \u003d this.getConf();\n\n      clientRMProxy \u003d\n          user.doAs(new PrivilegedExceptionAction\u003cApplicationClientProtocol\u003e() {\n            @Override\n            public ApplicationClientProtocol run() throws Exception {\n              return ClientRMProxy.createRMProxy(conf,\n                  ApplicationClientProtocol.class);\n            }\n          });\n    } catch (IOException e) {\n      String message \u003d \"Error while creating Router ClientRM Service for user:\";\n      if (user !\u003d null) {\n        message +\u003d \", user: \" + user;\n      }\n\n      LOG.info(message);\n      throw new YarnRuntimeException(message, e);\n    } catch (Exception e) {\n      throw new YarnRuntimeException(e);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/clientrm/DefaultClientRequestInterceptor.java"
+    }
+  }
+}

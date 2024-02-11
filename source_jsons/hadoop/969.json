@@ -1,0 +1,106 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSStripedOutputStream.java",
+  "functionName": "abort",
+  "functionId": "abort",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+  "functionStartLine": 1033,
+  "functionEndLine": 1055,
+  "numCommitsSeen": 38,
+  "timeTaken": 1617,
+  "changeHistory": [
+    "f27a4ad0324aa0b4080a1c4c6bf4cd560c927e20",
+    "2aa5e2c40364cf1e90e6af7851801f5eda759002",
+    "e8bd1ba74b2fc7a6a1b71d068ef01a0fb0bbe294"
+  ],
+  "changeHistoryShort": {
+    "f27a4ad0324aa0b4080a1c4c6bf4cd560c927e20": "Ybodychange",
+    "2aa5e2c40364cf1e90e6af7851801f5eda759002": "Ybodychange",
+    "e8bd1ba74b2fc7a6a1b71d068ef01a0fb0bbe294": "Ymultichange(Ymodifierchange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "f27a4ad0324aa0b4080a1c4c6bf4cd560c927e20": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12612. DFSStripedOutputStream.close will throw if called a second time with a failed streamer. (Lei (Eddy) Xu)\n",
+      "commitDate": "17/10/17 3:52 PM",
+      "commitName": "f27a4ad0324aa0b4080a1c4c6bf4cd560c927e20",
+      "commitAuthor": "Lei Xu",
+      "commitDateOld": "16/10/17 7:44 PM",
+      "commitNameOld": "31ebccc96238136560f4210bdf6766fe18e0650c",
+      "commitAuthorOld": "Lei Xu",
+      "daysBetweenCommits": 0.84,
+      "commitsBetweenForRepo": 3,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,23 @@\n   void abort() throws IOException {\n     final MultipleIOException.Builder b \u003d new MultipleIOException.Builder();\n     synchronized (this) {\n       if (isClosed()) {\n         return;\n       }\n-      for (StripedDataStreamer streamer : streamers) {\n-        streamer.getLastException().set(\n-            new IOException(\"Lease timeout of \"\n-                + (dfsClient.getConf().getHdfsTimeout() / 1000)\n-                + \" seconds expired.\"));\n-      }\n+      exceptionLastSeen.set(new IOException(\"Lease timeout of \"\n+          + (dfsClient.getConf().getHdfsTimeout() / 1000)\n+          + \" seconds expired.\"));\n \n       try {\n         closeThreads(true);\n       } catch (IOException e) {\n         b.add(e);\n       }\n     }\n \n     dfsClient.endFileLease(fileId);\n     final IOException ioe \u003d b.build();\n     if (ioe !\u003d null) {\n       throw ioe;\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void abort() throws IOException {\n    final MultipleIOException.Builder b \u003d new MultipleIOException.Builder();\n    synchronized (this) {\n      if (isClosed()) {\n        return;\n      }\n      exceptionLastSeen.set(new IOException(\"Lease timeout of \"\n          + (dfsClient.getConf().getHdfsTimeout() / 1000)\n          + \" seconds expired.\"));\n\n      try {\n        closeThreads(true);\n      } catch (IOException e) {\n        b.add(e);\n      }\n    }\n\n    dfsClient.endFileLease(fileId);\n    final IOException ioe \u003d b.build();\n    if (ioe !\u003d null) {\n      throw ioe;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+      "extendedDetails": {}
+    },
+    "2aa5e2c40364cf1e90e6af7851801f5eda759002": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10549. Correctly revoke file leases when closing files. Contributed by Yiqun Lin.\n",
+      "commitDate": "17/08/16 3:52 PM",
+      "commitName": "2aa5e2c40364cf1e90e6af7851801f5eda759002",
+      "commitAuthor": "Xiao Chen",
+      "commitDateOld": "12/08/16 10:52 PM",
+      "commitNameOld": "b5af9be72c72734d668f817c99d889031922a951",
+      "commitAuthorOld": "Kai Zheng",
+      "daysBetweenCommits": 4.71,
+      "commitsBetweenForRepo": 33,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,26 @@\n   void abort() throws IOException {\n+    final MultipleIOException.Builder b \u003d new MultipleIOException.Builder();\n     synchronized (this) {\n       if (isClosed()) {\n         return;\n       }\n       for (StripedDataStreamer streamer : streamers) {\n         streamer.getLastException().set(\n             new IOException(\"Lease timeout of \"\n                 + (dfsClient.getConf().getHdfsTimeout() / 1000)\n                 + \" seconds expired.\"));\n       }\n-      closeThreads(true);\n+\n+      try {\n+        closeThreads(true);\n+      } catch (IOException e) {\n+        b.add(e);\n+      }\n     }\n+\n     dfsClient.endFileLease(fileId);\n+    final IOException ioe \u003d b.build();\n+    if (ioe !\u003d null) {\n+      throw ioe;\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void abort() throws IOException {\n    final MultipleIOException.Builder b \u003d new MultipleIOException.Builder();\n    synchronized (this) {\n      if (isClosed()) {\n        return;\n      }\n      for (StripedDataStreamer streamer : streamers) {\n        streamer.getLastException().set(\n            new IOException(\"Lease timeout of \"\n                + (dfsClient.getConf().getHdfsTimeout() / 1000)\n                + \" seconds expired.\"));\n      }\n\n      try {\n        closeThreads(true);\n      } catch (IOException e) {\n        b.add(e);\n      }\n    }\n\n    dfsClient.endFileLease(fileId);\n    final IOException ioe \u003d b.build();\n    if (ioe !\u003d null) {\n      throw ioe;\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+      "extendedDetails": {}
+    },
+    "e8bd1ba74b2fc7a6a1b71d068ef01a0fb0bbe294": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HDFS-9294. DFSClient deadlock when close file and failed to renew lease.  Contributed by Brahma Reddy Battula\n",
+      "commitDate": "02/12/15 5:39 PM",
+      "commitName": "e8bd1ba74b2fc7a6a1b71d068ef01a0fb0bbe294",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-9294. DFSClient deadlock when close file and failed to renew lease.  Contributed by Brahma Reddy Battula\n",
+          "commitDate": "02/12/15 5:39 PM",
+          "commitName": "e8bd1ba74b2fc7a6a1b71d068ef01a0fb0bbe294",
+          "commitAuthor": "Tsz-Wo Nicholas Sze",
+          "commitDateOld": "29/10/15 12:04 AM",
+          "commitNameOld": "5eca6dece67620f990f3306b6caaf09f317b38f6",
+          "commitAuthorOld": "Walter Su",
+          "daysBetweenCommits": 34.77,
+          "commitsBetweenForRepo": 235,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,15 @@\n-  synchronized void abort() throws IOException {\n-    if (isClosed()) {\n-      return;\n+  void abort() throws IOException {\n+    synchronized (this) {\n+      if (isClosed()) {\n+        return;\n+      }\n+      for (StripedDataStreamer streamer : streamers) {\n+        streamer.getLastException().set(\n+            new IOException(\"Lease timeout of \"\n+                + (dfsClient.getConf().getHdfsTimeout() / 1000)\n+                + \" seconds expired.\"));\n+      }\n+      closeThreads(true);\n     }\n-    for (StripedDataStreamer streamer : streamers) {\n-      streamer.getLastException().set(new IOException(\"Lease timeout of \"\n-          + (dfsClient.getConf().getHdfsTimeout()/1000) +\n-          \" seconds expired.\"));\n-    }\n-    closeThreads(true);\n     dfsClient.endFileLease(fileId);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void abort() throws IOException {\n    synchronized (this) {\n      if (isClosed()) {\n        return;\n      }\n      for (StripedDataStreamer streamer : streamers) {\n        streamer.getLastException().set(\n            new IOException(\"Lease timeout of \"\n                + (dfsClient.getConf().getHdfsTimeout() / 1000)\n                + \" seconds expired.\"));\n      }\n      closeThreads(true);\n    }\n    dfsClient.endFileLease(fileId);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+          "extendedDetails": {
+            "oldValue": "[synchronized]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-9294. DFSClient deadlock when close file and failed to renew lease.  Contributed by Brahma Reddy Battula\n",
+          "commitDate": "02/12/15 5:39 PM",
+          "commitName": "e8bd1ba74b2fc7a6a1b71d068ef01a0fb0bbe294",
+          "commitAuthor": "Tsz-Wo Nicholas Sze",
+          "commitDateOld": "29/10/15 12:04 AM",
+          "commitNameOld": "5eca6dece67620f990f3306b6caaf09f317b38f6",
+          "commitAuthorOld": "Walter Su",
+          "daysBetweenCommits": 34.77,
+          "commitsBetweenForRepo": 235,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,12 +1,15 @@\n-  synchronized void abort() throws IOException {\n-    if (isClosed()) {\n-      return;\n+  void abort() throws IOException {\n+    synchronized (this) {\n+      if (isClosed()) {\n+        return;\n+      }\n+      for (StripedDataStreamer streamer : streamers) {\n+        streamer.getLastException().set(\n+            new IOException(\"Lease timeout of \"\n+                + (dfsClient.getConf().getHdfsTimeout() / 1000)\n+                + \" seconds expired.\"));\n+      }\n+      closeThreads(true);\n     }\n-    for (StripedDataStreamer streamer : streamers) {\n-      streamer.getLastException().set(new IOException(\"Lease timeout of \"\n-          + (dfsClient.getConf().getHdfsTimeout()/1000) +\n-          \" seconds expired.\"));\n-    }\n-    closeThreads(true);\n     dfsClient.endFileLease(fileId);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void abort() throws IOException {\n    synchronized (this) {\n      if (isClosed()) {\n        return;\n      }\n      for (StripedDataStreamer streamer : streamers) {\n        streamer.getLastException().set(\n            new IOException(\"Lease timeout of \"\n                + (dfsClient.getConf().getHdfsTimeout() / 1000)\n                + \" seconds expired.\"));\n      }\n      closeThreads(true);\n    }\n    dfsClient.endFileLease(fileId);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

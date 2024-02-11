@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ApiServer.java",
+  "functionName": "decommissionInstances",
+  "functionId": "decommissionInstances___service-Service__ugi-UserGroupInformation",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-api/src/main/java/org/apache/hadoop/yarn/service/webapp/ApiServer.java",
+  "functionStartLine": 834,
+  "functionEndLine": 869,
+  "numCommitsSeen": 9,
+  "timeTaken": 1870,
+  "changeHistory": [
+    "efc4d91cbeab8a13f6d61cb0e56443adb2d77559",
+    "4c465f5535054dad2ef0b18128fb115129f6939e"
+  ],
+  "changeHistoryShort": {
+    "efc4d91cbeab8a13f6d61cb0e56443adb2d77559": "Ybodychange",
+    "4c465f5535054dad2ef0b18128fb115129f6939e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "efc4d91cbeab8a13f6d61cb0e56443adb2d77559": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9067. YARN Resource Manager is running OOM because of leak of Configuration Object. Contributed by Eric Yang.\n",
+      "commitDate": "28/11/18 5:34 PM",
+      "commitName": "efc4d91cbeab8a13f6d61cb0e56443adb2d77559",
+      "commitAuthor": "Weiwei Yang",
+      "commitDateOld": "12/11/18 4:53 PM",
+      "commitNameOld": "4c465f5535054dad2ef0b18128fb115129f6939e",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 16.03,
+      "commitsBetweenForRepo": 121,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,33 +1,36 @@\n   private Response decommissionInstances(Service service, UserGroupInformation\n       ugi) throws IOException, InterruptedException {\n     String appName \u003d service.getName();\n     Response response \u003d Response.status(Status.BAD_REQUEST).build();\n \n     List\u003cString\u003e instances \u003d new ArrayList\u003c\u003e();\n     for (Component c : service.getComponents()) {\n       instances.addAll(c.getDecommissionedInstances());\n     }\n     Integer result \u003d ugi.doAs(new PrivilegedExceptionAction\u003cInteger\u003e() {\n       @Override\n       public Integer run() throws YarnException, IOException {\n         int result \u003d 0;\n         ServiceClient sc \u003d new ServiceClient();\n-        sc.init(YARN_CONFIG);\n-        sc.start();\n-        result \u003d sc\n-            .actionDecommissionInstances(appName, instances);\n-        sc.close();\n-        return Integer.valueOf(result);\n+        try {\n+          sc.init(YARN_CONFIG);\n+          sc.start();\n+          result \u003d sc\n+              .actionDecommissionInstances(appName, instances);\n+          return Integer.valueOf(result);\n+        } finally {\n+          sc.close();\n+        }\n       }\n     });\n     if (result \u003d\u003d EXIT_SUCCESS) {\n       String message \u003d \"Service \" + appName + \" has successfully \" +\n           \"decommissioned instances.\";\n       LOG.info(message);\n       ServiceStatus status \u003d new ServiceStatus();\n       status.setDiagnostics(message);\n       status.setState(ServiceState.ACCEPTED);\n       response \u003d formatResponse(Status.ACCEPTED, status);\n     }\n     return response;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Response decommissionInstances(Service service, UserGroupInformation\n      ugi) throws IOException, InterruptedException {\n    String appName \u003d service.getName();\n    Response response \u003d Response.status(Status.BAD_REQUEST).build();\n\n    List\u003cString\u003e instances \u003d new ArrayList\u003c\u003e();\n    for (Component c : service.getComponents()) {\n      instances.addAll(c.getDecommissionedInstances());\n    }\n    Integer result \u003d ugi.doAs(new PrivilegedExceptionAction\u003cInteger\u003e() {\n      @Override\n      public Integer run() throws YarnException, IOException {\n        int result \u003d 0;\n        ServiceClient sc \u003d new ServiceClient();\n        try {\n          sc.init(YARN_CONFIG);\n          sc.start();\n          result \u003d sc\n              .actionDecommissionInstances(appName, instances);\n          return Integer.valueOf(result);\n        } finally {\n          sc.close();\n        }\n      }\n    });\n    if (result \u003d\u003d EXIT_SUCCESS) {\n      String message \u003d \"Service \" + appName + \" has successfully \" +\n          \"decommissioned instances.\";\n      LOG.info(message);\n      ServiceStatus status \u003d new ServiceStatus();\n      status.setDiagnostics(message);\n      status.setState(ServiceState.ACCEPTED);\n      response \u003d formatResponse(Status.ACCEPTED, status);\n    }\n    return response;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-api/src/main/java/org/apache/hadoop/yarn/service/webapp/ApiServer.java",
+      "extendedDetails": {}
+    },
+    "4c465f5535054dad2ef0b18128fb115129f6939e": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-8761. Service AM support for decommissioning component instances.\n           Contributed by Billie Rinaldi\n",
+      "commitDate": "12/11/18 4:53 PM",
+      "commitName": "4c465f5535054dad2ef0b18128fb115129f6939e",
+      "commitAuthor": "Eric Yang",
+      "diff": "@@ -0,0 +1,33 @@\n+  private Response decommissionInstances(Service service, UserGroupInformation\n+      ugi) throws IOException, InterruptedException {\n+    String appName \u003d service.getName();\n+    Response response \u003d Response.status(Status.BAD_REQUEST).build();\n+\n+    List\u003cString\u003e instances \u003d new ArrayList\u003c\u003e();\n+    for (Component c : service.getComponents()) {\n+      instances.addAll(c.getDecommissionedInstances());\n+    }\n+    Integer result \u003d ugi.doAs(new PrivilegedExceptionAction\u003cInteger\u003e() {\n+      @Override\n+      public Integer run() throws YarnException, IOException {\n+        int result \u003d 0;\n+        ServiceClient sc \u003d new ServiceClient();\n+        sc.init(YARN_CONFIG);\n+        sc.start();\n+        result \u003d sc\n+            .actionDecommissionInstances(appName, instances);\n+        sc.close();\n+        return Integer.valueOf(result);\n+      }\n+    });\n+    if (result \u003d\u003d EXIT_SUCCESS) {\n+      String message \u003d \"Service \" + appName + \" has successfully \" +\n+          \"decommissioned instances.\";\n+      LOG.info(message);\n+      ServiceStatus status \u003d new ServiceStatus();\n+      status.setDiagnostics(message);\n+      status.setState(ServiceState.ACCEPTED);\n+      response \u003d formatResponse(Status.ACCEPTED, status);\n+    }\n+    return response;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Response decommissionInstances(Service service, UserGroupInformation\n      ugi) throws IOException, InterruptedException {\n    String appName \u003d service.getName();\n    Response response \u003d Response.status(Status.BAD_REQUEST).build();\n\n    List\u003cString\u003e instances \u003d new ArrayList\u003c\u003e();\n    for (Component c : service.getComponents()) {\n      instances.addAll(c.getDecommissionedInstances());\n    }\n    Integer result \u003d ugi.doAs(new PrivilegedExceptionAction\u003cInteger\u003e() {\n      @Override\n      public Integer run() throws YarnException, IOException {\n        int result \u003d 0;\n        ServiceClient sc \u003d new ServiceClient();\n        sc.init(YARN_CONFIG);\n        sc.start();\n        result \u003d sc\n            .actionDecommissionInstances(appName, instances);\n        sc.close();\n        return Integer.valueOf(result);\n      }\n    });\n    if (result \u003d\u003d EXIT_SUCCESS) {\n      String message \u003d \"Service \" + appName + \" has successfully \" +\n          \"decommissioned instances.\";\n      LOG.info(message);\n      ServiceStatus status \u003d new ServiceStatus();\n      status.setDiagnostics(message);\n      status.setState(ServiceState.ACCEPTED);\n      response \u003d formatResponse(Status.ACCEPTED, status);\n    }\n    return response;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-applications/hadoop-yarn-services/hadoop-yarn-services-api/src/main/java/org/apache/hadoop/yarn/service/webapp/ApiServer.java"
+    }
+  }
+}

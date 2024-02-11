@@ -1,0 +1,166 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DataXceiver.java",
+  "functionName": "blockGroupChecksum",
+  "functionId": "blockGroupChecksum___stripedBlockInfo-StripedBlockInfo(modifiers-final)__blockToken-Token__BlockTokenIdentifier__(modifiers-final)__requestedNumBytes-long__blockChecksumOptions-BlockChecksumOptions",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+  "functionStartLine": 1030,
+  "functionEndLine": 1073,
+  "numCommitsSeen": 317,
+  "timeTaken": 4939,
+  "changeHistory": [
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+    "f20dc0d5770d3876954faf0a6e8dcce6539ffc23",
+    "2f73396b5901fd5fe29f6cd76fc1b3134b854b37",
+    "e6cb07520f935efde3e881de8f84ee7f6e0a746f",
+    "3a4ff7776e8fab6cc87932b9aa8fb48f7b69c720"
+  ],
+  "changeHistoryShort": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": "Ymultichange(Yparameterchange,Ybodychange)",
+    "f20dc0d5770d3876954faf0a6e8dcce6539ffc23": "Ybodychange",
+    "2f73396b5901fd5fe29f6cd76fc1b3134b854b37": "Ybodychange",
+    "e6cb07520f935efde3e881de8f84ee7f6e0a746f": "Ymultichange(Yparameterchange,Ybodychange)",
+    "3a4ff7776e8fab6cc87932b9aa8fb48f7b69c720": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-13056. Expose file-level composite CRCs in HDFS which are comparable across different instances/layouts. Contributed by Dennis Huo.\n",
+      "commitDate": "10/04/18 9:31 PM",
+      "commitName": "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+      "commitAuthor": "Xiao Chen",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13056. Expose file-level composite CRCs in HDFS which are comparable across different instances/layouts. Contributed by Dennis Huo.\n",
+          "commitDate": "10/04/18 9:31 PM",
+          "commitName": "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+          "commitAuthor": "Xiao Chen",
+          "commitDateOld": "14/02/18 8:20 AM",
+          "commitNameOld": "f20dc0d5770d3876954faf0a6e8dcce6539ffc23",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 55.51,
+          "commitsBetweenForRepo": 494,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,40 +1,44 @@\n   public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n-      final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n+      final Token\u003cBlockTokenIdentifier\u003e blockToken,\n+      long requestedNumBytes,\n+      BlockChecksumOptions blockChecksumOptions)\n       throws IOException {\n     final ExtendedBlock block \u003d stripedBlockInfo.getBlock();\n     updateCurrentThreadName(\"Getting checksum for block group\" +\n         block);\n     final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n     checkAccess(out, true, block, blockToken, Op.BLOCK_GROUP_CHECKSUM,\n         BlockTokenIdentifier.AccessMode.READ);\n \n     AbstractBlockChecksumComputer maker \u003d\n         new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n-            requestedNumBytes);\n+            requestedNumBytes, blockChecksumOptions);\n \n     try {\n       maker.compute();\n \n       //write reply\n       BlockOpResponseProto.newBuilder()\n           .setStatus(SUCCESS)\n           .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n               .setBytesPerCrc(maker.getBytesPerCRC())\n               .setCrcPerBlock(maker.getCrcPerBlock())\n-              .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n-              .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n+              .setBlockChecksum(ByteString.copyFrom(maker.getOutBytes()))\n+              .setCrcType(PBHelperClient.convert(maker.getCrcType()))\n+              .setBlockChecksumOptions(\n+                  PBHelperClient.convert(blockChecksumOptions)))\n           .build()\n           .writeDelimitedTo(out);\n       out.flush();\n     } catch (IOException ioe) {\n       LOG.info(\"blockChecksum {} received exception {}\",\n           stripedBlockInfo.getBlock(), ioe.toString());\n       incrDatanodeNetworkErrors();\n       throw ioe;\n     } finally {\n       IOUtils.closeStream(out);\n     }\n \n     //update metrics\n     datanode.metrics.addBlockChecksumOp(elapsed());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n      final Token\u003cBlockTokenIdentifier\u003e blockToken,\n      long requestedNumBytes,\n      BlockChecksumOptions blockChecksumOptions)\n      throws IOException {\n    final ExtendedBlock block \u003d stripedBlockInfo.getBlock();\n    updateCurrentThreadName(\"Getting checksum for block group\" +\n        block);\n    final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n    checkAccess(out, true, block, blockToken, Op.BLOCK_GROUP_CHECKSUM,\n        BlockTokenIdentifier.AccessMode.READ);\n\n    AbstractBlockChecksumComputer maker \u003d\n        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n            requestedNumBytes, blockChecksumOptions);\n\n    try {\n      maker.compute();\n\n      //write reply\n      BlockOpResponseProto.newBuilder()\n          .setStatus(SUCCESS)\n          .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n              .setBytesPerCrc(maker.getBytesPerCRC())\n              .setCrcPerBlock(maker.getCrcPerBlock())\n              .setBlockChecksum(ByteString.copyFrom(maker.getOutBytes()))\n              .setCrcType(PBHelperClient.convert(maker.getCrcType()))\n              .setBlockChecksumOptions(\n                  PBHelperClient.convert(blockChecksumOptions)))\n          .build()\n          .writeDelimitedTo(out);\n      out.flush();\n    } catch (IOException ioe) {\n      LOG.info(\"blockChecksum {} received exception {}\",\n          stripedBlockInfo.getBlock(), ioe.toString());\n      incrDatanodeNetworkErrors();\n      throw ioe;\n    } finally {\n      IOUtils.closeStream(out);\n    }\n\n    //update metrics\n    datanode.metrics.addBlockChecksumOp(elapsed());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+          "extendedDetails": {
+            "oldValue": "[stripedBlockInfo-StripedBlockInfo(modifiers-final), blockToken-Token\u003cBlockTokenIdentifier\u003e(modifiers-final), requestedNumBytes-long]",
+            "newValue": "[stripedBlockInfo-StripedBlockInfo(modifiers-final), blockToken-Token\u003cBlockTokenIdentifier\u003e(modifiers-final), requestedNumBytes-long, blockChecksumOptions-BlockChecksumOptions]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13056. Expose file-level composite CRCs in HDFS which are comparable across different instances/layouts. Contributed by Dennis Huo.\n",
+          "commitDate": "10/04/18 9:31 PM",
+          "commitName": "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+          "commitAuthor": "Xiao Chen",
+          "commitDateOld": "14/02/18 8:20 AM",
+          "commitNameOld": "f20dc0d5770d3876954faf0a6e8dcce6539ffc23",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 55.51,
+          "commitsBetweenForRepo": 494,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,40 +1,44 @@\n   public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n-      final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n+      final Token\u003cBlockTokenIdentifier\u003e blockToken,\n+      long requestedNumBytes,\n+      BlockChecksumOptions blockChecksumOptions)\n       throws IOException {\n     final ExtendedBlock block \u003d stripedBlockInfo.getBlock();\n     updateCurrentThreadName(\"Getting checksum for block group\" +\n         block);\n     final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n     checkAccess(out, true, block, blockToken, Op.BLOCK_GROUP_CHECKSUM,\n         BlockTokenIdentifier.AccessMode.READ);\n \n     AbstractBlockChecksumComputer maker \u003d\n         new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n-            requestedNumBytes);\n+            requestedNumBytes, blockChecksumOptions);\n \n     try {\n       maker.compute();\n \n       //write reply\n       BlockOpResponseProto.newBuilder()\n           .setStatus(SUCCESS)\n           .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n               .setBytesPerCrc(maker.getBytesPerCRC())\n               .setCrcPerBlock(maker.getCrcPerBlock())\n-              .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n-              .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n+              .setBlockChecksum(ByteString.copyFrom(maker.getOutBytes()))\n+              .setCrcType(PBHelperClient.convert(maker.getCrcType()))\n+              .setBlockChecksumOptions(\n+                  PBHelperClient.convert(blockChecksumOptions)))\n           .build()\n           .writeDelimitedTo(out);\n       out.flush();\n     } catch (IOException ioe) {\n       LOG.info(\"blockChecksum {} received exception {}\",\n           stripedBlockInfo.getBlock(), ioe.toString());\n       incrDatanodeNetworkErrors();\n       throw ioe;\n     } finally {\n       IOUtils.closeStream(out);\n     }\n \n     //update metrics\n     datanode.metrics.addBlockChecksumOp(elapsed());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n      final Token\u003cBlockTokenIdentifier\u003e blockToken,\n      long requestedNumBytes,\n      BlockChecksumOptions blockChecksumOptions)\n      throws IOException {\n    final ExtendedBlock block \u003d stripedBlockInfo.getBlock();\n    updateCurrentThreadName(\"Getting checksum for block group\" +\n        block);\n    final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n    checkAccess(out, true, block, blockToken, Op.BLOCK_GROUP_CHECKSUM,\n        BlockTokenIdentifier.AccessMode.READ);\n\n    AbstractBlockChecksumComputer maker \u003d\n        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n            requestedNumBytes, blockChecksumOptions);\n\n    try {\n      maker.compute();\n\n      //write reply\n      BlockOpResponseProto.newBuilder()\n          .setStatus(SUCCESS)\n          .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n              .setBytesPerCrc(maker.getBytesPerCRC())\n              .setCrcPerBlock(maker.getCrcPerBlock())\n              .setBlockChecksum(ByteString.copyFrom(maker.getOutBytes()))\n              .setCrcType(PBHelperClient.convert(maker.getCrcType()))\n              .setBlockChecksumOptions(\n                  PBHelperClient.convert(blockChecksumOptions)))\n          .build()\n          .writeDelimitedTo(out);\n      out.flush();\n    } catch (IOException ioe) {\n      LOG.info(\"blockChecksum {} received exception {}\",\n          stripedBlockInfo.getBlock(), ioe.toString());\n      incrDatanodeNetworkErrors();\n      throw ioe;\n    } finally {\n      IOUtils.closeStream(out);\n    }\n\n    //update metrics\n    datanode.metrics.addBlockChecksumOp(elapsed());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "f20dc0d5770d3876954faf0a6e8dcce6539ffc23": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10571. Use Log.*(Object, Throwable) overload to log exceptions.\nContributed by Andras Bokor.\n",
+      "commitDate": "14/02/18 8:20 AM",
+      "commitName": "f20dc0d5770d3876954faf0a6e8dcce6539ffc23",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "01/11/17 1:41 AM",
+      "commitNameOld": "56b88b06705441f6f171eec7fb2fa77946ca204b",
+      "commitAuthorOld": "Weiwei Yang",
+      "daysBetweenCommits": 105.32,
+      "commitsBetweenForRepo": 696,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,40 +1,40 @@\n   public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n       final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n       throws IOException {\n     final ExtendedBlock block \u003d stripedBlockInfo.getBlock();\n     updateCurrentThreadName(\"Getting checksum for block group\" +\n         block);\n     final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n     checkAccess(out, true, block, blockToken, Op.BLOCK_GROUP_CHECKSUM,\n         BlockTokenIdentifier.AccessMode.READ);\n \n     AbstractBlockChecksumComputer maker \u003d\n         new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n             requestedNumBytes);\n \n     try {\n       maker.compute();\n \n       //write reply\n       BlockOpResponseProto.newBuilder()\n           .setStatus(SUCCESS)\n           .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n               .setBytesPerCrc(maker.getBytesPerCRC())\n               .setCrcPerBlock(maker.getCrcPerBlock())\n               .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n               .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n           .build()\n           .writeDelimitedTo(out);\n       out.flush();\n     } catch (IOException ioe) {\n-      LOG.info(\"blockChecksum \" + stripedBlockInfo.getBlock() +\n-          \" received exception \" + ioe);\n+      LOG.info(\"blockChecksum {} received exception {}\",\n+          stripedBlockInfo.getBlock(), ioe.toString());\n       incrDatanodeNetworkErrors();\n       throw ioe;\n     } finally {\n       IOUtils.closeStream(out);\n     }\n \n     //update metrics\n     datanode.metrics.addBlockChecksumOp(elapsed());\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n      final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n      throws IOException {\n    final ExtendedBlock block \u003d stripedBlockInfo.getBlock();\n    updateCurrentThreadName(\"Getting checksum for block group\" +\n        block);\n    final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n    checkAccess(out, true, block, blockToken, Op.BLOCK_GROUP_CHECKSUM,\n        BlockTokenIdentifier.AccessMode.READ);\n\n    AbstractBlockChecksumComputer maker \u003d\n        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n            requestedNumBytes);\n\n    try {\n      maker.compute();\n\n      //write reply\n      BlockOpResponseProto.newBuilder()\n          .setStatus(SUCCESS)\n          .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n              .setBytesPerCrc(maker.getBytesPerCRC())\n              .setCrcPerBlock(maker.getCrcPerBlock())\n              .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n              .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n          .build()\n          .writeDelimitedTo(out);\n      out.flush();\n    } catch (IOException ioe) {\n      LOG.info(\"blockChecksum {} received exception {}\",\n          stripedBlockInfo.getBlock(), ioe.toString());\n      incrDatanodeNetworkErrors();\n      throw ioe;\n    } finally {\n      IOUtils.closeStream(out);\n    }\n\n    //update metrics\n    datanode.metrics.addBlockChecksumOp(elapsed());\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+      "extendedDetails": {}
+    },
+    "2f73396b5901fd5fe29f6cd76fc1b3134b854b37": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6708. StorageType should be encoded in the block token. Contributed by Ewan Higgs\n",
+      "commitDate": "25/04/17 11:57 PM",
+      "commitName": "2f73396b5901fd5fe29f6cd76fc1b3134b854b37",
+      "commitAuthor": "Chris Douglas",
+      "commitDateOld": "12/04/17 11:40 AM",
+      "commitNameOld": "abce61335678da753cd0f7965a236370274abee8",
+      "commitAuthorOld": "Anu Engineer",
+      "daysBetweenCommits": 13.51,
+      "commitsBetweenForRepo": 57,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,39 +1,40 @@\n   public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n       final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n       throws IOException {\n+    final ExtendedBlock block \u003d stripedBlockInfo.getBlock();\n     updateCurrentThreadName(\"Getting checksum for block group\" +\n-        stripedBlockInfo.getBlock());\n+        block);\n     final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n-    checkAccess(out, true, stripedBlockInfo.getBlock(), blockToken,\n-        Op.BLOCK_GROUP_CHECKSUM, BlockTokenIdentifier.AccessMode.READ);\n+    checkAccess(out, true, block, blockToken, Op.BLOCK_GROUP_CHECKSUM,\n+        BlockTokenIdentifier.AccessMode.READ);\n \n     AbstractBlockChecksumComputer maker \u003d\n         new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n             requestedNumBytes);\n \n     try {\n       maker.compute();\n \n       //write reply\n       BlockOpResponseProto.newBuilder()\n           .setStatus(SUCCESS)\n           .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n               .setBytesPerCrc(maker.getBytesPerCRC())\n               .setCrcPerBlock(maker.getCrcPerBlock())\n               .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n               .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n           .build()\n           .writeDelimitedTo(out);\n       out.flush();\n     } catch (IOException ioe) {\n       LOG.info(\"blockChecksum \" + stripedBlockInfo.getBlock() +\n           \" received exception \" + ioe);\n       incrDatanodeNetworkErrors();\n       throw ioe;\n     } finally {\n       IOUtils.closeStream(out);\n     }\n \n     //update metrics\n     datanode.metrics.addBlockChecksumOp(elapsed());\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n      final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n      throws IOException {\n    final ExtendedBlock block \u003d stripedBlockInfo.getBlock();\n    updateCurrentThreadName(\"Getting checksum for block group\" +\n        block);\n    final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n    checkAccess(out, true, block, blockToken, Op.BLOCK_GROUP_CHECKSUM,\n        BlockTokenIdentifier.AccessMode.READ);\n\n    AbstractBlockChecksumComputer maker \u003d\n        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n            requestedNumBytes);\n\n    try {\n      maker.compute();\n\n      //write reply\n      BlockOpResponseProto.newBuilder()\n          .setStatus(SUCCESS)\n          .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n              .setBytesPerCrc(maker.getBytesPerCRC())\n              .setCrcPerBlock(maker.getCrcPerBlock())\n              .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n              .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n          .build()\n          .writeDelimitedTo(out);\n      out.flush();\n    } catch (IOException ioe) {\n      LOG.info(\"blockChecksum \" + stripedBlockInfo.getBlock() +\n          \" received exception \" + ioe);\n      incrDatanodeNetworkErrors();\n      throw ioe;\n    } finally {\n      IOUtils.closeStream(out);\n    }\n\n    //update metrics\n    datanode.metrics.addBlockChecksumOp(elapsed());\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+      "extendedDetails": {}
+    },
+    "e6cb07520f935efde3e881de8f84ee7f6e0a746f": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-10460. Recompute block checksum for a particular range less than file size on the fly by reconstructing missed block. Contributed by Rakesh R\n",
+      "commitDate": "24/06/16 2:39 AM",
+      "commitName": "e6cb07520f935efde3e881de8f84ee7f6e0a746f",
+      "commitAuthor": "Kai Zheng",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10460. Recompute block checksum for a particular range less than file size on the fly by reconstructing missed block. Contributed by Rakesh R\n",
+          "commitDate": "24/06/16 2:39 AM",
+          "commitName": "e6cb07520f935efde3e881de8f84ee7f6e0a746f",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "21/06/16 3:12 AM",
+          "commitNameOld": "f2ac132d6a21c215093b7f87acf2843ac8123716",
+          "commitAuthorOld": "Brahma Reddy Battula",
+          "daysBetweenCommits": 2.98,
+          "commitsBetweenForRepo": 17,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,38 +1,39 @@\n   public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n-                                 final Token\u003cBlockTokenIdentifier\u003e blockToken)\n+      final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n       throws IOException {\n     updateCurrentThreadName(\"Getting checksum for block group\" +\n         stripedBlockInfo.getBlock());\n     final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n     checkAccess(out, true, stripedBlockInfo.getBlock(), blockToken,\n         Op.BLOCK_GROUP_CHECKSUM, BlockTokenIdentifier.AccessMode.READ);\n \n     AbstractBlockChecksumComputer maker \u003d\n-        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo);\n+        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n+            requestedNumBytes);\n \n     try {\n       maker.compute();\n \n       //write reply\n       BlockOpResponseProto.newBuilder()\n           .setStatus(SUCCESS)\n           .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n               .setBytesPerCrc(maker.getBytesPerCRC())\n               .setCrcPerBlock(maker.getCrcPerBlock())\n               .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n               .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n           .build()\n           .writeDelimitedTo(out);\n       out.flush();\n     } catch (IOException ioe) {\n       LOG.info(\"blockChecksum \" + stripedBlockInfo.getBlock() +\n           \" received exception \" + ioe);\n       incrDatanodeNetworkErrors();\n       throw ioe;\n     } finally {\n       IOUtils.closeStream(out);\n     }\n \n     //update metrics\n     datanode.metrics.addBlockChecksumOp(elapsed());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n      final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n      throws IOException {\n    updateCurrentThreadName(\"Getting checksum for block group\" +\n        stripedBlockInfo.getBlock());\n    final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n    checkAccess(out, true, stripedBlockInfo.getBlock(), blockToken,\n        Op.BLOCK_GROUP_CHECKSUM, BlockTokenIdentifier.AccessMode.READ);\n\n    AbstractBlockChecksumComputer maker \u003d\n        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n            requestedNumBytes);\n\n    try {\n      maker.compute();\n\n      //write reply\n      BlockOpResponseProto.newBuilder()\n          .setStatus(SUCCESS)\n          .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n              .setBytesPerCrc(maker.getBytesPerCRC())\n              .setCrcPerBlock(maker.getCrcPerBlock())\n              .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n              .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n          .build()\n          .writeDelimitedTo(out);\n      out.flush();\n    } catch (IOException ioe) {\n      LOG.info(\"blockChecksum \" + stripedBlockInfo.getBlock() +\n          \" received exception \" + ioe);\n      incrDatanodeNetworkErrors();\n      throw ioe;\n    } finally {\n      IOUtils.closeStream(out);\n    }\n\n    //update metrics\n    datanode.metrics.addBlockChecksumOp(elapsed());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+          "extendedDetails": {
+            "oldValue": "[stripedBlockInfo-StripedBlockInfo(modifiers-final), blockToken-Token\u003cBlockTokenIdentifier\u003e(modifiers-final)]",
+            "newValue": "[stripedBlockInfo-StripedBlockInfo(modifiers-final), blockToken-Token\u003cBlockTokenIdentifier\u003e(modifiers-final), requestedNumBytes-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10460. Recompute block checksum for a particular range less than file size on the fly by reconstructing missed block. Contributed by Rakesh R\n",
+          "commitDate": "24/06/16 2:39 AM",
+          "commitName": "e6cb07520f935efde3e881de8f84ee7f6e0a746f",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "21/06/16 3:12 AM",
+          "commitNameOld": "f2ac132d6a21c215093b7f87acf2843ac8123716",
+          "commitAuthorOld": "Brahma Reddy Battula",
+          "daysBetweenCommits": 2.98,
+          "commitsBetweenForRepo": 17,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,38 +1,39 @@\n   public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n-                                 final Token\u003cBlockTokenIdentifier\u003e blockToken)\n+      final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n       throws IOException {\n     updateCurrentThreadName(\"Getting checksum for block group\" +\n         stripedBlockInfo.getBlock());\n     final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n     checkAccess(out, true, stripedBlockInfo.getBlock(), blockToken,\n         Op.BLOCK_GROUP_CHECKSUM, BlockTokenIdentifier.AccessMode.READ);\n \n     AbstractBlockChecksumComputer maker \u003d\n-        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo);\n+        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n+            requestedNumBytes);\n \n     try {\n       maker.compute();\n \n       //write reply\n       BlockOpResponseProto.newBuilder()\n           .setStatus(SUCCESS)\n           .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n               .setBytesPerCrc(maker.getBytesPerCRC())\n               .setCrcPerBlock(maker.getCrcPerBlock())\n               .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n               .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n           .build()\n           .writeDelimitedTo(out);\n       out.flush();\n     } catch (IOException ioe) {\n       LOG.info(\"blockChecksum \" + stripedBlockInfo.getBlock() +\n           \" received exception \" + ioe);\n       incrDatanodeNetworkErrors();\n       throw ioe;\n     } finally {\n       IOUtils.closeStream(out);\n     }\n \n     //update metrics\n     datanode.metrics.addBlockChecksumOp(elapsed());\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n      final Token\u003cBlockTokenIdentifier\u003e blockToken, long requestedNumBytes)\n      throws IOException {\n    updateCurrentThreadName(\"Getting checksum for block group\" +\n        stripedBlockInfo.getBlock());\n    final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n    checkAccess(out, true, stripedBlockInfo.getBlock(), blockToken,\n        Op.BLOCK_GROUP_CHECKSUM, BlockTokenIdentifier.AccessMode.READ);\n\n    AbstractBlockChecksumComputer maker \u003d\n        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo,\n            requestedNumBytes);\n\n    try {\n      maker.compute();\n\n      //write reply\n      BlockOpResponseProto.newBuilder()\n          .setStatus(SUCCESS)\n          .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n              .setBytesPerCrc(maker.getBytesPerCRC())\n              .setCrcPerBlock(maker.getCrcPerBlock())\n              .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n              .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n          .build()\n          .writeDelimitedTo(out);\n      out.flush();\n    } catch (IOException ioe) {\n      LOG.info(\"blockChecksum \" + stripedBlockInfo.getBlock() +\n          \" received exception \" + ioe);\n      incrDatanodeNetworkErrors();\n      throw ioe;\n    } finally {\n      IOUtils.closeStream(out);\n    }\n\n    //update metrics\n    datanode.metrics.addBlockChecksumOp(elapsed());\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "3a4ff7776e8fab6cc87932b9aa8fb48f7b69c720": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-9694. Make existing DFSClient#getFileChecksum() work for striped blocks. Contributed by Kai Zheng\n",
+      "commitDate": "26/03/16 7:58 PM",
+      "commitName": "3a4ff7776e8fab6cc87932b9aa8fb48f7b69c720",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "diff": "@@ -0,0 +1,38 @@\n+  public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n+                                 final Token\u003cBlockTokenIdentifier\u003e blockToken)\n+      throws IOException {\n+    updateCurrentThreadName(\"Getting checksum for block group\" +\n+        stripedBlockInfo.getBlock());\n+    final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n+    checkAccess(out, true, stripedBlockInfo.getBlock(), blockToken,\n+        Op.BLOCK_GROUP_CHECKSUM, BlockTokenIdentifier.AccessMode.READ);\n+\n+    AbstractBlockChecksumComputer maker \u003d\n+        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo);\n+\n+    try {\n+      maker.compute();\n+\n+      //write reply\n+      BlockOpResponseProto.newBuilder()\n+          .setStatus(SUCCESS)\n+          .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n+              .setBytesPerCrc(maker.getBytesPerCRC())\n+              .setCrcPerBlock(maker.getCrcPerBlock())\n+              .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n+              .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n+          .build()\n+          .writeDelimitedTo(out);\n+      out.flush();\n+    } catch (IOException ioe) {\n+      LOG.info(\"blockChecksum \" + stripedBlockInfo.getBlock() +\n+          \" received exception \" + ioe);\n+      incrDatanodeNetworkErrors();\n+      throw ioe;\n+    } finally {\n+      IOUtils.closeStream(out);\n+    }\n+\n+    //update metrics\n+    datanode.metrics.addBlockChecksumOp(elapsed());\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void blockGroupChecksum(final StripedBlockInfo stripedBlockInfo,\n                                 final Token\u003cBlockTokenIdentifier\u003e blockToken)\n      throws IOException {\n    updateCurrentThreadName(\"Getting checksum for block group\" +\n        stripedBlockInfo.getBlock());\n    final DataOutputStream out \u003d new DataOutputStream(getOutputStream());\n    checkAccess(out, true, stripedBlockInfo.getBlock(), blockToken,\n        Op.BLOCK_GROUP_CHECKSUM, BlockTokenIdentifier.AccessMode.READ);\n\n    AbstractBlockChecksumComputer maker \u003d\n        new BlockGroupNonStripedChecksumComputer(datanode, stripedBlockInfo);\n\n    try {\n      maker.compute();\n\n      //write reply\n      BlockOpResponseProto.newBuilder()\n          .setStatus(SUCCESS)\n          .setChecksumResponse(OpBlockChecksumResponseProto.newBuilder()\n              .setBytesPerCrc(maker.getBytesPerCRC())\n              .setCrcPerBlock(maker.getCrcPerBlock())\n              .setMd5(ByteString.copyFrom(maker.getOutBytes()))\n              .setCrcType(PBHelperClient.convert(maker.getCrcType())))\n          .build()\n          .writeDelimitedTo(out);\n      out.flush();\n    } catch (IOException ioe) {\n      LOG.info(\"blockChecksum \" + stripedBlockInfo.getBlock() +\n          \" received exception \" + ioe);\n      incrDatanodeNetworkErrors();\n      throw ioe;\n    } finally {\n      IOUtils.closeStream(out);\n    }\n\n    //update metrics\n    datanode.metrics.addBlockChecksumOp(elapsed());\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DataXceiver.java"
+    }
+  }
+}

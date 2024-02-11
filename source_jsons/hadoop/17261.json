@@ -1,0 +1,160 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "MountTableResolver.java",
+  "functionName": "buildLocation",
+  "functionId": "buildLocation___path-String(modifiers-final)__entry-MountTable(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java",
+  "functionStartLine": 539,
+  "functionEndLine": 573,
+  "numCommitsSeen": 21,
+  "timeTaken": 3781,
+  "changeHistory": [
+    "c5065bf20b410b917a0df219e45be2cce21a48ab",
+    "0c93d43f3d624a4fd17b3b050443d9e7e20d4f0a",
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+    "e71bc00a471422ddb26dd54e706f09f0fe09925c",
+    "6f0de2731806628b5b01bd1350225692147590da"
+  ],
+  "changeHistoryShort": {
+    "c5065bf20b410b917a0df219e45be2cce21a48ab": "Ymultichange(Ymodifierchange,Yexceptionschange,Ybodychange)",
+    "0c93d43f3d624a4fd17b3b050443d9e7e20d4f0a": "Ybodychange",
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": "Yfilerename",
+    "e71bc00a471422ddb26dd54e706f09f0fe09925c": "Ybodychange",
+    "6f0de2731806628b5b01bd1350225692147590da": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c5065bf20b410b917a0df219e45be2cce21a48ab": {
+      "type": "Ymultichange(Ymodifierchange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-13845. RBF: The default MountTableResolver should fail resolving multi-destination paths. Contributed by yanghuafeng.\n",
+      "commitDate": "24/06/19 9:33 AM",
+      "commitName": "c5065bf20b410b917a0df219e45be2cce21a48ab",
+      "commitAuthor": "Brahma Reddy Battula",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-13845. RBF: The default MountTableResolver should fail resolving multi-destination paths. Contributed by yanghuafeng.\n",
+          "commitDate": "24/06/19 9:33 AM",
+          "commitName": "c5065bf20b410b917a0df219e45be2cce21a48ab",
+          "commitAuthor": "Brahma Reddy Battula",
+          "commitDateOld": "02/10/18 8:48 PM",
+          "commitNameOld": "fa7f7078a713c44783425195a891582bcf8a6d5c",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 264.53,
+          "commitsBetweenForRepo": 1927,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,35 @@\n-  private static PathLocation buildLocation(\n-      final String path, final MountTable entry) {\n-\n+  private PathLocation buildLocation(\n+      final String path, final MountTable entry) throws IOException {\n     String srcPath \u003d entry.getSourcePath();\n     if (!path.startsWith(srcPath)) {\n       LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n       return null;\n     }\n+\n+    List\u003cRemoteLocation\u003e dests \u003d entry.getDestinations();\n+    if (getClass() \u003d\u003d MountTableResolver.class \u0026\u0026 dests.size() \u003e 1) {\n+      throw new IOException(\"Cannnot build location, \"\n+          + getClass().getSimpleName()\n+          + \" should not resolve multiple destinations for \" + path);\n+    }\n+\n     String remainingPath \u003d path.substring(srcPath.length());\n     if (remainingPath.startsWith(Path.SEPARATOR)) {\n       remainingPath \u003d remainingPath.substring(1);\n     }\n \n     List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n-    for (RemoteLocation oneDst : entry.getDestinations()) {\n+    for (RemoteLocation oneDst : dests) {\n       String nsId \u003d oneDst.getNameserviceId();\n       String dest \u003d oneDst.getDest();\n       String newPath \u003d dest;\n       if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n         newPath +\u003d Path.SEPARATOR;\n       }\n       newPath +\u003d remainingPath;\n       RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath, path);\n       locations.add(remoteLocation);\n     }\n     DestinationOrder order \u003d entry.getDestOrder();\n     return new PathLocation(srcPath, locations, order);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private PathLocation buildLocation(\n      final String path, final MountTable entry) throws IOException {\n    String srcPath \u003d entry.getSourcePath();\n    if (!path.startsWith(srcPath)) {\n      LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n      return null;\n    }\n\n    List\u003cRemoteLocation\u003e dests \u003d entry.getDestinations();\n    if (getClass() \u003d\u003d MountTableResolver.class \u0026\u0026 dests.size() \u003e 1) {\n      throw new IOException(\"Cannnot build location, \"\n          + getClass().getSimpleName()\n          + \" should not resolve multiple destinations for \" + path);\n    }\n\n    String remainingPath \u003d path.substring(srcPath.length());\n    if (remainingPath.startsWith(Path.SEPARATOR)) {\n      remainingPath \u003d remainingPath.substring(1);\n    }\n\n    List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n    for (RemoteLocation oneDst : dests) {\n      String nsId \u003d oneDst.getNameserviceId();\n      String dest \u003d oneDst.getDest();\n      String newPath \u003d dest;\n      if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n        newPath +\u003d Path.SEPARATOR;\n      }\n      newPath +\u003d remainingPath;\n      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath, path);\n      locations.add(remoteLocation);\n    }\n    DestinationOrder order \u003d entry.getDestOrder();\n    return new PathLocation(srcPath, locations, order);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java",
+          "extendedDetails": {
+            "oldValue": "[private, static]",
+            "newValue": "[private]"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-13845. RBF: The default MountTableResolver should fail resolving multi-destination paths. Contributed by yanghuafeng.\n",
+          "commitDate": "24/06/19 9:33 AM",
+          "commitName": "c5065bf20b410b917a0df219e45be2cce21a48ab",
+          "commitAuthor": "Brahma Reddy Battula",
+          "commitDateOld": "02/10/18 8:48 PM",
+          "commitNameOld": "fa7f7078a713c44783425195a891582bcf8a6d5c",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 264.53,
+          "commitsBetweenForRepo": 1927,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,35 @@\n-  private static PathLocation buildLocation(\n-      final String path, final MountTable entry) {\n-\n+  private PathLocation buildLocation(\n+      final String path, final MountTable entry) throws IOException {\n     String srcPath \u003d entry.getSourcePath();\n     if (!path.startsWith(srcPath)) {\n       LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n       return null;\n     }\n+\n+    List\u003cRemoteLocation\u003e dests \u003d entry.getDestinations();\n+    if (getClass() \u003d\u003d MountTableResolver.class \u0026\u0026 dests.size() \u003e 1) {\n+      throw new IOException(\"Cannnot build location, \"\n+          + getClass().getSimpleName()\n+          + \" should not resolve multiple destinations for \" + path);\n+    }\n+\n     String remainingPath \u003d path.substring(srcPath.length());\n     if (remainingPath.startsWith(Path.SEPARATOR)) {\n       remainingPath \u003d remainingPath.substring(1);\n     }\n \n     List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n-    for (RemoteLocation oneDst : entry.getDestinations()) {\n+    for (RemoteLocation oneDst : dests) {\n       String nsId \u003d oneDst.getNameserviceId();\n       String dest \u003d oneDst.getDest();\n       String newPath \u003d dest;\n       if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n         newPath +\u003d Path.SEPARATOR;\n       }\n       newPath +\u003d remainingPath;\n       RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath, path);\n       locations.add(remoteLocation);\n     }\n     DestinationOrder order \u003d entry.getDestOrder();\n     return new PathLocation(srcPath, locations, order);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private PathLocation buildLocation(\n      final String path, final MountTable entry) throws IOException {\n    String srcPath \u003d entry.getSourcePath();\n    if (!path.startsWith(srcPath)) {\n      LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n      return null;\n    }\n\n    List\u003cRemoteLocation\u003e dests \u003d entry.getDestinations();\n    if (getClass() \u003d\u003d MountTableResolver.class \u0026\u0026 dests.size() \u003e 1) {\n      throw new IOException(\"Cannnot build location, \"\n          + getClass().getSimpleName()\n          + \" should not resolve multiple destinations for \" + path);\n    }\n\n    String remainingPath \u003d path.substring(srcPath.length());\n    if (remainingPath.startsWith(Path.SEPARATOR)) {\n      remainingPath \u003d remainingPath.substring(1);\n    }\n\n    List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n    for (RemoteLocation oneDst : dests) {\n      String nsId \u003d oneDst.getNameserviceId();\n      String dest \u003d oneDst.getDest();\n      String newPath \u003d dest;\n      if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n        newPath +\u003d Path.SEPARATOR;\n      }\n      newPath +\u003d remainingPath;\n      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath, path);\n      locations.add(remoteLocation);\n    }\n    DestinationOrder order \u003d entry.getDestOrder();\n    return new PathLocation(srcPath, locations, order);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13845. RBF: The default MountTableResolver should fail resolving multi-destination paths. Contributed by yanghuafeng.\n",
+          "commitDate": "24/06/19 9:33 AM",
+          "commitName": "c5065bf20b410b917a0df219e45be2cce21a48ab",
+          "commitAuthor": "Brahma Reddy Battula",
+          "commitDateOld": "02/10/18 8:48 PM",
+          "commitNameOld": "fa7f7078a713c44783425195a891582bcf8a6d5c",
+          "commitAuthorOld": "Akira Ajisaka",
+          "daysBetweenCommits": 264.53,
+          "commitsBetweenForRepo": 1927,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,35 @@\n-  private static PathLocation buildLocation(\n-      final String path, final MountTable entry) {\n-\n+  private PathLocation buildLocation(\n+      final String path, final MountTable entry) throws IOException {\n     String srcPath \u003d entry.getSourcePath();\n     if (!path.startsWith(srcPath)) {\n       LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n       return null;\n     }\n+\n+    List\u003cRemoteLocation\u003e dests \u003d entry.getDestinations();\n+    if (getClass() \u003d\u003d MountTableResolver.class \u0026\u0026 dests.size() \u003e 1) {\n+      throw new IOException(\"Cannnot build location, \"\n+          + getClass().getSimpleName()\n+          + \" should not resolve multiple destinations for \" + path);\n+    }\n+\n     String remainingPath \u003d path.substring(srcPath.length());\n     if (remainingPath.startsWith(Path.SEPARATOR)) {\n       remainingPath \u003d remainingPath.substring(1);\n     }\n \n     List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n-    for (RemoteLocation oneDst : entry.getDestinations()) {\n+    for (RemoteLocation oneDst : dests) {\n       String nsId \u003d oneDst.getNameserviceId();\n       String dest \u003d oneDst.getDest();\n       String newPath \u003d dest;\n       if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n         newPath +\u003d Path.SEPARATOR;\n       }\n       newPath +\u003d remainingPath;\n       RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath, path);\n       locations.add(remoteLocation);\n     }\n     DestinationOrder order \u003d entry.getDestOrder();\n     return new PathLocation(srcPath, locations, order);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private PathLocation buildLocation(\n      final String path, final MountTable entry) throws IOException {\n    String srcPath \u003d entry.getSourcePath();\n    if (!path.startsWith(srcPath)) {\n      LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n      return null;\n    }\n\n    List\u003cRemoteLocation\u003e dests \u003d entry.getDestinations();\n    if (getClass() \u003d\u003d MountTableResolver.class \u0026\u0026 dests.size() \u003e 1) {\n      throw new IOException(\"Cannnot build location, \"\n          + getClass().getSimpleName()\n          + \" should not resolve multiple destinations for \" + path);\n    }\n\n    String remainingPath \u003d path.substring(srcPath.length());\n    if (remainingPath.startsWith(Path.SEPARATOR)) {\n      remainingPath \u003d remainingPath.substring(1);\n    }\n\n    List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n    for (RemoteLocation oneDst : dests) {\n      String nsId \u003d oneDst.getNameserviceId();\n      String dest \u003d oneDst.getDest();\n      String newPath \u003d dest;\n      if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n        newPath +\u003d Path.SEPARATOR;\n      }\n      newPath +\u003d remainingPath;\n      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath, path);\n      locations.add(remoteLocation);\n    }\n    DestinationOrder order \u003d entry.getDestOrder();\n    return new PathLocation(srcPath, locations, order);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "0c93d43f3d624a4fd17b3b050443d9e7e20d4f0a": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13045. RBF: Improve error message returned from subcluster. Contributed by Inigo Goiri.\n",
+      "commitDate": "11/04/18 8:37 AM",
+      "commitName": "0c93d43f3d624a4fd17b3b050443d9e7e20d4f0a",
+      "commitAuthor": "Wei Yan",
+      "commitDateOld": "19/03/18 10:13 PM",
+      "commitNameOld": "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+      "commitAuthorOld": "weiy",
+      "daysBetweenCommits": 22.43,
+      "commitsBetweenForRepo": 268,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,28 @@\n   private static PathLocation buildLocation(\n       final String path, final MountTable entry) {\n \n     String srcPath \u003d entry.getSourcePath();\n     if (!path.startsWith(srcPath)) {\n       LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n       return null;\n     }\n     String remainingPath \u003d path.substring(srcPath.length());\n     if (remainingPath.startsWith(Path.SEPARATOR)) {\n       remainingPath \u003d remainingPath.substring(1);\n     }\n \n     List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n     for (RemoteLocation oneDst : entry.getDestinations()) {\n       String nsId \u003d oneDst.getNameserviceId();\n       String dest \u003d oneDst.getDest();\n       String newPath \u003d dest;\n       if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n         newPath +\u003d Path.SEPARATOR;\n       }\n       newPath +\u003d remainingPath;\n-      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath);\n+      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath, path);\n       locations.add(remoteLocation);\n     }\n     DestinationOrder order \u003d entry.getDestOrder();\n     return new PathLocation(srcPath, locations, order);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static PathLocation buildLocation(\n      final String path, final MountTable entry) {\n\n    String srcPath \u003d entry.getSourcePath();\n    if (!path.startsWith(srcPath)) {\n      LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n      return null;\n    }\n    String remainingPath \u003d path.substring(srcPath.length());\n    if (remainingPath.startsWith(Path.SEPARATOR)) {\n      remainingPath \u003d remainingPath.substring(1);\n    }\n\n    List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n    for (RemoteLocation oneDst : entry.getDestinations()) {\n      String nsId \u003d oneDst.getNameserviceId();\n      String dest \u003d oneDst.getDest();\n      String newPath \u003d dest;\n      if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n        newPath +\u003d Path.SEPARATOR;\n      }\n      newPath +\u003d remainingPath;\n      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath, path);\n      locations.add(remoteLocation);\n    }\n    DestinationOrder order \u003d entry.getDestOrder();\n    return new PathLocation(srcPath, locations, order);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java",
+      "extendedDetails": {}
+    },
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-13215. RBF: Move Router to its own module. Contributed by Wei Yan\n",
+      "commitDate": "19/03/18 10:13 PM",
+      "commitName": "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+      "commitAuthor": "weiy",
+      "commitDateOld": "19/03/18 5:19 PM",
+      "commitNameOld": "e65ff1c8be48ef4f04ed96f96ac4caef4974944d",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.2,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private static PathLocation buildLocation(\n      final String path, final MountTable entry) {\n\n    String srcPath \u003d entry.getSourcePath();\n    if (!path.startsWith(srcPath)) {\n      LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n      return null;\n    }\n    String remainingPath \u003d path.substring(srcPath.length());\n    if (remainingPath.startsWith(Path.SEPARATOR)) {\n      remainingPath \u003d remainingPath.substring(1);\n    }\n\n    List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n    for (RemoteLocation oneDst : entry.getDestinations()) {\n      String nsId \u003d oneDst.getNameserviceId();\n      String dest \u003d oneDst.getDest();\n      String newPath \u003d dest;\n      if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n        newPath +\u003d Path.SEPARATOR;\n      }\n      newPath +\u003d remainingPath;\n      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath);\n      locations.add(remoteLocation);\n    }\n    DestinationOrder order \u003d entry.getDestOrder();\n    return new PathLocation(srcPath, locations, order);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java"
+      }
+    },
+    "e71bc00a471422ddb26dd54e706f09f0fe09925c": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13224. RBF: Resolvers to support mount points across multiple subclusters. Contributed by Inigo Goiri.\n",
+      "commitDate": "15/03/18 10:32 AM",
+      "commitName": "e71bc00a471422ddb26dd54e706f09f0fe09925c",
+      "commitAuthor": "Inigo Goiri",
+      "commitDateOld": "12/03/18 7:30 PM",
+      "commitNameOld": "7fab787de72756863a91c2358da5c611afdb80e9",
+      "commitAuthorOld": "Yiqun Lin",
+      "daysBetweenCommits": 2.63,
+      "commitsBetweenForRepo": 36,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,28 @@\n   private static PathLocation buildLocation(\n       final String path, final MountTable entry) {\n \n     String srcPath \u003d entry.getSourcePath();\n     if (!path.startsWith(srcPath)) {\n       LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n       return null;\n     }\n     String remainingPath \u003d path.substring(srcPath.length());\n     if (remainingPath.startsWith(Path.SEPARATOR)) {\n       remainingPath \u003d remainingPath.substring(1);\n     }\n \n     List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n     for (RemoteLocation oneDst : entry.getDestinations()) {\n       String nsId \u003d oneDst.getNameserviceId();\n       String dest \u003d oneDst.getDest();\n       String newPath \u003d dest;\n-      if (!newPath.endsWith(Path.SEPARATOR)) {\n+      if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n         newPath +\u003d Path.SEPARATOR;\n       }\n       newPath +\u003d remainingPath;\n       RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath);\n       locations.add(remoteLocation);\n     }\n     DestinationOrder order \u003d entry.getDestOrder();\n     return new PathLocation(srcPath, locations, order);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private static PathLocation buildLocation(\n      final String path, final MountTable entry) {\n\n    String srcPath \u003d entry.getSourcePath();\n    if (!path.startsWith(srcPath)) {\n      LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n      return null;\n    }\n    String remainingPath \u003d path.substring(srcPath.length());\n    if (remainingPath.startsWith(Path.SEPARATOR)) {\n      remainingPath \u003d remainingPath.substring(1);\n    }\n\n    List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n    for (RemoteLocation oneDst : entry.getDestinations()) {\n      String nsId \u003d oneDst.getNameserviceId();\n      String dest \u003d oneDst.getDest();\n      String newPath \u003d dest;\n      if (!newPath.endsWith(Path.SEPARATOR) \u0026\u0026 !remainingPath.isEmpty()) {\n        newPath +\u003d Path.SEPARATOR;\n      }\n      newPath +\u003d remainingPath;\n      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath);\n      locations.add(remoteLocation);\n    }\n    DestinationOrder order \u003d entry.getDestOrder();\n    return new PathLocation(srcPath, locations, order);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java",
+      "extendedDetails": {}
+    },
+    "6f0de2731806628b5b01bd1350225692147590da": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10880. Federation Mount Table State Store internal API. Contributed by Jason Kace and Inigo Goiri.\n\n(cherry picked from commit 58b97df661441150d35abd44b3a8606206b46441)\n",
+      "commitDate": "06/10/17 6:50 PM",
+      "commitName": "6f0de2731806628b5b01bd1350225692147590da",
+      "commitAuthor": "Inigo Goiri",
+      "diff": "@@ -0,0 +1,28 @@\n+  private static PathLocation buildLocation(\n+      final String path, final MountTable entry) {\n+\n+    String srcPath \u003d entry.getSourcePath();\n+    if (!path.startsWith(srcPath)) {\n+      LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n+      return null;\n+    }\n+    String remainingPath \u003d path.substring(srcPath.length());\n+    if (remainingPath.startsWith(Path.SEPARATOR)) {\n+      remainingPath \u003d remainingPath.substring(1);\n+    }\n+\n+    List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n+    for (RemoteLocation oneDst : entry.getDestinations()) {\n+      String nsId \u003d oneDst.getNameserviceId();\n+      String dest \u003d oneDst.getDest();\n+      String newPath \u003d dest;\n+      if (!newPath.endsWith(Path.SEPARATOR)) {\n+        newPath +\u003d Path.SEPARATOR;\n+      }\n+      newPath +\u003d remainingPath;\n+      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath);\n+      locations.add(remoteLocation);\n+    }\n+    DestinationOrder order \u003d entry.getDestOrder();\n+    return new PathLocation(srcPath, locations, order);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static PathLocation buildLocation(\n      final String path, final MountTable entry) {\n\n    String srcPath \u003d entry.getSourcePath();\n    if (!path.startsWith(srcPath)) {\n      LOG.error(\"Cannot build location, {} not a child of {}\", path, srcPath);\n      return null;\n    }\n    String remainingPath \u003d path.substring(srcPath.length());\n    if (remainingPath.startsWith(Path.SEPARATOR)) {\n      remainingPath \u003d remainingPath.substring(1);\n    }\n\n    List\u003cRemoteLocation\u003e locations \u003d new LinkedList\u003c\u003e();\n    for (RemoteLocation oneDst : entry.getDestinations()) {\n      String nsId \u003d oneDst.getNameserviceId();\n      String dest \u003d oneDst.getDest();\n      String newPath \u003d dest;\n      if (!newPath.endsWith(Path.SEPARATOR)) {\n        newPath +\u003d Path.SEPARATOR;\n      }\n      newPath +\u003d remainingPath;\n      RemoteLocation remoteLocation \u003d new RemoteLocation(nsId, newPath);\n      locations.add(remoteLocation);\n    }\n    DestinationOrder order \u003d entry.getDestOrder();\n    return new PathLocation(srcPath, locations, order);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/MountTableResolver.java"
+    }
+  }
+}

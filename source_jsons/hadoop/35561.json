@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "WindowsSecureContainerExecutor.java",
+  "functionName": "delete",
+  "functionId": "delete___p-Path__recursive-boolean",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/WindowsSecureContainerExecutor.java",
+  "functionStartLine": 383,
+  "functionEndLine": 428,
+  "numCommitsSeen": 19,
+  "timeTaken": 1281,
+  "changeHistory": [
+    "3b12fd6cfbf4cc91ef8e8616c7aafa9de006cde5"
+  ],
+  "changeHistoryShort": {
+    "3b12fd6cfbf4cc91ef8e8616c7aafa9de006cde5": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "3b12fd6cfbf4cc91ef8e8616c7aafa9de006cde5": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2198. Remove the need to run NodeManager as privileged account for Windows Secure Container Executor. Contributed by Remus Rusanu\n",
+      "commitDate": "22/10/14 3:57 PM",
+      "commitName": "3b12fd6cfbf4cc91ef8e8616c7aafa9de006cde5",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,46 @@\n+      public boolean delete(Path p, boolean recursive) throws IOException {\n+        if (LOG.isDebugEnabled()) {\n+          LOG.debug(String.format(\"EFS:delete: %s %b\", p, recursive));\n+        }\n+        \n+        // The super delete uses the FileUtil.fullyDelete, \n+        // but we cannot rely on that because we need to use the elevated \n+        // operations to remove the files\n+        //\n+        File f \u003d pathToFile(p);\n+        if (!f.exists()) {\n+          //no path, return false \"nothing to delete\"\n+          return false;\n+        }\n+        else if (f.isFile()) {\n+          return Native.Elevated.deleteFile(p);\n+        } \n+        else if (f.isDirectory()) {\n+          \n+          // This is a best-effort attempt. There are race conditions in that\n+          // child files can be created/deleted after we snapped the list. \n+          // No need to protect against that case.\n+          File[] files \u003d FileUtil.listFiles(f);\n+          int childCount \u003d files.length;\n+          \n+          if (recursive) {\n+            for(File child:files) {\n+              if (delete(new Path(child.getPath()), recursive)) {\n+                --childCount;\n+              }\n+            }\n+          }\n+          if (childCount \u003d\u003d 0) {\n+            return Native.Elevated.deleteDirectory(p);\n+          } \n+          else {\n+            throw new IOException(\"Directory \" + f.toString() + \" is not empty\");\n+          }\n+        }\n+        else {\n+          // This can happen under race conditions if an external agent \n+          // is messing with the file type between IFs\n+          throw new IOException(\"Path \" + f.toString() + \n+              \" exists, but is neither a file nor a directory\");\n+        }\n+      }\n\\ No newline at end of file\n",
+      "actualSource": "      public boolean delete(Path p, boolean recursive) throws IOException {\n        if (LOG.isDebugEnabled()) {\n          LOG.debug(String.format(\"EFS:delete: %s %b\", p, recursive));\n        }\n        \n        // The super delete uses the FileUtil.fullyDelete, \n        // but we cannot rely on that because we need to use the elevated \n        // operations to remove the files\n        //\n        File f \u003d pathToFile(p);\n        if (!f.exists()) {\n          //no path, return false \"nothing to delete\"\n          return false;\n        }\n        else if (f.isFile()) {\n          return Native.Elevated.deleteFile(p);\n        } \n        else if (f.isDirectory()) {\n          \n          // This is a best-effort attempt. There are race conditions in that\n          // child files can be created/deleted after we snapped the list. \n          // No need to protect against that case.\n          File[] files \u003d FileUtil.listFiles(f);\n          int childCount \u003d files.length;\n          \n          if (recursive) {\n            for(File child:files) {\n              if (delete(new Path(child.getPath()), recursive)) {\n                --childCount;\n              }\n            }\n          }\n          if (childCount \u003d\u003d 0) {\n            return Native.Elevated.deleteDirectory(p);\n          } \n          else {\n            throw new IOException(\"Directory \" + f.toString() + \" is not empty\");\n          }\n        }\n        else {\n          // This can happen under race conditions if an external agent \n          // is messing with the file type between IFs\n          throw new IOException(\"Path \" + f.toString() + \n              \" exists, but is neither a file nor a directory\");\n        }\n      }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/WindowsSecureContainerExecutor.java"
+    }
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FsVolumeImpl.java",
+  "functionName": "loadLastPartialChunkChecksum",
+  "functionId": "loadLastPartialChunkChecksum___blockFile-File__metaFile-File",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+  "functionStartLine": 1148,
+  "functionEndLine": 1184,
+  "numCommitsSeen": 71,
+  "timeTaken": 3509,
+  "changeHistory": [
+    "a853b4e1b5742faadf7b667b0cebbc0dac001395",
+    "aebb9127bae872835d057e1c6a6e6b3c6a8be6cd",
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+    "2a28e8cf0469a373a99011f0fa540474e60528c8",
+    "c619e9b43fd00ba0e59a98ae09685ff719bb722b"
+  ],
+  "changeHistoryShort": {
+    "a853b4e1b5742faadf7b667b0cebbc0dac001395": "Ybodychange",
+    "aebb9127bae872835d057e1c6a6e6b3c6a8be6cd": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389": "Ybodychange",
+    "2a28e8cf0469a373a99011f0fa540474e60528c8": "Ybodychange",
+    "c619e9b43fd00ba0e59a98ae09685ff719bb722b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a853b4e1b5742faadf7b667b0cebbc0dac001395": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11342. Fix FileInputStream leak in loadLastPartialChunkChecksum. Contributed by Chen Liang.\n",
+      "commitDate": "16/01/17 1:45 PM",
+      "commitName": "a853b4e1b5742faadf7b667b0cebbc0dac001395",
+      "commitAuthor": "Arpit Agarwal",
+      "commitDateOld": "28/12/16 10:08 PM",
+      "commitNameOld": "603f3ef1386048111940b66f3a0750ab84d0588f",
+      "commitAuthorOld": "Xiaoyu Yao",
+      "daysBetweenCommits": 18.65,
+      "commitsBetweenForRepo": 73,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,35 +1,37 @@\n   public byte[] loadLastPartialChunkChecksum(\n       File blockFile, File metaFile) throws IOException {\n     // readHeader closes the temporary FileInputStream.\n-    DataChecksum dcs \u003d BlockMetadataHeader\n-        .readHeader(fileIoProvider.getFileInputStream(this, metaFile))\n-        .getChecksum();\n+    DataChecksum dcs;\n+    try (FileInputStream fis \u003d fileIoProvider.getFileInputStream(\n+        this, metaFile)) {\n+      dcs \u003d BlockMetadataHeader.readHeader(fis).getChecksum();\n+    }\n     final int checksumSize \u003d dcs.getChecksumSize();\n     final long onDiskLen \u003d blockFile.length();\n     final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n \n     if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n       // the last chunk is a complete one. No need to preserve its checksum\n       // because it will not be modified.\n       return null;\n     }\n \n     long offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n         (onDiskLen / bytesPerChecksum) * checksumSize;\n     byte[] lastChecksum \u003d new byte[checksumSize];\n     try (RandomAccessFile raf \u003d fileIoProvider.getRandomAccessFile(\n         this, metaFile, \"r\")) {\n       raf.seek(offsetInChecksum);\n       int readBytes \u003d raf.read(lastChecksum, 0, checksumSize);\n       if (readBytes \u003d\u003d -1) {\n         throw new IOException(\"Expected to read \" + checksumSize +\n             \" bytes from offset \" + offsetInChecksum +\n             \" but reached end of file.\");\n       } else if (readBytes !\u003d checksumSize) {\n         throw new IOException(\"Expected to read \" + checksumSize +\n             \" bytes from offset \" + offsetInChecksum + \" but read \" +\n             readBytes + \" bytes.\");\n       }\n     }\n     return lastChecksum;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public byte[] loadLastPartialChunkChecksum(\n      File blockFile, File metaFile) throws IOException {\n    // readHeader closes the temporary FileInputStream.\n    DataChecksum dcs;\n    try (FileInputStream fis \u003d fileIoProvider.getFileInputStream(\n        this, metaFile)) {\n      dcs \u003d BlockMetadataHeader.readHeader(fis).getChecksum();\n    }\n    final int checksumSize \u003d dcs.getChecksumSize();\n    final long onDiskLen \u003d blockFile.length();\n    final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n\n    if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n      // the last chunk is a complete one. No need to preserve its checksum\n      // because it will not be modified.\n      return null;\n    }\n\n    long offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n        (onDiskLen / bytesPerChecksum) * checksumSize;\n    byte[] lastChecksum \u003d new byte[checksumSize];\n    try (RandomAccessFile raf \u003d fileIoProvider.getRandomAccessFile(\n        this, metaFile, \"r\")) {\n      raf.seek(offsetInChecksum);\n      int readBytes \u003d raf.read(lastChecksum, 0, checksumSize);\n      if (readBytes \u003d\u003d -1) {\n        throw new IOException(\"Expected to read \" + checksumSize +\n            \" bytes from offset \" + offsetInChecksum +\n            \" but reached end of file.\");\n      } else if (readBytes !\u003d checksumSize) {\n        throw new IOException(\"Expected to read \" + checksumSize +\n            \" bytes from offset \" + offsetInChecksum + \" but read \" +\n            readBytes + \" bytes.\");\n      }\n    }\n    return lastChecksum;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "aebb9127bae872835d057e1c6a6e6b3c6a8be6cd": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HDFS-11160. VolumeScanner reports write-in-progress replicas as corrupt incorrectly. Contributed by Wei-Chiu Chuang and Yongjun Zhang.\n",
+      "commitDate": "15/12/16 4:32 PM",
+      "commitName": "aebb9127bae872835d057e1c6a6e6b3c6a8be6cd",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-11160. VolumeScanner reports write-in-progress replicas as corrupt incorrectly. Contributed by Wei-Chiu Chuang and Yongjun Zhang.\n",
+          "commitDate": "15/12/16 4:32 PM",
+          "commitName": "aebb9127bae872835d057e1c6a6e6b3c6a8be6cd",
+          "commitAuthor": "Wei-Chiu Chuang",
+          "commitDateOld": "14/12/16 11:18 AM",
+          "commitNameOld": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 1.22,
+          "commitsBetweenForRepo": 10,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,35 @@\n-  private byte[] loadLastPartialChunkChecksum(\n+  public byte[] loadLastPartialChunkChecksum(\n       File blockFile, File metaFile) throws IOException {\n     // readHeader closes the temporary FileInputStream.\n     DataChecksum dcs \u003d BlockMetadataHeader\n         .readHeader(fileIoProvider.getFileInputStream(this, metaFile))\n         .getChecksum();\n     final int checksumSize \u003d dcs.getChecksumSize();\n     final long onDiskLen \u003d blockFile.length();\n     final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n \n     if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n       // the last chunk is a complete one. No need to preserve its checksum\n       // because it will not be modified.\n       return null;\n     }\n \n-    int offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n-        (int)(onDiskLen / bytesPerChecksum * checksumSize);\n+    long offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n+        (onDiskLen / bytesPerChecksum) * checksumSize;\n     byte[] lastChecksum \u003d new byte[checksumSize];\n     try (RandomAccessFile raf \u003d fileIoProvider.getRandomAccessFile(\n         this, metaFile, \"r\")) {\n       raf.seek(offsetInChecksum);\n-      raf.read(lastChecksum, 0, checksumSize);\n+      int readBytes \u003d raf.read(lastChecksum, 0, checksumSize);\n+      if (readBytes \u003d\u003d -1) {\n+        throw new IOException(\"Expected to read \" + checksumSize +\n+            \" bytes from offset \" + offsetInChecksum +\n+            \" but reached end of file.\");\n+      } else if (readBytes !\u003d checksumSize) {\n+        throw new IOException(\"Expected to read \" + checksumSize +\n+            \" bytes from offset \" + offsetInChecksum + \" but read \" +\n+            readBytes + \" bytes.\");\n+      }\n     }\n     return lastChecksum;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public byte[] loadLastPartialChunkChecksum(\n      File blockFile, File metaFile) throws IOException {\n    // readHeader closes the temporary FileInputStream.\n    DataChecksum dcs \u003d BlockMetadataHeader\n        .readHeader(fileIoProvider.getFileInputStream(this, metaFile))\n        .getChecksum();\n    final int checksumSize \u003d dcs.getChecksumSize();\n    final long onDiskLen \u003d blockFile.length();\n    final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n\n    if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n      // the last chunk is a complete one. No need to preserve its checksum\n      // because it will not be modified.\n      return null;\n    }\n\n    long offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n        (onDiskLen / bytesPerChecksum) * checksumSize;\n    byte[] lastChecksum \u003d new byte[checksumSize];\n    try (RandomAccessFile raf \u003d fileIoProvider.getRandomAccessFile(\n        this, metaFile, \"r\")) {\n      raf.seek(offsetInChecksum);\n      int readBytes \u003d raf.read(lastChecksum, 0, checksumSize);\n      if (readBytes \u003d\u003d -1) {\n        throw new IOException(\"Expected to read \" + checksumSize +\n            \" bytes from offset \" + offsetInChecksum +\n            \" but reached end of file.\");\n      } else if (readBytes !\u003d checksumSize) {\n        throw new IOException(\"Expected to read \" + checksumSize +\n            \" bytes from offset \" + offsetInChecksum + \" but read \" +\n            readBytes + \" bytes.\");\n      }\n    }\n    return lastChecksum;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-11160. VolumeScanner reports write-in-progress replicas as corrupt incorrectly. Contributed by Wei-Chiu Chuang and Yongjun Zhang.\n",
+          "commitDate": "15/12/16 4:32 PM",
+          "commitName": "aebb9127bae872835d057e1c6a6e6b3c6a8be6cd",
+          "commitAuthor": "Wei-Chiu Chuang",
+          "commitDateOld": "14/12/16 11:18 AM",
+          "commitNameOld": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 1.22,
+          "commitsBetweenForRepo": 10,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,35 @@\n-  private byte[] loadLastPartialChunkChecksum(\n+  public byte[] loadLastPartialChunkChecksum(\n       File blockFile, File metaFile) throws IOException {\n     // readHeader closes the temporary FileInputStream.\n     DataChecksum dcs \u003d BlockMetadataHeader\n         .readHeader(fileIoProvider.getFileInputStream(this, metaFile))\n         .getChecksum();\n     final int checksumSize \u003d dcs.getChecksumSize();\n     final long onDiskLen \u003d blockFile.length();\n     final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n \n     if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n       // the last chunk is a complete one. No need to preserve its checksum\n       // because it will not be modified.\n       return null;\n     }\n \n-    int offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n-        (int)(onDiskLen / bytesPerChecksum * checksumSize);\n+    long offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n+        (onDiskLen / bytesPerChecksum) * checksumSize;\n     byte[] lastChecksum \u003d new byte[checksumSize];\n     try (RandomAccessFile raf \u003d fileIoProvider.getRandomAccessFile(\n         this, metaFile, \"r\")) {\n       raf.seek(offsetInChecksum);\n-      raf.read(lastChecksum, 0, checksumSize);\n+      int readBytes \u003d raf.read(lastChecksum, 0, checksumSize);\n+      if (readBytes \u003d\u003d -1) {\n+        throw new IOException(\"Expected to read \" + checksumSize +\n+            \" bytes from offset \" + offsetInChecksum +\n+            \" but reached end of file.\");\n+      } else if (readBytes !\u003d checksumSize) {\n+        throw new IOException(\"Expected to read \" + checksumSize +\n+            \" bytes from offset \" + offsetInChecksum + \" but read \" +\n+            readBytes + \" bytes.\");\n+      }\n     }\n     return lastChecksum;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public byte[] loadLastPartialChunkChecksum(\n      File blockFile, File metaFile) throws IOException {\n    // readHeader closes the temporary FileInputStream.\n    DataChecksum dcs \u003d BlockMetadataHeader\n        .readHeader(fileIoProvider.getFileInputStream(this, metaFile))\n        .getChecksum();\n    final int checksumSize \u003d dcs.getChecksumSize();\n    final long onDiskLen \u003d blockFile.length();\n    final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n\n    if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n      // the last chunk is a complete one. No need to preserve its checksum\n      // because it will not be modified.\n      return null;\n    }\n\n    long offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n        (onDiskLen / bytesPerChecksum) * checksumSize;\n    byte[] lastChecksum \u003d new byte[checksumSize];\n    try (RandomAccessFile raf \u003d fileIoProvider.getRandomAccessFile(\n        this, metaFile, \"r\")) {\n      raf.seek(offsetInChecksum);\n      int readBytes \u003d raf.read(lastChecksum, 0, checksumSize);\n      if (readBytes \u003d\u003d -1) {\n        throw new IOException(\"Expected to read \" + checksumSize +\n            \" bytes from offset \" + offsetInChecksum +\n            \" but reached end of file.\");\n      } else if (readBytes !\u003d checksumSize) {\n        throw new IOException(\"Expected to read \" + checksumSize +\n            \" bytes from offset \" + offsetInChecksum + \" but read \" +\n            readBytes + \" bytes.\");\n      }\n    }\n    return lastChecksum;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10958. Add instrumentation hooks around Datanode disk IO.\n",
+      "commitDate": "14/12/16 11:18 AM",
+      "commitName": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+      "commitAuthor": "Arpit Agarwal",
+      "commitDateOld": "12/12/16 6:11 PM",
+      "commitNameOld": "2d4731c067ff64cd88f496eac8faaf302faa2ccc",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 1.71,
+      "commitsBetweenForRepo": 10,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,26 @@\n   private byte[] loadLastPartialChunkChecksum(\n       File blockFile, File metaFile) throws IOException {\n-    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n+    // readHeader closes the temporary FileInputStream.\n+    DataChecksum dcs \u003d BlockMetadataHeader\n+        .readHeader(fileIoProvider.getFileInputStream(this, metaFile))\n+        .getChecksum();\n     final int checksumSize \u003d dcs.getChecksumSize();\n     final long onDiskLen \u003d blockFile.length();\n     final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n \n     if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n       // the last chunk is a complete one. No need to preserve its checksum\n       // because it will not be modified.\n       return null;\n     }\n \n     int offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n         (int)(onDiskLen / bytesPerChecksum * checksumSize);\n     byte[] lastChecksum \u003d new byte[checksumSize];\n-    try (RandomAccessFile raf \u003d new RandomAccessFile(metaFile, \"r\")) {\n+    try (RandomAccessFile raf \u003d fileIoProvider.getRandomAccessFile(\n+        this, metaFile, \"r\")) {\n       raf.seek(offsetInChecksum);\n       raf.read(lastChecksum, 0, checksumSize);\n     }\n     return lastChecksum;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private byte[] loadLastPartialChunkChecksum(\n      File blockFile, File metaFile) throws IOException {\n    // readHeader closes the temporary FileInputStream.\n    DataChecksum dcs \u003d BlockMetadataHeader\n        .readHeader(fileIoProvider.getFileInputStream(this, metaFile))\n        .getChecksum();\n    final int checksumSize \u003d dcs.getChecksumSize();\n    final long onDiskLen \u003d blockFile.length();\n    final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n\n    if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n      // the last chunk is a complete one. No need to preserve its checksum\n      // because it will not be modified.\n      return null;\n    }\n\n    int offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n        (int)(onDiskLen / bytesPerChecksum * checksumSize);\n    byte[] lastChecksum \u003d new byte[checksumSize];\n    try (RandomAccessFile raf \u003d fileIoProvider.getRandomAccessFile(\n        this, metaFile, \"r\")) {\n      raf.seek(offsetInChecksum);\n      raf.read(lastChecksum, 0, checksumSize);\n    }\n    return lastChecksum;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "2a28e8cf0469a373a99011f0fa540474e60528c8": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11229. HDFS-11056 failed to close meta file. Contributed by Wei-Chiu Chuang.\n",
+      "commitDate": "09/12/16 4:02 PM",
+      "commitName": "2a28e8cf0469a373a99011f0fa540474e60528c8",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "06/12/16 11:05 AM",
+      "commitNameOld": "df983b524ab68ea0c70cee9033bfff2d28052cbf",
+      "commitAuthorOld": "Xiaoyu Yao",
+      "daysBetweenCommits": 3.21,
+      "commitsBetweenForRepo": 32,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,22 @@\n   private byte[] loadLastPartialChunkChecksum(\n       File blockFile, File metaFile) throws IOException {\n     DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n     final int checksumSize \u003d dcs.getChecksumSize();\n     final long onDiskLen \u003d blockFile.length();\n     final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n \n     if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n       // the last chunk is a complete one. No need to preserve its checksum\n       // because it will not be modified.\n       return null;\n     }\n \n     int offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n         (int)(onDiskLen / bytesPerChecksum * checksumSize);\n     byte[] lastChecksum \u003d new byte[checksumSize];\n-    RandomAccessFile raf \u003d new RandomAccessFile(metaFile, \"r\");\n-    raf.seek(offsetInChecksum);\n-    raf.read(lastChecksum, 0, checksumSize);\n+    try (RandomAccessFile raf \u003d new RandomAccessFile(metaFile, \"r\")) {\n+      raf.seek(offsetInChecksum);\n+      raf.read(lastChecksum, 0, checksumSize);\n+    }\n     return lastChecksum;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private byte[] loadLastPartialChunkChecksum(\n      File blockFile, File metaFile) throws IOException {\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n    final int checksumSize \u003d dcs.getChecksumSize();\n    final long onDiskLen \u003d blockFile.length();\n    final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n\n    if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n      // the last chunk is a complete one. No need to preserve its checksum\n      // because it will not be modified.\n      return null;\n    }\n\n    int offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n        (int)(onDiskLen / bytesPerChecksum * checksumSize);\n    byte[] lastChecksum \u003d new byte[checksumSize];\n    try (RandomAccessFile raf \u003d new RandomAccessFile(metaFile, \"r\")) {\n      raf.seek(offsetInChecksum);\n      raf.read(lastChecksum, 0, checksumSize);\n    }\n    return lastChecksum;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "c619e9b43fd00ba0e59a98ae09685ff719bb722b": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11056. Concurrent append and read operations lead to checksum error. Contributed by Wei-Chiu Chuang.\n",
+      "commitDate": "09/11/16 9:16 AM",
+      "commitName": "c619e9b43fd00ba0e59a98ae09685ff719bb722b",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "diff": "@@ -0,0 +1,21 @@\n+  private byte[] loadLastPartialChunkChecksum(\n+      File blockFile, File metaFile) throws IOException {\n+    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n+    final int checksumSize \u003d dcs.getChecksumSize();\n+    final long onDiskLen \u003d blockFile.length();\n+    final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n+\n+    if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n+      // the last chunk is a complete one. No need to preserve its checksum\n+      // because it will not be modified.\n+      return null;\n+    }\n+\n+    int offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n+        (int)(onDiskLen / bytesPerChecksum * checksumSize);\n+    byte[] lastChecksum \u003d new byte[checksumSize];\n+    RandomAccessFile raf \u003d new RandomAccessFile(metaFile, \"r\");\n+    raf.seek(offsetInChecksum);\n+    raf.read(lastChecksum, 0, checksumSize);\n+    return lastChecksum;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private byte[] loadLastPartialChunkChecksum(\n      File blockFile, File metaFile) throws IOException {\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n    final int checksumSize \u003d dcs.getChecksumSize();\n    final long onDiskLen \u003d blockFile.length();\n    final int bytesPerChecksum \u003d dcs.getBytesPerChecksum();\n\n    if (onDiskLen % bytesPerChecksum \u003d\u003d 0) {\n      // the last chunk is a complete one. No need to preserve its checksum\n      // because it will not be modified.\n      return null;\n    }\n\n    int offsetInChecksum \u003d BlockMetadataHeader.getHeaderSize() +\n        (int)(onDiskLen / bytesPerChecksum * checksumSize);\n    byte[] lastChecksum \u003d new byte[checksumSize];\n    RandomAccessFile raf \u003d new RandomAccessFile(metaFile, \"r\");\n    raf.seek(offsetInChecksum);\n    raf.read(lastChecksum, 0, checksumSize);\n    return lastChecksum;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java"
+    }
+  }
+}

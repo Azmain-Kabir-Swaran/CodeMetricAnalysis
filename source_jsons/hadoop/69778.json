@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ReadBufferManager.java",
+  "functionName": "doneReading",
+  "functionId": "doneReading___buffer-ReadBuffer(modifiers-final)__result-ReadBufferStatus(modifiers-final)__bytesActuallyRead-int(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferManager.java",
+  "functionStartLine": 410,
+  "functionEndLine": 433,
+  "numCommitsSeen": 3,
+  "timeTaken": 1367,
+  "changeHistory": [
+    "53b993e6048ffaaf98e460690211fc08efb20cf2",
+    "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+    "f044deedbbfee0812316d587139cb828f27172e9"
+  ],
+  "changeHistoryShort": {
+    "53b993e6048ffaaf98e460690211fc08efb20cf2": "Ybodychange",
+    "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be": "Ybodychange",
+    "f044deedbbfee0812316d587139cb828f27172e9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "53b993e6048ffaaf98e460690211fc08efb20cf2": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16852: Report read-ahead error back\n\nContributed by Sneha Vijayarajan",
+      "commitDate": "27/05/20 1:51 PM",
+      "commitName": "53b993e6048ffaaf98e460690211fc08efb20cf2",
+      "commitAuthor": "Sneha Vijayarajan",
+      "commitDateOld": "17/09/18 12:54 PM",
+      "commitNameOld": "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+      "commitAuthorOld": "Thomas Marquardt",
+      "daysBetweenCommits": 618.04,
+      "commitsBetweenForRepo": 3845,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,24 @@\n   void doneReading(final ReadBuffer buffer, final ReadBufferStatus result, final int bytesActuallyRead) {\n     if (LOGGER.isTraceEnabled()) {\n       LOGGER.trace(\"ReadBufferWorker completed file {} for offset {} bytes {}\",\n           buffer.getStream().getPath(),  buffer.getOffset(), bytesActuallyRead);\n     }\n     synchronized (this) {\n       inProgressList.remove(buffer);\n       if (result \u003d\u003d ReadBufferStatus.AVAILABLE \u0026\u0026 bytesActuallyRead \u003e 0) {\n         buffer.setStatus(ReadBufferStatus.AVAILABLE);\n-        buffer.setTimeStamp(currentTimeMillis());\n         buffer.setLength(bytesActuallyRead);\n         completedReadList.add(buffer);\n       } else {\n         freeList.push(buffer.getBufferindex());\n-        // buffer should go out of scope after the end of the calling method in ReadBufferWorker, and eligible for GC\n+        // buffer will be deleted as per the eviction policy.\n       }\n+\n+      buffer.setStatus(result);\n+      buffer.setTimeStamp(currentTimeMillis());\n+      completedReadList.add(buffer);\n     }\n+\n     //outside the synchronized, since anyone receiving a wake-up from the latch must see safe-published results\n     buffer.getLatch().countDown(); // wake up waiting threads (if any)\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void doneReading(final ReadBuffer buffer, final ReadBufferStatus result, final int bytesActuallyRead) {\n    if (LOGGER.isTraceEnabled()) {\n      LOGGER.trace(\"ReadBufferWorker completed file {} for offset {} bytes {}\",\n          buffer.getStream().getPath(),  buffer.getOffset(), bytesActuallyRead);\n    }\n    synchronized (this) {\n      inProgressList.remove(buffer);\n      if (result \u003d\u003d ReadBufferStatus.AVAILABLE \u0026\u0026 bytesActuallyRead \u003e 0) {\n        buffer.setStatus(ReadBufferStatus.AVAILABLE);\n        buffer.setLength(bytesActuallyRead);\n        completedReadList.add(buffer);\n      } else {\n        freeList.push(buffer.getBufferindex());\n        // buffer will be deleted as per the eviction policy.\n      }\n\n      buffer.setStatus(result);\n      buffer.setTimeStamp(currentTimeMillis());\n      completedReadList.add(buffer);\n    }\n\n    //outside the synchronized, since anyone receiving a wake-up from the latch must see safe-published results\n    buffer.getLatch().countDown(); // wake up waiting threads (if any)\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferManager.java",
+      "extendedDetails": {}
+    },
+    "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15446. ABFS: tune imports \u0026 javadocs; stabilise tests.\nContributed by Steve Loughran and Da Zhou.\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+      "commitAuthor": "Thomas Marquardt",
+      "commitDateOld": "17/09/18 12:54 PM",
+      "commitNameOld": "f044deedbbfee0812316d587139cb828f27172e9",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 2,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,20 @@\n   void doneReading(final ReadBuffer buffer, final ReadBufferStatus result, final int bytesActuallyRead) {\n     if (LOGGER.isTraceEnabled()) {\n-      LOGGER.trace(\"ReadBufferWorker completed file \" + buffer.getStream().getPath() + \" for offset \" + buffer.getOffset()\n-          + \" bytes \" + bytesActuallyRead);\n+      LOGGER.trace(\"ReadBufferWorker completed file {} for offset {} bytes {}\",\n+          buffer.getStream().getPath(),  buffer.getOffset(), bytesActuallyRead);\n     }\n     synchronized (this) {\n       inProgressList.remove(buffer);\n       if (result \u003d\u003d ReadBufferStatus.AVAILABLE \u0026\u0026 bytesActuallyRead \u003e 0) {\n         buffer.setStatus(ReadBufferStatus.AVAILABLE);\n         buffer.setTimeStamp(currentTimeMillis());\n         buffer.setLength(bytesActuallyRead);\n         completedReadList.add(buffer);\n       } else {\n         freeList.push(buffer.getBufferindex());\n         // buffer should go out of scope after the end of the calling method in ReadBufferWorker, and eligible for GC\n       }\n     }\n     //outside the synchronized, since anyone receiving a wake-up from the latch must see safe-published results\n     buffer.getLatch().countDown(); // wake up waiting threads (if any)\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void doneReading(final ReadBuffer buffer, final ReadBufferStatus result, final int bytesActuallyRead) {\n    if (LOGGER.isTraceEnabled()) {\n      LOGGER.trace(\"ReadBufferWorker completed file {} for offset {} bytes {}\",\n          buffer.getStream().getPath(),  buffer.getOffset(), bytesActuallyRead);\n    }\n    synchronized (this) {\n      inProgressList.remove(buffer);\n      if (result \u003d\u003d ReadBufferStatus.AVAILABLE \u0026\u0026 bytesActuallyRead \u003e 0) {\n        buffer.setStatus(ReadBufferStatus.AVAILABLE);\n        buffer.setTimeStamp(currentTimeMillis());\n        buffer.setLength(bytesActuallyRead);\n        completedReadList.add(buffer);\n      } else {\n        freeList.push(buffer.getBufferindex());\n        // buffer should go out of scope after the end of the calling method in ReadBufferWorker, and eligible for GC\n      }\n    }\n    //outside the synchronized, since anyone receiving a wake-up from the latch must see safe-published results\n    buffer.getLatch().countDown(); // wake up waiting threads (if any)\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferManager.java",
+      "extendedDetails": {}
+    },
+    "f044deedbbfee0812316d587139cb828f27172e9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15407. HADOOP-15540. Support Windows Azure Storage - Blob file system \"ABFS\" in Hadoop: Core Commit.\n\nContributed by Shane Mainali, Thomas Marquardt, Zichen Sun, Georgi Chalakov, Esfandiar Manii, Amit Singh, Dana Kaban, Da Zhou, Junhua Gu, Saher Ahwal, Saurabh Pant, James Baker, Shaoyu Zhang, Lawrence Chen, Kevin Chen and Steve Loughran\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "f044deedbbfee0812316d587139cb828f27172e9",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,20 @@\n+  void doneReading(final ReadBuffer buffer, final ReadBufferStatus result, final int bytesActuallyRead) {\n+    if (LOGGER.isTraceEnabled()) {\n+      LOGGER.trace(\"ReadBufferWorker completed file \" + buffer.getStream().getPath() + \" for offset \" + buffer.getOffset()\n+          + \" bytes \" + bytesActuallyRead);\n+    }\n+    synchronized (this) {\n+      inProgressList.remove(buffer);\n+      if (result \u003d\u003d ReadBufferStatus.AVAILABLE \u0026\u0026 bytesActuallyRead \u003e 0) {\n+        buffer.setStatus(ReadBufferStatus.AVAILABLE);\n+        buffer.setTimeStamp(currentTimeMillis());\n+        buffer.setLength(bytesActuallyRead);\n+        completedReadList.add(buffer);\n+      } else {\n+        freeList.push(buffer.getBufferindex());\n+        // buffer should go out of scope after the end of the calling method in ReadBufferWorker, and eligible for GC\n+      }\n+    }\n+    //outside the synchronized, since anyone receiving a wake-up from the latch must see safe-published results\n+    buffer.getLatch().countDown(); // wake up waiting threads (if any)\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  void doneReading(final ReadBuffer buffer, final ReadBufferStatus result, final int bytesActuallyRead) {\n    if (LOGGER.isTraceEnabled()) {\n      LOGGER.trace(\"ReadBufferWorker completed file \" + buffer.getStream().getPath() + \" for offset \" + buffer.getOffset()\n          + \" bytes \" + bytesActuallyRead);\n    }\n    synchronized (this) {\n      inProgressList.remove(buffer);\n      if (result \u003d\u003d ReadBufferStatus.AVAILABLE \u0026\u0026 bytesActuallyRead \u003e 0) {\n        buffer.setStatus(ReadBufferStatus.AVAILABLE);\n        buffer.setTimeStamp(currentTimeMillis());\n        buffer.setLength(bytesActuallyRead);\n        completedReadList.add(buffer);\n      } else {\n        freeList.push(buffer.getBufferindex());\n        // buffer should go out of scope after the end of the calling method in ReadBufferWorker, and eligible for GC\n      }\n    }\n    //outside the synchronized, since anyone receiving a wake-up from the latch must see safe-published results\n    buffer.getLatch().countDown(); // wake up waiting threads (if any)\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/ReadBufferManager.java"
+    }
+  }
+}

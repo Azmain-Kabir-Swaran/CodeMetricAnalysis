@@ -1,0 +1,306 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "WebHdfsFileSystem.java",
+  "functionName": "getResponse",
+  "functionId": "getResponse___conn-HttpURLConnection(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+  "functionStartLine": 1051,
+  "functionEndLine": 1054,
+  "numCommitsSeen": 258,
+  "timeTaken": 5551,
+  "changeHistory": [
+    "867048c3e4b20ece0039a876def129fa5eb9234f",
+    "bcf89ddc7d52e04725caf104f5958e33d9f51b35",
+    "0c5128969522cf754010c32cdcbfcfa5ebe5b3b0",
+    "e4ee1d111be15ae6cca2f79be7ca73c204288d2b",
+    "cb787968c5deac3dd5d10291aae39c36656a1487",
+    "556be2af92b68808aff71937d437ab9948164bb1",
+    "e4eec269d91ae541a321ae2f28ff03310682b3fe",
+    "09a156fcce2bc1be4081717bf7ef7d290e80d818",
+    "61d0b7530c8978c095ab6f62d9d38e168bd829c6"
+  ],
+  "changeHistoryShort": {
+    "867048c3e4b20ece0039a876def129fa5eb9234f": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "bcf89ddc7d52e04725caf104f5958e33d9f51b35": "Yfilerename",
+    "0c5128969522cf754010c32cdcbfcfa5ebe5b3b0": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "e4ee1d111be15ae6cca2f79be7ca73c204288d2b": "Ymultichange(Yrename,Yparameterchange)",
+    "cb787968c5deac3dd5d10291aae39c36656a1487": "Ybodychange",
+    "556be2af92b68808aff71937d437ab9948164bb1": "Ybodychange",
+    "e4eec269d91ae541a321ae2f28ff03310682b3fe": "Ybodychange",
+    "09a156fcce2bc1be4081717bf7ef7d290e80d818": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "61d0b7530c8978c095ab6f62d9d38e168bd829c6": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "867048c3e4b20ece0039a876def129fa5eb9234f": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-7163. WebHdfsFileSystem should retry reads according to the configured retry policy. Contributed by Eric Payne.\n",
+      "commitDate": "22/12/15 12:08 PM",
+      "commitName": "867048c3e4b20ece0039a876def129fa5eb9234f",
+      "commitAuthor": "Kihwal Lee",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-7163. WebHdfsFileSystem should retry reads according to the configured retry policy. Contributed by Eric Payne.\n",
+          "commitDate": "22/12/15 12:08 PM",
+          "commitName": "867048c3e4b20ece0039a876def129fa5eb9234f",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "11/12/15 10:59 AM",
+          "commitNameOld": "576b569b6c97bd5f57e52efdabdf8c2fa996a524",
+          "commitAuthorOld": "Allen Wittenauer",
+          "daysBetweenCommits": 11.05,
+          "commitsBetweenForRepo": 77,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,4 +1,38 @@\n-    HttpURLConnection getResponse(final HttpURLConnection conn)\n+    Integer getResponse(final HttpURLConnection conn)\n         throws IOException {\n-      return conn;\n+      try {\n+        // In the \"open-then-read\" use case, runWithRetry will have executed\n+        // ReadRunner#connect to make the connection and then executed\n+        // validateResponse to validate the response code. Only then do we want\n+        // to cache the connection.\n+        // In the \"read-after-seek\" use case, the connection is made and the\n+        // response is validated by the URLRunner. ReadRunner#read then caches\n+        // the connection and the ReadRunner#connect will pass on the cached\n+        // connection\n+        // In either case, stream initialization is done here if necessary.\n+        cachedConnection \u003d conn;\n+        if (in \u003d\u003d null) {\n+          in \u003d initializeInputStream(conn);\n+        }\n+\n+        int count \u003d in.read(readBuffer, readOffset, readLength);\n+        if (count \u003c 0 \u0026\u0026 pos \u003c fileLength) {\n+          throw new EOFException(\n+                  \"Premature EOF: pos\u003d\" + pos + \" \u003c filelength\u003d\" + fileLength);\n+        }\n+        return Integer.valueOf(count);\n+      } catch (IOException e) {\n+        String redirectHost \u003d resolvedUrl.getAuthority();\n+        if (excludeDatanodes.getValue() !\u003d null) {\n+          excludeDatanodes \u003d new ExcludeDatanodesParam(redirectHost + \",\"\n+              + excludeDatanodes.getValue());\n+        } else {\n+          excludeDatanodes \u003d new ExcludeDatanodesParam(redirectHost);\n+        }\n+\n+        // If an exception occurs, close the input stream and null it out so\n+        // that if the abstract runner decides to retry, it will reconnect.\n+        closeInputStream(RunnerState.DISCONNECTED);\n+        throw e;\n+      }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    Integer getResponse(final HttpURLConnection conn)\n        throws IOException {\n      try {\n        // In the \"open-then-read\" use case, runWithRetry will have executed\n        // ReadRunner#connect to make the connection and then executed\n        // validateResponse to validate the response code. Only then do we want\n        // to cache the connection.\n        // In the \"read-after-seek\" use case, the connection is made and the\n        // response is validated by the URLRunner. ReadRunner#read then caches\n        // the connection and the ReadRunner#connect will pass on the cached\n        // connection\n        // In either case, stream initialization is done here if necessary.\n        cachedConnection \u003d conn;\n        if (in \u003d\u003d null) {\n          in \u003d initializeInputStream(conn);\n        }\n\n        int count \u003d in.read(readBuffer, readOffset, readLength);\n        if (count \u003c 0 \u0026\u0026 pos \u003c fileLength) {\n          throw new EOFException(\n                  \"Premature EOF: pos\u003d\" + pos + \" \u003c filelength\u003d\" + fileLength);\n        }\n        return Integer.valueOf(count);\n      } catch (IOException e) {\n        String redirectHost \u003d resolvedUrl.getAuthority();\n        if (excludeDatanodes.getValue() !\u003d null) {\n          excludeDatanodes \u003d new ExcludeDatanodesParam(redirectHost + \",\"\n              + excludeDatanodes.getValue());\n        } else {\n          excludeDatanodes \u003d new ExcludeDatanodesParam(redirectHost);\n        }\n\n        // If an exception occurs, close the input stream and null it out so\n        // that if the abstract runner decides to retry, it will reconnect.\n        closeInputStream(RunnerState.DISCONNECTED);\n        throw e;\n      }\n    }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "HttpURLConnection",
+            "newValue": "Integer"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7163. WebHdfsFileSystem should retry reads according to the configured retry policy. Contributed by Eric Payne.\n",
+          "commitDate": "22/12/15 12:08 PM",
+          "commitName": "867048c3e4b20ece0039a876def129fa5eb9234f",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "11/12/15 10:59 AM",
+          "commitNameOld": "576b569b6c97bd5f57e52efdabdf8c2fa996a524",
+          "commitAuthorOld": "Allen Wittenauer",
+          "daysBetweenCommits": 11.05,
+          "commitsBetweenForRepo": 77,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,4 +1,38 @@\n-    HttpURLConnection getResponse(final HttpURLConnection conn)\n+    Integer getResponse(final HttpURLConnection conn)\n         throws IOException {\n-      return conn;\n+      try {\n+        // In the \"open-then-read\" use case, runWithRetry will have executed\n+        // ReadRunner#connect to make the connection and then executed\n+        // validateResponse to validate the response code. Only then do we want\n+        // to cache the connection.\n+        // In the \"read-after-seek\" use case, the connection is made and the\n+        // response is validated by the URLRunner. ReadRunner#read then caches\n+        // the connection and the ReadRunner#connect will pass on the cached\n+        // connection\n+        // In either case, stream initialization is done here if necessary.\n+        cachedConnection \u003d conn;\n+        if (in \u003d\u003d null) {\n+          in \u003d initializeInputStream(conn);\n+        }\n+\n+        int count \u003d in.read(readBuffer, readOffset, readLength);\n+        if (count \u003c 0 \u0026\u0026 pos \u003c fileLength) {\n+          throw new EOFException(\n+                  \"Premature EOF: pos\u003d\" + pos + \" \u003c filelength\u003d\" + fileLength);\n+        }\n+        return Integer.valueOf(count);\n+      } catch (IOException e) {\n+        String redirectHost \u003d resolvedUrl.getAuthority();\n+        if (excludeDatanodes.getValue() !\u003d null) {\n+          excludeDatanodes \u003d new ExcludeDatanodesParam(redirectHost + \",\"\n+              + excludeDatanodes.getValue());\n+        } else {\n+          excludeDatanodes \u003d new ExcludeDatanodesParam(redirectHost);\n+        }\n+\n+        // If an exception occurs, close the input stream and null it out so\n+        // that if the abstract runner decides to retry, it will reconnect.\n+        closeInputStream(RunnerState.DISCONNECTED);\n+        throw e;\n+      }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    Integer getResponse(final HttpURLConnection conn)\n        throws IOException {\n      try {\n        // In the \"open-then-read\" use case, runWithRetry will have executed\n        // ReadRunner#connect to make the connection and then executed\n        // validateResponse to validate the response code. Only then do we want\n        // to cache the connection.\n        // In the \"read-after-seek\" use case, the connection is made and the\n        // response is validated by the URLRunner. ReadRunner#read then caches\n        // the connection and the ReadRunner#connect will pass on the cached\n        // connection\n        // In either case, stream initialization is done here if necessary.\n        cachedConnection \u003d conn;\n        if (in \u003d\u003d null) {\n          in \u003d initializeInputStream(conn);\n        }\n\n        int count \u003d in.read(readBuffer, readOffset, readLength);\n        if (count \u003c 0 \u0026\u0026 pos \u003c fileLength) {\n          throw new EOFException(\n                  \"Premature EOF: pos\u003d\" + pos + \" \u003c filelength\u003d\" + fileLength);\n        }\n        return Integer.valueOf(count);\n      } catch (IOException e) {\n        String redirectHost \u003d resolvedUrl.getAuthority();\n        if (excludeDatanodes.getValue() !\u003d null) {\n          excludeDatanodes \u003d new ExcludeDatanodesParam(redirectHost + \",\"\n              + excludeDatanodes.getValue());\n        } else {\n          excludeDatanodes \u003d new ExcludeDatanodesParam(redirectHost);\n        }\n\n        // If an exception occurs, close the input stream and null it out so\n        // that if the abstract runner decides to retry, it will reconnect.\n        closeInputStream(RunnerState.DISCONNECTED);\n        throw e;\n      }\n    }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "bcf89ddc7d52e04725caf104f5958e33d9f51b35": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-8052. Move WebHdfsFileSystem into hadoop-hdfs-client. Contributed by Haohui Mai.\n",
+      "commitDate": "23/04/15 5:33 PM",
+      "commitName": "bcf89ddc7d52e04725caf104f5958e33d9f51b35",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "23/04/15 4:40 PM",
+      "commitNameOld": "0b3f8957a87ada1a275c9904b211fdbdcefafb02",
+      "commitAuthorOld": "Xuan",
+      "daysBetweenCommits": 0.04,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    HttpURLConnection getResponse(final HttpURLConnection conn)\n        throws IOException {\n      return conn;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java"
+      }
+    },
+    "0c5128969522cf754010c32cdcbfcfa5ebe5b3b0": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-6222. Remove background token renewer from webhdfs. Contributed by Rushabh Shah and Daryn Sharp.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1604300 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "20/06/14 4:58 PM",
+      "commitName": "0c5128969522cf754010c32cdcbfcfa5ebe5b3b0",
+      "commitAuthor": "Chris Nauroth",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-6222. Remove background token renewer from webhdfs. Contributed by Rushabh Shah and Daryn Sharp.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1604300 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "20/06/14 4:58 PM",
+          "commitName": "0c5128969522cf754010c32cdcbfcfa5ebe5b3b0",
+          "commitAuthor": "Chris Nauroth",
+          "commitDateOld": "19/06/14 4:06 PM",
+          "commitNameOld": "46dc32e12568c5e254a3a2f2664095dc9de8bd55",
+          "commitAuthorOld": "Alejandro Abdelnur",
+          "daysBetweenCommits": 1.04,
+          "commitsBetweenForRepo": 10,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,4 @@\n-    FSDataOutputStream getResponse(final HttpURLConnection conn)\n+    HttpURLConnection getResponse(final HttpURLConnection conn)\n         throws IOException {\n-      return new FSDataOutputStream(new BufferedOutputStream(\n-          conn.getOutputStream(), bufferSize), statistics) {\n-        @Override\n-        public void close() throws IOException {\n-          try {\n-            super.close();\n-          } finally {\n-            try {\n-              validateResponse(op, conn, true);\n-            } finally {\n-              conn.disconnect();\n-            }\n-          }\n-        }\n-      };\n+      return conn;\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    HttpURLConnection getResponse(final HttpURLConnection conn)\n        throws IOException {\n      return conn;\n    }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "FSDataOutputStream",
+            "newValue": "HttpURLConnection"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6222. Remove background token renewer from webhdfs. Contributed by Rushabh Shah and Daryn Sharp.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1604300 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "20/06/14 4:58 PM",
+          "commitName": "0c5128969522cf754010c32cdcbfcfa5ebe5b3b0",
+          "commitAuthor": "Chris Nauroth",
+          "commitDateOld": "19/06/14 4:06 PM",
+          "commitNameOld": "46dc32e12568c5e254a3a2f2664095dc9de8bd55",
+          "commitAuthorOld": "Alejandro Abdelnur",
+          "daysBetweenCommits": 1.04,
+          "commitsBetweenForRepo": 10,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,4 @@\n-    FSDataOutputStream getResponse(final HttpURLConnection conn)\n+    HttpURLConnection getResponse(final HttpURLConnection conn)\n         throws IOException {\n-      return new FSDataOutputStream(new BufferedOutputStream(\n-          conn.getOutputStream(), bufferSize), statistics) {\n-        @Override\n-        public void close() throws IOException {\n-          try {\n-            super.close();\n-          } finally {\n-            try {\n-              validateResponse(op, conn, true);\n-            } finally {\n-              conn.disconnect();\n-            }\n-          }\n-        }\n-      };\n+      return conn;\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    HttpURLConnection getResponse(final HttpURLConnection conn)\n        throws IOException {\n      return conn;\n    }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e4ee1d111be15ae6cca2f79be7ca73c204288d2b": {
+      "type": "Ymultichange(Yrename,Yparameterchange)",
+      "commitMessage": "HDFS-6305. WebHdfs response decoding may throw RuntimeExceptions (Daryn Sharp via jeagles)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1594273 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "13/05/14 9:40 AM",
+      "commitName": "e4ee1d111be15ae6cca2f79be7ca73c204288d2b",
+      "commitAuthor": "Jonathan Turner Eagles",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-6305. WebHdfs response decoding may throw RuntimeExceptions (Daryn Sharp via jeagles)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1594273 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "13/05/14 9:40 AM",
+          "commitName": "e4ee1d111be15ae6cca2f79be7ca73c204288d2b",
+          "commitAuthor": "Jonathan Turner Eagles",
+          "commitDateOld": "13/05/14 9:19 AM",
+          "commitNameOld": "33ade356b35223654a077103ed7fbed89f3f2321",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 2,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,18 @@\n-  FSDataOutputStream write(final HttpOpParam.Op op,\n-      final HttpURLConnection conn, final int bufferSize) throws IOException {\n-    return new FSDataOutputStream(new BufferedOutputStream(\n-        conn.getOutputStream(), bufferSize), statistics) {\n-      @Override\n-      public void close() throws IOException {\n-        try {\n-          super.close();\n-        } finally {\n+    FSDataOutputStream getResponse(final HttpURLConnection conn)\n+        throws IOException {\n+      return new FSDataOutputStream(new BufferedOutputStream(\n+          conn.getOutputStream(), bufferSize), statistics) {\n+        @Override\n+        public void close() throws IOException {\n           try {\n-            validateResponse(op, conn, true);\n+            super.close();\n           } finally {\n-            conn.disconnect();\n+            try {\n+              validateResponse(op, conn, true);\n+            } finally {\n+              conn.disconnect();\n+            }\n           }\n         }\n-      }\n-    };\n-  }\n\\ No newline at end of file\n+      };\n+    }\n\\ No newline at end of file\n",
+          "actualSource": "    FSDataOutputStream getResponse(final HttpURLConnection conn)\n        throws IOException {\n      return new FSDataOutputStream(new BufferedOutputStream(\n          conn.getOutputStream(), bufferSize), statistics) {\n        @Override\n        public void close() throws IOException {\n          try {\n            super.close();\n          } finally {\n            try {\n              validateResponse(op, conn, true);\n            } finally {\n              conn.disconnect();\n            }\n          }\n        }\n      };\n    }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "write",
+            "newValue": "getResponse"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-6305. WebHdfs response decoding may throw RuntimeExceptions (Daryn Sharp via jeagles)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1594273 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "13/05/14 9:40 AM",
+          "commitName": "e4ee1d111be15ae6cca2f79be7ca73c204288d2b",
+          "commitAuthor": "Jonathan Turner Eagles",
+          "commitDateOld": "13/05/14 9:19 AM",
+          "commitNameOld": "33ade356b35223654a077103ed7fbed89f3f2321",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 2,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,18 @@\n-  FSDataOutputStream write(final HttpOpParam.Op op,\n-      final HttpURLConnection conn, final int bufferSize) throws IOException {\n-    return new FSDataOutputStream(new BufferedOutputStream(\n-        conn.getOutputStream(), bufferSize), statistics) {\n-      @Override\n-      public void close() throws IOException {\n-        try {\n-          super.close();\n-        } finally {\n+    FSDataOutputStream getResponse(final HttpURLConnection conn)\n+        throws IOException {\n+      return new FSDataOutputStream(new BufferedOutputStream(\n+          conn.getOutputStream(), bufferSize), statistics) {\n+        @Override\n+        public void close() throws IOException {\n           try {\n-            validateResponse(op, conn, true);\n+            super.close();\n           } finally {\n-            conn.disconnect();\n+            try {\n+              validateResponse(op, conn, true);\n+            } finally {\n+              conn.disconnect();\n+            }\n           }\n         }\n-      }\n-    };\n-  }\n\\ No newline at end of file\n+      };\n+    }\n\\ No newline at end of file\n",
+          "actualSource": "    FSDataOutputStream getResponse(final HttpURLConnection conn)\n        throws IOException {\n      return new FSDataOutputStream(new BufferedOutputStream(\n          conn.getOutputStream(), bufferSize), statistics) {\n        @Override\n        public void close() throws IOException {\n          try {\n            super.close();\n          } finally {\n            try {\n              validateResponse(op, conn, true);\n            } finally {\n              conn.disconnect();\n            }\n          }\n        }\n      };\n    }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[op-HttpOpParam.Op(modifiers-final), conn-HttpURLConnection(modifiers-final), bufferSize-int(modifiers-final)]",
+            "newValue": "[conn-HttpURLConnection(modifiers-final)]"
+          }
+        }
+      ]
+    },
+    "cb787968c5deac3dd5d10291aae39c36656a1487": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3667.  Add retry support to WebHdfsFileSystem.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1367841 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "31/07/12 6:41 PM",
+      "commitName": "cb787968c5deac3dd5d10291aae39c36656a1487",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "30/07/12 9:33 PM",
+      "commitNameOld": "556be2af92b68808aff71937d437ab9948164bb1",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 0.88,
+      "commitsBetweenForRepo": 12,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,18 @@\n   FSDataOutputStream write(final HttpOpParam.Op op,\n       final HttpURLConnection conn, final int bufferSize) throws IOException {\n     return new FSDataOutputStream(new BufferedOutputStream(\n         conn.getOutputStream(), bufferSize), statistics) {\n       @Override\n       public void close() throws IOException {\n         try {\n           super.close();\n         } finally {\n           try {\n-            validateResponse(op, conn);\n+            validateResponse(op, conn, true);\n           } finally {\n             conn.disconnect();\n           }\n         }\n       }\n     };\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  FSDataOutputStream write(final HttpOpParam.Op op,\n      final HttpURLConnection conn, final int bufferSize) throws IOException {\n    return new FSDataOutputStream(new BufferedOutputStream(\n        conn.getOutputStream(), bufferSize), statistics) {\n      @Override\n      public void close() throws IOException {\n        try {\n          super.close();\n        } finally {\n          try {\n            validateResponse(op, conn, true);\n          } finally {\n            conn.disconnect();\n          }\n        }\n      }\n    };\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+      "extendedDetails": {}
+    },
+    "556be2af92b68808aff71937d437ab9948164bb1": {
+      "type": "Ybodychange",
+      "commitMessage": "svn merge -c -1366601 for reverting HDFS-3667.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1367407 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "30/07/12 9:33 PM",
+      "commitName": "556be2af92b68808aff71937d437ab9948164bb1",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "27/07/12 10:57 PM",
+      "commitNameOld": "e4eec269d91ae541a321ae2f28ff03310682b3fe",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 2.94,
+      "commitsBetweenForRepo": 9,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,18 @@\n   FSDataOutputStream write(final HttpOpParam.Op op,\n       final HttpURLConnection conn, final int bufferSize) throws IOException {\n     return new FSDataOutputStream(new BufferedOutputStream(\n         conn.getOutputStream(), bufferSize), statistics) {\n       @Override\n       public void close() throws IOException {\n         try {\n           super.close();\n         } finally {\n           try {\n-            validateResponse(op, conn, true);\n+            validateResponse(op, conn);\n           } finally {\n             conn.disconnect();\n           }\n         }\n       }\n     };\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  FSDataOutputStream write(final HttpOpParam.Op op,\n      final HttpURLConnection conn, final int bufferSize) throws IOException {\n    return new FSDataOutputStream(new BufferedOutputStream(\n        conn.getOutputStream(), bufferSize), statistics) {\n      @Override\n      public void close() throws IOException {\n        try {\n          super.close();\n        } finally {\n          try {\n            validateResponse(op, conn);\n          } finally {\n            conn.disconnect();\n          }\n        }\n      }\n    };\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+      "extendedDetails": {}
+    },
+    "e4eec269d91ae541a321ae2f28ff03310682b3fe": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3667.  Add retry support to WebHdfsFileSystem.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1366601 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "27/07/12 10:57 PM",
+      "commitName": "e4eec269d91ae541a321ae2f28ff03310682b3fe",
+      "commitAuthor": "Tsz-wo Sze",
+      "commitDateOld": "25/07/12 4:37 PM",
+      "commitNameOld": "8f395c2f78e5813e613197c3078a4ebc5d42775a",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 2.26,
+      "commitsBetweenForRepo": 12,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,18 @@\n   FSDataOutputStream write(final HttpOpParam.Op op,\n       final HttpURLConnection conn, final int bufferSize) throws IOException {\n     return new FSDataOutputStream(new BufferedOutputStream(\n         conn.getOutputStream(), bufferSize), statistics) {\n       @Override\n       public void close() throws IOException {\n         try {\n           super.close();\n         } finally {\n           try {\n-            validateResponse(op, conn);\n+            validateResponse(op, conn, true);\n           } finally {\n             conn.disconnect();\n           }\n         }\n       }\n     };\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  FSDataOutputStream write(final HttpOpParam.Op op,\n      final HttpURLConnection conn, final int bufferSize) throws IOException {\n    return new FSDataOutputStream(new BufferedOutputStream(\n        conn.getOutputStream(), bufferSize), statistics) {\n      @Override\n      public void close() throws IOException {\n        try {\n          super.close();\n        } finally {\n          try {\n            validateResponse(op, conn, true);\n          } finally {\n            conn.disconnect();\n          }\n        }\n      }\n    };\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+      "extendedDetails": {}
+    },
+    "09a156fcce2bc1be4081717bf7ef7d290e80d818": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HDFS-2539. Support doAs and GETHOMEDIRECTORY in webhdfs.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1200731 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/11/11 8:19 PM",
+      "commitName": "09a156fcce2bc1be4081717bf7ef7d290e80d818",
+      "commitAuthor": "Tsz-wo Sze",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-2539. Support doAs and GETHOMEDIRECTORY in webhdfs.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1200731 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "10/11/11 8:19 PM",
+          "commitName": "09a156fcce2bc1be4081717bf7ef7d290e80d818",
+          "commitAuthor": "Tsz-wo Sze",
+          "commitDateOld": "08/11/11 11:25 AM",
+          "commitNameOld": "94c631af1fc49f5ae5881fcd5f0e80b17308d15d",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 2.37,
+          "commitsBetweenForRepo": 6,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,18 @@\n-  private FSDataOutputStream write(final HttpOpParam.Op op,\n+  FSDataOutputStream write(final HttpOpParam.Op op,\n       final HttpURLConnection conn, final int bufferSize) throws IOException {\n     return new FSDataOutputStream(new BufferedOutputStream(\n         conn.getOutputStream(), bufferSize), statistics) {\n       @Override\n       public void close() throws IOException {\n         try {\n           super.close();\n         } finally {\n-          validateResponse(op, conn);\n+          try {\n+            validateResponse(op, conn);\n+          } finally {\n+            conn.disconnect();\n+          }\n         }\n       }\n     };\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  FSDataOutputStream write(final HttpOpParam.Op op,\n      final HttpURLConnection conn, final int bufferSize) throws IOException {\n    return new FSDataOutputStream(new BufferedOutputStream(\n        conn.getOutputStream(), bufferSize), statistics) {\n      @Override\n      public void close() throws IOException {\n        try {\n          super.close();\n        } finally {\n          try {\n            validateResponse(op, conn);\n          } finally {\n            conn.disconnect();\n          }\n        }\n      }\n    };\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-2539. Support doAs and GETHOMEDIRECTORY in webhdfs.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1200731 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "10/11/11 8:19 PM",
+          "commitName": "09a156fcce2bc1be4081717bf7ef7d290e80d818",
+          "commitAuthor": "Tsz-wo Sze",
+          "commitDateOld": "08/11/11 11:25 AM",
+          "commitNameOld": "94c631af1fc49f5ae5881fcd5f0e80b17308d15d",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 2.37,
+          "commitsBetweenForRepo": 6,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,18 @@\n-  private FSDataOutputStream write(final HttpOpParam.Op op,\n+  FSDataOutputStream write(final HttpOpParam.Op op,\n       final HttpURLConnection conn, final int bufferSize) throws IOException {\n     return new FSDataOutputStream(new BufferedOutputStream(\n         conn.getOutputStream(), bufferSize), statistics) {\n       @Override\n       public void close() throws IOException {\n         try {\n           super.close();\n         } finally {\n-          validateResponse(op, conn);\n+          try {\n+            validateResponse(op, conn);\n+          } finally {\n+            conn.disconnect();\n+          }\n         }\n       }\n     };\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  FSDataOutputStream write(final HttpOpParam.Op op,\n      final HttpURLConnection conn, final int bufferSize) throws IOException {\n    return new FSDataOutputStream(new BufferedOutputStream(\n        conn.getOutputStream(), bufferSize), statistics) {\n      @Override\n      public void close() throws IOException {\n        try {\n          super.close();\n        } finally {\n          try {\n            validateResponse(op, conn);\n          } finally {\n            conn.disconnect();\n          }\n        }\n      }\n    };\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "61d0b7530c8978c095ab6f62d9d38e168bd829c6": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-2284. Add a new FileSystem, webhdfs://, for supporting write Http access to HDFS.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1167662 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/09/11 6:41 PM",
+      "commitName": "61d0b7530c8978c095ab6f62d9d38e168bd829c6",
+      "commitAuthor": "Tsz-wo Sze",
+      "diff": "@@ -0,0 +1,14 @@\n+  private FSDataOutputStream write(final HttpOpParam.Op op,\n+      final HttpURLConnection conn, final int bufferSize) throws IOException {\n+    return new FSDataOutputStream(new BufferedOutputStream(\n+        conn.getOutputStream(), bufferSize), statistics) {\n+      @Override\n+      public void close() throws IOException {\n+        try {\n+          super.close();\n+        } finally {\n+          validateResponse(op, conn);\n+        }\n+      }\n+    };\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private FSDataOutputStream write(final HttpOpParam.Op op,\n      final HttpURLConnection conn, final int bufferSize) throws IOException {\n    return new FSDataOutputStream(new BufferedOutputStream(\n        conn.getOutputStream(), bufferSize), statistics) {\n      @Override\n      public void close() throws IOException {\n        try {\n          super.close();\n        } finally {\n          validateResponse(op, conn);\n        }\n      }\n    };\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/web/WebHdfsFileSystem.java"
+    }
+  }
+}

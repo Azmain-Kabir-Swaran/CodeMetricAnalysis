@@ -1,0 +1,99 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CgroupsLCEResourcesHandler.java",
+  "functionName": "init",
+  "functionId": "init___lce-LinuxContainerExecutor",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/util/CgroupsLCEResourcesHandler.java",
+  "functionStartLine": 145,
+  "functionEndLine": 148,
+  "numCommitsSeen": 22,
+  "timeTaken": 1199,
+  "changeHistory": [
+    "4be95175cdb58ff12a27ab443d609d3b46da7bfa",
+    "726c3538a7f0087fe99157019c2b90198de06ec7",
+    "5032a694ed250f65ade8c2b62c97b89ab45f53ea"
+  ],
+  "changeHistoryShort": {
+    "4be95175cdb58ff12a27ab443d609d3b46da7bfa": "Ybodychange",
+    "726c3538a7f0087fe99157019c2b90198de06ec7": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "5032a694ed250f65ade8c2b62c97b89ab45f53ea": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4be95175cdb58ff12a27ab443d609d3b46da7bfa": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-2440. Enabled Nodemanagers to limit the aggregate cpu usage across all containers to a preconfigured limit. Contributed by Varun Vasudev.\n",
+      "commitDate": "10/09/14 7:22 PM",
+      "commitName": "4be95175cdb58ff12a27ab443d609d3b46da7bfa",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "08/10/13 10:05 PM",
+      "commitNameOld": "726c3538a7f0087fe99157019c2b90198de06ec7",
+      "commitAuthorOld": "Sanford Ryza",
+      "daysBetweenCommits": 336.89,
+      "commitsBetweenForRepo": 2359,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,4 @@\n   public void init(LinuxContainerExecutor lce) throws IOException {\n-    initConfig();\n-    \n-    // mount cgroups if requested\n-    if (cgroupMount \u0026\u0026 cgroupMountPath !\u003d null) {\n-      ArrayList\u003cString\u003e cgroupKVs \u003d new ArrayList\u003cString\u003e();\n-      cgroupKVs.add(CONTROLLER_CPU + \"\u003d\" + cgroupMountPath + \"/\" +\n-                    CONTROLLER_CPU);\n-      lce.mountCgroups(cgroupKVs, cgroupPrefix);\n-    }\n-\n-    initializeControllerPaths();\n+    this.init(lce,\n+        ResourceCalculatorPlugin.getResourceCalculatorPlugin(null, conf));\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void init(LinuxContainerExecutor lce) throws IOException {\n    this.init(lce,\n        ResourceCalculatorPlugin.getResourceCalculatorPlugin(null, conf));\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/util/CgroupsLCEResourcesHandler.java",
+      "extendedDetails": {}
+    },
+    "726c3538a7f0087fe99157019c2b90198de06ec7": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "YARN-1284. LCE: Race condition leaves dangling cgroups entries for killed containers. (Alejandro Abdelnur via Sandy Ryza)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1530492 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "08/10/13 10:05 PM",
+      "commitName": "726c3538a7f0087fe99157019c2b90198de06ec7",
+      "commitAuthor": "Sanford Ryza",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "YARN-1284. LCE: Race condition leaves dangling cgroups entries for killed containers. (Alejandro Abdelnur via Sandy Ryza)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1530492 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/10/13 10:05 PM",
+          "commitName": "726c3538a7f0087fe99157019c2b90198de06ec7",
+          "commitAuthor": "Sanford Ryza",
+          "commitDateOld": "17/06/13 11:34 PM",
+          "commitNameOld": "6451288704922576e75dd1597f5fd0ef09ab4f26",
+          "commitAuthorOld": "Arun Murthy",
+          "daysBetweenCommits": 112.94,
+          "commitsBetweenForRepo": 659,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,13 @@\n-  public synchronized void init(LinuxContainerExecutor lce) throws IOException {\n-\n-    this.cgroupPrefix \u003d conf.get(YarnConfiguration.\n-            NM_LINUX_CONTAINER_CGROUPS_HIERARCHY, \"/hadoop-yarn\");\n-    this.cgroupMount \u003d conf.getBoolean(YarnConfiguration.\n-            NM_LINUX_CONTAINER_CGROUPS_MOUNT, false);\n-    this.cgroupMountPath \u003d conf.get(YarnConfiguration.\n-            NM_LINUX_CONTAINER_CGROUPS_MOUNT_PATH, null);\n-\n-    // remove extra /\u0027s at end or start of cgroupPrefix\n-    if (cgroupPrefix.charAt(0) \u003d\u003d \u0027/\u0027) {\n-      cgroupPrefix \u003d cgroupPrefix.substring(1);\n-    }\n-\n-    int len \u003d cgroupPrefix.length();\n-    if (cgroupPrefix.charAt(len - 1) \u003d\u003d \u0027/\u0027) {\n-      cgroupPrefix \u003d cgroupPrefix.substring(0, len - 1);\n-    }\n-  \n+  public void init(LinuxContainerExecutor lce) throws IOException {\n+    initConfig();\n+    \n     // mount cgroups if requested\n     if (cgroupMount \u0026\u0026 cgroupMountPath !\u003d null) {\n       ArrayList\u003cString\u003e cgroupKVs \u003d new ArrayList\u003cString\u003e();\n       cgroupKVs.add(CONTROLLER_CPU + \"\u003d\" + cgroupMountPath + \"/\" +\n                     CONTROLLER_CPU);\n       lce.mountCgroups(cgroupKVs, cgroupPrefix);\n     }\n \n     initializeControllerPaths();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void init(LinuxContainerExecutor lce) throws IOException {\n    initConfig();\n    \n    // mount cgroups if requested\n    if (cgroupMount \u0026\u0026 cgroupMountPath !\u003d null) {\n      ArrayList\u003cString\u003e cgroupKVs \u003d new ArrayList\u003cString\u003e();\n      cgroupKVs.add(CONTROLLER_CPU + \"\u003d\" + cgroupMountPath + \"/\" +\n                    CONTROLLER_CPU);\n      lce.mountCgroups(cgroupKVs, cgroupPrefix);\n    }\n\n    initializeControllerPaths();\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/util/CgroupsLCEResourcesHandler.java",
+          "extendedDetails": {
+            "oldValue": "[public, synchronized]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-1284. LCE: Race condition leaves dangling cgroups entries for killed containers. (Alejandro Abdelnur via Sandy Ryza)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1530492 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "08/10/13 10:05 PM",
+          "commitName": "726c3538a7f0087fe99157019c2b90198de06ec7",
+          "commitAuthor": "Sanford Ryza",
+          "commitDateOld": "17/06/13 11:34 PM",
+          "commitNameOld": "6451288704922576e75dd1597f5fd0ef09ab4f26",
+          "commitAuthorOld": "Arun Murthy",
+          "daysBetweenCommits": 112.94,
+          "commitsBetweenForRepo": 659,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,13 @@\n-  public synchronized void init(LinuxContainerExecutor lce) throws IOException {\n-\n-    this.cgroupPrefix \u003d conf.get(YarnConfiguration.\n-            NM_LINUX_CONTAINER_CGROUPS_HIERARCHY, \"/hadoop-yarn\");\n-    this.cgroupMount \u003d conf.getBoolean(YarnConfiguration.\n-            NM_LINUX_CONTAINER_CGROUPS_MOUNT, false);\n-    this.cgroupMountPath \u003d conf.get(YarnConfiguration.\n-            NM_LINUX_CONTAINER_CGROUPS_MOUNT_PATH, null);\n-\n-    // remove extra /\u0027s at end or start of cgroupPrefix\n-    if (cgroupPrefix.charAt(0) \u003d\u003d \u0027/\u0027) {\n-      cgroupPrefix \u003d cgroupPrefix.substring(1);\n-    }\n-\n-    int len \u003d cgroupPrefix.length();\n-    if (cgroupPrefix.charAt(len - 1) \u003d\u003d \u0027/\u0027) {\n-      cgroupPrefix \u003d cgroupPrefix.substring(0, len - 1);\n-    }\n-  \n+  public void init(LinuxContainerExecutor lce) throws IOException {\n+    initConfig();\n+    \n     // mount cgroups if requested\n     if (cgroupMount \u0026\u0026 cgroupMountPath !\u003d null) {\n       ArrayList\u003cString\u003e cgroupKVs \u003d new ArrayList\u003cString\u003e();\n       cgroupKVs.add(CONTROLLER_CPU + \"\u003d\" + cgroupMountPath + \"/\" +\n                     CONTROLLER_CPU);\n       lce.mountCgroups(cgroupKVs, cgroupPrefix);\n     }\n \n     initializeControllerPaths();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void init(LinuxContainerExecutor lce) throws IOException {\n    initConfig();\n    \n    // mount cgroups if requested\n    if (cgroupMount \u0026\u0026 cgroupMountPath !\u003d null) {\n      ArrayList\u003cString\u003e cgroupKVs \u003d new ArrayList\u003cString\u003e();\n      cgroupKVs.add(CONTROLLER_CPU + \"\u003d\" + cgroupMountPath + \"/\" +\n                    CONTROLLER_CPU);\n      lce.mountCgroups(cgroupKVs, cgroupPrefix);\n    }\n\n    initializeControllerPaths();\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/util/CgroupsLCEResourcesHandler.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "5032a694ed250f65ade8c2b62c97b89ab45f53ea": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3. Add support for CPU isolation/monitoring of containers. (adferguson via tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1423706 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/12/12 2:58 PM",
+      "commitName": "5032a694ed250f65ade8c2b62c97b89ab45f53ea",
+      "commitAuthor": "Alejandro Abdelnur",
+      "diff": "@@ -0,0 +1,29 @@\n+  public synchronized void init(LinuxContainerExecutor lce) throws IOException {\n+\n+    this.cgroupPrefix \u003d conf.get(YarnConfiguration.\n+            NM_LINUX_CONTAINER_CGROUPS_HIERARCHY, \"/hadoop-yarn\");\n+    this.cgroupMount \u003d conf.getBoolean(YarnConfiguration.\n+            NM_LINUX_CONTAINER_CGROUPS_MOUNT, false);\n+    this.cgroupMountPath \u003d conf.get(YarnConfiguration.\n+            NM_LINUX_CONTAINER_CGROUPS_MOUNT_PATH, null);\n+\t\n+    // remove extra /\u0027s at end or start of cgroupPrefix\n+    if (cgroupPrefix.charAt(0) \u003d\u003d \u0027/\u0027) {\n+    \tcgroupPrefix \u003d cgroupPrefix.substring(1);\n+    }\n+\n+    int len \u003d cgroupPrefix.length();\n+    if (cgroupPrefix.charAt(len - 1) \u003d\u003d \u0027/\u0027) {\n+    \tcgroupPrefix \u003d cgroupPrefix.substring(0, len - 1);\n+    }\n+   \n+    // mount cgroups if requested\n+    if (cgroupMount \u0026\u0026 cgroupMountPath !\u003d null) {\n+      ArrayList\u003cString\u003e cgroupKVs \u003d new ArrayList\u003cString\u003e();\n+      cgroupKVs.add(CONTROLLER_CPU + \"\u003d\" + cgroupMountPath + \"/\" +\n+                    CONTROLLER_CPU);\n+      lce.mountCgroups(cgroupKVs, cgroupPrefix);\n+    }\n+    \n+    initializeControllerPaths();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void init(LinuxContainerExecutor lce) throws IOException {\n\n    this.cgroupPrefix \u003d conf.get(YarnConfiguration.\n            NM_LINUX_CONTAINER_CGROUPS_HIERARCHY, \"/hadoop-yarn\");\n    this.cgroupMount \u003d conf.getBoolean(YarnConfiguration.\n            NM_LINUX_CONTAINER_CGROUPS_MOUNT, false);\n    this.cgroupMountPath \u003d conf.get(YarnConfiguration.\n            NM_LINUX_CONTAINER_CGROUPS_MOUNT_PATH, null);\n\t\n    // remove extra /\u0027s at end or start of cgroupPrefix\n    if (cgroupPrefix.charAt(0) \u003d\u003d \u0027/\u0027) {\n    \tcgroupPrefix \u003d cgroupPrefix.substring(1);\n    }\n\n    int len \u003d cgroupPrefix.length();\n    if (cgroupPrefix.charAt(len - 1) \u003d\u003d \u0027/\u0027) {\n    \tcgroupPrefix \u003d cgroupPrefix.substring(0, len - 1);\n    }\n   \n    // mount cgroups if requested\n    if (cgroupMount \u0026\u0026 cgroupMountPath !\u003d null) {\n      ArrayList\u003cString\u003e cgroupKVs \u003d new ArrayList\u003cString\u003e();\n      cgroupKVs.add(CONTROLLER_CPU + \"\u003d\" + cgroupMountPath + \"/\" +\n                    CONTROLLER_CPU);\n      lce.mountCgroups(cgroupKVs, cgroupPrefix);\n    }\n    \n    initializeControllerPaths();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/util/CgroupsLCEResourcesHandler.java"
+    }
+  }
+}

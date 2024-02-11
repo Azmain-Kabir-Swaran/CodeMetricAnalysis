@@ -1,0 +1,274 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileUtil.java",
+  "functionName": "fullyDeleteContents",
+  "functionId": "fullyDeleteContents___dir-File(modifiers-final)__tryGrantPermissions-boolean(modifiers-final)",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+  "functionStartLine": 262,
+  "functionEndLine": 296,
+  "numCommitsSeen": 76,
+  "timeTaken": 2248,
+  "changeHistory": [
+    "5c5e6ed13a6095edfb53ceb2314b64cf83f3f01e",
+    "07c5741c9a5ebec78a0db046e7fefcae2ca4b6af",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+    "2c0598a9646bb8a43375d2dee83c0c60cbfc52df",
+    "44ebf5db23ac5c22e347458fcc75389d78e4249d",
+    "9f7a07f9087e821a38e4a28cdb159e9d3861b290",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36"
+  ],
+  "changeHistoryShort": {
+    "5c5e6ed13a6095edfb53ceb2314b64cf83f3f01e": "Ymultichange(Yparameterchange,Ybodychange,Yparametermetachange)",
+    "07c5741c9a5ebec78a0db046e7fefcae2ca4b6af": "Yexceptionschange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yfilerename",
+    "2c0598a9646bb8a43375d2dee83c0c60cbfc52df": "Ybodychange",
+    "44ebf5db23ac5c22e347458fcc75389d78e4249d": "Ybodychange",
+    "9f7a07f9087e821a38e4a28cdb159e9d3861b290": "Ymultichange(Yrename,Ybodychange)",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5c5e6ed13a6095edfb53ceb2314b64cf83f3f01e": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange,Yparametermetachange)",
+      "commitMessage": "HADOOP-8849. FileUtil#fullyDelete should grant the target directories +rwx permissions (Ivan A. Veselovsky via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1434868 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/01/13 11:19 AM",
+      "commitName": "5c5e6ed13a6095edfb53ceb2314b64cf83f3f01e",
+      "commitAuthor": "Robert Joseph Evans",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-8849. FileUtil#fullyDelete should grant the target directories +rwx permissions (Ivan A. Veselovsky via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1434868 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "17/01/13 11:19 AM",
+          "commitName": "5c5e6ed13a6095edfb53ceb2314b64cf83f3f01e",
+          "commitAuthor": "Robert Joseph Evans",
+          "commitDateOld": "24/08/12 6:03 PM",
+          "commitNameOld": "deead78e35b0cb81af875b5a8032cbd06c9a2dae",
+          "commitAuthorOld": "Suresh Srinivas",
+          "daysBetweenCommits": 145.76,
+          "commitsBetweenForRepo": 759,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,35 @@\n-  public static boolean fullyDeleteContents(File dir) {\n+  public static boolean fullyDeleteContents(final File dir, final boolean tryGrantPermissions) {\n+    if (tryGrantPermissions) {\n+      // to be able to list the dir and delete files from it\n+      // we must grant the dir rwx permissions: \n+      grantPermissions(dir);\n+    }\n     boolean deletionSucceeded \u003d true;\n-    File contents[] \u003d dir.listFiles();\n+    final File[] contents \u003d dir.listFiles();\n     if (contents !\u003d null) {\n       for (int i \u003d 0; i \u003c contents.length; i++) {\n         if (contents[i].isFile()) {\n-          if (!contents[i].delete()) {// normal file or symlink to another file\n+          if (!deleteImpl(contents[i], true)) {// normal file or symlink to another file\n             deletionSucceeded \u003d false;\n             continue; // continue deletion of other files/dirs under dir\n           }\n         } else {\n           // Either directory or symlink to another directory.\n           // Try deleting the directory as this might be a symlink\n           boolean b \u003d false;\n-          b \u003d contents[i].delete();\n+          b \u003d deleteImpl(contents[i], false);\n           if (b){\n             //this was indeed a symlink or an empty directory\n             continue;\n           }\n           // if not an empty directory or symlink let\n           // fullydelete handle it.\n-          if (!fullyDelete(contents[i])) {\n+          if (!fullyDelete(contents[i], tryGrantPermissions)) {\n             deletionSucceeded \u003d false;\n-            continue; // continue deletion of other files/dirs under dir\n+            // continue deletion of other files/dirs under dir\n           }\n         }\n       }\n     }\n     return deletionSucceeded;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static boolean fullyDeleteContents(final File dir, final boolean tryGrantPermissions) {\n    if (tryGrantPermissions) {\n      // to be able to list the dir and delete files from it\n      // we must grant the dir rwx permissions: \n      grantPermissions(dir);\n    }\n    boolean deletionSucceeded \u003d true;\n    final File[] contents \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!deleteImpl(contents[i], true)) {// normal file or symlink to another file\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        } else {\n          // Either directory or symlink to another directory.\n          // Try deleting the directory as this might be a symlink\n          boolean b \u003d false;\n          b \u003d deleteImpl(contents[i], false);\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i], tryGrantPermissions)) {\n            deletionSucceeded \u003d false;\n            // continue deletion of other files/dirs under dir\n          }\n        }\n      }\n    }\n    return deletionSucceeded;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+          "extendedDetails": {
+            "oldValue": "[dir-File]",
+            "newValue": "[dir-File(modifiers-final), tryGrantPermissions-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-8849. FileUtil#fullyDelete should grant the target directories +rwx permissions (Ivan A. Veselovsky via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1434868 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "17/01/13 11:19 AM",
+          "commitName": "5c5e6ed13a6095edfb53ceb2314b64cf83f3f01e",
+          "commitAuthor": "Robert Joseph Evans",
+          "commitDateOld": "24/08/12 6:03 PM",
+          "commitNameOld": "deead78e35b0cb81af875b5a8032cbd06c9a2dae",
+          "commitAuthorOld": "Suresh Srinivas",
+          "daysBetweenCommits": 145.76,
+          "commitsBetweenForRepo": 759,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,35 @@\n-  public static boolean fullyDeleteContents(File dir) {\n+  public static boolean fullyDeleteContents(final File dir, final boolean tryGrantPermissions) {\n+    if (tryGrantPermissions) {\n+      // to be able to list the dir and delete files from it\n+      // we must grant the dir rwx permissions: \n+      grantPermissions(dir);\n+    }\n     boolean deletionSucceeded \u003d true;\n-    File contents[] \u003d dir.listFiles();\n+    final File[] contents \u003d dir.listFiles();\n     if (contents !\u003d null) {\n       for (int i \u003d 0; i \u003c contents.length; i++) {\n         if (contents[i].isFile()) {\n-          if (!contents[i].delete()) {// normal file or symlink to another file\n+          if (!deleteImpl(contents[i], true)) {// normal file or symlink to another file\n             deletionSucceeded \u003d false;\n             continue; // continue deletion of other files/dirs under dir\n           }\n         } else {\n           // Either directory or symlink to another directory.\n           // Try deleting the directory as this might be a symlink\n           boolean b \u003d false;\n-          b \u003d contents[i].delete();\n+          b \u003d deleteImpl(contents[i], false);\n           if (b){\n             //this was indeed a symlink or an empty directory\n             continue;\n           }\n           // if not an empty directory or symlink let\n           // fullydelete handle it.\n-          if (!fullyDelete(contents[i])) {\n+          if (!fullyDelete(contents[i], tryGrantPermissions)) {\n             deletionSucceeded \u003d false;\n-            continue; // continue deletion of other files/dirs under dir\n+            // continue deletion of other files/dirs under dir\n           }\n         }\n       }\n     }\n     return deletionSucceeded;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static boolean fullyDeleteContents(final File dir, final boolean tryGrantPermissions) {\n    if (tryGrantPermissions) {\n      // to be able to list the dir and delete files from it\n      // we must grant the dir rwx permissions: \n      grantPermissions(dir);\n    }\n    boolean deletionSucceeded \u003d true;\n    final File[] contents \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!deleteImpl(contents[i], true)) {// normal file or symlink to another file\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        } else {\n          // Either directory or symlink to another directory.\n          // Try deleting the directory as this might be a symlink\n          boolean b \u003d false;\n          b \u003d deleteImpl(contents[i], false);\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i], tryGrantPermissions)) {\n            deletionSucceeded \u003d false;\n            // continue deletion of other files/dirs under dir\n          }\n        }\n      }\n    }\n    return deletionSucceeded;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HADOOP-8849. FileUtil#fullyDelete should grant the target directories +rwx permissions (Ivan A. Veselovsky via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1434868 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "17/01/13 11:19 AM",
+          "commitName": "5c5e6ed13a6095edfb53ceb2314b64cf83f3f01e",
+          "commitAuthor": "Robert Joseph Evans",
+          "commitDateOld": "24/08/12 6:03 PM",
+          "commitNameOld": "deead78e35b0cb81af875b5a8032cbd06c9a2dae",
+          "commitAuthorOld": "Suresh Srinivas",
+          "daysBetweenCommits": 145.76,
+          "commitsBetweenForRepo": 759,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,30 +1,35 @@\n-  public static boolean fullyDeleteContents(File dir) {\n+  public static boolean fullyDeleteContents(final File dir, final boolean tryGrantPermissions) {\n+    if (tryGrantPermissions) {\n+      // to be able to list the dir and delete files from it\n+      // we must grant the dir rwx permissions: \n+      grantPermissions(dir);\n+    }\n     boolean deletionSucceeded \u003d true;\n-    File contents[] \u003d dir.listFiles();\n+    final File[] contents \u003d dir.listFiles();\n     if (contents !\u003d null) {\n       for (int i \u003d 0; i \u003c contents.length; i++) {\n         if (contents[i].isFile()) {\n-          if (!contents[i].delete()) {// normal file or symlink to another file\n+          if (!deleteImpl(contents[i], true)) {// normal file or symlink to another file\n             deletionSucceeded \u003d false;\n             continue; // continue deletion of other files/dirs under dir\n           }\n         } else {\n           // Either directory or symlink to another directory.\n           // Try deleting the directory as this might be a symlink\n           boolean b \u003d false;\n-          b \u003d contents[i].delete();\n+          b \u003d deleteImpl(contents[i], false);\n           if (b){\n             //this was indeed a symlink or an empty directory\n             continue;\n           }\n           // if not an empty directory or symlink let\n           // fullydelete handle it.\n-          if (!fullyDelete(contents[i])) {\n+          if (!fullyDelete(contents[i], tryGrantPermissions)) {\n             deletionSucceeded \u003d false;\n-            continue; // continue deletion of other files/dirs under dir\n+            // continue deletion of other files/dirs under dir\n           }\n         }\n       }\n     }\n     return deletionSucceeded;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static boolean fullyDeleteContents(final File dir, final boolean tryGrantPermissions) {\n    if (tryGrantPermissions) {\n      // to be able to list the dir and delete files from it\n      // we must grant the dir rwx permissions: \n      grantPermissions(dir);\n    }\n    boolean deletionSucceeded \u003d true;\n    final File[] contents \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!deleteImpl(contents[i], true)) {// normal file or symlink to another file\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        } else {\n          // Either directory or symlink to another directory.\n          // Try deleting the directory as this might be a symlink\n          boolean b \u003d false;\n          b \u003d deleteImpl(contents[i], false);\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i], tryGrantPermissions)) {\n            deletionSucceeded \u003d false;\n            // continue deletion of other files/dirs under dir\n          }\n        }\n      }\n    }\n    return deletionSucceeded;\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+          "extendedDetails": {
+            "oldValue": "[dir-File]",
+            "newValue": "[dir-File(modifiers-final), tryGrantPermissions-boolean(modifiers-final)]"
+          }
+        }
+      ]
+    },
+    "07c5741c9a5ebec78a0db046e7fefcae2ca4b6af": {
+      "type": "Yexceptionschange",
+      "commitMessage": "HADOOP-7552. FileUtil#fullyDelete doesn\u0027t throw IOE but lists it in the throws clause. Contributed by Eli Collins\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1164339 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "01/09/11 8:20 PM",
+      "commitName": "07c5741c9a5ebec78a0db046e7fefcae2ca4b6af",
+      "commitAuthor": "Eli Collins",
+      "commitDateOld": "24/08/11 5:14 PM",
+      "commitNameOld": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 8.13,
+      "commitsBetweenForRepo": 48,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,30 @@\n-  public static boolean fullyDeleteContents(File dir) throws IOException {\n+  public static boolean fullyDeleteContents(File dir) {\n     boolean deletionSucceeded \u003d true;\n     File contents[] \u003d dir.listFiles();\n     if (contents !\u003d null) {\n       for (int i \u003d 0; i \u003c contents.length; i++) {\n         if (contents[i].isFile()) {\n           if (!contents[i].delete()) {// normal file or symlink to another file\n             deletionSucceeded \u003d false;\n             continue; // continue deletion of other files/dirs under dir\n           }\n         } else {\n           // Either directory or symlink to another directory.\n           // Try deleting the directory as this might be a symlink\n           boolean b \u003d false;\n           b \u003d contents[i].delete();\n           if (b){\n             //this was indeed a symlink or an empty directory\n             continue;\n           }\n           // if not an empty directory or symlink let\n           // fullydelete handle it.\n           if (!fullyDelete(contents[i])) {\n             deletionSucceeded \u003d false;\n             continue; // continue deletion of other files/dirs under dir\n           }\n         }\n       }\n     }\n     return deletionSucceeded;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static boolean fullyDeleteContents(File dir) {\n    boolean deletionSucceeded \u003d true;\n    File contents[] \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!contents[i].delete()) {// normal file or symlink to another file\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        } else {\n          // Either directory or symlink to another directory.\n          // Try deleting the directory as this might be a symlink\n          boolean b \u003d false;\n          b \u003d contents[i].delete();\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i])) {\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        }\n      }\n    }\n    return deletionSucceeded;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+      "extendedDetails": {
+        "oldValue": "[IOException]",
+        "newValue": "[]"
+      }
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static boolean fullyDeleteContents(File dir) throws IOException {\n    boolean deletionSucceeded \u003d true;\n    File contents[] \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!contents[i].delete()) {// normal file or symlink to another file\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        } else {\n          // Either directory or symlink to another directory.\n          // Try deleting the directory as this might be a symlink\n          boolean b \u003d false;\n          b \u003d contents[i].delete();\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i])) {\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        }\n      }\n    }\n    return deletionSucceeded;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+        "newPath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java"
+      }
+    },
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-6671. Use maven for hadoop common builds. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153184 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/08/11 9:37 AM",
+      "commitName": "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "01/08/11 3:53 PM",
+      "commitNameOld": "9bac807cedbcff34e1a144fb475eff267e5ed86d",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static boolean fullyDeleteContents(File dir) throws IOException {\n    boolean deletionSucceeded \u003d true;\n    File contents[] \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!contents[i].delete()) {// normal file or symlink to another file\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        } else {\n          // Either directory or symlink to another directory.\n          // Try deleting the directory as this might be a symlink\n          boolean b \u003d false;\n          b \u003d contents[i].delete();\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i])) {\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        }\n      }\n    }\n    return deletionSucceeded;\n  }",
+      "path": "hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+      "extendedDetails": {
+        "oldPath": "common/src/java/org/apache/hadoop/fs/FileUtil.java",
+        "newPath": "hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "11/06/11 9:13 PM",
+      "commitNameOld": "a285fb5effe9ba3be4ec5f942afaf5ddd1186151",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static boolean fullyDeleteContents(File dir) throws IOException {\n    boolean deletionSucceeded \u003d true;\n    File contents[] \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!contents[i].delete()) {// normal file or symlink to another file\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        } else {\n          // Either directory or symlink to another directory.\n          // Try deleting the directory as this might be a symlink\n          boolean b \u003d false;\n          b \u003d contents[i].delete();\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i])) {\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        }\n      }\n    }\n    return deletionSucceeded;\n  }",
+      "path": "common/src/java/org/apache/hadoop/fs/FileUtil.java",
+      "extendedDetails": {
+        "oldPath": "src/java/org/apache/hadoop/fs/FileUtil.java",
+        "newPath": "common/src/java/org/apache/hadoop/fs/FileUtil.java"
+      }
+    },
+    "2c0598a9646bb8a43375d2dee83c0c60cbfc52df": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-6536. Fixes FileUtil.fullyDelete() not to delete the contents of the sym-linked directory. Contributed by Ravi Gummadi\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@965725 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "19/07/10 10:21 PM",
+      "commitName": "2c0598a9646bb8a43375d2dee83c0c60cbfc52df",
+      "commitAuthor": "Amareshwari Sri Ramadasu",
+      "commitDateOld": "11/06/10 2:34 PM",
+      "commitNameOld": "6378822a67c0baa502d22201f5c2b478cbe1261c",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 38.32,
+      "commitsBetweenForRepo": 31,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,30 @@\n   public static boolean fullyDeleteContents(File dir) throws IOException {\n     boolean deletionSucceeded \u003d true;\n     File contents[] \u003d dir.listFiles();\n     if (contents !\u003d null) {\n       for (int i \u003d 0; i \u003c contents.length; i++) {\n         if (contents[i].isFile()) {\n-          if (!contents[i].delete()) {\n+          if (!contents[i].delete()) {// normal file or symlink to another file\n             deletionSucceeded \u003d false;\n             continue; // continue deletion of other files/dirs under dir\n           }\n         } else {\n-          //try deleting the directory\n-          // this might be a symlink\n+          // Either directory or symlink to another directory.\n+          // Try deleting the directory as this might be a symlink\n           boolean b \u003d false;\n           b \u003d contents[i].delete();\n           if (b){\n             //this was indeed a symlink or an empty directory\n             continue;\n           }\n           // if not an empty directory or symlink let\n           // fullydelete handle it.\n           if (!fullyDelete(contents[i])) {\n             deletionSucceeded \u003d false;\n             continue; // continue deletion of other files/dirs under dir\n           }\n         }\n       }\n     }\n     return deletionSucceeded;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static boolean fullyDeleteContents(File dir) throws IOException {\n    boolean deletionSucceeded \u003d true;\n    File contents[] \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!contents[i].delete()) {// normal file or symlink to another file\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        } else {\n          // Either directory or symlink to another directory.\n          // Try deleting the directory as this might be a symlink\n          boolean b \u003d false;\n          b \u003d contents[i].delete();\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i])) {\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        }\n      }\n    }\n    return deletionSucceeded;\n  }",
+      "path": "src/java/org/apache/hadoop/fs/FileUtil.java",
+      "extendedDetails": {}
+    },
+    "44ebf5db23ac5c22e347458fcc75389d78e4249d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-6631. Fix FileUtil.fullyDelete() to continue deleting other files despite failure at any level. Contributed by Ravi Gummadi and Vinod Kumar Vavilapalli.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@941662 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/05/10 4:18 AM",
+      "commitName": "44ebf5db23ac5c22e347458fcc75389d78e4249d",
+      "commitAuthor": "Sharad Agarwal",
+      "commitDateOld": "22/03/10 12:08 PM",
+      "commitNameOld": "0485fe23ba76f7d96a198aed00f392fd571124bc",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 44.67,
+      "commitsBetweenForRepo": 47,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,30 @@\n   public static boolean fullyDeleteContents(File dir) throws IOException {\n+    boolean deletionSucceeded \u003d true;\n     File contents[] \u003d dir.listFiles();\n     if (contents !\u003d null) {\n       for (int i \u003d 0; i \u003c contents.length; i++) {\n         if (contents[i].isFile()) {\n           if (!contents[i].delete()) {\n-            return false;\n+            deletionSucceeded \u003d false;\n+            continue; // continue deletion of other files/dirs under dir\n           }\n         } else {\n           //try deleting the directory\n           // this might be a symlink\n           boolean b \u003d false;\n           b \u003d contents[i].delete();\n           if (b){\n             //this was indeed a symlink or an empty directory\n             continue;\n           }\n           // if not an empty directory or symlink let\n           // fullydelete handle it.\n           if (!fullyDelete(contents[i])) {\n-            return false;\n+            deletionSucceeded \u003d false;\n+            continue; // continue deletion of other files/dirs under dir\n           }\n         }\n       }\n     }\n-    return true;\n+    return deletionSucceeded;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static boolean fullyDeleteContents(File dir) throws IOException {\n    boolean deletionSucceeded \u003d true;\n    File contents[] \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!contents[i].delete()) {\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        } else {\n          //try deleting the directory\n          // this might be a symlink\n          boolean b \u003d false;\n          b \u003d contents[i].delete();\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i])) {\n            deletionSucceeded \u003d false;\n            continue; // continue deletion of other files/dirs under dir\n          }\n        }\n      }\n    }\n    return deletionSucceeded;\n  }",
+      "path": "src/java/org/apache/hadoop/fs/FileUtil.java",
+      "extendedDetails": {}
+    },
+    "9f7a07f9087e821a38e4a28cdb159e9d3861b290": {
+      "type": "Ymultichange(Yrename,Ybodychange)",
+      "commitMessage": "HADOOP-6531. Enhance FileUtil with an API to delete all contents of a directory. Contributed by Amareshwari Sriramadasu.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@906177 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "03/02/10 11:04 AM",
+      "commitName": "9f7a07f9087e821a38e4a28cdb159e9d3861b290",
+      "commitAuthor": "Hemanth Yamijala",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HADOOP-6531. Enhance FileUtil with an API to delete all contents of a directory. Contributed by Amareshwari Sriramadasu.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@906177 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "03/02/10 11:04 AM",
+          "commitName": "9f7a07f9087e821a38e4a28cdb159e9d3861b290",
+          "commitAuthor": "Hemanth Yamijala",
+          "commitDateOld": "08/10/09 11:37 AM",
+          "commitNameOld": "710d5177685529c95b49eac02b7cc25a084d6b5f",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 118.02,
+          "commitsBetweenForRepo": 100,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,27 +1,27 @@\n-  public static boolean fullyDelete(File dir) throws IOException {\n+  public static boolean fullyDeleteContents(File dir) throws IOException {\n     File contents[] \u003d dir.listFiles();\n     if (contents !\u003d null) {\n       for (int i \u003d 0; i \u003c contents.length; i++) {\n         if (contents[i].isFile()) {\n           if (!contents[i].delete()) {\n             return false;\n           }\n         } else {\n           //try deleting the directory\n           // this might be a symlink\n           boolean b \u003d false;\n           b \u003d contents[i].delete();\n           if (b){\n             //this was indeed a symlink or an empty directory\n             continue;\n           }\n           // if not an empty directory or symlink let\n           // fullydelete handle it.\n           if (!fullyDelete(contents[i])) {\n             return false;\n           }\n         }\n       }\n     }\n-    return dir.delete();\n+    return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static boolean fullyDeleteContents(File dir) throws IOException {\n    File contents[] \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!contents[i].delete()) {\n            return false;\n          }\n        } else {\n          //try deleting the directory\n          // this might be a symlink\n          boolean b \u003d false;\n          b \u003d contents[i].delete();\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i])) {\n            return false;\n          }\n        }\n      }\n    }\n    return true;\n  }",
+          "path": "src/java/org/apache/hadoop/fs/FileUtil.java",
+          "extendedDetails": {
+            "oldValue": "fullyDelete",
+            "newValue": "fullyDeleteContents"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-6531. Enhance FileUtil with an API to delete all contents of a directory. Contributed by Amareshwari Sriramadasu.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@906177 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "03/02/10 11:04 AM",
+          "commitName": "9f7a07f9087e821a38e4a28cdb159e9d3861b290",
+          "commitAuthor": "Hemanth Yamijala",
+          "commitDateOld": "08/10/09 11:37 AM",
+          "commitNameOld": "710d5177685529c95b49eac02b7cc25a084d6b5f",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 118.02,
+          "commitsBetweenForRepo": 100,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,27 +1,27 @@\n-  public static boolean fullyDelete(File dir) throws IOException {\n+  public static boolean fullyDeleteContents(File dir) throws IOException {\n     File contents[] \u003d dir.listFiles();\n     if (contents !\u003d null) {\n       for (int i \u003d 0; i \u003c contents.length; i++) {\n         if (contents[i].isFile()) {\n           if (!contents[i].delete()) {\n             return false;\n           }\n         } else {\n           //try deleting the directory\n           // this might be a symlink\n           boolean b \u003d false;\n           b \u003d contents[i].delete();\n           if (b){\n             //this was indeed a symlink or an empty directory\n             continue;\n           }\n           // if not an empty directory or symlink let\n           // fullydelete handle it.\n           if (!fullyDelete(contents[i])) {\n             return false;\n           }\n         }\n       }\n     }\n-    return dir.delete();\n+    return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static boolean fullyDeleteContents(File dir) throws IOException {\n    File contents[] \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!contents[i].delete()) {\n            return false;\n          }\n        } else {\n          //try deleting the directory\n          // this might be a symlink\n          boolean b \u003d false;\n          b \u003d contents[i].delete();\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i])) {\n            return false;\n          }\n        }\n      }\n    }\n    return true;\n  }",
+          "path": "src/java/org/apache/hadoop/fs/FileUtil.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-4687 Moving src directories on branch\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/core/branches/HADOOP-4687/core@776174 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/05/09 9:20 PM",
+      "commitName": "5128a9a453d64bfe1ed978cf9ffed27985eeef36",
+      "commitAuthor": "Owen O\u0027Malley",
+      "diff": "@@ -0,0 +1,27 @@\n+  public static boolean fullyDelete(File dir) throws IOException {\n+    File contents[] \u003d dir.listFiles();\n+    if (contents !\u003d null) {\n+      for (int i \u003d 0; i \u003c contents.length; i++) {\n+        if (contents[i].isFile()) {\n+          if (!contents[i].delete()) {\n+            return false;\n+          }\n+        } else {\n+          //try deleting the directory\n+          // this might be a symlink\n+          boolean b \u003d false;\n+          b \u003d contents[i].delete();\n+          if (b){\n+            //this was indeed a symlink or an empty directory\n+            continue;\n+          }\n+          // if not an empty directory or symlink let\n+          // fullydelete handle it.\n+          if (!fullyDelete(contents[i])) {\n+            return false;\n+          }\n+        }\n+      }\n+    }\n+    return dir.delete();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static boolean fullyDelete(File dir) throws IOException {\n    File contents[] \u003d dir.listFiles();\n    if (contents !\u003d null) {\n      for (int i \u003d 0; i \u003c contents.length; i++) {\n        if (contents[i].isFile()) {\n          if (!contents[i].delete()) {\n            return false;\n          }\n        } else {\n          //try deleting the directory\n          // this might be a symlink\n          boolean b \u003d false;\n          b \u003d contents[i].delete();\n          if (b){\n            //this was indeed a symlink or an empty directory\n            continue;\n          }\n          // if not an empty directory or symlink let\n          // fullydelete handle it.\n          if (!fullyDelete(contents[i])) {\n            return false;\n          }\n        }\n      }\n    }\n    return dir.delete();\n  }",
+      "path": "src/java/org/apache/hadoop/fs/FileUtil.java"
+    }
+  }
+}

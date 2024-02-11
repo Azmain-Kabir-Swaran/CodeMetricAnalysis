@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DockerLinuxContainerRuntime.java",
+  "functionName": "executeLivelinessCheck",
+  "functionId": "executeLivelinessCheck___ctx-ContainerRuntimeContext",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/runtime/DockerLinuxContainerRuntime.java",
+  "functionStartLine": 1205,
+  "functionEndLine": 1218,
+  "numCommitsSeen": 91,
+  "timeTaken": 3235,
+  "changeHistory": [
+    "5cc2541a163591181b80bf2ec42c1e7e7f8929f5",
+    "22994889dc449f966fb6462a3ac3d3bbaee3ac6a",
+    "3d65dbe032e202361d613344ccc6d9c5f99ba395"
+  ],
+  "changeHistoryShort": {
+    "5cc2541a163591181b80bf2ec42c1e7e7f8929f5": "Ybodychange",
+    "22994889dc449f966fb6462a3ac3d3bbaee3ac6a": "Ybodychange",
+    "3d65dbe032e202361d613344ccc6d9c5f99ba395": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5cc2541a163591181b80bf2ec42c1e7e7f8929f5": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8465. Fixed docker container status for node manager restart.\n           Contributed by Shane Kumpf\n",
+      "commitDate": "02/07/18 10:37 AM",
+      "commitName": "5cc2541a163591181b80bf2ec42c1e7e7f8929f5",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "13/06/18 4:24 PM",
+      "commitNameOld": "22994889dc449f966fb6462a3ac3d3bbaee3ac6a",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 18.76,
+      "commitsBetweenForRepo": 89,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,14 @@\n   private void executeLivelinessCheck(ContainerRuntimeContext ctx)\n       throws ContainerExecutionException {\n     String procFs \u003d ctx.getExecutionAttribute(PROCFS);\n     if (procFs \u003d\u003d null || procFs.isEmpty()) {\n       procFs \u003d DEFAULT_PROCFS;\n     }\n     String pid \u003d ctx.getExecutionAttribute(PID);\n     if (!new File(procFs + File.separator + pid).exists()) {\n       String msg \u003d \"Liveliness check failed for PID: \" + pid\n           + \". Container may have already completed.\";\n-      throw new ContainerExecutionException(msg);\n+      throw new ContainerExecutionException(msg,\n+          PrivilegedOperation.ResultCode.INVALID_CONTAINER_PID.getValue());\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void executeLivelinessCheck(ContainerRuntimeContext ctx)\n      throws ContainerExecutionException {\n    String procFs \u003d ctx.getExecutionAttribute(PROCFS);\n    if (procFs \u003d\u003d null || procFs.isEmpty()) {\n      procFs \u003d DEFAULT_PROCFS;\n    }\n    String pid \u003d ctx.getExecutionAttribute(PID);\n    if (!new File(procFs + File.separator + pid).exists()) {\n      String msg \u003d \"Liveliness check failed for PID: \" + pid\n          + \". Container may have already completed.\";\n      throw new ContainerExecutionException(msg,\n          PrivilegedOperation.ResultCode.INVALID_CONTAINER_PID.getValue());\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/runtime/DockerLinuxContainerRuntime.java",
+      "extendedDetails": {}
+    },
+    "22994889dc449f966fb6462a3ac3d3bbaee3ac6a": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8259.  Improve privileged docker container liveliness checks.\n            Contributed by Shane Kumpf\n",
+      "commitDate": "13/06/18 4:24 PM",
+      "commitName": "22994889dc449f966fb6462a3ac3d3bbaee3ac6a",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "02/06/18 2:46 PM",
+      "commitNameOld": "31998643a51f1e08f723f18dc5476ac1512d5b81",
+      "commitAuthorOld": "Billie Rinaldi",
+      "daysBetweenCommits": 11.07,
+      "commitsBetweenForRepo": 87,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,13 @@\n   private void executeLivelinessCheck(ContainerRuntimeContext ctx)\n       throws ContainerExecutionException {\n-    PrivilegedOperation signalOp \u003d new PrivilegedOperation(\n-        PrivilegedOperation.OperationType.SIGNAL_CONTAINER);\n-    signalOp.appendArgs(ctx.getExecutionAttribute(RUN_AS_USER),\n-        ctx.getExecutionAttribute(USER), Integer.toString(\n-            PrivilegedOperation.RunAsUserCommand.SIGNAL_CONTAINER.getValue()),\n-        ctx.getExecutionAttribute(PID),\n-        Integer.toString(ctx.getExecutionAttribute(SIGNAL).getValue()));\n-    signalOp.disableFailureLogging();\n-    try {\n-      privilegedOperationExecutor.executePrivilegedOperation(null, signalOp,\n-          null, ctx.getContainer().getLaunchContext().getEnvironment(), false,\n-          false);\n-    } catch (PrivilegedOperationException e) {\n-      String msg \u003d \"Liveliness check failed for PID: \"\n-          + ctx.getExecutionAttribute(PID)\n+    String procFs \u003d ctx.getExecutionAttribute(PROCFS);\n+    if (procFs \u003d\u003d null || procFs.isEmpty()) {\n+      procFs \u003d DEFAULT_PROCFS;\n+    }\n+    String pid \u003d ctx.getExecutionAttribute(PID);\n+    if (!new File(procFs + File.separator + pid).exists()) {\n+      String msg \u003d \"Liveliness check failed for PID: \" + pid\n           + \". Container may have already completed.\";\n-      throw new ContainerExecutionException(msg, e.getExitCode(), e.getOutput(),\n-          e.getErrorOutput());\n+      throw new ContainerExecutionException(msg);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void executeLivelinessCheck(ContainerRuntimeContext ctx)\n      throws ContainerExecutionException {\n    String procFs \u003d ctx.getExecutionAttribute(PROCFS);\n    if (procFs \u003d\u003d null || procFs.isEmpty()) {\n      procFs \u003d DEFAULT_PROCFS;\n    }\n    String pid \u003d ctx.getExecutionAttribute(PID);\n    if (!new File(procFs + File.separator + pid).exists()) {\n      String msg \u003d \"Liveliness check failed for PID: \" + pid\n          + \". Container may have already completed.\";\n      throw new ContainerExecutionException(msg);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/runtime/DockerLinuxContainerRuntime.java",
+      "extendedDetails": {}
+    },
+    "3d65dbe032e202361d613344ccc6d9c5f99ba395": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5366. Improve signal handling and delete delay for Docker on Yarn.\n           (Contributed by Shane Kumpf)\n",
+      "commitDate": "12/01/18 10:41 AM",
+      "commitName": "3d65dbe032e202361d613344ccc6d9c5f99ba395",
+      "commitAuthor": "Eric Yang",
+      "diff": "@@ -0,0 +1,22 @@\n+  private void executeLivelinessCheck(ContainerRuntimeContext ctx)\n+      throws ContainerExecutionException {\n+    PrivilegedOperation signalOp \u003d new PrivilegedOperation(\n+        PrivilegedOperation.OperationType.SIGNAL_CONTAINER);\n+    signalOp.appendArgs(ctx.getExecutionAttribute(RUN_AS_USER),\n+        ctx.getExecutionAttribute(USER), Integer.toString(\n+            PrivilegedOperation.RunAsUserCommand.SIGNAL_CONTAINER.getValue()),\n+        ctx.getExecutionAttribute(PID),\n+        Integer.toString(ctx.getExecutionAttribute(SIGNAL).getValue()));\n+    signalOp.disableFailureLogging();\n+    try {\n+      privilegedOperationExecutor.executePrivilegedOperation(null, signalOp,\n+          null, ctx.getContainer().getLaunchContext().getEnvironment(), false,\n+          false);\n+    } catch (PrivilegedOperationException e) {\n+      String msg \u003d \"Liveliness check failed for PID: \"\n+          + ctx.getExecutionAttribute(PID)\n+          + \". Container may have already completed.\";\n+      throw new ContainerExecutionException(msg, e.getExitCode(), e.getOutput(),\n+          e.getErrorOutput());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void executeLivelinessCheck(ContainerRuntimeContext ctx)\n      throws ContainerExecutionException {\n    PrivilegedOperation signalOp \u003d new PrivilegedOperation(\n        PrivilegedOperation.OperationType.SIGNAL_CONTAINER);\n    signalOp.appendArgs(ctx.getExecutionAttribute(RUN_AS_USER),\n        ctx.getExecutionAttribute(USER), Integer.toString(\n            PrivilegedOperation.RunAsUserCommand.SIGNAL_CONTAINER.getValue()),\n        ctx.getExecutionAttribute(PID),\n        Integer.toString(ctx.getExecutionAttribute(SIGNAL).getValue()));\n    signalOp.disableFailureLogging();\n    try {\n      privilegedOperationExecutor.executePrivilegedOperation(null, signalOp,\n          null, ctx.getContainer().getLaunchContext().getEnvironment(), false,\n          false);\n    } catch (PrivilegedOperationException e) {\n      String msg \u003d \"Liveliness check failed for PID: \"\n          + ctx.getExecutionAttribute(PID)\n          + \". Container may have already completed.\";\n      throw new ContainerExecutionException(msg, e.getExitCode(), e.getOutput(),\n          e.getErrorOutput());\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/runtime/DockerLinuxContainerRuntime.java"
+    }
+  }
+}

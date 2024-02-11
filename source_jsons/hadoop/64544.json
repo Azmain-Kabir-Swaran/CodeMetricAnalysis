@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AFileSystem.java",
+  "functionName": "initMultipartUploads",
+  "functionId": "initMultipartUploads___conf-Configuration",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+  "functionStartLine": 706,
+  "functionEndLine": 721,
+  "numCommitsSeen": 141,
+  "timeTaken": 5080,
+  "changeHistory": [
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+    "39ec1515a205952eda7e171408a8b83eceb4abde",
+    "27c4e90efce04e1b1302f668b5eb22412e00d033",
+    "76fab26c5c02cef38924d04136407489fd9457d9"
+  ],
+  "changeHistoryShort": {
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Ybodychange",
+    "39ec1515a205952eda7e171408a8b83eceb4abde": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "27c4e90efce04e1b1302f668b5eb22412e00d033": "Ybodychange",
+    "76fab26c5c02cef38924d04136407489fd9457d9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "25/09/17 3:59 PM",
+      "commitNameOld": "47011d7dd300b0c74bb6cfe25b918c479d718f4f",
+      "commitAuthorOld": "Aaron Fabbri",
+      "daysBetweenCommits": 57.69,
+      "commitsBetweenForRepo": 477,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,16 @@\n   private void initMultipartUploads(Configuration conf) throws IOException {\n     boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART,\n         DEFAULT_PURGE_EXISTING_MULTIPART);\n     long purgeExistingMultipartAge \u003d longOption(conf,\n         PURGE_EXISTING_MULTIPART_AGE, DEFAULT_PURGE_EXISTING_MULTIPART_AGE, 0);\n \n     if (purgeExistingMultipart) {\n-      Date purgeBefore \u003d\n-          new Date(new Date().getTime() - purgeExistingMultipartAge * 1000);\n-\n       try {\n-        transfers.abortMultipartUploads(bucket, purgeBefore);\n-      } catch (AmazonServiceException e) {\n-        if (e.getStatusCode() \u003d\u003d 403) {\n-          instrumentation.errorIgnored();\n-          LOG.debug(\"Failed to purging multipart uploads against {},\" +\n-              \" FS may be read only\", bucket, e);\n-        } else {\n-          throw translateException(\"purging multipart uploads\", bucket, e);\n-        }\n+        abortOutstandingMultipartUploads(purgeExistingMultipartAge);\n+      } catch (AccessDeniedException e) {\n+        instrumentation.errorIgnored();\n+        LOG.debug(\"Failed to purge multipart uploads against {},\" +\n+            \" FS may be read only\", bucket);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void initMultipartUploads(Configuration conf) throws IOException {\n    boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART,\n        DEFAULT_PURGE_EXISTING_MULTIPART);\n    long purgeExistingMultipartAge \u003d longOption(conf,\n        PURGE_EXISTING_MULTIPART_AGE, DEFAULT_PURGE_EXISTING_MULTIPART_AGE, 0);\n\n    if (purgeExistingMultipart) {\n      try {\n        abortOutstandingMultipartUploads(purgeExistingMultipartAge);\n      } catch (AccessDeniedException e) {\n        instrumentation.errorIgnored();\n        LOG.debug(\"Failed to purge multipart uploads against {},\" +\n            \" FS may be read only\", bucket);\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "39ec1515a205952eda7e171408a8b83eceb4abde": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-13130. s3a failures can surface as RTEs, not IOEs. (Steve Loughran)\n",
+      "commitDate": "21/05/16 8:39 AM",
+      "commitName": "39ec1515a205952eda7e171408a8b83eceb4abde",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-13130. s3a failures can surface as RTEs, not IOEs. (Steve Loughran)\n",
+          "commitDate": "21/05/16 8:39 AM",
+          "commitName": "39ec1515a205952eda7e171408a8b83eceb4abde",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "20/05/16 5:52 AM",
+          "commitNameOld": "757050ff355d40bc28f9dbfd0c0083c5f337d270",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 1.12,
+          "commitsBetweenForRepo": 4,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,23 @@\n-  private void initMultipartUploads(Configuration conf) {\n+  private void initMultipartUploads(Configuration conf) throws IOException {\n     boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART,\n         DEFAULT_PURGE_EXISTING_MULTIPART);\n     long purgeExistingMultipartAge \u003d longOption(conf,\n         PURGE_EXISTING_MULTIPART_AGE, DEFAULT_PURGE_EXISTING_MULTIPART_AGE, 0);\n \n     if (purgeExistingMultipart) {\n       Date purgeBefore \u003d\n           new Date(new Date().getTime() - purgeExistingMultipartAge * 1000);\n \n       try {\n         transfers.abortMultipartUploads(bucket, purgeBefore);\n       } catch (AmazonServiceException e) {\n         if (e.getStatusCode() \u003d\u003d 403) {\n           instrumentation.errorIgnored();\n-          LOG.debug(\"Failed to abort multipart uploads against {},\" +\n+          LOG.debug(\"Failed to purging multipart uploads against {},\" +\n               \" FS may be read only\", bucket, e);\n         } else {\n-          throw e;\n+          throw translateException(\"purging multipart uploads\", bucket, e);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void initMultipartUploads(Configuration conf) throws IOException {\n    boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART,\n        DEFAULT_PURGE_EXISTING_MULTIPART);\n    long purgeExistingMultipartAge \u003d longOption(conf,\n        PURGE_EXISTING_MULTIPART_AGE, DEFAULT_PURGE_EXISTING_MULTIPART_AGE, 0);\n\n    if (purgeExistingMultipart) {\n      Date purgeBefore \u003d\n          new Date(new Date().getTime() - purgeExistingMultipartAge * 1000);\n\n      try {\n        transfers.abortMultipartUploads(bucket, purgeBefore);\n      } catch (AmazonServiceException e) {\n        if (e.getStatusCode() \u003d\u003d 403) {\n          instrumentation.errorIgnored();\n          LOG.debug(\"Failed to purging multipart uploads against {},\" +\n              \" FS may be read only\", bucket, e);\n        } else {\n          throw translateException(\"purging multipart uploads\", bucket, e);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13130. s3a failures can surface as RTEs, not IOEs. (Steve Loughran)\n",
+          "commitDate": "21/05/16 8:39 AM",
+          "commitName": "39ec1515a205952eda7e171408a8b83eceb4abde",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "20/05/16 5:52 AM",
+          "commitNameOld": "757050ff355d40bc28f9dbfd0c0083c5f337d270",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 1.12,
+          "commitsBetweenForRepo": 4,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,23 @@\n-  private void initMultipartUploads(Configuration conf) {\n+  private void initMultipartUploads(Configuration conf) throws IOException {\n     boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART,\n         DEFAULT_PURGE_EXISTING_MULTIPART);\n     long purgeExistingMultipartAge \u003d longOption(conf,\n         PURGE_EXISTING_MULTIPART_AGE, DEFAULT_PURGE_EXISTING_MULTIPART_AGE, 0);\n \n     if (purgeExistingMultipart) {\n       Date purgeBefore \u003d\n           new Date(new Date().getTime() - purgeExistingMultipartAge * 1000);\n \n       try {\n         transfers.abortMultipartUploads(bucket, purgeBefore);\n       } catch (AmazonServiceException e) {\n         if (e.getStatusCode() \u003d\u003d 403) {\n           instrumentation.errorIgnored();\n-          LOG.debug(\"Failed to abort multipart uploads against {},\" +\n+          LOG.debug(\"Failed to purging multipart uploads against {},\" +\n               \" FS may be read only\", bucket, e);\n         } else {\n-          throw e;\n+          throw translateException(\"purging multipart uploads\", bucket, e);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void initMultipartUploads(Configuration conf) throws IOException {\n    boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART,\n        DEFAULT_PURGE_EXISTING_MULTIPART);\n    long purgeExistingMultipartAge \u003d longOption(conf,\n        PURGE_EXISTING_MULTIPART_AGE, DEFAULT_PURGE_EXISTING_MULTIPART_AGE, 0);\n\n    if (purgeExistingMultipart) {\n      Date purgeBefore \u003d\n          new Date(new Date().getTime() - purgeExistingMultipartAge * 1000);\n\n      try {\n        transfers.abortMultipartUploads(bucket, purgeBefore);\n      } catch (AmazonServiceException e) {\n        if (e.getStatusCode() \u003d\u003d 403) {\n          instrumentation.errorIgnored();\n          LOG.debug(\"Failed to purging multipart uploads against {},\" +\n              \" FS may be read only\", bucket, e);\n        } else {\n          throw translateException(\"purging multipart uploads\", bucket, e);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "27c4e90efce04e1b1302f668b5eb22412e00d033": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13028 add low level counter metrics for S3A; use in read performance tests. contributed by: stevel\npatch includes\nHADOOP-12844 Recover when S3A fails on IOException in read()\nHADOOP-13058 S3A FS fails during init against a read-only FS if multipart purge\nHADOOP-13047 S3a Forward seek in stream length to be configurable\n",
+      "commitDate": "12/05/16 11:24 AM",
+      "commitName": "27c4e90efce04e1b1302f668b5eb22412e00d033",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "12/05/16 5:57 AM",
+      "commitNameOld": "def2a6d3856452d5c804f04e5bf485541a3bc53a",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 0.23,
+      "commitsBetweenForRepo": 5,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,23 @@\n   private void initMultipartUploads(Configuration conf) {\n     boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART,\n-      DEFAULT_PURGE_EXISTING_MULTIPART);\n-    long purgeExistingMultipartAge \u003d conf.getLong(PURGE_EXISTING_MULTIPART_AGE,\n-      DEFAULT_PURGE_EXISTING_MULTIPART_AGE);\n+        DEFAULT_PURGE_EXISTING_MULTIPART);\n+    long purgeExistingMultipartAge \u003d longOption(conf,\n+        PURGE_EXISTING_MULTIPART_AGE, DEFAULT_PURGE_EXISTING_MULTIPART_AGE, 0);\n \n     if (purgeExistingMultipart) {\n-      Date purgeBefore \u003d new Date(new Date().getTime() - purgeExistingMultipartAge*1000);\n+      Date purgeBefore \u003d\n+          new Date(new Date().getTime() - purgeExistingMultipartAge * 1000);\n \n-      transfers.abortMultipartUploads(bucket, purgeBefore);\n+      try {\n+        transfers.abortMultipartUploads(bucket, purgeBefore);\n+      } catch (AmazonServiceException e) {\n+        if (e.getStatusCode() \u003d\u003d 403) {\n+          instrumentation.errorIgnored();\n+          LOG.debug(\"Failed to abort multipart uploads against {},\" +\n+              \" FS may be read only\", bucket, e);\n+        } else {\n+          throw e;\n+        }\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void initMultipartUploads(Configuration conf) {\n    boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART,\n        DEFAULT_PURGE_EXISTING_MULTIPART);\n    long purgeExistingMultipartAge \u003d longOption(conf,\n        PURGE_EXISTING_MULTIPART_AGE, DEFAULT_PURGE_EXISTING_MULTIPART_AGE, 0);\n\n    if (purgeExistingMultipart) {\n      Date purgeBefore \u003d\n          new Date(new Date().getTime() - purgeExistingMultipartAge * 1000);\n\n      try {\n        transfers.abortMultipartUploads(bucket, purgeBefore);\n      } catch (AmazonServiceException e) {\n        if (e.getStatusCode() \u003d\u003d 403) {\n          instrumentation.errorIgnored();\n          LOG.debug(\"Failed to abort multipart uploads against {},\" +\n              \" FS may be read only\", bucket, e);\n        } else {\n          throw e;\n        }\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "76fab26c5c02cef38924d04136407489fd9457d9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12548. Read s3a creds from a Credential Provider. Contributed by Larry McCay.\n",
+      "commitDate": "17/02/16 12:19 PM",
+      "commitName": "76fab26c5c02cef38924d04136407489fd9457d9",
+      "commitAuthor": "cnauroth",
+      "diff": "@@ -0,0 +1,12 @@\n+  private void initMultipartUploads(Configuration conf) {\n+    boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART, \n+      DEFAULT_PURGE_EXISTING_MULTIPART);\n+    long purgeExistingMultipartAge \u003d conf.getLong(PURGE_EXISTING_MULTIPART_AGE, \n+      DEFAULT_PURGE_EXISTING_MULTIPART_AGE);\n+\n+    if (purgeExistingMultipart) {\n+      Date purgeBefore \u003d new Date(new Date().getTime() - purgeExistingMultipartAge*1000);\n+\n+      transfers.abortMultipartUploads(bucket, purgeBefore);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void initMultipartUploads(Configuration conf) {\n    boolean purgeExistingMultipart \u003d conf.getBoolean(PURGE_EXISTING_MULTIPART, \n      DEFAULT_PURGE_EXISTING_MULTIPART);\n    long purgeExistingMultipartAge \u003d conf.getLong(PURGE_EXISTING_MULTIPART_AGE, \n      DEFAULT_PURGE_EXISTING_MULTIPART_AGE);\n\n    if (purgeExistingMultipart) {\n      Date purgeBefore \u003d new Date(new Date().getTime() - purgeExistingMultipartAge*1000);\n\n      transfers.abortMultipartUploads(bucket, purgeBefore);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java"
+    }
+  }
+}

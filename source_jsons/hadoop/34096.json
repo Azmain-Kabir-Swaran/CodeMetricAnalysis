@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CGroupsHandlerImpl.java",
+  "functionName": "checkAndDeleteCgroup",
+  "functionId": "checkAndDeleteCgroup___cgf-File",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/CGroupsHandlerImpl.java",
+  "functionStartLine": 494,
+  "functionEndLine": 522,
+  "numCommitsSeen": 25,
+  "timeTaken": 1650,
+  "changeHistory": [
+    "d4258fcad71eabe2de3cf829cde36840200ab9b6",
+    "a2f680493f040704e2b85108e286731ee3860a52",
+    "838b06ac87339494cea706d4a97e7f5383bdc442"
+  ],
+  "changeHistoryShort": {
+    "d4258fcad71eabe2de3cf829cde36840200ab9b6": "Ybodychange",
+    "a2f680493f040704e2b85108e286731ee3860a52": "Ymodifierchange",
+    "838b06ac87339494cea706d4a97e7f5383bdc442": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d4258fcad71eabe2de3cf829cde36840200ab9b6": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8629. Container cleanup fails while trying to delete Cgroups. (Suma Shivaprasad via wangda)\n\nChange-Id: I392ef4f8baa84d5d7b1f2e438c560b5426b6d4f2\n",
+      "commitDate": "07/08/18 12:36 PM",
+      "commitName": "d4258fcad71eabe2de3cf829cde36840200ab9b6",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "04/06/18 10:41 AM",
+      "commitNameOld": "e2c172dc9faeb5472a32d7052e54d79d499c0a55",
+      "commitAuthorOld": "Miklos Szegedi",
+      "daysBetweenCommits": 64.08,
+      "commitsBetweenForRepo": 401,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,29 @@\n   private boolean checkAndDeleteCgroup(File cgf) throws InterruptedException {\n     boolean deleted \u003d false;\n     // FileInputStream in \u003d null;\n-    try (FileInputStream in \u003d new FileInputStream(cgf + \"/tasks\")) {\n-      if (in.read() \u003d\u003d -1) {\n+    if ( cgf.exists() ) {\n+      try (FileInputStream in \u003d new FileInputStream(cgf + \"/tasks\")) {\n+        if (in.read() \u003d\u003d -1) {\n         /*\n          * \"tasks\" file is empty, sleep a bit more and then try to delete the\n          * cgroup. Some versions of linux will occasionally panic due to a race\n          * condition in this area, hence the paranoia.\n          */\n-        Thread.sleep(deleteCGroupDelay);\n-        deleted \u003d cgf.delete();\n-        if (!deleted) {\n-          LOG.warn(\"Failed attempt to delete cgroup: \" + cgf);\n+          Thread.sleep(deleteCGroupDelay);\n+          deleted \u003d cgf.delete();\n+          if (!deleted) {\n+            LOG.warn(\"Failed attempt to delete cgroup: \" + cgf);\n+          }\n+        } else{\n+          logLineFromTasksFile(cgf);\n         }\n-      } else {\n-        logLineFromTasksFile(cgf);\n+      } catch (IOException e) {\n+        LOG.warn(\"Failed to read cgroup tasks file. \", e);\n       }\n-    } catch (IOException e) {\n-      LOG.warn(\"Failed to read cgroup tasks file. \", e);\n+    } else {\n+      LOG.info(\"Parent Cgroups directory {} does not exist. Skipping \"\n+          + \"deletion\", cgf.getPath());\n+      deleted \u003d true;\n     }\n     return deleted;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean checkAndDeleteCgroup(File cgf) throws InterruptedException {\n    boolean deleted \u003d false;\n    // FileInputStream in \u003d null;\n    if ( cgf.exists() ) {\n      try (FileInputStream in \u003d new FileInputStream(cgf + \"/tasks\")) {\n        if (in.read() \u003d\u003d -1) {\n        /*\n         * \"tasks\" file is empty, sleep a bit more and then try to delete the\n         * cgroup. Some versions of linux will occasionally panic due to a race\n         * condition in this area, hence the paranoia.\n         */\n          Thread.sleep(deleteCGroupDelay);\n          deleted \u003d cgf.delete();\n          if (!deleted) {\n            LOG.warn(\"Failed attempt to delete cgroup: \" + cgf);\n          }\n        } else{\n          logLineFromTasksFile(cgf);\n        }\n      } catch (IOException e) {\n        LOG.warn(\"Failed to read cgroup tasks file. \", e);\n      }\n    } else {\n      LOG.info(\"Parent Cgroups directory {} does not exist. Skipping \"\n          + \"deletion\", cgf.getPath());\n      deleted \u003d true;\n    }\n    return deleted;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/CGroupsHandlerImpl.java",
+      "extendedDetails": {}
+    },
+    "a2f680493f040704e2b85108e286731ee3860a52": {
+      "type": "Ymodifierchange",
+      "commitMessage": "YARN-5301. NM mount cpu cgroups failed on some systems\n(Contributed by Miklos Szegedi via Daniel Templeton)\n",
+      "commitDate": "09/05/17 12:05 PM",
+      "commitName": "a2f680493f040704e2b85108e286731ee3860a52",
+      "commitAuthor": "Daniel Templeton",
+      "commitDateOld": "24/04/17 11:37 AM",
+      "commitNameOld": "8ac50e1322cb3f84bd998635924d85846aa47c94",
+      "commitAuthorOld": "Haibo Chen",
+      "daysBetweenCommits": 15.02,
+      "commitsBetweenForRepo": 91,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,23 @@\n-  boolean checkAndDeleteCgroup(File cgf) throws InterruptedException {\n+  private boolean checkAndDeleteCgroup(File cgf) throws InterruptedException {\n     boolean deleted \u003d false;\n     // FileInputStream in \u003d null;\n     try (FileInputStream in \u003d new FileInputStream(cgf + \"/tasks\")) {\n       if (in.read() \u003d\u003d -1) {\n         /*\n          * \"tasks\" file is empty, sleep a bit more and then try to delete the\n          * cgroup. Some versions of linux will occasionally panic due to a race\n          * condition in this area, hence the paranoia.\n          */\n         Thread.sleep(deleteCGroupDelay);\n         deleted \u003d cgf.delete();\n         if (!deleted) {\n           LOG.warn(\"Failed attempt to delete cgroup: \" + cgf);\n         }\n       } else {\n         logLineFromTasksFile(cgf);\n       }\n     } catch (IOException e) {\n       LOG.warn(\"Failed to read cgroup tasks file. \", e);\n     }\n     return deleted;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean checkAndDeleteCgroup(File cgf) throws InterruptedException {\n    boolean deleted \u003d false;\n    // FileInputStream in \u003d null;\n    try (FileInputStream in \u003d new FileInputStream(cgf + \"/tasks\")) {\n      if (in.read() \u003d\u003d -1) {\n        /*\n         * \"tasks\" file is empty, sleep a bit more and then try to delete the\n         * cgroup. Some versions of linux will occasionally panic due to a race\n         * condition in this area, hence the paranoia.\n         */\n        Thread.sleep(deleteCGroupDelay);\n        deleted \u003d cgf.delete();\n        if (!deleted) {\n          LOG.warn(\"Failed attempt to delete cgroup: \" + cgf);\n        }\n      } else {\n        logLineFromTasksFile(cgf);\n      }\n    } catch (IOException e) {\n      LOG.warn(\"Failed to read cgroup tasks file. \", e);\n    }\n    return deleted;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/CGroupsHandlerImpl.java",
+      "extendedDetails": {
+        "oldValue": "[]",
+        "newValue": "[private]"
+      }
+    },
+    "838b06ac87339494cea706d4a97e7f5383bdc442": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3443. Create a \u0027ResourceHandler\u0027 subsystem to ease addition of support for new resource types on the NM. Contributed by Sidharta Seethana.\n",
+      "commitDate": "13/04/15 6:35 PM",
+      "commitName": "838b06ac87339494cea706d4a97e7f5383bdc442",
+      "commitAuthor": "Junping Du",
+      "diff": "@@ -0,0 +1,23 @@\n+  boolean checkAndDeleteCgroup(File cgf) throws InterruptedException {\n+    boolean deleted \u003d false;\n+    // FileInputStream in \u003d null;\n+    try (FileInputStream in \u003d new FileInputStream(cgf + \"/tasks\")) {\n+      if (in.read() \u003d\u003d -1) {\n+        /*\n+         * \"tasks\" file is empty, sleep a bit more and then try to delete the\n+         * cgroup. Some versions of linux will occasionally panic due to a race\n+         * condition in this area, hence the paranoia.\n+         */\n+        Thread.sleep(deleteCGroupDelay);\n+        deleted \u003d cgf.delete();\n+        if (!deleted) {\n+          LOG.warn(\"Failed attempt to delete cgroup: \" + cgf);\n+        }\n+      } else {\n+        logLineFromTasksFile(cgf);\n+      }\n+    } catch (IOException e) {\n+      LOG.warn(\"Failed to read cgroup tasks file. \", e);\n+    }\n+    return deleted;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  boolean checkAndDeleteCgroup(File cgf) throws InterruptedException {\n    boolean deleted \u003d false;\n    // FileInputStream in \u003d null;\n    try (FileInputStream in \u003d new FileInputStream(cgf + \"/tasks\")) {\n      if (in.read() \u003d\u003d -1) {\n        /*\n         * \"tasks\" file is empty, sleep a bit more and then try to delete the\n         * cgroup. Some versions of linux will occasionally panic due to a race\n         * condition in this area, hence the paranoia.\n         */\n        Thread.sleep(deleteCGroupDelay);\n        deleted \u003d cgf.delete();\n        if (!deleted) {\n          LOG.warn(\"Failed attempt to delete cgroup: \" + cgf);\n        }\n      } else {\n        logLineFromTasksFile(cgf);\n      }\n    } catch (IOException e) {\n      LOG.warn(\"Failed to read cgroup tasks file. \", e);\n    }\n    return deleted;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/CGroupsHandlerImpl.java"
+    }
+  }
+}

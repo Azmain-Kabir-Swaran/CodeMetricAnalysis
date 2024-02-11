@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbstractS3ACommitter.java",
+  "functionName": "abortPendingUploadsInCleanup",
+  "functionId": "abortPendingUploadsInCleanup___suppressExceptions-boolean",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/AbstractS3ACommitter.java",
+  "functionStartLine": 659,
+  "functionEndLine": 682,
+  "numCommitsSeen": 6,
+  "timeTaken": 2497,
+  "changeHistory": [
+    "6574f27fa348542411bff888b184cd7ce34e5d9e",
+    "e02eb24e0a9139418120027b694492e0738df20a",
+    "5a0babf76550f63dad4c17173c4da2bf335c6532",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": "Ybodychange",
+    "e02eb24e0a9139418120027b694492e0738df20a": "Ybodychange",
+    "5a0babf76550f63dad4c17173c4da2bf335c6532": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16570. S3A committers encounter scale issues.\n\nContributed by Steve Loughran.\n\nThis addresses two scale issues which has surfaced in large scale benchmarks\nof the S3A Committers.\n\n* Thread pools are not cleaned up.\n  This now happens, with tests.\n\n* OOM on job commit for jobs with many thousands of tasks,\n  each generating tens of (very large) files.\n\nInstead of loading all pending commits into memory as a single list, the list\nof files to load is the sole list which is passed around; .pendingset files are\nloaded and processed in isolation -and reloaded if necessary for any\nabort/rollback operation.\n\nThe parallel commit/abort/revert operations now work at the .pendingset level,\nrather than that of individual pending commit files. The existing parallelized\nTasks API is still used to commit those files, but with a null thread pool, so\nas to serialize the operations.\n\nChange-Id: I5c8240cd31800eaa83d112358770ca0eb2bca797\n",
+      "commitDate": "04/10/19 10:54 AM",
+      "commitName": "6574f27fa348542411bff888b184cd7ce34e5d9e",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "20/06/19 1:56 AM",
+      "commitNameOld": "e02eb24e0a9139418120027b694492e0738df20a",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 106.37,
+      "commitsBetweenForRepo": 952,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,24 @@\n   protected void abortPendingUploadsInCleanup(\n       boolean suppressExceptions) throws IOException {\n     Path dest \u003d getOutputPath();\n-    try (DurationInfo d \u003d\n+    try (DurationInfo ignored \u003d\n              new DurationInfo(LOG, \"Aborting all pending commits under %s\",\n                  dest);\n          CommitOperations.CommitContext commitContext\n              \u003d initiateCommitOperation()) {\n       CommitOperations ops \u003d getCommitOperations();\n       List\u003cMultipartUpload\u003e pending;\n       try {\n         pending \u003d ops.listPendingUploadsUnderPath(dest);\n       } catch (IOException e) {\n         // raised if the listPendingUploads call failed.\n         maybeIgnore(suppressExceptions, \"aborting pending uploads\", e);\n         return;\n       }\n       Tasks.foreach(pending)\n           .executeWith(buildThreadPool(getJobContext()))\n           .suppressExceptions(suppressExceptions)\n           .run(u -\u003e commitContext.abortMultipartCommit(\n               u.getKey(), u.getUploadId()));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void abortPendingUploadsInCleanup(\n      boolean suppressExceptions) throws IOException {\n    Path dest \u003d getOutputPath();\n    try (DurationInfo ignored \u003d\n             new DurationInfo(LOG, \"Aborting all pending commits under %s\",\n                 dest);\n         CommitOperations.CommitContext commitContext\n             \u003d initiateCommitOperation()) {\n      CommitOperations ops \u003d getCommitOperations();\n      List\u003cMultipartUpload\u003e pending;\n      try {\n        pending \u003d ops.listPendingUploadsUnderPath(dest);\n      } catch (IOException e) {\n        // raised if the listPendingUploads call failed.\n        maybeIgnore(suppressExceptions, \"aborting pending uploads\", e);\n        return;\n      }\n      Tasks.foreach(pending)\n          .executeWith(buildThreadPool(getJobContext()))\n          .suppressExceptions(suppressExceptions)\n          .run(u -\u003e commitContext.abortMultipartCommit(\n              u.getKey(), u.getUploadId()));\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/AbstractS3ACommitter.java",
+      "extendedDetails": {}
+    },
+    "e02eb24e0a9139418120027b694492e0738df20a": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+      "commitDate": "20/06/19 1:56 AM",
+      "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "26/02/19 9:10 AM",
+      "commitNameOld": "52b2eab575d0b4d8ce7fa57661aaca6b8a123cc2",
+      "commitAuthorOld": "Abhishek Modi",
+      "daysBetweenCommits": 113.66,
+      "commitsBetweenForRepo": 786,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,24 @@\n   protected void abortPendingUploadsInCleanup(\n       boolean suppressExceptions) throws IOException {\n     Path dest \u003d getOutputPath();\n     try (DurationInfo d \u003d\n              new DurationInfo(LOG, \"Aborting all pending commits under %s\",\n-                 dest)) {\n+                 dest);\n+         CommitOperations.CommitContext commitContext\n+             \u003d initiateCommitOperation()) {\n       CommitOperations ops \u003d getCommitOperations();\n       List\u003cMultipartUpload\u003e pending;\n       try {\n         pending \u003d ops.listPendingUploadsUnderPath(dest);\n       } catch (IOException e) {\n         // raised if the listPendingUploads call failed.\n         maybeIgnore(suppressExceptions, \"aborting pending uploads\", e);\n         return;\n       }\n       Tasks.foreach(pending)\n           .executeWith(buildThreadPool(getJobContext()))\n           .suppressExceptions(suppressExceptions)\n-          .run(u -\u003e ops.abortMultipartCommit(u.getKey(), u.getUploadId()));\n+          .run(u -\u003e commitContext.abortMultipartCommit(\n+              u.getKey(), u.getUploadId()));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void abortPendingUploadsInCleanup(\n      boolean suppressExceptions) throws IOException {\n    Path dest \u003d getOutputPath();\n    try (DurationInfo d \u003d\n             new DurationInfo(LOG, \"Aborting all pending commits under %s\",\n                 dest);\n         CommitOperations.CommitContext commitContext\n             \u003d initiateCommitOperation()) {\n      CommitOperations ops \u003d getCommitOperations();\n      List\u003cMultipartUpload\u003e pending;\n      try {\n        pending \u003d ops.listPendingUploadsUnderPath(dest);\n      } catch (IOException e) {\n        // raised if the listPendingUploads call failed.\n        maybeIgnore(suppressExceptions, \"aborting pending uploads\", e);\n        return;\n      }\n      Tasks.foreach(pending)\n          .executeWith(buildThreadPool(getJobContext()))\n          .suppressExceptions(suppressExceptions)\n          .run(u -\u003e commitContext.abortMultipartCommit(\n              u.getKey(), u.getUploadId()));\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/AbstractS3ACommitter.java",
+      "extendedDetails": {}
+    },
+    "5a0babf76550f63dad4c17173c4da2bf335c6532": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15107. Stabilize/tune S3A committers; review correctness \u0026 docs.\nContributed by Steve Loughran.\n",
+      "commitDate": "30/08/18 6:49 AM",
+      "commitName": "5a0babf76550f63dad4c17173c4da2bf335c6532",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "27/11/17 8:31 AM",
+      "commitNameOld": "3cd75845da1aced3d88e0ce68c68e8d95f48fb79",
+      "commitAuthorOld": "Rohith Sharma K S",
+      "daysBetweenCommits": 275.89,
+      "commitsBetweenForRepo": 2513,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,21 @@\n   protected void abortPendingUploadsInCleanup(\n       boolean suppressExceptions) throws IOException {\n     Path dest \u003d getOutputPath();\n     try (DurationInfo d \u003d\n              new DurationInfo(LOG, \"Aborting all pending commits under %s\",\n                  dest)) {\n       CommitOperations ops \u003d getCommitOperations();\n-      List\u003cMultipartUpload\u003e pending \u003d ops\n-          .listPendingUploadsUnderPath(dest);\n+      List\u003cMultipartUpload\u003e pending;\n+      try {\n+        pending \u003d ops.listPendingUploadsUnderPath(dest);\n+      } catch (IOException e) {\n+        // raised if the listPendingUploads call failed.\n+        maybeIgnore(suppressExceptions, \"aborting pending uploads\", e);\n+        return;\n+      }\n       Tasks.foreach(pending)\n           .executeWith(buildThreadPool(getJobContext()))\n           .suppressExceptions(suppressExceptions)\n           .run(u -\u003e ops.abortMultipartCommit(u.getKey(), u.getUploadId()));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void abortPendingUploadsInCleanup(\n      boolean suppressExceptions) throws IOException {\n    Path dest \u003d getOutputPath();\n    try (DurationInfo d \u003d\n             new DurationInfo(LOG, \"Aborting all pending commits under %s\",\n                 dest)) {\n      CommitOperations ops \u003d getCommitOperations();\n      List\u003cMultipartUpload\u003e pending;\n      try {\n        pending \u003d ops.listPendingUploadsUnderPath(dest);\n      } catch (IOException e) {\n        // raised if the listPendingUploads call failed.\n        maybeIgnore(suppressExceptions, \"aborting pending uploads\", e);\n        return;\n      }\n      Tasks.foreach(pending)\n          .executeWith(buildThreadPool(getJobContext()))\n          .suppressExceptions(suppressExceptions)\n          .run(u -\u003e ops.abortMultipartCommit(u.getKey(), u.getUploadId()));\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/AbstractS3ACommitter.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,15 @@\n+  protected void abortPendingUploadsInCleanup(\n+      boolean suppressExceptions) throws IOException {\n+    Path dest \u003d getOutputPath();\n+    try (DurationInfo d \u003d\n+             new DurationInfo(LOG, \"Aborting all pending commits under %s\",\n+                 dest)) {\n+      CommitOperations ops \u003d getCommitOperations();\n+      List\u003cMultipartUpload\u003e pending \u003d ops\n+          .listPendingUploadsUnderPath(dest);\n+      Tasks.foreach(pending)\n+          .executeWith(buildThreadPool(getJobContext()))\n+          .suppressExceptions(suppressExceptions)\n+          .run(u -\u003e ops.abortMultipartCommit(u.getKey(), u.getUploadId()));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void abortPendingUploadsInCleanup(\n      boolean suppressExceptions) throws IOException {\n    Path dest \u003d getOutputPath();\n    try (DurationInfo d \u003d\n             new DurationInfo(LOG, \"Aborting all pending commits under %s\",\n                 dest)) {\n      CommitOperations ops \u003d getCommitOperations();\n      List\u003cMultipartUpload\u003e pending \u003d ops\n          .listPendingUploadsUnderPath(dest);\n      Tasks.foreach(pending)\n          .executeWith(buildThreadPool(getJobContext()))\n          .suppressExceptions(suppressExceptions)\n          .run(u -\u003e ops.abortMultipartCommit(u.getKey(), u.getUploadId()));\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/AbstractS3ACommitter.java"
+    }
+  }
+}

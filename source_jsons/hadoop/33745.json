@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RuncContainerRuntime.java",
+  "functionName": "signalContainer",
+  "functionId": "signalContainer___ctx-ContainerRuntimeContext",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/runtime/RuncContainerRuntime.java",
+  "functionStartLine": 812,
+  "functionEndLine": 853,
+  "numCommitsSeen": 1,
+  "timeTaken": 1383,
+  "changeHistory": [
+    "0e22e9ab83438af37d821cb2f96e31f9a19ace2c"
+  ],
+  "changeHistoryShort": {
+    "0e22e9ab83438af37d821cb2f96e31f9a19ace2c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0e22e9ab83438af37d821cb2f96e31f9a19ace2c": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-9562. Add Java changes for the new RuncContainerRuntime. Contributed by Eric Badger\n",
+      "commitDate": "18/11/19 1:56 PM",
+      "commitName": "0e22e9ab83438af37d821cb2f96e31f9a19ace2c",
+      "commitAuthor": "Eric Badger",
+      "diff": "@@ -0,0 +1,42 @@\n+  public void signalContainer(ContainerRuntimeContext ctx)\n+      throws ContainerExecutionException {\n+    ContainerExecutor.Signal signal \u003d ctx.getExecutionAttribute(SIGNAL);\n+    Container container \u003d ctx.getContainer();\n+\n+    if (signal \u003d\u003d ContainerExecutor.Signal.KILL ||\n+        signal \u003d\u003d ContainerExecutor.Signal.TERM) {\n+      ContainerVolumePublisher publisher \u003d new ContainerVolumePublisher(\n+          container, container.getCsiVolumesRootDir(), this);\n+      try {\n+        publisher.unpublishVolumes();\n+      } catch (YarnException | IOException e) {\n+        throw new ContainerExecutionException(e);\n+      }\n+    }\n+\n+    PrivilegedOperation signalOp \u003d new PrivilegedOperation(\n+        PrivilegedOperation.OperationType.SIGNAL_CONTAINER);\n+\n+    signalOp.appendArgs(ctx.getExecutionAttribute(RUN_AS_USER),\n+        ctx.getExecutionAttribute(USER),\n+        Integer.toString(PrivilegedOperation.RunAsUserCommand\n+        .SIGNAL_CONTAINER.getValue()),\n+        ctx.getExecutionAttribute(PID),\n+        Integer.toString(signal.getValue()));\n+\n+    //Some failures here are acceptable. Let the calling executor decide.\n+    signalOp.disableFailureLogging();\n+\n+    try {\n+      PrivilegedOperationExecutor executor \u003d PrivilegedOperationExecutor\n+          .getInstance(conf);\n+\n+      executor.executePrivilegedOperation(null,\n+          signalOp, null, null, false, false);\n+    } catch (PrivilegedOperationException e) {\n+      //Don\u0027t log the failure here. Some kinds of signaling failures are\n+      // acceptable. Let the calling executor decide what to do.\n+      throw new ContainerExecutionException(\"Signal container failed\", e\n+          .getExitCode(), e.getOutput(), e.getErrorOutput());\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void signalContainer(ContainerRuntimeContext ctx)\n      throws ContainerExecutionException {\n    ContainerExecutor.Signal signal \u003d ctx.getExecutionAttribute(SIGNAL);\n    Container container \u003d ctx.getContainer();\n\n    if (signal \u003d\u003d ContainerExecutor.Signal.KILL ||\n        signal \u003d\u003d ContainerExecutor.Signal.TERM) {\n      ContainerVolumePublisher publisher \u003d new ContainerVolumePublisher(\n          container, container.getCsiVolumesRootDir(), this);\n      try {\n        publisher.unpublishVolumes();\n      } catch (YarnException | IOException e) {\n        throw new ContainerExecutionException(e);\n      }\n    }\n\n    PrivilegedOperation signalOp \u003d new PrivilegedOperation(\n        PrivilegedOperation.OperationType.SIGNAL_CONTAINER);\n\n    signalOp.appendArgs(ctx.getExecutionAttribute(RUN_AS_USER),\n        ctx.getExecutionAttribute(USER),\n        Integer.toString(PrivilegedOperation.RunAsUserCommand\n        .SIGNAL_CONTAINER.getValue()),\n        ctx.getExecutionAttribute(PID),\n        Integer.toString(signal.getValue()));\n\n    //Some failures here are acceptable. Let the calling executor decide.\n    signalOp.disableFailureLogging();\n\n    try {\n      PrivilegedOperationExecutor executor \u003d PrivilegedOperationExecutor\n          .getInstance(conf);\n\n      executor.executePrivilegedOperation(null,\n          signalOp, null, null, false, false);\n    } catch (PrivilegedOperationException e) {\n      //Don\u0027t log the failure here. Some kinds of signaling failures are\n      // acceptable. Let the calling executor decide what to do.\n      throw new ContainerExecutionException(\"Signal container failed\", e\n          .getExitCode(), e.getOutput(), e.getErrorOutput());\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/runtime/RuncContainerRuntime.java"
+    }
+  }
+}

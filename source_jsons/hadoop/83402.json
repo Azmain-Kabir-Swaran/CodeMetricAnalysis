@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "InterruptEscalator.java",
+  "functionName": "interrupted",
+  "functionId": "interrupted___interruptData-IrqHandler.InterruptData",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/service/launcher/InterruptEscalator.java",
+  "functionStartLine": 104,
+  "functionEndLine": 135,
+  "numCommitsSeen": 2,
+  "timeTaken": 663,
+  "changeHistory": [
+    "373bb4931fb392e3ca6bfd78992887e5a405e186"
+  ],
+  "changeHistoryShort": {
+    "373bb4931fb392e3ca6bfd78992887e5a405e186": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "373bb4931fb392e3ca6bfd78992887e5a405e186": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-679. Add an entry point that can start any Yarn service. Contributed by Steve Loughran.\n",
+      "commitDate": "28/04/17 10:45 AM",
+      "commitName": "373bb4931fb392e3ca6bfd78992887e5a405e186",
+      "commitAuthor": "Junping Du",
+      "diff": "@@ -0,0 +1,32 @@\n+  public void interrupted(IrqHandler.InterruptData interruptData) {\n+    String message \u003d \"Service interrupted by \" + interruptData.toString();\n+    LOG.warn(message);\n+    if (!signalAlreadyReceived.compareAndSet(false, true)) {\n+      message \u003d \"Repeated interrupt: escalating to a JVM halt\";\n+      LOG.warn(message);\n+      // signal already received. On a second request to a hard JVM\n+      // halt and so bypass any blocking shutdown hooks.\n+      ExitUtil.halt(LauncherExitCodes.EXIT_INTERRUPTED, message);\n+    }\n+    Service service \u003d getService();\n+    if (service !\u003d null) {\n+      //start an async shutdown thread with a timeout\n+      ServiceForcedShutdown shutdown \u003d\n+          new ServiceForcedShutdown(service, shutdownTimeMillis);\n+      Thread thread \u003d new Thread(shutdown);\n+      thread.setDaemon(true);\n+      thread.setName(\"Service Forced Shutdown\");\n+      thread.start();\n+      //wait for that thread to finish\n+      try {\n+        thread.join(shutdownTimeMillis);\n+      } catch (InterruptedException ignored) {\n+        //ignored\n+      }\n+      forcedShutdownTimedOut \u003d !shutdown.getServiceWasShutdown();\n+      if (forcedShutdownTimedOut) {\n+        LOG.warn(\"Service did not shut down in time\");\n+      }\n+    }\n+    ExitUtil.terminate(EXIT_INTERRUPTED, message);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void interrupted(IrqHandler.InterruptData interruptData) {\n    String message \u003d \"Service interrupted by \" + interruptData.toString();\n    LOG.warn(message);\n    if (!signalAlreadyReceived.compareAndSet(false, true)) {\n      message \u003d \"Repeated interrupt: escalating to a JVM halt\";\n      LOG.warn(message);\n      // signal already received. On a second request to a hard JVM\n      // halt and so bypass any blocking shutdown hooks.\n      ExitUtil.halt(LauncherExitCodes.EXIT_INTERRUPTED, message);\n    }\n    Service service \u003d getService();\n    if (service !\u003d null) {\n      //start an async shutdown thread with a timeout\n      ServiceForcedShutdown shutdown \u003d\n          new ServiceForcedShutdown(service, shutdownTimeMillis);\n      Thread thread \u003d new Thread(shutdown);\n      thread.setDaemon(true);\n      thread.setName(\"Service Forced Shutdown\");\n      thread.start();\n      //wait for that thread to finish\n      try {\n        thread.join(shutdownTimeMillis);\n      } catch (InterruptedException ignored) {\n        //ignored\n      }\n      forcedShutdownTimedOut \u003d !shutdown.getServiceWasShutdown();\n      if (forcedShutdownTimedOut) {\n        LOG.warn(\"Service did not shut down in time\");\n      }\n    }\n    ExitUtil.terminate(EXIT_INTERRUPTED, message);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/service/launcher/InterruptEscalator.java"
+    }
+  }
+}

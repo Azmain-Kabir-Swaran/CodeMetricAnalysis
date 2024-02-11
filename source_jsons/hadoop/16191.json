@@ -1,0 +1,54 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RouterRpcClient.java",
+  "functionName": "getCleanException",
+  "functionId": "getCleanException___ioe-IOException",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcClient.java",
+  "functionStartLine": 630,
+  "functionEndLine": 684,
+  "numCommitsSeen": 30,
+  "timeTaken": 1846,
+  "changeHistory": [
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+    "ca4f209b49e3aad6a80306f7342c9b6b560a79a7"
+  ],
+  "changeHistoryShort": {
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": "Yfilerename",
+    "ca4f209b49e3aad6a80306f7342c9b6b560a79a7": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-13215. RBF: Move Router to its own module. Contributed by Wei Yan\n",
+      "commitDate": "19/03/18 10:13 PM",
+      "commitName": "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+      "commitAuthor": "weiy",
+      "commitDateOld": "19/03/18 5:19 PM",
+      "commitNameOld": "e65ff1c8be48ef4f04ed96f96ac4caef4974944d",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.2,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private static IOException getCleanException(IOException ioe) {\n    IOException ret \u003d null;\n\n    String msg \u003d ioe.getMessage();\n    Throwable cause \u003d ioe.getCause();\n    StackTraceElement[] stackTrace \u003d ioe.getStackTrace();\n\n    // Clean the message by removing the stack trace\n    int index \u003d msg.indexOf(\"\\n\");\n    if (index \u003e 0) {\n      String[] msgSplit \u003d msg.split(\"\\n\");\n      msg \u003d msgSplit[0];\n\n      // Parse stack trace from the message\n      List\u003cStackTraceElement\u003e elements \u003d new LinkedList\u003c\u003e();\n      for (int i\u003d1; i\u003cmsgSplit.length; i++) {\n        String line \u003d msgSplit[i];\n        Matcher matcher \u003d STACK_TRACE_PATTERN.matcher(line);\n        if (matcher.find()) {\n          String declaringClass \u003d matcher.group(1);\n          String methodName \u003d matcher.group(2);\n          String fileName \u003d matcher.group(3);\n          int lineNumber \u003d Integer.parseInt(matcher.group(4));\n          StackTraceElement element \u003d new StackTraceElement(\n              declaringClass, methodName, fileName, lineNumber);\n          elements.add(element);\n        }\n      }\n      stackTrace \u003d elements.toArray(new StackTraceElement[elements.size()]);\n    }\n\n    // Create the new output exception\n    if (ioe instanceof RemoteException) {\n      RemoteException re \u003d (RemoteException)ioe;\n      ret \u003d new RemoteException(re.getClassName(), msg);\n    } else {\n      // Try the simple constructor and initialize the fields\n      Class\u003c? extends IOException\u003e ioeClass \u003d ioe.getClass();\n      try {\n        Constructor\u003c? extends IOException\u003e constructor \u003d\n            ioeClass.getDeclaredConstructor(String.class);\n        ret \u003d constructor.newInstance(msg);\n      } catch (ReflectiveOperationException e) {\n        // If there are errors, just use the input one\n        LOG.error(\"Could not create exception {}\", ioeClass.getSimpleName(), e);\n        ret \u003d ioe;\n      }\n    }\n    if (ret !\u003d null) {\n      ret.initCause(cause);\n      ret.setStackTrace(stackTrace);\n    }\n\n    return ret;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcClient.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcClient.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcClient.java"
+      }
+    },
+    "ca4f209b49e3aad6a80306f7342c9b6b560a79a7": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11546. Federation Router RPC server. Contributed by Jason Kace and Inigo Goiri.\n\n(cherry picked from commit 8a9cdebebf26841a0f1e99fb08135f4597f2eba2)\n",
+      "commitDate": "06/10/17 6:50 PM",
+      "commitName": "ca4f209b49e3aad6a80306f7342c9b6b560a79a7",
+      "commitAuthor": "Inigo Goiri",
+      "diff": "@@ -0,0 +1,55 @@\n+  private static IOException getCleanException(IOException ioe) {\n+    IOException ret \u003d null;\n+\n+    String msg \u003d ioe.getMessage();\n+    Throwable cause \u003d ioe.getCause();\n+    StackTraceElement[] stackTrace \u003d ioe.getStackTrace();\n+\n+    // Clean the message by removing the stack trace\n+    int index \u003d msg.indexOf(\"\\n\");\n+    if (index \u003e 0) {\n+      String[] msgSplit \u003d msg.split(\"\\n\");\n+      msg \u003d msgSplit[0];\n+\n+      // Parse stack trace from the message\n+      List\u003cStackTraceElement\u003e elements \u003d new LinkedList\u003c\u003e();\n+      for (int i\u003d1; i\u003cmsgSplit.length; i++) {\n+        String line \u003d msgSplit[i];\n+        Matcher matcher \u003d STACK_TRACE_PATTERN.matcher(line);\n+        if (matcher.find()) {\n+          String declaringClass \u003d matcher.group(1);\n+          String methodName \u003d matcher.group(2);\n+          String fileName \u003d matcher.group(3);\n+          int lineNumber \u003d Integer.parseInt(matcher.group(4));\n+          StackTraceElement element \u003d new StackTraceElement(\n+              declaringClass, methodName, fileName, lineNumber);\n+          elements.add(element);\n+        }\n+      }\n+      stackTrace \u003d elements.toArray(new StackTraceElement[elements.size()]);\n+    }\n+\n+    // Create the new output exception\n+    if (ioe instanceof RemoteException) {\n+      RemoteException re \u003d (RemoteException)ioe;\n+      ret \u003d new RemoteException(re.getClassName(), msg);\n+    } else {\n+      // Try the simple constructor and initialize the fields\n+      Class\u003c? extends IOException\u003e ioeClass \u003d ioe.getClass();\n+      try {\n+        Constructor\u003c? extends IOException\u003e constructor \u003d\n+            ioeClass.getDeclaredConstructor(String.class);\n+        ret \u003d constructor.newInstance(msg);\n+      } catch (ReflectiveOperationException e) {\n+        // If there are errors, just use the input one\n+        LOG.error(\"Could not create exception {}\", ioeClass.getSimpleName(), e);\n+        ret \u003d ioe;\n+      }\n+    }\n+    if (ret !\u003d null) {\n+      ret.initCause(cause);\n+      ret.setStackTrace(stackTrace);\n+    }\n+\n+    return ret;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static IOException getCleanException(IOException ioe) {\n    IOException ret \u003d null;\n\n    String msg \u003d ioe.getMessage();\n    Throwable cause \u003d ioe.getCause();\n    StackTraceElement[] stackTrace \u003d ioe.getStackTrace();\n\n    // Clean the message by removing the stack trace\n    int index \u003d msg.indexOf(\"\\n\");\n    if (index \u003e 0) {\n      String[] msgSplit \u003d msg.split(\"\\n\");\n      msg \u003d msgSplit[0];\n\n      // Parse stack trace from the message\n      List\u003cStackTraceElement\u003e elements \u003d new LinkedList\u003c\u003e();\n      for (int i\u003d1; i\u003cmsgSplit.length; i++) {\n        String line \u003d msgSplit[i];\n        Matcher matcher \u003d STACK_TRACE_PATTERN.matcher(line);\n        if (matcher.find()) {\n          String declaringClass \u003d matcher.group(1);\n          String methodName \u003d matcher.group(2);\n          String fileName \u003d matcher.group(3);\n          int lineNumber \u003d Integer.parseInt(matcher.group(4));\n          StackTraceElement element \u003d new StackTraceElement(\n              declaringClass, methodName, fileName, lineNumber);\n          elements.add(element);\n        }\n      }\n      stackTrace \u003d elements.toArray(new StackTraceElement[elements.size()]);\n    }\n\n    // Create the new output exception\n    if (ioe instanceof RemoteException) {\n      RemoteException re \u003d (RemoteException)ioe;\n      ret \u003d new RemoteException(re.getClassName(), msg);\n    } else {\n      // Try the simple constructor and initialize the fields\n      Class\u003c? extends IOException\u003e ioeClass \u003d ioe.getClass();\n      try {\n        Constructor\u003c? extends IOException\u003e constructor \u003d\n            ioeClass.getDeclaredConstructor(String.class);\n        ret \u003d constructor.newInstance(msg);\n      } catch (ReflectiveOperationException e) {\n        // If there are errors, just use the input one\n        LOG.error(\"Could not create exception {}\", ioeClass.getSimpleName(), e);\n        ret \u003d ioe;\n      }\n    }\n    if (ret !\u003d null) {\n      ret.initCause(cause);\n      ret.setStackTrace(stackTrace);\n    }\n\n    return ret;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcClient.java"
+    }
+  }
+}

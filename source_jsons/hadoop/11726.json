@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PmemVolumeManager.java",
+  "functionName": "verifyIfValidPmemVolume",
+  "functionId": "verifyIfValidPmemVolume___pmemDir-File",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/PmemVolumeManager.java",
+  "functionStartLine": 318,
+  "functionEndLine": 370,
+  "numCommitsSeen": 4,
+  "timeTaken": 2263,
+  "changeHistory": [
+    "9b0aace1e6c54f201784912c0b623707aa82b761",
+    "35ff31dd9462cf4fb4ebf5556ee8ae6bcd7c5c3a"
+  ],
+  "changeHistoryShort": {
+    "9b0aace1e6c54f201784912c0b623707aa82b761": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "35ff31dd9462cf4fb4ebf5556ee8ae6bcd7c5c3a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9b0aace1e6c54f201784912c0b623707aa82b761": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-14401. Refine the implementation for HDFS cache on SCM. Contributed by Feilong He.\n",
+      "commitDate": "08/05/19 4:50 AM",
+      "commitName": "9b0aace1e6c54f201784912c0b623707aa82b761",
+      "commitAuthor": "Rakesh Radhakrishnan",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-14401. Refine the implementation for HDFS cache on SCM. Contributed by Feilong He.\n",
+          "commitDate": "08/05/19 4:50 AM",
+          "commitName": "9b0aace1e6c54f201784912c0b623707aa82b761",
+          "commitAuthor": "Rakesh Radhakrishnan",
+          "commitDateOld": "30/03/19 11:33 PM",
+          "commitNameOld": "35ff31dd9462cf4fb4ebf5556ee8ae6bcd7c5c3a",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 38.22,
+          "commitsBetweenForRepo": 236,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,47 +1,53 @@\n-  static void verifyIfValidPmemVolume(File pmemDir)\n+  static File verifyIfValidPmemVolume(File pmemDir)\n       throws IOException {\n     if (!pmemDir.exists()) {\n       final String message \u003d pmemDir + \" does not exist\";\n       throw new IOException(message);\n     }\n-\n     if (!pmemDir.isDirectory()) {\n       final String message \u003d pmemDir + \" is not a directory\";\n       throw new IllegalArgumentException(message);\n     }\n \n+    File realPmemDir \u003d new File(getRealPmemDir(pmemDir.getPath()));\n+    if (!realPmemDir.exists() \u0026\u0026 !realPmemDir.mkdir()) {\n+      throw new IOException(\"Failed to create \" + realPmemDir.getPath());\n+    }\n+\n     String uuidStr \u003d UUID.randomUUID().toString();\n-    String testFilePath \u003d pmemDir.getPath() + \"/.verify.pmem.\" + uuidStr;\n+    String testFilePath \u003d realPmemDir.getPath() + \"/.verify.pmem.\" + uuidStr;\n     byte[] contents \u003d uuidStr.getBytes(\"UTF-8\");\n     RandomAccessFile testFile \u003d null;\n     MappedByteBuffer out \u003d null;\n     try {\n       testFile \u003d new RandomAccessFile(testFilePath, \"rw\");\n       out \u003d testFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0,\n           contents.length);\n       if (out \u003d\u003d null) {\n-        throw new IOException(\"Failed to map the test file under \" + pmemDir);\n+        throw new IOException(\n+            \"Failed to map the test file under \" + realPmemDir);\n       }\n       out.put(contents);\n       // Forces to write data to storage device containing the mapped file\n       out.force();\n+      return realPmemDir;\n     } catch (IOException e) {\n       throw new IOException(\n           \"Exception while writing data to persistent storage dir: \" +\n-              pmemDir, e);\n+              realPmemDir, e);\n     } finally {\n       if (out !\u003d null) {\n         out.clear();\n       }\n       if (testFile !\u003d null) {\n         IOUtils.closeQuietly(testFile);\n         NativeIO.POSIX.munmap(out);\n         try {\n           FsDatasetUtil.deleteMappedFile(testFilePath);\n         } catch (IOException e) {\n           LOG.warn(\"Failed to delete test file \" + testFilePath +\n               \" from persistent memory\", e);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static File verifyIfValidPmemVolume(File pmemDir)\n      throws IOException {\n    if (!pmemDir.exists()) {\n      final String message \u003d pmemDir + \" does not exist\";\n      throw new IOException(message);\n    }\n    if (!pmemDir.isDirectory()) {\n      final String message \u003d pmemDir + \" is not a directory\";\n      throw new IllegalArgumentException(message);\n    }\n\n    File realPmemDir \u003d new File(getRealPmemDir(pmemDir.getPath()));\n    if (!realPmemDir.exists() \u0026\u0026 !realPmemDir.mkdir()) {\n      throw new IOException(\"Failed to create \" + realPmemDir.getPath());\n    }\n\n    String uuidStr \u003d UUID.randomUUID().toString();\n    String testFilePath \u003d realPmemDir.getPath() + \"/.verify.pmem.\" + uuidStr;\n    byte[] contents \u003d uuidStr.getBytes(\"UTF-8\");\n    RandomAccessFile testFile \u003d null;\n    MappedByteBuffer out \u003d null;\n    try {\n      testFile \u003d new RandomAccessFile(testFilePath, \"rw\");\n      out \u003d testFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0,\n          contents.length);\n      if (out \u003d\u003d null) {\n        throw new IOException(\n            \"Failed to map the test file under \" + realPmemDir);\n      }\n      out.put(contents);\n      // Forces to write data to storage device containing the mapped file\n      out.force();\n      return realPmemDir;\n    } catch (IOException e) {\n      throw new IOException(\n          \"Exception while writing data to persistent storage dir: \" +\n              realPmemDir, e);\n    } finally {\n      if (out !\u003d null) {\n        out.clear();\n      }\n      if (testFile !\u003d null) {\n        IOUtils.closeQuietly(testFile);\n        NativeIO.POSIX.munmap(out);\n        try {\n          FsDatasetUtil.deleteMappedFile(testFilePath);\n        } catch (IOException e) {\n          LOG.warn(\"Failed to delete test file \" + testFilePath +\n              \" from persistent memory\", e);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/PmemVolumeManager.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "File"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-14401. Refine the implementation for HDFS cache on SCM. Contributed by Feilong He.\n",
+          "commitDate": "08/05/19 4:50 AM",
+          "commitName": "9b0aace1e6c54f201784912c0b623707aa82b761",
+          "commitAuthor": "Rakesh Radhakrishnan",
+          "commitDateOld": "30/03/19 11:33 PM",
+          "commitNameOld": "35ff31dd9462cf4fb4ebf5556ee8ae6bcd7c5c3a",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 38.22,
+          "commitsBetweenForRepo": 236,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,47 +1,53 @@\n-  static void verifyIfValidPmemVolume(File pmemDir)\n+  static File verifyIfValidPmemVolume(File pmemDir)\n       throws IOException {\n     if (!pmemDir.exists()) {\n       final String message \u003d pmemDir + \" does not exist\";\n       throw new IOException(message);\n     }\n-\n     if (!pmemDir.isDirectory()) {\n       final String message \u003d pmemDir + \" is not a directory\";\n       throw new IllegalArgumentException(message);\n     }\n \n+    File realPmemDir \u003d new File(getRealPmemDir(pmemDir.getPath()));\n+    if (!realPmemDir.exists() \u0026\u0026 !realPmemDir.mkdir()) {\n+      throw new IOException(\"Failed to create \" + realPmemDir.getPath());\n+    }\n+\n     String uuidStr \u003d UUID.randomUUID().toString();\n-    String testFilePath \u003d pmemDir.getPath() + \"/.verify.pmem.\" + uuidStr;\n+    String testFilePath \u003d realPmemDir.getPath() + \"/.verify.pmem.\" + uuidStr;\n     byte[] contents \u003d uuidStr.getBytes(\"UTF-8\");\n     RandomAccessFile testFile \u003d null;\n     MappedByteBuffer out \u003d null;\n     try {\n       testFile \u003d new RandomAccessFile(testFilePath, \"rw\");\n       out \u003d testFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0,\n           contents.length);\n       if (out \u003d\u003d null) {\n-        throw new IOException(\"Failed to map the test file under \" + pmemDir);\n+        throw new IOException(\n+            \"Failed to map the test file under \" + realPmemDir);\n       }\n       out.put(contents);\n       // Forces to write data to storage device containing the mapped file\n       out.force();\n+      return realPmemDir;\n     } catch (IOException e) {\n       throw new IOException(\n           \"Exception while writing data to persistent storage dir: \" +\n-              pmemDir, e);\n+              realPmemDir, e);\n     } finally {\n       if (out !\u003d null) {\n         out.clear();\n       }\n       if (testFile !\u003d null) {\n         IOUtils.closeQuietly(testFile);\n         NativeIO.POSIX.munmap(out);\n         try {\n           FsDatasetUtil.deleteMappedFile(testFilePath);\n         } catch (IOException e) {\n           LOG.warn(\"Failed to delete test file \" + testFilePath +\n               \" from persistent memory\", e);\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static File verifyIfValidPmemVolume(File pmemDir)\n      throws IOException {\n    if (!pmemDir.exists()) {\n      final String message \u003d pmemDir + \" does not exist\";\n      throw new IOException(message);\n    }\n    if (!pmemDir.isDirectory()) {\n      final String message \u003d pmemDir + \" is not a directory\";\n      throw new IllegalArgumentException(message);\n    }\n\n    File realPmemDir \u003d new File(getRealPmemDir(pmemDir.getPath()));\n    if (!realPmemDir.exists() \u0026\u0026 !realPmemDir.mkdir()) {\n      throw new IOException(\"Failed to create \" + realPmemDir.getPath());\n    }\n\n    String uuidStr \u003d UUID.randomUUID().toString();\n    String testFilePath \u003d realPmemDir.getPath() + \"/.verify.pmem.\" + uuidStr;\n    byte[] contents \u003d uuidStr.getBytes(\"UTF-8\");\n    RandomAccessFile testFile \u003d null;\n    MappedByteBuffer out \u003d null;\n    try {\n      testFile \u003d new RandomAccessFile(testFilePath, \"rw\");\n      out \u003d testFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0,\n          contents.length);\n      if (out \u003d\u003d null) {\n        throw new IOException(\n            \"Failed to map the test file under \" + realPmemDir);\n      }\n      out.put(contents);\n      // Forces to write data to storage device containing the mapped file\n      out.force();\n      return realPmemDir;\n    } catch (IOException e) {\n      throw new IOException(\n          \"Exception while writing data to persistent storage dir: \" +\n              realPmemDir, e);\n    } finally {\n      if (out !\u003d null) {\n        out.clear();\n      }\n      if (testFile !\u003d null) {\n        IOUtils.closeQuietly(testFile);\n        NativeIO.POSIX.munmap(out);\n        try {\n          FsDatasetUtil.deleteMappedFile(testFilePath);\n        } catch (IOException e) {\n          LOG.warn(\"Failed to delete test file \" + testFilePath +\n              \" from persistent memory\", e);\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/PmemVolumeManager.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "35ff31dd9462cf4fb4ebf5556ee8ae6bcd7c5c3a": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-14355 : Implement HDFS cache on SCM by using pure java mapped byte buffer. Contributed by Feilong He.\n",
+      "commitDate": "30/03/19 11:33 PM",
+      "commitName": "35ff31dd9462cf4fb4ebf5556ee8ae6bcd7c5c3a",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "diff": "@@ -0,0 +1,47 @@\n+  static void verifyIfValidPmemVolume(File pmemDir)\n+      throws IOException {\n+    if (!pmemDir.exists()) {\n+      final String message \u003d pmemDir + \" does not exist\";\n+      throw new IOException(message);\n+    }\n+\n+    if (!pmemDir.isDirectory()) {\n+      final String message \u003d pmemDir + \" is not a directory\";\n+      throw new IllegalArgumentException(message);\n+    }\n+\n+    String uuidStr \u003d UUID.randomUUID().toString();\n+    String testFilePath \u003d pmemDir.getPath() + \"/.verify.pmem.\" + uuidStr;\n+    byte[] contents \u003d uuidStr.getBytes(\"UTF-8\");\n+    RandomAccessFile testFile \u003d null;\n+    MappedByteBuffer out \u003d null;\n+    try {\n+      testFile \u003d new RandomAccessFile(testFilePath, \"rw\");\n+      out \u003d testFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0,\n+          contents.length);\n+      if (out \u003d\u003d null) {\n+        throw new IOException(\"Failed to map the test file under \" + pmemDir);\n+      }\n+      out.put(contents);\n+      // Forces to write data to storage device containing the mapped file\n+      out.force();\n+    } catch (IOException e) {\n+      throw new IOException(\n+          \"Exception while writing data to persistent storage dir: \" +\n+              pmemDir, e);\n+    } finally {\n+      if (out !\u003d null) {\n+        out.clear();\n+      }\n+      if (testFile !\u003d null) {\n+        IOUtils.closeQuietly(testFile);\n+        NativeIO.POSIX.munmap(out);\n+        try {\n+          FsDatasetUtil.deleteMappedFile(testFilePath);\n+        } catch (IOException e) {\n+          LOG.warn(\"Failed to delete test file \" + testFilePath +\n+              \" from persistent memory\", e);\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static void verifyIfValidPmemVolume(File pmemDir)\n      throws IOException {\n    if (!pmemDir.exists()) {\n      final String message \u003d pmemDir + \" does not exist\";\n      throw new IOException(message);\n    }\n\n    if (!pmemDir.isDirectory()) {\n      final String message \u003d pmemDir + \" is not a directory\";\n      throw new IllegalArgumentException(message);\n    }\n\n    String uuidStr \u003d UUID.randomUUID().toString();\n    String testFilePath \u003d pmemDir.getPath() + \"/.verify.pmem.\" + uuidStr;\n    byte[] contents \u003d uuidStr.getBytes(\"UTF-8\");\n    RandomAccessFile testFile \u003d null;\n    MappedByteBuffer out \u003d null;\n    try {\n      testFile \u003d new RandomAccessFile(testFilePath, \"rw\");\n      out \u003d testFile.getChannel().map(FileChannel.MapMode.READ_WRITE, 0,\n          contents.length);\n      if (out \u003d\u003d null) {\n        throw new IOException(\"Failed to map the test file under \" + pmemDir);\n      }\n      out.put(contents);\n      // Forces to write data to storage device containing the mapped file\n      out.force();\n    } catch (IOException e) {\n      throw new IOException(\n          \"Exception while writing data to persistent storage dir: \" +\n              pmemDir, e);\n    } finally {\n      if (out !\u003d null) {\n        out.clear();\n      }\n      if (testFile !\u003d null) {\n        IOUtils.closeQuietly(testFile);\n        NativeIO.POSIX.munmap(out);\n        try {\n          FsDatasetUtil.deleteMappedFile(testFilePath);\n        } catch (IOException e) {\n          LOG.warn(\"Failed to delete test file \" + testFilePath +\n              \" from persistent memory\", e);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/PmemVolumeManager.java"
+    }
+  }
+}

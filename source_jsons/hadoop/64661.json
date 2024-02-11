@@ -1,0 +1,92 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AFileSystem.java",
+  "functionName": "executePut",
+  "functionId": "executePut___putObjectRequest-PutObjectRequest__progress-Progressable",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+  "functionStartLine": 3216,
+  "functionEndLine": 3231,
+  "numCommitsSeen": 141,
+  "timeTaken": 5276,
+  "changeHistory": [
+    "e02eb24e0a9139418120027b694492e0738df20a",
+    "a36274d69947648dbe82721220cc5240ec5d396d",
+    "0af4011580878566213016af0c32633eabd15100",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "e02eb24e0a9139418120027b694492e0738df20a": "Ybodychange",
+    "a36274d69947648dbe82721220cc5240ec5d396d": "Ybodychange",
+    "0af4011580878566213016af0c32633eabd15100": "Yexceptionschange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e02eb24e0a9139418120027b694492e0738df20a": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+      "commitDate": "20/06/19 1:56 AM",
+      "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "16/06/19 9:05 AM",
+      "commitNameOld": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 3.7,
+      "commitsBetweenForRepo": 44,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,16 @@\n   UploadResult executePut(PutObjectRequest putObjectRequest,\n       Progressable progress)\n       throws InterruptedIOException, MetadataPersistenceException {\n     String key \u003d putObjectRequest.getKey();\n     UploadInfo info \u003d putObject(putObjectRequest);\n     Upload upload \u003d info.getUpload();\n     ProgressableProgressListener listener \u003d new ProgressableProgressListener(\n         this, key, upload, progress);\n     upload.addProgressListener(listener);\n     UploadResult result \u003d waitForUploadCompletion(key, info);\n     listener.uploadCompleted();\n     // post-write actions\n     finishedWrite(key, info.getLength(),\n-        result.getETag(), result.getVersionId());\n+        result.getETag(), result.getVersionId(), null);\n     return result;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  UploadResult executePut(PutObjectRequest putObjectRequest,\n      Progressable progress)\n      throws InterruptedIOException, MetadataPersistenceException {\n    String key \u003d putObjectRequest.getKey();\n    UploadInfo info \u003d putObject(putObjectRequest);\n    Upload upload \u003d info.getUpload();\n    ProgressableProgressListener listener \u003d new ProgressableProgressListener(\n        this, key, upload, progress);\n    upload.addProgressListener(listener);\n    UploadResult result \u003d waitForUploadCompletion(key, info);\n    listener.uploadCompleted();\n    // post-write actions\n    finishedWrite(key, info.getLength(),\n        result.getETag(), result.getVersionId(), null);\n    return result;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "a36274d69947648dbe82721220cc5240ec5d396d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16085. S3Guard: use object version or etags to protect against inconsistent read after replace/overwrite.\n\nContributed by Ben Roling.\n\nS3Guard will now track the etag of uploaded files and, if an S3\nbucket is versioned, the object version.\n\nYou can then control how to react to a mismatch between the data\nin the DynamoDB table and that in the store: warn, fail, or, when\nusing versions, return the original value.\n\nThis adds two new columns to the table: etag and version.\nThis is transparent to older S3A clients -but when such clients\nadd/update data to the S3Guard table, they will not add these values.\nAs a result, the etag/version checks will not work with files uploaded by older clients.\n\nFor a consistent experience, upgrade all clients to use the latest hadoop version.\n",
+      "commitDate": "19/05/19 2:29 PM",
+      "commitName": "a36274d69947648dbe82721220cc5240ec5d396d",
+      "commitAuthor": "Ben Roling",
+      "commitDateOld": "30/04/19 3:53 AM",
+      "commitNameOld": "0af4011580878566213016af0c32633eabd15100",
+      "commitAuthorOld": "Ben Roling",
+      "daysBetweenCommits": 19.44,
+      "commitsBetweenForRepo": 90,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,16 @@\n   UploadResult executePut(PutObjectRequest putObjectRequest,\n       Progressable progress)\n       throws InterruptedIOException, MetadataPersistenceException {\n     String key \u003d putObjectRequest.getKey();\n     UploadInfo info \u003d putObject(putObjectRequest);\n     Upload upload \u003d info.getUpload();\n     ProgressableProgressListener listener \u003d new ProgressableProgressListener(\n         this, key, upload, progress);\n     upload.addProgressListener(listener);\n     UploadResult result \u003d waitForUploadCompletion(key, info);\n     listener.uploadCompleted();\n     // post-write actions\n-    finishedWrite(key, info.getLength());\n+    finishedWrite(key, info.getLength(),\n+        result.getETag(), result.getVersionId());\n     return result;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  UploadResult executePut(PutObjectRequest putObjectRequest,\n      Progressable progress)\n      throws InterruptedIOException, MetadataPersistenceException {\n    String key \u003d putObjectRequest.getKey();\n    UploadInfo info \u003d putObject(putObjectRequest);\n    Upload upload \u003d info.getUpload();\n    ProgressableProgressListener listener \u003d new ProgressableProgressListener(\n        this, key, upload, progress);\n    upload.addProgressListener(listener);\n    UploadResult result \u003d waitForUploadCompletion(key, info);\n    listener.uploadCompleted();\n    // post-write actions\n    finishedWrite(key, info.getLength(),\n        result.getETag(), result.getVersionId());\n    return result;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {}
+    },
+    "0af4011580878566213016af0c32633eabd15100": {
+      "type": "Yexceptionschange",
+      "commitMessage": "HADOOP-16221. S3Guard: add option to fail operation on metadata write failure.\n",
+      "commitDate": "30/04/19 3:53 AM",
+      "commitName": "0af4011580878566213016af0c32633eabd15100",
+      "commitAuthor": "Ben Roling",
+      "commitDateOld": "28/03/19 8:59 AM",
+      "commitNameOld": "b5db2383832881034d57d836a8135a07a2bd1cf4",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 32.79,
+      "commitsBetweenForRepo": 211,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,15 @@\n   UploadResult executePut(PutObjectRequest putObjectRequest,\n       Progressable progress)\n-      throws InterruptedIOException {\n+      throws InterruptedIOException, MetadataPersistenceException {\n     String key \u003d putObjectRequest.getKey();\n     UploadInfo info \u003d putObject(putObjectRequest);\n     Upload upload \u003d info.getUpload();\n     ProgressableProgressListener listener \u003d new ProgressableProgressListener(\n         this, key, upload, progress);\n     upload.addProgressListener(listener);\n     UploadResult result \u003d waitForUploadCompletion(key, info);\n     listener.uploadCompleted();\n     // post-write actions\n     finishedWrite(key, info.getLength());\n     return result;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  UploadResult executePut(PutObjectRequest putObjectRequest,\n      Progressable progress)\n      throws InterruptedIOException, MetadataPersistenceException {\n    String key \u003d putObjectRequest.getKey();\n    UploadInfo info \u003d putObject(putObjectRequest);\n    Upload upload \u003d info.getUpload();\n    ProgressableProgressListener listener \u003d new ProgressableProgressListener(\n        this, key, upload, progress);\n    upload.addProgressListener(listener);\n    UploadResult result \u003d waitForUploadCompletion(key, info);\n    listener.uploadCompleted();\n    // post-write actions\n    finishedWrite(key, info.getLength());\n    return result;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java",
+      "extendedDetails": {
+        "oldValue": "[InterruptedIOException]",
+        "newValue": "[InterruptedIOException, MetadataPersistenceException]"
+      }
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,15 @@\n+  UploadResult executePut(PutObjectRequest putObjectRequest,\n+      Progressable progress)\n+      throws InterruptedIOException {\n+    String key \u003d putObjectRequest.getKey();\n+    UploadInfo info \u003d putObject(putObjectRequest);\n+    Upload upload \u003d info.getUpload();\n+    ProgressableProgressListener listener \u003d new ProgressableProgressListener(\n+        this, key, upload, progress);\n+    upload.addProgressListener(listener);\n+    UploadResult result \u003d waitForUploadCompletion(key, info);\n+    listener.uploadCompleted();\n+    // post-write actions\n+    finishedWrite(key, info.getLength());\n+    return result;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  UploadResult executePut(PutObjectRequest putObjectRequest,\n      Progressable progress)\n      throws InterruptedIOException {\n    String key \u003d putObjectRequest.getKey();\n    UploadInfo info \u003d putObject(putObjectRequest);\n    Upload upload \u003d info.getUpload();\n    ProgressableProgressListener listener \u003d new ProgressableProgressListener(\n        this, key, upload, progress);\n    upload.addProgressListener(listener);\n    UploadResult result \u003d waitForUploadCompletion(key, info);\n    listener.uploadCompleted();\n    // post-write actions\n    finishedWrite(key, info.getLength());\n    return result;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFileSystem.java"
+    }
+  }
+}

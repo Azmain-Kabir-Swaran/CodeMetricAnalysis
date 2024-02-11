@@ -1,0 +1,300 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FairSchedulerConfiguration.java",
+  "functionName": "parseResourceConfigValue",
+  "functionId": "parseResourceConfigValue___value-String__missing-long",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+  "functionStartLine": 498,
+  "functionEndLine": 521,
+  "numCommitsSeen": 162,
+  "timeTaken": 7833,
+  "changeHistory": [
+    "9edc74f64a31450af3c55c0dadf352862e4b359d",
+    "39ad98903a5f042573b97a2e5438bc57af7cc7a1",
+    "17262470246232d0f0651d627a4961e55b1efe6a",
+    "99292adcefdc6b8f280b8e100605fb39f755c38a",
+    "d1c6accb6f87b08975175580e15f1ff1fe29ab04",
+    "9cedad11d8d2197a54732667a15344983de5c437",
+    "946456c6d88780abe0251b098dd771e9e1e93ab3",
+    "782971ae7a0247bcf5920e10b434b7e0954dd868",
+    "c1b635ed4826b0f9c8574d262dfeb13fa5ceb650"
+  ],
+  "changeHistoryShort": {
+    "9edc74f64a31450af3c55c0dadf352862e4b359d": "Ymultichange(Yparameterchange,Ybodychange)",
+    "39ad98903a5f042573b97a2e5438bc57af7cc7a1": "Ymultichange(Yparameterchange,Ybodychange)",
+    "17262470246232d0f0651d627a4961e55b1efe6a": "Ymultichange(Yparameterchange,Ybodychange)",
+    "99292adcefdc6b8f280b8e100605fb39f755c38a": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "d1c6accb6f87b08975175580e15f1ff1fe29ab04": "Ybodychange",
+    "9cedad11d8d2197a54732667a15344983de5c437": "Ybodychange",
+    "946456c6d88780abe0251b098dd771e9e1e93ab3": "Ybodychange",
+    "782971ae7a0247bcf5920e10b434b7e0954dd868": "Ybodychange",
+    "c1b635ed4826b0f9c8574d262dfeb13fa5ceb650": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9edc74f64a31450af3c55c0dadf352862e4b359d": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-7556. Fair scheduler configuration should allow resource types in the minResources and maxResources properties. (Daniel Templeton and Szilard Nemeth via Haibo Chen)\n",
+      "commitDate": "06/07/18 11:03 AM",
+      "commitName": "9edc74f64a31450af3c55c0dadf352862e4b359d",
+      "commitAuthor": "Haibo Chen",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-7556. Fair scheduler configuration should allow resource types in the minResources and maxResources properties. (Daniel Templeton and Szilard Nemeth via Haibo Chen)\n",
+          "commitDate": "06/07/18 11:03 AM",
+          "commitName": "9edc74f64a31450af3c55c0dadf352862e4b359d",
+          "commitAuthor": "Haibo Chen",
+          "commitDateOld": "05/07/18 12:22 PM",
+          "commitNameOld": "39ad98903a5f042573b97a2e5438bc57af7cc7a1",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 0.95,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,24 @@\n-  public static ConfigurableResource parseResourceConfigValue(String val)\n-      throws AllocationConfigurationException {\n+  public static ConfigurableResource parseResourceConfigValue(String value,\n+      long missing) throws AllocationConfigurationException {\n     ConfigurableResource configurableResource;\n+\n+    if (value.trim().isEmpty()) {\n+      throw new AllocationConfigurationException(\"Error reading resource \"\n+          + \"config--the resource string is empty.\");\n+    }\n+\n     try {\n-      val \u003d StringUtils.toLowerCase(val);\n-      if (val.contains(\"%\")) {\n-        configurableResource \u003d new ConfigurableResource(\n-            getResourcePercentage(val));\n+      if (value.contains(\"\u003d\")) {\n+        configurableResource \u003d parseNewStyleResource(value, missing);\n+      } else if (value.contains(\"%\")) {\n+        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n       } else {\n-        int memory \u003d findResource(val, \"mb\");\n-        int vcores \u003d findResource(val, \"vcores\");\n-        configurableResource \u003d new ConfigurableResource(\n-            BuilderUtils.newResource(memory, vcores));\n+        configurableResource \u003d parseOldStyleResource(value);\n       }\n-    } catch (AllocationConfigurationException ex) {\n-      throw ex;\n-    } catch (Exception ex) {\n+    } catch (RuntimeException ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n+\n     return configurableResource;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static ConfigurableResource parseResourceConfigValue(String value,\n      long missing) throws AllocationConfigurationException {\n    ConfigurableResource configurableResource;\n\n    if (value.trim().isEmpty()) {\n      throw new AllocationConfigurationException(\"Error reading resource \"\n          + \"config--the resource string is empty.\");\n    }\n\n    try {\n      if (value.contains(\"\u003d\")) {\n        configurableResource \u003d parseNewStyleResource(value, missing);\n      } else if (value.contains(\"%\")) {\n        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n      } else {\n        configurableResource \u003d parseOldStyleResource(value);\n      }\n    } catch (RuntimeException ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n\n    return configurableResource;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+          "extendedDetails": {
+            "oldValue": "[val-String]",
+            "newValue": "[value-String, missing-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-7556. Fair scheduler configuration should allow resource types in the minResources and maxResources properties. (Daniel Templeton and Szilard Nemeth via Haibo Chen)\n",
+          "commitDate": "06/07/18 11:03 AM",
+          "commitName": "9edc74f64a31450af3c55c0dadf352862e4b359d",
+          "commitAuthor": "Haibo Chen",
+          "commitDateOld": "05/07/18 12:22 PM",
+          "commitNameOld": "39ad98903a5f042573b97a2e5438bc57af7cc7a1",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 0.95,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,24 @@\n-  public static ConfigurableResource parseResourceConfigValue(String val)\n-      throws AllocationConfigurationException {\n+  public static ConfigurableResource parseResourceConfigValue(String value,\n+      long missing) throws AllocationConfigurationException {\n     ConfigurableResource configurableResource;\n+\n+    if (value.trim().isEmpty()) {\n+      throw new AllocationConfigurationException(\"Error reading resource \"\n+          + \"config--the resource string is empty.\");\n+    }\n+\n     try {\n-      val \u003d StringUtils.toLowerCase(val);\n-      if (val.contains(\"%\")) {\n-        configurableResource \u003d new ConfigurableResource(\n-            getResourcePercentage(val));\n+      if (value.contains(\"\u003d\")) {\n+        configurableResource \u003d parseNewStyleResource(value, missing);\n+      } else if (value.contains(\"%\")) {\n+        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n       } else {\n-        int memory \u003d findResource(val, \"mb\");\n-        int vcores \u003d findResource(val, \"vcores\");\n-        configurableResource \u003d new ConfigurableResource(\n-            BuilderUtils.newResource(memory, vcores));\n+        configurableResource \u003d parseOldStyleResource(value);\n       }\n-    } catch (AllocationConfigurationException ex) {\n-      throw ex;\n-    } catch (Exception ex) {\n+    } catch (RuntimeException ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n+\n     return configurableResource;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static ConfigurableResource parseResourceConfigValue(String value,\n      long missing) throws AllocationConfigurationException {\n    ConfigurableResource configurableResource;\n\n    if (value.trim().isEmpty()) {\n      throw new AllocationConfigurationException(\"Error reading resource \"\n          + \"config--the resource string is empty.\");\n    }\n\n    try {\n      if (value.contains(\"\u003d\")) {\n        configurableResource \u003d parseNewStyleResource(value, missing);\n      } else if (value.contains(\"%\")) {\n        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n      } else {\n        configurableResource \u003d parseOldStyleResource(value);\n      }\n    } catch (RuntimeException ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n\n    return configurableResource;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "39ad98903a5f042573b97a2e5438bc57af7cc7a1": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "Revert \"Merge branch \u0027trunk\u0027 of https://git-wip-us.apache.org/repos/asf/hadoop into trunk\"\n\nThis reverts commit c163d1797ade0f47d35b4a44381b8ef1dfec5b60, reversing\nchanges made to 0d9804dcef2eab5ebf84667d9ca49bb035d9a731.\n",
+      "commitDate": "05/07/18 12:22 PM",
+      "commitName": "39ad98903a5f042573b97a2e5438bc57af7cc7a1",
+      "commitAuthor": "Anu Engineer",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "Revert \"Merge branch \u0027trunk\u0027 of https://git-wip-us.apache.org/repos/asf/hadoop into trunk\"\n\nThis reverts commit c163d1797ade0f47d35b4a44381b8ef1dfec5b60, reversing\nchanges made to 0d9804dcef2eab5ebf84667d9ca49bb035d9a731.\n",
+          "commitDate": "05/07/18 12:22 PM",
+          "commitName": "39ad98903a5f042573b97a2e5438bc57af7cc7a1",
+          "commitAuthor": "Anu Engineer",
+          "commitDateOld": "05/07/18 10:42 AM",
+          "commitNameOld": "17262470246232d0f0651d627a4961e55b1efe6a",
+          "commitAuthorOld": "Haibo Chen",
+          "daysBetweenCommits": 0.07,
+          "commitsBetweenForRepo": 3,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,22 @@\n-  public static ConfigurableResource parseResourceConfigValue(String value,\n-      long missing) throws AllocationConfigurationException {\n+  public static ConfigurableResource parseResourceConfigValue(String val)\n+      throws AllocationConfigurationException {\n     ConfigurableResource configurableResource;\n-\n-    if (value.trim().isEmpty()) {\n-      throw new AllocationConfigurationException(\"Error reading resource \"\n-          + \"config--the resource string is empty.\");\n-    }\n-\n     try {\n-      if (value.contains(\"\u003d\")) {\n-        configurableResource \u003d parseNewStyleResource(value, missing);\n-      } else if (value.contains(\"%\")) {\n-        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n+      val \u003d StringUtils.toLowerCase(val);\n+      if (val.contains(\"%\")) {\n+        configurableResource \u003d new ConfigurableResource(\n+            getResourcePercentage(val));\n       } else {\n-        configurableResource \u003d parseOldStyleResource(value);\n+        int memory \u003d findResource(val, \"mb\");\n+        int vcores \u003d findResource(val, \"vcores\");\n+        configurableResource \u003d new ConfigurableResource(\n+            BuilderUtils.newResource(memory, vcores));\n       }\n-    } catch (RuntimeException ex) {\n+    } catch (AllocationConfigurationException ex) {\n+      throw ex;\n+    } catch (Exception ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n-\n     return configurableResource;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static ConfigurableResource parseResourceConfigValue(String val)\n      throws AllocationConfigurationException {\n    ConfigurableResource configurableResource;\n    try {\n      val \u003d StringUtils.toLowerCase(val);\n      if (val.contains(\"%\")) {\n        configurableResource \u003d new ConfigurableResource(\n            getResourcePercentage(val));\n      } else {\n        int memory \u003d findResource(val, \"mb\");\n        int vcores \u003d findResource(val, \"vcores\");\n        configurableResource \u003d new ConfigurableResource(\n            BuilderUtils.newResource(memory, vcores));\n      }\n    } catch (AllocationConfigurationException ex) {\n      throw ex;\n    } catch (Exception ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n    return configurableResource;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+          "extendedDetails": {
+            "oldValue": "[value-String, missing-long]",
+            "newValue": "[val-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "Revert \"Merge branch \u0027trunk\u0027 of https://git-wip-us.apache.org/repos/asf/hadoop into trunk\"\n\nThis reverts commit c163d1797ade0f47d35b4a44381b8ef1dfec5b60, reversing\nchanges made to 0d9804dcef2eab5ebf84667d9ca49bb035d9a731.\n",
+          "commitDate": "05/07/18 12:22 PM",
+          "commitName": "39ad98903a5f042573b97a2e5438bc57af7cc7a1",
+          "commitAuthor": "Anu Engineer",
+          "commitDateOld": "05/07/18 10:42 AM",
+          "commitNameOld": "17262470246232d0f0651d627a4961e55b1efe6a",
+          "commitAuthorOld": "Haibo Chen",
+          "daysBetweenCommits": 0.07,
+          "commitsBetweenForRepo": 3,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,22 @@\n-  public static ConfigurableResource parseResourceConfigValue(String value,\n-      long missing) throws AllocationConfigurationException {\n+  public static ConfigurableResource parseResourceConfigValue(String val)\n+      throws AllocationConfigurationException {\n     ConfigurableResource configurableResource;\n-\n-    if (value.trim().isEmpty()) {\n-      throw new AllocationConfigurationException(\"Error reading resource \"\n-          + \"config--the resource string is empty.\");\n-    }\n-\n     try {\n-      if (value.contains(\"\u003d\")) {\n-        configurableResource \u003d parseNewStyleResource(value, missing);\n-      } else if (value.contains(\"%\")) {\n-        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n+      val \u003d StringUtils.toLowerCase(val);\n+      if (val.contains(\"%\")) {\n+        configurableResource \u003d new ConfigurableResource(\n+            getResourcePercentage(val));\n       } else {\n-        configurableResource \u003d parseOldStyleResource(value);\n+        int memory \u003d findResource(val, \"mb\");\n+        int vcores \u003d findResource(val, \"vcores\");\n+        configurableResource \u003d new ConfigurableResource(\n+            BuilderUtils.newResource(memory, vcores));\n       }\n-    } catch (RuntimeException ex) {\n+    } catch (AllocationConfigurationException ex) {\n+      throw ex;\n+    } catch (Exception ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n-\n     return configurableResource;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static ConfigurableResource parseResourceConfigValue(String val)\n      throws AllocationConfigurationException {\n    ConfigurableResource configurableResource;\n    try {\n      val \u003d StringUtils.toLowerCase(val);\n      if (val.contains(\"%\")) {\n        configurableResource \u003d new ConfigurableResource(\n            getResourcePercentage(val));\n      } else {\n        int memory \u003d findResource(val, \"mb\");\n        int vcores \u003d findResource(val, \"vcores\");\n        configurableResource \u003d new ConfigurableResource(\n            BuilderUtils.newResource(memory, vcores));\n      }\n    } catch (AllocationConfigurationException ex) {\n      throw ex;\n    } catch (Exception ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n    return configurableResource;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "17262470246232d0f0651d627a4961e55b1efe6a": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-7556. Fair scheduler configuration should allow resource types in the minResources and maxResources properties. (Daniel Templeton and Szilard Nemeth via Haibo Chen)\n",
+      "commitDate": "05/07/18 10:42 AM",
+      "commitName": "17262470246232d0f0651d627a4961e55b1efe6a",
+      "commitAuthor": "Haibo Chen",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-7556. Fair scheduler configuration should allow resource types in the minResources and maxResources properties. (Daniel Templeton and Szilard Nemeth via Haibo Chen)\n",
+          "commitDate": "05/07/18 10:42 AM",
+          "commitName": "17262470246232d0f0651d627a4961e55b1efe6a",
+          "commitAuthor": "Haibo Chen",
+          "commitDateOld": "22/01/18 10:30 AM",
+          "commitNameOld": "22ee6f77e5affbb308287f465ae8d145fc73ff60",
+          "commitAuthorOld": "Yufei Gu",
+          "daysBetweenCommits": 163.97,
+          "commitsBetweenForRepo": 1759,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,24 @@\n-  public static ConfigurableResource parseResourceConfigValue(String val)\n-      throws AllocationConfigurationException {\n+  public static ConfigurableResource parseResourceConfigValue(String value,\n+      long missing) throws AllocationConfigurationException {\n     ConfigurableResource configurableResource;\n+\n+    if (value.trim().isEmpty()) {\n+      throw new AllocationConfigurationException(\"Error reading resource \"\n+          + \"config--the resource string is empty.\");\n+    }\n+\n     try {\n-      val \u003d StringUtils.toLowerCase(val);\n-      if (val.contains(\"%\")) {\n-        configurableResource \u003d new ConfigurableResource(\n-            getResourcePercentage(val));\n+      if (value.contains(\"\u003d\")) {\n+        configurableResource \u003d parseNewStyleResource(value, missing);\n+      } else if (value.contains(\"%\")) {\n+        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n       } else {\n-        int memory \u003d findResource(val, \"mb\");\n-        int vcores \u003d findResource(val, \"vcores\");\n-        configurableResource \u003d new ConfigurableResource(\n-            BuilderUtils.newResource(memory, vcores));\n+        configurableResource \u003d parseOldStyleResource(value);\n       }\n-    } catch (AllocationConfigurationException ex) {\n-      throw ex;\n-    } catch (Exception ex) {\n+    } catch (RuntimeException ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n+\n     return configurableResource;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static ConfigurableResource parseResourceConfigValue(String value,\n      long missing) throws AllocationConfigurationException {\n    ConfigurableResource configurableResource;\n\n    if (value.trim().isEmpty()) {\n      throw new AllocationConfigurationException(\"Error reading resource \"\n          + \"config--the resource string is empty.\");\n    }\n\n    try {\n      if (value.contains(\"\u003d\")) {\n        configurableResource \u003d parseNewStyleResource(value, missing);\n      } else if (value.contains(\"%\")) {\n        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n      } else {\n        configurableResource \u003d parseOldStyleResource(value);\n      }\n    } catch (RuntimeException ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n\n    return configurableResource;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+          "extendedDetails": {
+            "oldValue": "[val-String]",
+            "newValue": "[value-String, missing-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-7556. Fair scheduler configuration should allow resource types in the minResources and maxResources properties. (Daniel Templeton and Szilard Nemeth via Haibo Chen)\n",
+          "commitDate": "05/07/18 10:42 AM",
+          "commitName": "17262470246232d0f0651d627a4961e55b1efe6a",
+          "commitAuthor": "Haibo Chen",
+          "commitDateOld": "22/01/18 10:30 AM",
+          "commitNameOld": "22ee6f77e5affbb308287f465ae8d145fc73ff60",
+          "commitAuthorOld": "Yufei Gu",
+          "daysBetweenCommits": 163.97,
+          "commitsBetweenForRepo": 1759,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,24 @@\n-  public static ConfigurableResource parseResourceConfigValue(String val)\n-      throws AllocationConfigurationException {\n+  public static ConfigurableResource parseResourceConfigValue(String value,\n+      long missing) throws AllocationConfigurationException {\n     ConfigurableResource configurableResource;\n+\n+    if (value.trim().isEmpty()) {\n+      throw new AllocationConfigurationException(\"Error reading resource \"\n+          + \"config--the resource string is empty.\");\n+    }\n+\n     try {\n-      val \u003d StringUtils.toLowerCase(val);\n-      if (val.contains(\"%\")) {\n-        configurableResource \u003d new ConfigurableResource(\n-            getResourcePercentage(val));\n+      if (value.contains(\"\u003d\")) {\n+        configurableResource \u003d parseNewStyleResource(value, missing);\n+      } else if (value.contains(\"%\")) {\n+        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n       } else {\n-        int memory \u003d findResource(val, \"mb\");\n-        int vcores \u003d findResource(val, \"vcores\");\n-        configurableResource \u003d new ConfigurableResource(\n-            BuilderUtils.newResource(memory, vcores));\n+        configurableResource \u003d parseOldStyleResource(value);\n       }\n-    } catch (AllocationConfigurationException ex) {\n-      throw ex;\n-    } catch (Exception ex) {\n+    } catch (RuntimeException ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n+\n     return configurableResource;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static ConfigurableResource parseResourceConfigValue(String value,\n      long missing) throws AllocationConfigurationException {\n    ConfigurableResource configurableResource;\n\n    if (value.trim().isEmpty()) {\n      throw new AllocationConfigurationException(\"Error reading resource \"\n          + \"config--the resource string is empty.\");\n    }\n\n    try {\n      if (value.contains(\"\u003d\")) {\n        configurableResource \u003d parseNewStyleResource(value, missing);\n      } else if (value.contains(\"%\")) {\n        configurableResource \u003d parseOldStyleResourceAsPercentage(value);\n      } else {\n        configurableResource \u003d parseOldStyleResource(value);\n      }\n    } catch (RuntimeException ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n\n    return configurableResource;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "99292adcefdc6b8f280b8e100605fb39f755c38a": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "YARN-2162. Add ability in Fair Scheduler to optionally configure maxResources in terms of percentage. (Yufei Gu)\n",
+      "commitDate": "05/10/17 11:51 PM",
+      "commitName": "99292adcefdc6b8f280b8e100605fb39f755c38a",
+      "commitAuthor": "Yufei Gu",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "YARN-2162. Add ability in Fair Scheduler to optionally configure maxResources in terms of percentage. (Yufei Gu)\n",
+          "commitDate": "05/10/17 11:51 PM",
+          "commitName": "99292adcefdc6b8f280b8e100605fb39f755c38a",
+          "commitAuthor": "Yufei Gu",
+          "commitDateOld": "15/02/17 11:16 PM",
+          "commitNameOld": "6c25dbcdc0517a825b92fb16444aa1d3761e160c",
+          "commitAuthorOld": "Karthik Kambatla",
+          "daysBetweenCommits": 231.98,
+          "commitsBetweenForRepo": 1503,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,22 @@\n-  public static Resource parseResourceConfigValue(String val)\n+  public static ConfigurableResource parseResourceConfigValue(String val)\n       throws AllocationConfigurationException {\n+    ConfigurableResource configurableResource;\n     try {\n       val \u003d StringUtils.toLowerCase(val);\n-      int memory \u003d findResource(val, \"mb\");\n-      int vcores \u003d findResource(val, \"vcores\");\n-      return BuilderUtils.newResource(memory, vcores);\n+      if (val.contains(\"%\")) {\n+        configurableResource \u003d new ConfigurableResource(\n+            getResourcePercentage(val));\n+      } else {\n+        int memory \u003d findResource(val, \"mb\");\n+        int vcores \u003d findResource(val, \"vcores\");\n+        configurableResource \u003d new ConfigurableResource(\n+            BuilderUtils.newResource(memory, vcores));\n+      }\n     } catch (AllocationConfigurationException ex) {\n       throw ex;\n     } catch (Exception ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n+    return configurableResource;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static ConfigurableResource parseResourceConfigValue(String val)\n      throws AllocationConfigurationException {\n    ConfigurableResource configurableResource;\n    try {\n      val \u003d StringUtils.toLowerCase(val);\n      if (val.contains(\"%\")) {\n        configurableResource \u003d new ConfigurableResource(\n            getResourcePercentage(val));\n      } else {\n        int memory \u003d findResource(val, \"mb\");\n        int vcores \u003d findResource(val, \"vcores\");\n        configurableResource \u003d new ConfigurableResource(\n            BuilderUtils.newResource(memory, vcores));\n      }\n    } catch (AllocationConfigurationException ex) {\n      throw ex;\n    } catch (Exception ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n    return configurableResource;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+          "extendedDetails": {
+            "oldValue": "Resource",
+            "newValue": "ConfigurableResource"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-2162. Add ability in Fair Scheduler to optionally configure maxResources in terms of percentage. (Yufei Gu)\n",
+          "commitDate": "05/10/17 11:51 PM",
+          "commitName": "99292adcefdc6b8f280b8e100605fb39f755c38a",
+          "commitAuthor": "Yufei Gu",
+          "commitDateOld": "15/02/17 11:16 PM",
+          "commitNameOld": "6c25dbcdc0517a825b92fb16444aa1d3761e160c",
+          "commitAuthorOld": "Karthik Kambatla",
+          "daysBetweenCommits": 231.98,
+          "commitsBetweenForRepo": 1503,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,14 +1,22 @@\n-  public static Resource parseResourceConfigValue(String val)\n+  public static ConfigurableResource parseResourceConfigValue(String val)\n       throws AllocationConfigurationException {\n+    ConfigurableResource configurableResource;\n     try {\n       val \u003d StringUtils.toLowerCase(val);\n-      int memory \u003d findResource(val, \"mb\");\n-      int vcores \u003d findResource(val, \"vcores\");\n-      return BuilderUtils.newResource(memory, vcores);\n+      if (val.contains(\"%\")) {\n+        configurableResource \u003d new ConfigurableResource(\n+            getResourcePercentage(val));\n+      } else {\n+        int memory \u003d findResource(val, \"mb\");\n+        int vcores \u003d findResource(val, \"vcores\");\n+        configurableResource \u003d new ConfigurableResource(\n+            BuilderUtils.newResource(memory, vcores));\n+      }\n     } catch (AllocationConfigurationException ex) {\n       throw ex;\n     } catch (Exception ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n+    return configurableResource;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static ConfigurableResource parseResourceConfigValue(String val)\n      throws AllocationConfigurationException {\n    ConfigurableResource configurableResource;\n    try {\n      val \u003d StringUtils.toLowerCase(val);\n      if (val.contains(\"%\")) {\n        configurableResource \u003d new ConfigurableResource(\n            getResourcePercentage(val));\n      } else {\n        int memory \u003d findResource(val, \"mb\");\n        int vcores \u003d findResource(val, \"vcores\");\n        configurableResource \u003d new ConfigurableResource(\n            BuilderUtils.newResource(memory, vcores));\n      }\n    } catch (AllocationConfigurationException ex) {\n      throw ex;\n    } catch (Exception ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n    return configurableResource;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "d1c6accb6f87b08975175580e15f1ff1fe29ab04": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11602. Fix toUpperCase/toLowerCase to use Locale.ENGLISH. (ozawa)\n",
+      "commitDate": "02/03/15 9:17 PM",
+      "commitName": "d1c6accb6f87b08975175580e15f1ff1fe29ab04",
+      "commitAuthor": "Tsuyoshi Ozawa",
+      "commitDateOld": "24/02/15 7:32 AM",
+      "commitNameOld": "9cedad11d8d2197a54732667a15344983de5c437",
+      "commitAuthorOld": "Tsuyoshi Ozawa",
+      "daysBetweenCommits": 6.57,
+      "commitsBetweenForRepo": 57,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,14 @@\n   public static Resource parseResourceConfigValue(String val)\n       throws AllocationConfigurationException {\n     try {\n-      val \u003d val.toLowerCase();\n+      val \u003d StringUtils.toLowerCase(val);\n       int memory \u003d findResource(val, \"mb\");\n       int vcores \u003d findResource(val, \"vcores\");\n       return BuilderUtils.newResource(memory, vcores);\n     } catch (AllocationConfigurationException ex) {\n       throw ex;\n     } catch (Exception ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Resource parseResourceConfigValue(String val)\n      throws AllocationConfigurationException {\n    try {\n      val \u003d StringUtils.toLowerCase(val);\n      int memory \u003d findResource(val, \"mb\");\n      int vcores \u003d findResource(val, \"vcores\");\n      return BuilderUtils.newResource(memory, vcores);\n    } catch (AllocationConfigurationException ex) {\n      throw ex;\n    } catch (Exception ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+      "extendedDetails": {}
+    },
+    "9cedad11d8d2197a54732667a15344983de5c437": {
+      "type": "Ybodychange",
+      "commitMessage": "Revert \"HADOOP-11602. Fix toUpperCase/toLowerCase to use Locale.ENGLISH. (ozawa)\"\n\nThis reverts commit 946456c6d88780abe0251b098dd771e9e1e93ab3.\n\nConflicts:\n\thadoop-common-project/hadoop-common/CHANGES.txt\n\thadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/QuotaByStorageTypeEntry.java\n",
+      "commitDate": "24/02/15 7:32 AM",
+      "commitName": "9cedad11d8d2197a54732667a15344983de5c437",
+      "commitAuthor": "Tsuyoshi Ozawa",
+      "commitDateOld": "18/02/15 8:06 PM",
+      "commitNameOld": "946456c6d88780abe0251b098dd771e9e1e93ab3",
+      "commitAuthorOld": "Tsuyoshi Ozawa",
+      "daysBetweenCommits": 5.48,
+      "commitsBetweenForRepo": 31,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,14 @@\n   public static Resource parseResourceConfigValue(String val)\n       throws AllocationConfigurationException {\n     try {\n-      val \u003d val.toLowerCase(Locale.ENGLISH);\n+      val \u003d val.toLowerCase();\n       int memory \u003d findResource(val, \"mb\");\n       int vcores \u003d findResource(val, \"vcores\");\n       return BuilderUtils.newResource(memory, vcores);\n     } catch (AllocationConfigurationException ex) {\n       throw ex;\n     } catch (Exception ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Resource parseResourceConfigValue(String val)\n      throws AllocationConfigurationException {\n    try {\n      val \u003d val.toLowerCase();\n      int memory \u003d findResource(val, \"mb\");\n      int vcores \u003d findResource(val, \"vcores\");\n      return BuilderUtils.newResource(memory, vcores);\n    } catch (AllocationConfigurationException ex) {\n      throw ex;\n    } catch (Exception ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+      "extendedDetails": {}
+    },
+    "946456c6d88780abe0251b098dd771e9e1e93ab3": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11602. Fix toUpperCase/toLowerCase to use Locale.ENGLISH. (ozawa)\n",
+      "commitDate": "18/02/15 8:06 PM",
+      "commitName": "946456c6d88780abe0251b098dd771e9e1e93ab3",
+      "commitAuthor": "Tsuyoshi Ozawa",
+      "commitDateOld": "29/10/14 10:24 AM",
+      "commitNameOld": "782971ae7a0247bcf5920e10b434b7e0954dd868",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 112.45,
+      "commitsBetweenForRepo": 879,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,14 @@\n   public static Resource parseResourceConfigValue(String val)\n       throws AllocationConfigurationException {\n     try {\n-      val \u003d val.toLowerCase();\n+      val \u003d val.toLowerCase(Locale.ENGLISH);\n       int memory \u003d findResource(val, \"mb\");\n       int vcores \u003d findResource(val, \"vcores\");\n       return BuilderUtils.newResource(memory, vcores);\n     } catch (AllocationConfigurationException ex) {\n       throw ex;\n     } catch (Exception ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Resource parseResourceConfigValue(String val)\n      throws AllocationConfigurationException {\n    try {\n      val \u003d val.toLowerCase(Locale.ENGLISH);\n      int memory \u003d findResource(val, \"mb\");\n      int vcores \u003d findResource(val, \"vcores\");\n      return BuilderUtils.newResource(memory, vcores);\n    } catch (AllocationConfigurationException ex) {\n      throw ex;\n    } catch (Exception ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+      "extendedDetails": {}
+    },
+    "782971ae7a0247bcf5920e10b434b7e0954dd868": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-2742. FairSchedulerConfiguration should allow extra spaces between value and unit. (Wei Yan via kasha)\n",
+      "commitDate": "29/10/14 10:24 AM",
+      "commitName": "782971ae7a0247bcf5920e10b434b7e0954dd868",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "21/09/14 1:15 PM",
+      "commitNameOld": "c50fc92502934aa2a8f84ea2466d4da1e3eace9d",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 37.88,
+      "commitsBetweenForRepo": 361,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,14 @@\n   public static Resource parseResourceConfigValue(String val)\n       throws AllocationConfigurationException {\n     try {\n+      val \u003d val.toLowerCase();\n       int memory \u003d findResource(val, \"mb\");\n       int vcores \u003d findResource(val, \"vcores\");\n       return BuilderUtils.newResource(memory, vcores);\n     } catch (AllocationConfigurationException ex) {\n       throw ex;\n     } catch (Exception ex) {\n       throw new AllocationConfigurationException(\n           \"Error reading resource config\", ex);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Resource parseResourceConfigValue(String val)\n      throws AllocationConfigurationException {\n    try {\n      val \u003d val.toLowerCase();\n      int memory \u003d findResource(val, \"mb\");\n      int vcores \u003d findResource(val, \"vcores\");\n      return BuilderUtils.newResource(memory, vcores);\n    } catch (AllocationConfigurationException ex) {\n      throw ex;\n    } catch (Exception ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+      "extendedDetails": {}
+    },
+    "c1b635ed4826b0f9c8574d262dfeb13fa5ceb650": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-326. Add multi-resource scheduling to the fair scheduler. (sandyr via tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1489070 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "03/06/13 10:33 AM",
+      "commitName": "c1b635ed4826b0f9c8574d262dfeb13fa5ceb650",
+      "commitAuthor": "Alejandro Abdelnur",
+      "diff": "@@ -0,0 +1,13 @@\n+  public static Resource parseResourceConfigValue(String val)\n+      throws AllocationConfigurationException {\n+    try {\n+      int memory \u003d findResource(val, \"mb\");\n+      int vcores \u003d findResource(val, \"vcores\");\n+      return BuilderUtils.newResource(memory, vcores);\n+    } catch (AllocationConfigurationException ex) {\n+      throw ex;\n+    } catch (Exception ex) {\n+      throw new AllocationConfigurationException(\n+          \"Error reading resource config\", ex);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Resource parseResourceConfigValue(String val)\n      throws AllocationConfigurationException {\n    try {\n      int memory \u003d findResource(val, \"mb\");\n      int vcores \u003d findResource(val, \"vcores\");\n      return BuilderUtils.newResource(memory, vcores);\n    } catch (AllocationConfigurationException ex) {\n      throw ex;\n    } catch (Exception ex) {\n      throw new AllocationConfigurationException(\n          \"Error reading resource config\", ex);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java"
+    }
+  }
+}

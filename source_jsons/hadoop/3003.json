@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSUtilClient.java",
+  "functionName": "getThreadPoolExecutor",
+  "functionId": "getThreadPoolExecutor___corePoolSize-int__maxPoolSize-int__keepAliveTimeSecs-long__queue-BlockingQueue__Runnable____threadNamePrefix-String__runRejectedExec-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSUtilClient.java",
+  "functionStartLine": 946,
+  "functionEndLine": 976,
+  "numCommitsSeen": 44,
+  "timeTaken": 1223,
+  "changeHistory": [
+    "77791e4c36ddc9305306c83806bf486d4d32575d"
+  ],
+  "changeHistoryShort": {
+    "77791e4c36ddc9305306c83806bf486d4d32575d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "77791e4c36ddc9305306c83806bf486d4d32575d": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-12044. Mismatch between BlockManager.maxReplicationStreams and ErasureCodingWorker.stripedReconstructionPool pool size causes slow and bursty recovery. (Contributed by Lei (Eddy) Xu)\n",
+      "commitDate": "28/07/17 10:50 AM",
+      "commitName": "77791e4c36ddc9305306c83806bf486d4d32575d",
+      "commitAuthor": "Lei Xu",
+      "diff": "@@ -0,0 +1,31 @@\n+  public static ThreadPoolExecutor getThreadPoolExecutor(int corePoolSize,\n+      int maxPoolSize, long keepAliveTimeSecs, BlockingQueue\u003cRunnable\u003e queue,\n+      String threadNamePrefix, boolean runRejectedExec) {\n+    Preconditions.checkArgument(corePoolSize \u003e 0);\n+    ThreadPoolExecutor threadPoolExecutor \u003d new ThreadPoolExecutor(corePoolSize,\n+        maxPoolSize, keepAliveTimeSecs, TimeUnit.SECONDS,\n+        queue, new Daemon.DaemonFactory() {\n+          private final AtomicInteger threadIndex \u003d new AtomicInteger(0);\n+\n+          @Override\n+          public Thread newThread(Runnable r) {\n+            Thread t \u003d super.newThread(r);\n+            t.setName(threadNamePrefix + threadIndex.getAndIncrement());\n+            return t;\n+          }\n+        });\n+    if (runRejectedExec) {\n+      threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor\n+          .CallerRunsPolicy() {\n+        @Override\n+        public void rejectedExecution(Runnable runnable,\n+            ThreadPoolExecutor e) {\n+          LOG.info(threadNamePrefix + \" task is rejected by \" +\n+                  \"ThreadPoolExecutor. Executing it in current thread.\");\n+          // will run in the current thread\n+          super.rejectedExecution(runnable, e);\n+        }\n+      });\n+    }\n+    return threadPoolExecutor;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static ThreadPoolExecutor getThreadPoolExecutor(int corePoolSize,\n      int maxPoolSize, long keepAliveTimeSecs, BlockingQueue\u003cRunnable\u003e queue,\n      String threadNamePrefix, boolean runRejectedExec) {\n    Preconditions.checkArgument(corePoolSize \u003e 0);\n    ThreadPoolExecutor threadPoolExecutor \u003d new ThreadPoolExecutor(corePoolSize,\n        maxPoolSize, keepAliveTimeSecs, TimeUnit.SECONDS,\n        queue, new Daemon.DaemonFactory() {\n          private final AtomicInteger threadIndex \u003d new AtomicInteger(0);\n\n          @Override\n          public Thread newThread(Runnable r) {\n            Thread t \u003d super.newThread(r);\n            t.setName(threadNamePrefix + threadIndex.getAndIncrement());\n            return t;\n          }\n        });\n    if (runRejectedExec) {\n      threadPoolExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor\n          .CallerRunsPolicy() {\n        @Override\n        public void rejectedExecution(Runnable runnable,\n            ThreadPoolExecutor e) {\n          LOG.info(threadNamePrefix + \" task is rejected by \" +\n                  \"ThreadPoolExecutor. Executing it in current thread.\");\n          // will run in the current thread\n          super.rejectedExecution(runnable, e);\n        }\n      });\n    }\n    return threadPoolExecutor;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSUtilClient.java"
+    }
+  }
+}

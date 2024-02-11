@@ -1,0 +1,133 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "JobSplitWriter.java",
+  "functionName": "writeNewSplits",
+  "functionId": "writeNewSplits___conf-Configuration__array-T[]__out-FSDataOutputStream",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java",
+  "functionStartLine": 117,
+  "functionEndLine": 151,
+  "numCommitsSeen": 7,
+  "timeTaken": 4634,
+  "changeHistory": [
+    "38a3b925e9cd1cf0889719894acf65e1c3e25c15",
+    "45be2c085d8648fd7a2d07f91d42d4db2d4b041f",
+    "960d7643fba4e537f6f499a7cea707211528e126",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "38a3b925e9cd1cf0889719894acf65e1c3e25c15": "Ybodychange",
+    "45be2c085d8648fd7a2d07f91d42d4db2d4b041f": "Ybodychange",
+    "960d7643fba4e537f6f499a7cea707211528e126": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "38a3b925e9cd1cf0889719894acf65e1c3e25c15": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-5186. mapreduce.job.max.split.locations causes some splits created by CombineFileInputFormat to fail. Contributed by Robert Parker and Jason Lowe\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1540813 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "11/11/13 11:22 AM",
+      "commitName": "38a3b925e9cd1cf0889719894acf65e1c3e25c15",
+      "commitAuthor": "Jason Darrell Lowe",
+      "commitDateOld": "29/05/12 7:43 AM",
+      "commitNameOld": "45be2c085d8648fd7a2d07f91d42d4db2d4b041f",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 531.19,
+      "commitsBetweenForRepo": 3076,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,35 @@\n   SplitMetaInfo[] writeNewSplits(Configuration conf, \n       T[] array, FSDataOutputStream out)\n   throws IOException, InterruptedException {\n \n     SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n     if (array.length !\u003d 0) {\n       SerializationFactory factory \u003d new SerializationFactory(conf);\n       int i \u003d 0;\n       int maxBlockLocations \u003d conf.getInt(MRConfig.MAX_BLOCK_LOCATIONS_KEY,\n           MRConfig.MAX_BLOCK_LOCATIONS_DEFAULT);\n       long offset \u003d out.getPos();\n       for(T split: array) {\n         long prevCount \u003d out.getPos();\n         Text.writeString(out, split.getClass().getName());\n         Serializer\u003cT\u003e serializer \u003d \n           factory.getSerializer((Class\u003cT\u003e) split.getClass());\n         serializer.open(out);\n         serializer.serialize(split);\n         long currCount \u003d out.getPos();\n         String[] locations \u003d split.getLocations();\n         if (locations.length \u003e maxBlockLocations) {\n-          throw new IOException(\"Max block location exceeded for split: \"\n+          LOG.warn(\"Max block location exceeded for split: \"\n               + split + \" splitsize: \" + locations.length +\n               \" maxsize: \" + maxBlockLocations);\n+          locations \u003d Arrays.copyOf(locations, maxBlockLocations);\n         }\n         info[i++] \u003d \n           new JobSplit.SplitMetaInfo( \n               locations, offset,\n               split.getLength());\n         offset +\u003d currCount - prevCount;\n       }\n     }\n     return info;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  SplitMetaInfo[] writeNewSplits(Configuration conf, \n      T[] array, FSDataOutputStream out)\n  throws IOException, InterruptedException {\n\n    SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n    if (array.length !\u003d 0) {\n      SerializationFactory factory \u003d new SerializationFactory(conf);\n      int i \u003d 0;\n      int maxBlockLocations \u003d conf.getInt(MRConfig.MAX_BLOCK_LOCATIONS_KEY,\n          MRConfig.MAX_BLOCK_LOCATIONS_DEFAULT);\n      long offset \u003d out.getPos();\n      for(T split: array) {\n        long prevCount \u003d out.getPos();\n        Text.writeString(out, split.getClass().getName());\n        Serializer\u003cT\u003e serializer \u003d \n          factory.getSerializer((Class\u003cT\u003e) split.getClass());\n        serializer.open(out);\n        serializer.serialize(split);\n        long currCount \u003d out.getPos();\n        String[] locations \u003d split.getLocations();\n        if (locations.length \u003e maxBlockLocations) {\n          LOG.warn(\"Max block location exceeded for split: \"\n              + split + \" splitsize: \" + locations.length +\n              \" maxsize: \" + maxBlockLocations);\n          locations \u003d Arrays.copyOf(locations, maxBlockLocations);\n        }\n        info[i++] \u003d \n          new JobSplit.SplitMetaInfo( \n              locations, offset,\n              split.getLength());\n        offset +\u003d currCount - prevCount;\n      }\n    }\n    return info;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java",
+      "extendedDetails": {}
+    },
+    "45be2c085d8648fd7a2d07f91d42d4db2d4b041f": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-4146. Support limits on task status string length and number of block locations in branch-2. Contributed by Ahmed Radwan.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1343755 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "29/05/12 7:43 AM",
+      "commitName": "45be2c085d8648fd7a2d07f91d42d4db2d4b041f",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "30/09/11 12:04 PM",
+      "commitNameOld": "960d7643fba4e537f6f499a7cea707211528e126",
+      "commitAuthorOld": "Konstantin Shvachko",
+      "daysBetweenCommits": 241.82,
+      "commitsBetweenForRepo": 1731,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,34 @@\n   SplitMetaInfo[] writeNewSplits(Configuration conf, \n       T[] array, FSDataOutputStream out)\n   throws IOException, InterruptedException {\n \n     SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n     if (array.length !\u003d 0) {\n       SerializationFactory factory \u003d new SerializationFactory(conf);\n       int i \u003d 0;\n+      int maxBlockLocations \u003d conf.getInt(MRConfig.MAX_BLOCK_LOCATIONS_KEY,\n+          MRConfig.MAX_BLOCK_LOCATIONS_DEFAULT);\n       long offset \u003d out.getPos();\n       for(T split: array) {\n         long prevCount \u003d out.getPos();\n         Text.writeString(out, split.getClass().getName());\n         Serializer\u003cT\u003e serializer \u003d \n           factory.getSerializer((Class\u003cT\u003e) split.getClass());\n         serializer.open(out);\n         serializer.serialize(split);\n         long currCount \u003d out.getPos();\n+        String[] locations \u003d split.getLocations();\n+        if (locations.length \u003e maxBlockLocations) {\n+          throw new IOException(\"Max block location exceeded for split: \"\n+              + split + \" splitsize: \" + locations.length +\n+              \" maxsize: \" + maxBlockLocations);\n+        }\n         info[i++] \u003d \n           new JobSplit.SplitMetaInfo( \n-              split.getLocations(), offset,\n+              locations, offset,\n               split.getLength());\n         offset +\u003d currCount - prevCount;\n       }\n     }\n     return info;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  SplitMetaInfo[] writeNewSplits(Configuration conf, \n      T[] array, FSDataOutputStream out)\n  throws IOException, InterruptedException {\n\n    SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n    if (array.length !\u003d 0) {\n      SerializationFactory factory \u003d new SerializationFactory(conf);\n      int i \u003d 0;\n      int maxBlockLocations \u003d conf.getInt(MRConfig.MAX_BLOCK_LOCATIONS_KEY,\n          MRConfig.MAX_BLOCK_LOCATIONS_DEFAULT);\n      long offset \u003d out.getPos();\n      for(T split: array) {\n        long prevCount \u003d out.getPos();\n        Text.writeString(out, split.getClass().getName());\n        Serializer\u003cT\u003e serializer \u003d \n          factory.getSerializer((Class\u003cT\u003e) split.getClass());\n        serializer.open(out);\n        serializer.serialize(split);\n        long currCount \u003d out.getPos();\n        String[] locations \u003d split.getLocations();\n        if (locations.length \u003e maxBlockLocations) {\n          throw new IOException(\"Max block location exceeded for split: \"\n              + split + \" splitsize: \" + locations.length +\n              \" maxsize: \" + maxBlockLocations);\n        }\n        info[i++] \u003d \n          new JobSplit.SplitMetaInfo( \n              locations, offset,\n              split.getLength());\n        offset +\u003d currCount - prevCount;\n      }\n    }\n    return info;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java",
+      "extendedDetails": {}
+    },
+    "960d7643fba4e537f6f499a7cea707211528e126": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-2779. JobSplitWriter.java can\u0027t handle large job.split file. Contributed by Ming Ma.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1177779 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "30/09/11 12:04 PM",
+      "commitName": "960d7643fba4e537f6f499a7cea707211528e126",
+      "commitAuthor": "Konstantin Shvachko",
+      "commitDateOld": "24/08/11 5:14 PM",
+      "commitNameOld": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 36.79,
+      "commitsBetweenForRepo": 238,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,26 @@\n   SplitMetaInfo[] writeNewSplits(Configuration conf, \n       T[] array, FSDataOutputStream out)\n   throws IOException, InterruptedException {\n \n     SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n     if (array.length !\u003d 0) {\n       SerializationFactory factory \u003d new SerializationFactory(conf);\n       int i \u003d 0;\n-      long offset \u003d out.size();\n+      long offset \u003d out.getPos();\n       for(T split: array) {\n-        int prevCount \u003d out.size();\n+        long prevCount \u003d out.getPos();\n         Text.writeString(out, split.getClass().getName());\n         Serializer\u003cT\u003e serializer \u003d \n           factory.getSerializer((Class\u003cT\u003e) split.getClass());\n         serializer.open(out);\n         serializer.serialize(split);\n-        int currCount \u003d out.size();\n+        long currCount \u003d out.getPos();\n         info[i++] \u003d \n           new JobSplit.SplitMetaInfo( \n               split.getLocations(), offset,\n               split.getLength());\n         offset +\u003d currCount - prevCount;\n       }\n     }\n     return info;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  SplitMetaInfo[] writeNewSplits(Configuration conf, \n      T[] array, FSDataOutputStream out)\n  throws IOException, InterruptedException {\n\n    SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n    if (array.length !\u003d 0) {\n      SerializationFactory factory \u003d new SerializationFactory(conf);\n      int i \u003d 0;\n      long offset \u003d out.getPos();\n      for(T split: array) {\n        long prevCount \u003d out.getPos();\n        Text.writeString(out, split.getClass().getName());\n        Serializer\u003cT\u003e serializer \u003d \n          factory.getSerializer((Class\u003cT\u003e) split.getClass());\n        serializer.open(out);\n        serializer.serialize(split);\n        long currCount \u003d out.getPos();\n        info[i++] \u003d \n          new JobSplit.SplitMetaInfo( \n              split.getLocations(), offset,\n              split.getLength());\n        offset +\u003d currCount - prevCount;\n      }\n    }\n    return info;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  SplitMetaInfo[] writeNewSplits(Configuration conf, \n      T[] array, FSDataOutputStream out)\n  throws IOException, InterruptedException {\n\n    SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n    if (array.length !\u003d 0) {\n      SerializationFactory factory \u003d new SerializationFactory(conf);\n      int i \u003d 0;\n      long offset \u003d out.size();\n      for(T split: array) {\n        int prevCount \u003d out.size();\n        Text.writeString(out, split.getClass().getName());\n        Serializer\u003cT\u003e serializer \u003d \n          factory.getSerializer((Class\u003cT\u003e) split.getClass());\n        serializer.open(out);\n        serializer.serialize(split);\n        int currCount \u003d out.size();\n        info[i++] \u003d \n          new JobSplit.SplitMetaInfo( \n              split.getLocations(), offset,\n              split.getLength());\n        offset +\u003d currCount - prevCount;\n      }\n    }\n    return info;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yfilerename",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "17/08/11 8:02 PM",
+      "commitNameOld": "dd86860633d2ed64705b669a75bf318442ed6225",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 0.34,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  SplitMetaInfo[] writeNewSplits(Configuration conf, \n      T[] array, FSDataOutputStream out)\n  throws IOException, InterruptedException {\n\n    SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n    if (array.length !\u003d 0) {\n      SerializationFactory factory \u003d new SerializationFactory(conf);\n      int i \u003d 0;\n      long offset \u003d out.size();\n      for(T split: array) {\n        int prevCount \u003d out.size();\n        Text.writeString(out, split.getClass().getName());\n        Serializer\u003cT\u003e serializer \u003d \n          factory.getSerializer((Class\u003cT\u003e) split.getClass());\n        serializer.open(out);\n        serializer.serialize(split);\n        int currCount \u003d out.size();\n        info[i++] \u003d \n          new JobSplit.SplitMetaInfo( \n              split.getLocations(), offset,\n              split.getLength());\n        offset +\u003d currCount - prevCount;\n      }\n    }\n    return info;\n  }",
+      "path": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java",
+      "extendedDetails": {
+        "oldPath": "mapreduce/src/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java",
+        "newPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,26 @@\n+  SplitMetaInfo[] writeNewSplits(Configuration conf, \n+      T[] array, FSDataOutputStream out)\n+  throws IOException, InterruptedException {\n+\n+    SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n+    if (array.length !\u003d 0) {\n+      SerializationFactory factory \u003d new SerializationFactory(conf);\n+      int i \u003d 0;\n+      long offset \u003d out.size();\n+      for(T split: array) {\n+        int prevCount \u003d out.size();\n+        Text.writeString(out, split.getClass().getName());\n+        Serializer\u003cT\u003e serializer \u003d \n+          factory.getSerializer((Class\u003cT\u003e) split.getClass());\n+        serializer.open(out);\n+        serializer.serialize(split);\n+        int currCount \u003d out.size();\n+        info[i++] \u003d \n+          new JobSplit.SplitMetaInfo( \n+              split.getLocations(), offset,\n+              split.getLength());\n+        offset +\u003d currCount - prevCount;\n+      }\n+    }\n+    return info;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  SplitMetaInfo[] writeNewSplits(Configuration conf, \n      T[] array, FSDataOutputStream out)\n  throws IOException, InterruptedException {\n\n    SplitMetaInfo[] info \u003d new SplitMetaInfo[array.length];\n    if (array.length !\u003d 0) {\n      SerializationFactory factory \u003d new SerializationFactory(conf);\n      int i \u003d 0;\n      long offset \u003d out.size();\n      for(T split: array) {\n        int prevCount \u003d out.size();\n        Text.writeString(out, split.getClass().getName());\n        Serializer\u003cT\u003e serializer \u003d \n          factory.getSerializer((Class\u003cT\u003e) split.getClass());\n        serializer.open(out);\n        serializer.serialize(split);\n        int currCount \u003d out.size();\n        info[i++] \u003d \n          new JobSplit.SplitMetaInfo( \n              split.getLocations(), offset,\n              split.getLength());\n        offset +\u003d currCount - prevCount;\n      }\n    }\n    return info;\n  }",
+      "path": "mapreduce/src/java/org/apache/hadoop/mapreduce/split/JobSplitWriter.java"
+    }
+  }
+}

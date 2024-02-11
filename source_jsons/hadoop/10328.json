@@ -1,0 +1,246 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LocalReplica.java",
+  "functionName": "truncateBlock",
+  "functionId": "truncateBlock___volume-FsVolumeSpi__blockFile-File__metaFile-File__oldlen-long__newlen-long__fileIoProvider-FileIoProvider",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplica.java",
+  "functionStartLine": 469,
+  "functionEndLine": 519,
+  "numCommitsSeen": 182,
+  "timeTaken": 10316,
+  "changeHistory": [
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+    "86c9862bec0248d671e657aa56094a2919b8ac14",
+    "cea7bbc630deede93dbe6a1bbda56ad49de4f3de",
+    "bc13dfb1426944ce45293cb8f444239a7406762c",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "d86f3183d93714ba078416af4f609d26376eadb0",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389": "Ymultichange(Yparameterchange,Ybodychange)",
+    "86c9862bec0248d671e657aa56094a2919b8ac14": "Ymultichange(Ymovefromfile,Ymodifierchange)",
+    "cea7bbc630deede93dbe6a1bbda56ad49de4f3de": "Ybodychange",
+    "bc13dfb1426944ce45293cb8f444239a7406762c": "Ymultichange(Ymovefromfile,Ybodychange)",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "d86f3183d93714ba078416af4f609d26376eadb0": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6ba9587d370fbf39c129c08c00ebbb894ccc1389": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-10958. Add instrumentation hooks around Datanode disk IO.\n",
+      "commitDate": "14/12/16 11:18 AM",
+      "commitName": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+      "commitAuthor": "Arpit Agarwal",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10958. Add instrumentation hooks around Datanode disk IO.\n",
+          "commitDate": "14/12/16 11:18 AM",
+          "commitName": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+          "commitAuthor": "Arpit Agarwal",
+          "commitDateOld": "06/12/16 11:05 AM",
+          "commitNameOld": "df983b524ab68ea0c70cee9033bfff2d28052cbf",
+          "commitAuthorOld": "Xiaoyu Yao",
+          "daysBetweenCommits": 8.01,
+          "commitsBetweenForRepo": 51,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,50 +1,51 @@\n-  public static void truncateBlock(File blockFile, File metaFile,\n-      long oldlen, long newlen) throws IOException {\n+  public static void truncateBlock(\n+      FsVolumeSpi volume, File blockFile, File metaFile,\n+      long oldlen, long newlen, FileIoProvider fileIoProvider)\n+      throws IOException {\n     LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n         + \", metaFile\u003d\" + metaFile\n         + \", oldlen\u003d\" + oldlen\n         + \", newlen\u003d\" + newlen);\n \n     if (newlen \u003d\u003d oldlen) {\n       return;\n     }\n     if (newlen \u003e oldlen) {\n       throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n           + \") to newlen (\u003d\" + newlen + \")\");\n     }\n \n-    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n+    // fis is closed by BlockMetadataHeader.readHeader.\n+    final FileInputStream fis \u003d fileIoProvider.getFileInputStream(\n+        volume, metaFile);\n+    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(fis).getChecksum();\n     int checksumsize \u003d dcs.getChecksumSize();\n     int bpc \u003d dcs.getBytesPerChecksum();\n     long n \u003d (newlen - 1)/bpc + 1;\n     long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n     long lastchunkoffset \u003d (n - 1)*bpc;\n     int lastchunksize \u003d (int)(newlen - lastchunkoffset);\n     byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)];\n \n-    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n-    try {\n+    try (RandomAccessFile blockRAF \u003d fileIoProvider.getRandomAccessFile(\n+        volume, blockFile, \"rw\")) {\n       //truncate blockFile\n       blockRAF.setLength(newlen);\n \n       //read last chunk\n       blockRAF.seek(lastchunkoffset);\n       blockRAF.readFully(b, 0, lastchunksize);\n-    } finally {\n-      blockRAF.close();\n     }\n \n     //compute checksum\n     dcs.update(b, 0, lastchunksize);\n     dcs.writeValue(b, 0, false);\n \n     //update metaFile\n-    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n-    try {\n+    try (RandomAccessFile metaRAF \u003d fileIoProvider.getRandomAccessFile(\n+        volume, metaFile, \"rw\")) {\n       metaRAF.setLength(newmetalen);\n       metaRAF.seek(newmetalen - checksumsize);\n       metaRAF.write(b, 0, checksumsize);\n-    } finally {\n-      metaRAF.close();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void truncateBlock(\n      FsVolumeSpi volume, File blockFile, File metaFile,\n      long oldlen, long newlen, FileIoProvider fileIoProvider)\n      throws IOException {\n    LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    // fis is closed by BlockMetadataHeader.readHeader.\n    final FileInputStream fis \u003d fileIoProvider.getFileInputStream(\n        volume, metaFile);\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(fis).getChecksum();\n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset);\n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)];\n\n    try (RandomAccessFile blockRAF \u003d fileIoProvider.getRandomAccessFile(\n        volume, blockFile, \"rw\")) {\n      //truncate blockFile\n      blockRAF.setLength(newlen);\n\n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile\n    try (RandomAccessFile metaRAF \u003d fileIoProvider.getRandomAccessFile(\n        volume, metaFile, \"rw\")) {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplica.java",
+          "extendedDetails": {
+            "oldValue": "[blockFile-File, metaFile-File, oldlen-long, newlen-long]",
+            "newValue": "[volume-FsVolumeSpi, blockFile-File, metaFile-File, oldlen-long, newlen-long, fileIoProvider-FileIoProvider]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10958. Add instrumentation hooks around Datanode disk IO.\n",
+          "commitDate": "14/12/16 11:18 AM",
+          "commitName": "6ba9587d370fbf39c129c08c00ebbb894ccc1389",
+          "commitAuthor": "Arpit Agarwal",
+          "commitDateOld": "06/12/16 11:05 AM",
+          "commitNameOld": "df983b524ab68ea0c70cee9033bfff2d28052cbf",
+          "commitAuthorOld": "Xiaoyu Yao",
+          "daysBetweenCommits": 8.01,
+          "commitsBetweenForRepo": 51,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,50 +1,51 @@\n-  public static void truncateBlock(File blockFile, File metaFile,\n-      long oldlen, long newlen) throws IOException {\n+  public static void truncateBlock(\n+      FsVolumeSpi volume, File blockFile, File metaFile,\n+      long oldlen, long newlen, FileIoProvider fileIoProvider)\n+      throws IOException {\n     LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n         + \", metaFile\u003d\" + metaFile\n         + \", oldlen\u003d\" + oldlen\n         + \", newlen\u003d\" + newlen);\n \n     if (newlen \u003d\u003d oldlen) {\n       return;\n     }\n     if (newlen \u003e oldlen) {\n       throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n           + \") to newlen (\u003d\" + newlen + \")\");\n     }\n \n-    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n+    // fis is closed by BlockMetadataHeader.readHeader.\n+    final FileInputStream fis \u003d fileIoProvider.getFileInputStream(\n+        volume, metaFile);\n+    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(fis).getChecksum();\n     int checksumsize \u003d dcs.getChecksumSize();\n     int bpc \u003d dcs.getBytesPerChecksum();\n     long n \u003d (newlen - 1)/bpc + 1;\n     long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n     long lastchunkoffset \u003d (n - 1)*bpc;\n     int lastchunksize \u003d (int)(newlen - lastchunkoffset);\n     byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)];\n \n-    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n-    try {\n+    try (RandomAccessFile blockRAF \u003d fileIoProvider.getRandomAccessFile(\n+        volume, blockFile, \"rw\")) {\n       //truncate blockFile\n       blockRAF.setLength(newlen);\n \n       //read last chunk\n       blockRAF.seek(lastchunkoffset);\n       blockRAF.readFully(b, 0, lastchunksize);\n-    } finally {\n-      blockRAF.close();\n     }\n \n     //compute checksum\n     dcs.update(b, 0, lastchunksize);\n     dcs.writeValue(b, 0, false);\n \n     //update metaFile\n-    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n-    try {\n+    try (RandomAccessFile metaRAF \u003d fileIoProvider.getRandomAccessFile(\n+        volume, metaFile, \"rw\")) {\n       metaRAF.setLength(newmetalen);\n       metaRAF.seek(newmetalen - checksumsize);\n       metaRAF.write(b, 0, checksumsize);\n-    } finally {\n-      metaRAF.close();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void truncateBlock(\n      FsVolumeSpi volume, File blockFile, File metaFile,\n      long oldlen, long newlen, FileIoProvider fileIoProvider)\n      throws IOException {\n    LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    // fis is closed by BlockMetadataHeader.readHeader.\n    final FileInputStream fis \u003d fileIoProvider.getFileInputStream(\n        volume, metaFile);\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(fis).getChecksum();\n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset);\n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)];\n\n    try (RandomAccessFile blockRAF \u003d fileIoProvider.getRandomAccessFile(\n        volume, blockFile, \"rw\")) {\n      //truncate blockFile\n      blockRAF.setLength(newlen);\n\n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile\n    try (RandomAccessFile metaRAF \u003d fileIoProvider.getRandomAccessFile(\n        volume, metaFile, \"rw\")) {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplica.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "86c9862bec0248d671e657aa56094a2919b8ac14": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange)",
+      "commitMessage": "HDFS-10636. Modify ReplicaInfo to remove the assumption that replica metadata and data are stored in java.io.File. (Virajith Jalaparti via lei)\n",
+      "commitDate": "13/09/16 12:54 PM",
+      "commitName": "86c9862bec0248d671e657aa56094a2919b8ac14",
+      "commitAuthor": "Lei Xu",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-10636. Modify ReplicaInfo to remove the assumption that replica metadata and data are stored in java.io.File. (Virajith Jalaparti via lei)\n",
+          "commitDate": "13/09/16 12:54 PM",
+          "commitName": "86c9862bec0248d671e657aa56094a2919b8ac14",
+          "commitAuthor": "Lei Xu",
+          "commitDateOld": "13/09/16 12:42 PM",
+          "commitNameOld": "1c0d18f32289837b8981aed80e7bdcd360adfb85",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,50 +1,50 @@\n-  static private void truncateBlock(File blockFile, File metaFile,\n+  static public void truncateBlock(File blockFile, File metaFile,\n       long oldlen, long newlen) throws IOException {\n     LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n         + \", metaFile\u003d\" + metaFile\n         + \", oldlen\u003d\" + oldlen\n         + \", newlen\u003d\" + newlen);\n \n     if (newlen \u003d\u003d oldlen) {\n       return;\n     }\n     if (newlen \u003e oldlen) {\n       throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n           + \") to newlen (\u003d\" + newlen + \")\");\n     }\n \n-    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n+    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n     int checksumsize \u003d dcs.getChecksumSize();\n     int bpc \u003d dcs.getBytesPerChecksum();\n     long n \u003d (newlen - 1)/bpc + 1;\n     long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n     long lastchunkoffset \u003d (n - 1)*bpc;\n-    int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n-    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n+    int lastchunksize \u003d (int)(newlen - lastchunkoffset);\n+    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)];\n \n     RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n     try {\n-      //truncate blockFile \n+      //truncate blockFile\n       blockRAF.setLength(newlen);\n- \n+\n       //read last chunk\n       blockRAF.seek(lastchunkoffset);\n       blockRAF.readFully(b, 0, lastchunksize);\n     } finally {\n       blockRAF.close();\n     }\n \n     //compute checksum\n     dcs.update(b, 0, lastchunksize);\n     dcs.writeValue(b, 0, false);\n \n-    //update metaFile \n+    //update metaFile\n     RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n     try {\n       metaRAF.setLength(newmetalen);\n       metaRAF.seek(newmetalen - checksumsize);\n       metaRAF.write(b, 0, checksumsize);\n     } finally {\n       metaRAF.close();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static public void truncateBlock(File blockFile, File metaFile,\n      long oldlen, long newlen) throws IOException {\n    LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset);\n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)];\n\n    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n    try {\n      //truncate blockFile\n      blockRAF.setLength(newlen);\n\n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    } finally {\n      blockRAF.close();\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile\n    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n    try {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    } finally {\n      metaRAF.close();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplica.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplica.java",
+            "oldMethodName": "truncateBlock",
+            "newMethodName": "truncateBlock"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-10636. Modify ReplicaInfo to remove the assumption that replica metadata and data are stored in java.io.File. (Virajith Jalaparti via lei)\n",
+          "commitDate": "13/09/16 12:54 PM",
+          "commitName": "86c9862bec0248d671e657aa56094a2919b8ac14",
+          "commitAuthor": "Lei Xu",
+          "commitDateOld": "13/09/16 12:42 PM",
+          "commitNameOld": "1c0d18f32289837b8981aed80e7bdcd360adfb85",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,50 +1,50 @@\n-  static private void truncateBlock(File blockFile, File metaFile,\n+  static public void truncateBlock(File blockFile, File metaFile,\n       long oldlen, long newlen) throws IOException {\n     LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n         + \", metaFile\u003d\" + metaFile\n         + \", oldlen\u003d\" + oldlen\n         + \", newlen\u003d\" + newlen);\n \n     if (newlen \u003d\u003d oldlen) {\n       return;\n     }\n     if (newlen \u003e oldlen) {\n       throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n           + \") to newlen (\u003d\" + newlen + \")\");\n     }\n \n-    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n+    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n     int checksumsize \u003d dcs.getChecksumSize();\n     int bpc \u003d dcs.getBytesPerChecksum();\n     long n \u003d (newlen - 1)/bpc + 1;\n     long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n     long lastchunkoffset \u003d (n - 1)*bpc;\n-    int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n-    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n+    int lastchunksize \u003d (int)(newlen - lastchunkoffset);\n+    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)];\n \n     RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n     try {\n-      //truncate blockFile \n+      //truncate blockFile\n       blockRAF.setLength(newlen);\n- \n+\n       //read last chunk\n       blockRAF.seek(lastchunkoffset);\n       blockRAF.readFully(b, 0, lastchunksize);\n     } finally {\n       blockRAF.close();\n     }\n \n     //compute checksum\n     dcs.update(b, 0, lastchunksize);\n     dcs.writeValue(b, 0, false);\n \n-    //update metaFile \n+    //update metaFile\n     RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n     try {\n       metaRAF.setLength(newmetalen);\n       metaRAF.seek(newmetalen - checksumsize);\n       metaRAF.write(b, 0, checksumsize);\n     } finally {\n       metaRAF.close();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static public void truncateBlock(File blockFile, File metaFile,\n      long oldlen, long newlen) throws IOException {\n    LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum();\n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset);\n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)];\n\n    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n    try {\n      //truncate blockFile\n      blockRAF.setLength(newlen);\n\n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    } finally {\n      blockRAF.close();\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile\n    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n    try {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    } finally {\n      metaRAF.close();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/LocalReplica.java",
+          "extendedDetails": {
+            "oldValue": "[private, static]",
+            "newValue": "[public, static]"
+          }
+        }
+      ]
+    },
+    "cea7bbc630deede93dbe6a1bbda56ad49de4f3de": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-4122. Cleanup HDFS logs and reduce the size of logged messages. Contributed by Suresh Srinivas.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1403120 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "28/10/12 4:10 PM",
+      "commitName": "cea7bbc630deede93dbe6a1bbda56ad49de4f3de",
+      "commitAuthor": "Suresh Srinivas",
+      "commitDateOld": "13/09/12 4:48 PM",
+      "commitNameOld": "86635168feaaf9a8f20d01b5fd6c1b6fbe98c1ea",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 44.97,
+      "commitsBetweenForRepo": 247,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,50 +1,50 @@\n   static private void truncateBlock(File blockFile, File metaFile,\n       long oldlen, long newlen) throws IOException {\n     LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n         + \", metaFile\u003d\" + metaFile\n         + \", oldlen\u003d\" + oldlen\n         + \", newlen\u003d\" + newlen);\n \n     if (newlen \u003d\u003d oldlen) {\n       return;\n     }\n     if (newlen \u003e oldlen) {\n-      throw new IOException(\"Cannout truncate block to from oldlen (\u003d\" + oldlen\n+      throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n           + \") to newlen (\u003d\" + newlen + \")\");\n     }\n \n     DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n     int checksumsize \u003d dcs.getChecksumSize();\n     int bpc \u003d dcs.getBytesPerChecksum();\n     long n \u003d (newlen - 1)/bpc + 1;\n     long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n     long lastchunkoffset \u003d (n - 1)*bpc;\n     int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n     byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n \n     RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n     try {\n       //truncate blockFile \n       blockRAF.setLength(newlen);\n  \n       //read last chunk\n       blockRAF.seek(lastchunkoffset);\n       blockRAF.readFully(b, 0, lastchunksize);\n     } finally {\n       blockRAF.close();\n     }\n \n     //compute checksum\n     dcs.update(b, 0, lastchunksize);\n     dcs.writeValue(b, 0, false);\n \n     //update metaFile \n     RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n     try {\n       metaRAF.setLength(newmetalen);\n       metaRAF.seek(newmetalen - checksumsize);\n       metaRAF.write(b, 0, checksumsize);\n     } finally {\n       metaRAF.close();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static private void truncateBlock(File blockFile, File metaFile,\n      long oldlen, long newlen) throws IOException {\n    LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannot truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n\n    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n    try {\n      //truncate blockFile \n      blockRAF.setLength(newlen);\n \n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    } finally {\n      blockRAF.close();\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile \n    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n    try {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    } finally {\n      metaRAF.close();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+      "extendedDetails": {}
+    },
+    "bc13dfb1426944ce45293cb8f444239a7406762c": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange)",
+      "commitMessage": "HDFS-3130. Move fsdataset implementation to a package.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1308437 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/04/12 10:38 AM",
+      "commitName": "bc13dfb1426944ce45293cb8f444239a7406762c",
+      "commitAuthor": "Tsz-wo Sze",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-3130. Move fsdataset implementation to a package.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1308437 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "02/04/12 10:38 AM",
+          "commitName": "bc13dfb1426944ce45293cb8f444239a7406762c",
+          "commitAuthor": "Tsz-wo Sze",
+          "commitDateOld": "01/04/12 8:48 PM",
+          "commitNameOld": "a4ccb8f504e79802f1b3c69acbcbb00b2343c529",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 0.58,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,50 +1,50 @@\n   static private void truncateBlock(File blockFile, File metaFile,\n       long oldlen, long newlen) throws IOException {\n-    DataNode.LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n+    LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n         + \", metaFile\u003d\" + metaFile\n         + \", oldlen\u003d\" + oldlen\n         + \", newlen\u003d\" + newlen);\n \n     if (newlen \u003d\u003d oldlen) {\n       return;\n     }\n     if (newlen \u003e oldlen) {\n       throw new IOException(\"Cannout truncate block to from oldlen (\u003d\" + oldlen\n           + \") to newlen (\u003d\" + newlen + \")\");\n     }\n \n     DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n     int checksumsize \u003d dcs.getChecksumSize();\n     int bpc \u003d dcs.getBytesPerChecksum();\n     long n \u003d (newlen - 1)/bpc + 1;\n     long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n     long lastchunkoffset \u003d (n - 1)*bpc;\n     int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n     byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n \n     RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n     try {\n       //truncate blockFile \n       blockRAF.setLength(newlen);\n  \n       //read last chunk\n       blockRAF.seek(lastchunkoffset);\n       blockRAF.readFully(b, 0, lastchunksize);\n     } finally {\n       blockRAF.close();\n     }\n \n     //compute checksum\n     dcs.update(b, 0, lastchunksize);\n     dcs.writeValue(b, 0, false);\n \n     //update metaFile \n     RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n     try {\n       metaRAF.setLength(newmetalen);\n       metaRAF.seek(newmetalen - checksumsize);\n       metaRAF.write(b, 0, checksumsize);\n     } finally {\n       metaRAF.close();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static private void truncateBlock(File blockFile, File metaFile,\n      long oldlen, long newlen) throws IOException {\n    LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannout truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n\n    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n    try {\n      //truncate blockFile \n      blockRAF.setLength(newlen);\n \n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    } finally {\n      blockRAF.close();\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile \n    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n    try {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    } finally {\n      metaRAF.close();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FSDataset.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+            "oldMethodName": "truncateBlock",
+            "newMethodName": "truncateBlock"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3130. Move fsdataset implementation to a package.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1308437 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "02/04/12 10:38 AM",
+          "commitName": "bc13dfb1426944ce45293cb8f444239a7406762c",
+          "commitAuthor": "Tsz-wo Sze",
+          "commitDateOld": "01/04/12 8:48 PM",
+          "commitNameOld": "a4ccb8f504e79802f1b3c69acbcbb00b2343c529",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 0.58,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,50 +1,50 @@\n   static private void truncateBlock(File blockFile, File metaFile,\n       long oldlen, long newlen) throws IOException {\n-    DataNode.LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n+    LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n         + \", metaFile\u003d\" + metaFile\n         + \", oldlen\u003d\" + oldlen\n         + \", newlen\u003d\" + newlen);\n \n     if (newlen \u003d\u003d oldlen) {\n       return;\n     }\n     if (newlen \u003e oldlen) {\n       throw new IOException(\"Cannout truncate block to from oldlen (\u003d\" + oldlen\n           + \") to newlen (\u003d\" + newlen + \")\");\n     }\n \n     DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n     int checksumsize \u003d dcs.getChecksumSize();\n     int bpc \u003d dcs.getBytesPerChecksum();\n     long n \u003d (newlen - 1)/bpc + 1;\n     long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n     long lastchunkoffset \u003d (n - 1)*bpc;\n     int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n     byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n \n     RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n     try {\n       //truncate blockFile \n       blockRAF.setLength(newlen);\n  \n       //read last chunk\n       blockRAF.seek(lastchunkoffset);\n       blockRAF.readFully(b, 0, lastchunksize);\n     } finally {\n       blockRAF.close();\n     }\n \n     //compute checksum\n     dcs.update(b, 0, lastchunksize);\n     dcs.writeValue(b, 0, false);\n \n     //update metaFile \n     RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n     try {\n       metaRAF.setLength(newmetalen);\n       metaRAF.seek(newmetalen - checksumsize);\n       metaRAF.write(b, 0, checksumsize);\n     } finally {\n       metaRAF.close();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static private void truncateBlock(File blockFile, File metaFile,\n      long oldlen, long newlen) throws IOException {\n    LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannout truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n\n    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n    try {\n      //truncate blockFile \n      blockRAF.setLength(newlen);\n \n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    } finally {\n      blockRAF.close();\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile \n    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n    try {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    } finally {\n      metaRAF.close();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  static private void truncateBlock(File blockFile, File metaFile,\n      long oldlen, long newlen) throws IOException {\n    DataNode.LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannout truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n\n    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n    try {\n      //truncate blockFile \n      blockRAF.setLength(newlen);\n \n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    } finally {\n      blockRAF.close();\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile \n    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n    try {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    } finally {\n      metaRAF.close();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FSDataset.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FSDataset.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FSDataset.java"
+      }
+    },
+    "d86f3183d93714ba078416af4f609d26376eadb0": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-2096. Mavenization of hadoop-hdfs. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159702 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "19/08/11 10:36 AM",
+      "commitName": "d86f3183d93714ba078416af4f609d26376eadb0",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "19/08/11 10:26 AM",
+      "commitNameOld": "6ee5a73e0e91a2ef27753a32c576835e951d8119",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  static private void truncateBlock(File blockFile, File metaFile,\n      long oldlen, long newlen) throws IOException {\n    DataNode.LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannout truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n\n    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n    try {\n      //truncate blockFile \n      blockRAF.setLength(newlen);\n \n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    } finally {\n      blockRAF.close();\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile \n    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n    try {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    } finally {\n      metaRAF.close();\n    }\n  }",
+      "path": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FSDataset.java",
+      "extendedDetails": {
+        "oldPath": "hdfs/src/java/org/apache/hadoop/hdfs/server/datanode/FSDataset.java",
+        "newPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/FSDataset.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,50 @@\n+  static private void truncateBlock(File blockFile, File metaFile,\n+      long oldlen, long newlen) throws IOException {\n+    DataNode.LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n+        + \", metaFile\u003d\" + metaFile\n+        + \", oldlen\u003d\" + oldlen\n+        + \", newlen\u003d\" + newlen);\n+\n+    if (newlen \u003d\u003d oldlen) {\n+      return;\n+    }\n+    if (newlen \u003e oldlen) {\n+      throw new IOException(\"Cannout truncate block to from oldlen (\u003d\" + oldlen\n+          + \") to newlen (\u003d\" + newlen + \")\");\n+    }\n+\n+    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n+    int checksumsize \u003d dcs.getChecksumSize();\n+    int bpc \u003d dcs.getBytesPerChecksum();\n+    long n \u003d (newlen - 1)/bpc + 1;\n+    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n+    long lastchunkoffset \u003d (n - 1)*bpc;\n+    int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n+    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n+\n+    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n+    try {\n+      //truncate blockFile \n+      blockRAF.setLength(newlen);\n+ \n+      //read last chunk\n+      blockRAF.seek(lastchunkoffset);\n+      blockRAF.readFully(b, 0, lastchunksize);\n+    } finally {\n+      blockRAF.close();\n+    }\n+\n+    //compute checksum\n+    dcs.update(b, 0, lastchunksize);\n+    dcs.writeValue(b, 0, false);\n+\n+    //update metaFile \n+    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n+    try {\n+      metaRAF.setLength(newmetalen);\n+      metaRAF.seek(newmetalen - checksumsize);\n+      metaRAF.write(b, 0, checksumsize);\n+    } finally {\n+      metaRAF.close();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static private void truncateBlock(File blockFile, File metaFile,\n      long oldlen, long newlen) throws IOException {\n    DataNode.LOG.info(\"truncateBlock: blockFile\u003d\" + blockFile\n        + \", metaFile\u003d\" + metaFile\n        + \", oldlen\u003d\" + oldlen\n        + \", newlen\u003d\" + newlen);\n\n    if (newlen \u003d\u003d oldlen) {\n      return;\n    }\n    if (newlen \u003e oldlen) {\n      throw new IOException(\"Cannout truncate block to from oldlen (\u003d\" + oldlen\n          + \") to newlen (\u003d\" + newlen + \")\");\n    }\n\n    DataChecksum dcs \u003d BlockMetadataHeader.readHeader(metaFile).getChecksum(); \n    int checksumsize \u003d dcs.getChecksumSize();\n    int bpc \u003d dcs.getBytesPerChecksum();\n    long n \u003d (newlen - 1)/bpc + 1;\n    long newmetalen \u003d BlockMetadataHeader.getHeaderSize() + n*checksumsize;\n    long lastchunkoffset \u003d (n - 1)*bpc;\n    int lastchunksize \u003d (int)(newlen - lastchunkoffset); \n    byte[] b \u003d new byte[Math.max(lastchunksize, checksumsize)]; \n\n    RandomAccessFile blockRAF \u003d new RandomAccessFile(blockFile, \"rw\");\n    try {\n      //truncate blockFile \n      blockRAF.setLength(newlen);\n \n      //read last chunk\n      blockRAF.seek(lastchunkoffset);\n      blockRAF.readFully(b, 0, lastchunksize);\n    } finally {\n      blockRAF.close();\n    }\n\n    //compute checksum\n    dcs.update(b, 0, lastchunksize);\n    dcs.writeValue(b, 0, false);\n\n    //update metaFile \n    RandomAccessFile metaRAF \u003d new RandomAccessFile(metaFile, \"rw\");\n    try {\n      metaRAF.setLength(newmetalen);\n      metaRAF.seek(newmetalen - checksumsize);\n      metaRAF.write(b, 0, checksumsize);\n    } finally {\n      metaRAF.close();\n    }\n  }",
+      "path": "hdfs/src/java/org/apache/hadoop/hdfs/server/datanode/FSDataset.java"
+    }
+  }
+}

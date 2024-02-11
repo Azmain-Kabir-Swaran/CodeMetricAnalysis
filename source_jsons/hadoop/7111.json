@@ -1,0 +1,236 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StoragePolicySatisfier.java",
+  "functionName": "chooseTarget",
+  "functionId": "chooseTarget___block-LocatedBlock__source-DatanodeInfo__targetTypes-List__StorageType____matcher-Matcher__locsForExpectedStorageTypes-EnumMap__StorageType,List__DatanodeWithStorage.StorageDetails______excludeNodes-List__DatanodeInfo__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/sps/StoragePolicySatisfier.java",
+  "functionStartLine": 777,
+  "functionEndLine": 806,
+  "numCommitsSeen": 71,
+  "timeTaken": 8068,
+  "changeHistory": [
+    "75ccc1396b677777cdc0d4992a4af3911f9f88c2",
+    "99594b48b8e040ab5a0939d7c3dbcfb34400e6fc",
+    "05d4daf6ba3e5bd40f46e8003ee12fc7c613453d",
+    "78420719eb1f138c6f10558befb7bc8ebcc28a54",
+    "f8fc96a66ea3cbd41a3915c4546ff816451cf9db",
+    "b07291e176c489c2eec3da1850b790b8ba691a3e",
+    "1438da494424193e330f24edef823bbd60dc37d2"
+  ],
+  "changeHistoryShort": {
+    "75ccc1396b677777cdc0d4992a4af3911f9f88c2": "Ymultichange(Yparameterchange,Ybodychange)",
+    "99594b48b8e040ab5a0939d7c3dbcfb34400e6fc": "Ybodychange",
+    "05d4daf6ba3e5bd40f46e8003ee12fc7c613453d": "Ymultichange(Yparameterchange,Ybodychange)",
+    "78420719eb1f138c6f10558befb7bc8ebcc28a54": "Yfilerename",
+    "f8fc96a66ea3cbd41a3915c4546ff816451cf9db": "Ymultichange(Yparameterchange,Ybodychange)",
+    "b07291e176c489c2eec3da1850b790b8ba691a3e": "Ybodychange",
+    "1438da494424193e330f24edef823bbd60dc37d2": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "75ccc1396b677777cdc0d4992a4af3911f9f88c2": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-13166: [SPS]: Implement caching mechanism to keep LIVE datanodes to minimize costly getLiveDatanodeStorageReport() calls. Contributed by Rakesh R.\n",
+      "commitDate": "12/08/18 3:06 AM",
+      "commitName": "75ccc1396b677777cdc0d4992a4af3911f9f88c2",
+      "commitAuthor": "Surendra Singh Lilhore",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13166: [SPS]: Implement caching mechanism to keep LIVE datanodes to minimize costly getLiveDatanodeStorageReport() calls. Contributed by Rakesh R.\n",
+          "commitDate": "12/08/18 3:06 AM",
+          "commitName": "75ccc1396b677777cdc0d4992a4af3911f9f88c2",
+          "commitAuthor": "Surendra Singh Lilhore",
+          "commitDateOld": "12/08/18 3:06 AM",
+          "commitNameOld": "8467ec24fb74f30371d5a13e893fc56309ee9372",
+          "commitAuthorOld": "Rakesh Radhakrishnan",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,30 @@\n   private StorageTypeNodePair chooseTarget(LocatedBlock block,\n       DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n-      StorageTypeNodeMap locsForExpectedStorageTypes,\n-      List\u003cDatanodeInfo\u003e excludeNodes) {\n+      EnumMap\u003cStorageType, List\u003cDatanodeWithStorage.StorageDetails\u003e\u003e\n+      locsForExpectedStorageTypes, List\u003cDatanodeInfo\u003e excludeNodes) {\n     for (StorageType t : targetTypes) {\n-      List\u003cDatanodeInfo\u003e nodesWithStorages \u003d\n-          locsForExpectedStorageTypes.getNodesWithStorages(t);\n+      List\u003cDatanodeWithStorage.StorageDetails\u003e nodesWithStorages \u003d\n+          locsForExpectedStorageTypes.get(t);\n       if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n         continue; // no target nodes with the required storage type.\n       }\n       Collections.shuffle(nodesWithStorages);\n-      for (DatanodeInfo target : nodesWithStorages) {\n+      for (DatanodeWithStorage.StorageDetails targetNode : nodesWithStorages) {\n+        DatanodeInfo target \u003d targetNode.getDatanodeInfo();\n         if (!excludeNodes.contains(target)\n-            \u0026\u0026 matcher.match(ctxt.getNetworkTopology(), source, target)) {\n-          boolean goodTargetDn \u003d\n-              ctxt.checkDNSpaceForScheduling(target, t, block.getBlockSize());\n-          if (goodTargetDn) {\n+            \u0026\u0026 matcher.match(dnCacheMgr.getCluster(), source, target)) {\n+          // Good target with enough space to write the given block size.\n+          if (targetNode.hasSpaceForScheduling(block.getBlockSize())) {\n+            targetNode.incScheduledSize(block.getBlockSize());\n             return new StorageTypeNodePair(t, target);\n           }\n+          if (LOG.isDebugEnabled()) {\n+            LOG.debug(\"Datanode:{} storage type:{} doesn\u0027t have sufficient \"\n+                + \"space:{} to move the target block size:{}\",\n+                target, t, targetNode, block.getBlockSize());\n+          }\n         }\n       }\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private StorageTypeNodePair chooseTarget(LocatedBlock block,\n      DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      EnumMap\u003cStorageType, List\u003cDatanodeWithStorage.StorageDetails\u003e\u003e\n      locsForExpectedStorageTypes, List\u003cDatanodeInfo\u003e excludeNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeWithStorage.StorageDetails\u003e nodesWithStorages \u003d\n          locsForExpectedStorageTypes.get(t);\n      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n        continue; // no target nodes with the required storage type.\n      }\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeWithStorage.StorageDetails targetNode : nodesWithStorages) {\n        DatanodeInfo target \u003d targetNode.getDatanodeInfo();\n        if (!excludeNodes.contains(target)\n            \u0026\u0026 matcher.match(dnCacheMgr.getCluster(), source, target)) {\n          // Good target with enough space to write the given block size.\n          if (targetNode.hasSpaceForScheduling(block.getBlockSize())) {\n            targetNode.incScheduledSize(block.getBlockSize());\n            return new StorageTypeNodePair(t, target);\n          }\n          if (LOG.isDebugEnabled()) {\n            LOG.debug(\"Datanode:{} storage type:{} doesn\u0027t have sufficient \"\n                + \"space:{} to move the target block size:{}\",\n                target, t, targetNode, block.getBlockSize());\n          }\n        }\n      }\n    }\n    return null;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/sps/StoragePolicySatisfier.java",
+          "extendedDetails": {
+            "oldValue": "[block-LocatedBlock, source-DatanodeInfo, targetTypes-List\u003cStorageType\u003e, matcher-Matcher, locsForExpectedStorageTypes-StorageTypeNodeMap, excludeNodes-List\u003cDatanodeInfo\u003e]",
+            "newValue": "[block-LocatedBlock, source-DatanodeInfo, targetTypes-List\u003cStorageType\u003e, matcher-Matcher, locsForExpectedStorageTypes-EnumMap\u003cStorageType,List\u003cDatanodeWithStorage.StorageDetails\u003e\u003e, excludeNodes-List\u003cDatanodeInfo\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13166: [SPS]: Implement caching mechanism to keep LIVE datanodes to minimize costly getLiveDatanodeStorageReport() calls. Contributed by Rakesh R.\n",
+          "commitDate": "12/08/18 3:06 AM",
+          "commitName": "75ccc1396b677777cdc0d4992a4af3911f9f88c2",
+          "commitAuthor": "Surendra Singh Lilhore",
+          "commitDateOld": "12/08/18 3:06 AM",
+          "commitNameOld": "8467ec24fb74f30371d5a13e893fc56309ee9372",
+          "commitAuthorOld": "Rakesh Radhakrishnan",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,30 @@\n   private StorageTypeNodePair chooseTarget(LocatedBlock block,\n       DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n-      StorageTypeNodeMap locsForExpectedStorageTypes,\n-      List\u003cDatanodeInfo\u003e excludeNodes) {\n+      EnumMap\u003cStorageType, List\u003cDatanodeWithStorage.StorageDetails\u003e\u003e\n+      locsForExpectedStorageTypes, List\u003cDatanodeInfo\u003e excludeNodes) {\n     for (StorageType t : targetTypes) {\n-      List\u003cDatanodeInfo\u003e nodesWithStorages \u003d\n-          locsForExpectedStorageTypes.getNodesWithStorages(t);\n+      List\u003cDatanodeWithStorage.StorageDetails\u003e nodesWithStorages \u003d\n+          locsForExpectedStorageTypes.get(t);\n       if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n         continue; // no target nodes with the required storage type.\n       }\n       Collections.shuffle(nodesWithStorages);\n-      for (DatanodeInfo target : nodesWithStorages) {\n+      for (DatanodeWithStorage.StorageDetails targetNode : nodesWithStorages) {\n+        DatanodeInfo target \u003d targetNode.getDatanodeInfo();\n         if (!excludeNodes.contains(target)\n-            \u0026\u0026 matcher.match(ctxt.getNetworkTopology(), source, target)) {\n-          boolean goodTargetDn \u003d\n-              ctxt.checkDNSpaceForScheduling(target, t, block.getBlockSize());\n-          if (goodTargetDn) {\n+            \u0026\u0026 matcher.match(dnCacheMgr.getCluster(), source, target)) {\n+          // Good target with enough space to write the given block size.\n+          if (targetNode.hasSpaceForScheduling(block.getBlockSize())) {\n+            targetNode.incScheduledSize(block.getBlockSize());\n             return new StorageTypeNodePair(t, target);\n           }\n+          if (LOG.isDebugEnabled()) {\n+            LOG.debug(\"Datanode:{} storage type:{} doesn\u0027t have sufficient \"\n+                + \"space:{} to move the target block size:{}\",\n+                target, t, targetNode, block.getBlockSize());\n+          }\n         }\n       }\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private StorageTypeNodePair chooseTarget(LocatedBlock block,\n      DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      EnumMap\u003cStorageType, List\u003cDatanodeWithStorage.StorageDetails\u003e\u003e\n      locsForExpectedStorageTypes, List\u003cDatanodeInfo\u003e excludeNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeWithStorage.StorageDetails\u003e nodesWithStorages \u003d\n          locsForExpectedStorageTypes.get(t);\n      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n        continue; // no target nodes with the required storage type.\n      }\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeWithStorage.StorageDetails targetNode : nodesWithStorages) {\n        DatanodeInfo target \u003d targetNode.getDatanodeInfo();\n        if (!excludeNodes.contains(target)\n            \u0026\u0026 matcher.match(dnCacheMgr.getCluster(), source, target)) {\n          // Good target with enough space to write the given block size.\n          if (targetNode.hasSpaceForScheduling(block.getBlockSize())) {\n            targetNode.incScheduledSize(block.getBlockSize());\n            return new StorageTypeNodePair(t, target);\n          }\n          if (LOG.isDebugEnabled()) {\n            LOG.debug(\"Datanode:{} storage type:{} doesn\u0027t have sufficient \"\n                + \"space:{} to move the target block size:{}\",\n                target, t, targetNode, block.getBlockSize());\n          }\n        }\n      }\n    }\n    return null;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/sps/StoragePolicySatisfier.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "99594b48b8e040ab5a0939d7c3dbcfb34400e6fc": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13075. [SPS]: Provide External Context implementation. Contributed by Uma Maheswara Rao G.\n",
+      "commitDate": "12/08/18 3:06 AM",
+      "commitName": "99594b48b8e040ab5a0939d7c3dbcfb34400e6fc",
+      "commitAuthor": "Surendra Singh Lilhore",
+      "commitDateOld": "12/08/18 3:06 AM",
+      "commitNameOld": "3b83110d5ed582b9f913ecf3f62ce410535f8fca",
+      "commitAuthorOld": "Uma Maheswara Rao G",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,24 @@\n   private StorageTypeNodePair chooseTarget(LocatedBlock block,\n       DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n       StorageTypeNodeMap locsForExpectedStorageTypes,\n       List\u003cDatanodeInfo\u003e excludeNodes) {\n     for (StorageType t : targetTypes) {\n-      List\u003cDatanodeInfo\u003e nodesWithStorages \u003d locsForExpectedStorageTypes\n-          .getNodesWithStorages(t);\n+      List\u003cDatanodeInfo\u003e nodesWithStorages \u003d\n+          locsForExpectedStorageTypes.getNodesWithStorages(t);\n       if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n         continue; // no target nodes with the required storage type.\n       }\n       Collections.shuffle(nodesWithStorages);\n       for (DatanodeInfo target : nodesWithStorages) {\n         if (!excludeNodes.contains(target)\n             \u0026\u0026 matcher.match(ctxt.getNetworkTopology(), source, target)) {\n-          boolean goodTargetDn \u003d ctxt.verifyTargetDatanodeHasSpaceForScheduling(\n-              target, t, block.getBlockSize());\n+          boolean goodTargetDn \u003d\n+              ctxt.checkDNSpaceForScheduling(target, t, block.getBlockSize());\n           if (goodTargetDn) {\n             return new StorageTypeNodePair(t, target);\n           }\n         }\n       }\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private StorageTypeNodePair chooseTarget(LocatedBlock block,\n      DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      StorageTypeNodeMap locsForExpectedStorageTypes,\n      List\u003cDatanodeInfo\u003e excludeNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeInfo\u003e nodesWithStorages \u003d\n          locsForExpectedStorageTypes.getNodesWithStorages(t);\n      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n        continue; // no target nodes with the required storage type.\n      }\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeInfo target : nodesWithStorages) {\n        if (!excludeNodes.contains(target)\n            \u0026\u0026 matcher.match(ctxt.getNetworkTopology(), source, target)) {\n          boolean goodTargetDn \u003d\n              ctxt.checkDNSpaceForScheduling(target, t, block.getBlockSize());\n          if (goodTargetDn) {\n            return new StorageTypeNodePair(t, target);\n          }\n        }\n      }\n    }\n    return null;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/sps/StoragePolicySatisfier.java",
+      "extendedDetails": {}
+    },
+    "05d4daf6ba3e5bd40f46e8003ee12fc7c613453d": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-12982 : [SPS]: Reduce the locking and cleanup the Namesystem access. Contributed by Rakesh R.\n",
+      "commitDate": "12/08/18 3:06 AM",
+      "commitName": "05d4daf6ba3e5bd40f46e8003ee12fc7c613453d",
+      "commitAuthor": "Surendra Singh Lilhore",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-12982 : [SPS]: Reduce the locking and cleanup the Namesystem access. Contributed by Rakesh R.\n",
+          "commitDate": "12/08/18 3:06 AM",
+          "commitName": "05d4daf6ba3e5bd40f46e8003ee12fc7c613453d",
+          "commitAuthor": "Surendra Singh Lilhore",
+          "commitDateOld": "12/08/18 3:06 AM",
+          "commitNameOld": "78420719eb1f138c6f10558befb7bc8ebcc28a54",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,24 @@\n-  private StorageTypeNodePair chooseTarget(Block block,\n-      DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n+  private StorageTypeNodePair chooseTarget(LocatedBlock block,\n+      DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n       StorageTypeNodeMap locsForExpectedStorageTypes,\n-      List\u003cDatanodeDescriptor\u003e excludeNodes) {\n+      List\u003cDatanodeInfo\u003e excludeNodes) {\n     for (StorageType t : targetTypes) {\n-      List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n-          locsForExpectedStorageTypes.getNodesWithStorages(t);\n+      List\u003cDatanodeInfo\u003e nodesWithStorages \u003d locsForExpectedStorageTypes\n+          .getNodesWithStorages(t);\n       if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n         continue; // no target nodes with the required storage type.\n       }\n       Collections.shuffle(nodesWithStorages);\n-      for (DatanodeDescriptor target : nodesWithStorages) {\n-        if (!excludeNodes.contains(target) \u0026\u0026 matcher.match(\n-            blockManager.getDatanodeManager().getNetworkTopology(), source,\n-            target)) {\n-          if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n+      for (DatanodeInfo target : nodesWithStorages) {\n+        if (!excludeNodes.contains(target)\n+            \u0026\u0026 matcher.match(ctxt.getNetworkTopology(), source, target)) {\n+          boolean goodTargetDn \u003d ctxt.verifyTargetDatanodeHasSpaceForScheduling(\n+              target, t, block.getBlockSize());\n+          if (goodTargetDn) {\n             return new StorageTypeNodePair(t, target);\n           }\n         }\n       }\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private StorageTypeNodePair chooseTarget(LocatedBlock block,\n      DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      StorageTypeNodeMap locsForExpectedStorageTypes,\n      List\u003cDatanodeInfo\u003e excludeNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeInfo\u003e nodesWithStorages \u003d locsForExpectedStorageTypes\n          .getNodesWithStorages(t);\n      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n        continue; // no target nodes with the required storage type.\n      }\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeInfo target : nodesWithStorages) {\n        if (!excludeNodes.contains(target)\n            \u0026\u0026 matcher.match(ctxt.getNetworkTopology(), source, target)) {\n          boolean goodTargetDn \u003d ctxt.verifyTargetDatanodeHasSpaceForScheduling(\n              target, t, block.getBlockSize());\n          if (goodTargetDn) {\n            return new StorageTypeNodePair(t, target);\n          }\n        }\n      }\n    }\n    return null;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/sps/StoragePolicySatisfier.java",
+          "extendedDetails": {
+            "oldValue": "[block-Block, source-DatanodeDescriptor, targetTypes-List\u003cStorageType\u003e, matcher-Matcher, locsForExpectedStorageTypes-StorageTypeNodeMap, excludeNodes-List\u003cDatanodeDescriptor\u003e]",
+            "newValue": "[block-LocatedBlock, source-DatanodeInfo, targetTypes-List\u003cStorageType\u003e, matcher-Matcher, locsForExpectedStorageTypes-StorageTypeNodeMap, excludeNodes-List\u003cDatanodeInfo\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-12982 : [SPS]: Reduce the locking and cleanup the Namesystem access. Contributed by Rakesh R.\n",
+          "commitDate": "12/08/18 3:06 AM",
+          "commitName": "05d4daf6ba3e5bd40f46e8003ee12fc7c613453d",
+          "commitAuthor": "Surendra Singh Lilhore",
+          "commitDateOld": "12/08/18 3:06 AM",
+          "commitNameOld": "78420719eb1f138c6f10558befb7bc8ebcc28a54",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,24 @@\n-  private StorageTypeNodePair chooseTarget(Block block,\n-      DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n+  private StorageTypeNodePair chooseTarget(LocatedBlock block,\n+      DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n       StorageTypeNodeMap locsForExpectedStorageTypes,\n-      List\u003cDatanodeDescriptor\u003e excludeNodes) {\n+      List\u003cDatanodeInfo\u003e excludeNodes) {\n     for (StorageType t : targetTypes) {\n-      List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n-          locsForExpectedStorageTypes.getNodesWithStorages(t);\n+      List\u003cDatanodeInfo\u003e nodesWithStorages \u003d locsForExpectedStorageTypes\n+          .getNodesWithStorages(t);\n       if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n         continue; // no target nodes with the required storage type.\n       }\n       Collections.shuffle(nodesWithStorages);\n-      for (DatanodeDescriptor target : nodesWithStorages) {\n-        if (!excludeNodes.contains(target) \u0026\u0026 matcher.match(\n-            blockManager.getDatanodeManager().getNetworkTopology(), source,\n-            target)) {\n-          if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n+      for (DatanodeInfo target : nodesWithStorages) {\n+        if (!excludeNodes.contains(target)\n+            \u0026\u0026 matcher.match(ctxt.getNetworkTopology(), source, target)) {\n+          boolean goodTargetDn \u003d ctxt.verifyTargetDatanodeHasSpaceForScheduling(\n+              target, t, block.getBlockSize());\n+          if (goodTargetDn) {\n             return new StorageTypeNodePair(t, target);\n           }\n         }\n       }\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private StorageTypeNodePair chooseTarget(LocatedBlock block,\n      DatanodeInfo source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      StorageTypeNodeMap locsForExpectedStorageTypes,\n      List\u003cDatanodeInfo\u003e excludeNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeInfo\u003e nodesWithStorages \u003d locsForExpectedStorageTypes\n          .getNodesWithStorages(t);\n      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n        continue; // no target nodes with the required storage type.\n      }\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeInfo target : nodesWithStorages) {\n        if (!excludeNodes.contains(target)\n            \u0026\u0026 matcher.match(ctxt.getNetworkTopology(), source, target)) {\n          boolean goodTargetDn \u003d ctxt.verifyTargetDatanodeHasSpaceForScheduling(\n              target, t, block.getBlockSize());\n          if (goodTargetDn) {\n            return new StorageTypeNodePair(t, target);\n          }\n        }\n      }\n    }\n    return null;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/sps/StoragePolicySatisfier.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "78420719eb1f138c6f10558befb7bc8ebcc28a54": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-12955: [SPS]: Move SPS classes to a separate package. Contributed by Rakesh R.\n",
+      "commitDate": "12/08/18 3:06 AM",
+      "commitName": "78420719eb1f138c6f10558befb7bc8ebcc28a54",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "commitDateOld": "12/08/18 3:06 AM",
+      "commitNameOld": "c561cb316e365ef674784cd6cf0b12c0fbc271a3",
+      "commitAuthorOld": "Surendra Singh Lilhore",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private StorageTypeNodePair chooseTarget(Block block,\n      DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      StorageTypeNodeMap locsForExpectedStorageTypes,\n      List\u003cDatanodeDescriptor\u003e excludeNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n          locsForExpectedStorageTypes.getNodesWithStorages(t);\n      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n        continue; // no target nodes with the required storage type.\n      }\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeDescriptor target : nodesWithStorages) {\n        if (!excludeNodes.contains(target) \u0026\u0026 matcher.match(\n            blockManager.getDatanodeManager().getNetworkTopology(), source,\n            target)) {\n          if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n            return new StorageTypeNodePair(t, target);\n          }\n        }\n      }\n    }\n    return null;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/sps/StoragePolicySatisfier.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/StoragePolicySatisfier.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/sps/StoragePolicySatisfier.java"
+      }
+    },
+    "f8fc96a66ea3cbd41a3915c4546ff816451cf9db": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-11309. [SPS]: chooseTargetTypeInSameNode should pass accurate block size to chooseStorage4Block while choosing target. Contributed by Uma Maheswara Rao G\n",
+      "commitDate": "12/08/18 3:05 AM",
+      "commitName": "f8fc96a66ea3cbd41a3915c4546ff816451cf9db",
+      "commitAuthor": "Rakesh Radhakrishnan",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-11309. [SPS]: chooseTargetTypeInSameNode should pass accurate block size to chooseStorage4Block while choosing target. Contributed by Uma Maheswara Rao G\n",
+          "commitDate": "12/08/18 3:05 AM",
+          "commitName": "f8fc96a66ea3cbd41a3915c4546ff816451cf9db",
+          "commitAuthor": "Rakesh Radhakrishnan",
+          "commitDateOld": "12/08/18 3:05 AM",
+          "commitNameOld": "6215e35bb633706753a464ad3e8633366e6a10b2",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 2,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,23 @@\n   private StorageTypeNodePair chooseTarget(Block block,\n       DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n       StorageTypeNodeMap locsForExpectedStorageTypes,\n-      List\u003cDatanodeDescriptor\u003e chosenNodes) {\n+      List\u003cDatanodeDescriptor\u003e excludeNodes) {\n     for (StorageType t : targetTypes) {\n       List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n           locsForExpectedStorageTypes.getNodesWithStorages(t);\n       if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n         continue; // no target nodes with the required storage type.\n       }\n       Collections.shuffle(nodesWithStorages);\n       for (DatanodeDescriptor target : nodesWithStorages) {\n-        if (!chosenNodes.contains(target) \u0026\u0026 matcher.match(\n+        if (!excludeNodes.contains(target) \u0026\u0026 matcher.match(\n             blockManager.getDatanodeManager().getNetworkTopology(), source,\n             target)) {\n           if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n             return new StorageTypeNodePair(t, target);\n           }\n         }\n       }\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private StorageTypeNodePair chooseTarget(Block block,\n      DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      StorageTypeNodeMap locsForExpectedStorageTypes,\n      List\u003cDatanodeDescriptor\u003e excludeNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n          locsForExpectedStorageTypes.getNodesWithStorages(t);\n      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n        continue; // no target nodes with the required storage type.\n      }\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeDescriptor target : nodesWithStorages) {\n        if (!excludeNodes.contains(target) \u0026\u0026 matcher.match(\n            blockManager.getDatanodeManager().getNetworkTopology(), source,\n            target)) {\n          if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n            return new StorageTypeNodePair(t, target);\n          }\n        }\n      }\n    }\n    return null;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/StoragePolicySatisfier.java",
+          "extendedDetails": {
+            "oldValue": "[block-Block, source-DatanodeDescriptor, targetTypes-List\u003cStorageType\u003e, matcher-Matcher, locsForExpectedStorageTypes-StorageTypeNodeMap, chosenNodes-List\u003cDatanodeDescriptor\u003e]",
+            "newValue": "[block-Block, source-DatanodeDescriptor, targetTypes-List\u003cStorageType\u003e, matcher-Matcher, locsForExpectedStorageTypes-StorageTypeNodeMap, excludeNodes-List\u003cDatanodeDescriptor\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-11309. [SPS]: chooseTargetTypeInSameNode should pass accurate block size to chooseStorage4Block while choosing target. Contributed by Uma Maheswara Rao G\n",
+          "commitDate": "12/08/18 3:05 AM",
+          "commitName": "f8fc96a66ea3cbd41a3915c4546ff816451cf9db",
+          "commitAuthor": "Rakesh Radhakrishnan",
+          "commitDateOld": "12/08/18 3:05 AM",
+          "commitNameOld": "6215e35bb633706753a464ad3e8633366e6a10b2",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 2,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,23 @@\n   private StorageTypeNodePair chooseTarget(Block block,\n       DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n       StorageTypeNodeMap locsForExpectedStorageTypes,\n-      List\u003cDatanodeDescriptor\u003e chosenNodes) {\n+      List\u003cDatanodeDescriptor\u003e excludeNodes) {\n     for (StorageType t : targetTypes) {\n       List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n           locsForExpectedStorageTypes.getNodesWithStorages(t);\n       if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n         continue; // no target nodes with the required storage type.\n       }\n       Collections.shuffle(nodesWithStorages);\n       for (DatanodeDescriptor target : nodesWithStorages) {\n-        if (!chosenNodes.contains(target) \u0026\u0026 matcher.match(\n+        if (!excludeNodes.contains(target) \u0026\u0026 matcher.match(\n             blockManager.getDatanodeManager().getNetworkTopology(), source,\n             target)) {\n           if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n             return new StorageTypeNodePair(t, target);\n           }\n         }\n       }\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private StorageTypeNodePair chooseTarget(Block block,\n      DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      StorageTypeNodeMap locsForExpectedStorageTypes,\n      List\u003cDatanodeDescriptor\u003e excludeNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n          locsForExpectedStorageTypes.getNodesWithStorages(t);\n      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n        continue; // no target nodes with the required storage type.\n      }\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeDescriptor target : nodesWithStorages) {\n        if (!excludeNodes.contains(target) \u0026\u0026 matcher.match(\n            blockManager.getDatanodeManager().getNetworkTopology(), source,\n            target)) {\n          if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n            return new StorageTypeNodePair(t, target);\n          }\n        }\n      }\n    }\n    return null;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/StoragePolicySatisfier.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "b07291e176c489c2eec3da1850b790b8ba691a3e": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11151. [SPS]: StoragePolicySatisfier should gracefully handle when there is no target node with the required storage type. Contributed by Rakesh R\n",
+      "commitDate": "12/08/18 3:05 AM",
+      "commitName": "b07291e176c489c2eec3da1850b790b8ba691a3e",
+      "commitAuthor": "Rakesh Radhakrishnan",
+      "commitDateOld": "12/08/18 3:05 AM",
+      "commitNameOld": "19b5aee3e42cd1d6c77a58ab2eea185b5afd60b2",
+      "commitAuthorOld": "Uma Maheswara Rao G",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 2,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,23 @@\n   private StorageTypeNodePair chooseTarget(Block block,\n       DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n       StorageTypeNodeMap locsForExpectedStorageTypes,\n       List\u003cDatanodeDescriptor\u003e chosenNodes) {\n     for (StorageType t : targetTypes) {\n       List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n           locsForExpectedStorageTypes.getNodesWithStorages(t);\n+      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n+        continue; // no target nodes with the required storage type.\n+      }\n       Collections.shuffle(nodesWithStorages);\n       for (DatanodeDescriptor target : nodesWithStorages) {\n         if (!chosenNodes.contains(target) \u0026\u0026 matcher.match(\n             blockManager.getDatanodeManager().getNetworkTopology(), source,\n             target)) {\n           if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n             return new StorageTypeNodePair(t, target);\n           }\n         }\n       }\n     }\n     return null;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private StorageTypeNodePair chooseTarget(Block block,\n      DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      StorageTypeNodeMap locsForExpectedStorageTypes,\n      List\u003cDatanodeDescriptor\u003e chosenNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n          locsForExpectedStorageTypes.getNodesWithStorages(t);\n      if (nodesWithStorages \u003d\u003d null || nodesWithStorages.isEmpty()) {\n        continue; // no target nodes with the required storage type.\n      }\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeDescriptor target : nodesWithStorages) {\n        if (!chosenNodes.contains(target) \u0026\u0026 matcher.match(\n            blockManager.getDatanodeManager().getNetworkTopology(), source,\n            target)) {\n          if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n            return new StorageTypeNodePair(t, target);\n          }\n        }\n      }\n    }\n    return null;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/StoragePolicySatisfier.java",
+      "extendedDetails": {}
+    },
+    "1438da494424193e330f24edef823bbd60dc37d2": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10800: [SPS]: Daemon thread in Namenode to find blocks placed in other storage than what the policy specifies. Contributed by Uma Maheswara Rao G\n",
+      "commitDate": "12/08/18 3:05 AM",
+      "commitName": "1438da494424193e330f24edef823bbd60dc37d2",
+      "commitAuthor": "Uma Maheswara Rao G",
+      "diff": "@@ -0,0 +1,20 @@\n+  private StorageTypeNodePair chooseTarget(Block block,\n+      DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n+      StorageTypeNodeMap locsForExpectedStorageTypes,\n+      List\u003cDatanodeDescriptor\u003e chosenNodes) {\n+    for (StorageType t : targetTypes) {\n+      List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n+          locsForExpectedStorageTypes.getNodesWithStorages(t);\n+      Collections.shuffle(nodesWithStorages);\n+      for (DatanodeDescriptor target : nodesWithStorages) {\n+        if (!chosenNodes.contains(target) \u0026\u0026 matcher.match(\n+            blockManager.getDatanodeManager().getNetworkTopology(), source,\n+            target)) {\n+          if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n+            return new StorageTypeNodePair(t, target);\n+          }\n+        }\n+      }\n+    }\n+    return null;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private StorageTypeNodePair chooseTarget(Block block,\n      DatanodeDescriptor source, List\u003cStorageType\u003e targetTypes, Matcher matcher,\n      StorageTypeNodeMap locsForExpectedStorageTypes,\n      List\u003cDatanodeDescriptor\u003e chosenNodes) {\n    for (StorageType t : targetTypes) {\n      List\u003cDatanodeDescriptor\u003e nodesWithStorages \u003d\n          locsForExpectedStorageTypes.getNodesWithStorages(t);\n      Collections.shuffle(nodesWithStorages);\n      for (DatanodeDescriptor target : nodesWithStorages) {\n        if (!chosenNodes.contains(target) \u0026\u0026 matcher.match(\n            blockManager.getDatanodeManager().getNetworkTopology(), source,\n            target)) {\n          if (null !\u003d target.chooseStorage4Block(t, block.getNumBytes())) {\n            return new StorageTypeNodePair(t, target);\n          }\n        }\n      }\n    }\n    return null;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/StoragePolicySatisfier.java"
+    }
+  }
+}

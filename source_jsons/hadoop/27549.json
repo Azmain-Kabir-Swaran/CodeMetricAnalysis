@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NodeTimelineCollectorManager.java",
+  "functionName": "run",
+  "functionId": "run",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/collector/NodeTimelineCollectorManager.java",
+  "functionStartLine": 450,
+  "functionEndLine": 474,
+  "numCommitsSeen": 15,
+  "timeTaken": 733,
+  "changeHistory": [
+    "7fd6ae24798cd3fdd77dbb00089a922407026e02",
+    "354be99dbf3b6effb45032b574210fd7161d83d4"
+  ],
+  "changeHistoryShort": {
+    "7fd6ae24798cd3fdd77dbb00089a922407026e02": "Ybodychange",
+    "354be99dbf3b6effb45032b574210fd7161d83d4": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7fd6ae24798cd3fdd77dbb00089a922407026e02": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6134. [ATSv2 Security] Regenerate delegation token for app just before token expires if app collector is active. Contributed by Varun Saxena\n",
+      "commitDate": "29/08/17 10:59 PM",
+      "commitName": "7fd6ae24798cd3fdd77dbb00089a922407026e02",
+      "commitAuthor": "Jian He",
+      "commitDateOld": "29/08/17 10:59 PM",
+      "commitNameOld": "354be99dbf3b6effb45032b574210fd7161d83d4",
+      "commitAuthorOld": "Rohith Sharma K S",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 6,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,30 +1,25 @@\n     public void run() {\n       TimelineCollector collector \u003d get(appId);\n       if (collector \u003d\u003d null) {\n-        LOG.info(\"Cannot find active collector while renewing token for \" +\n-            appId);\n+        LOG.info(\"Cannot find active collector while \" + (timerForRenewal ?\n+            \"renewing\" : \"regenerating\") + \" token for \" + appId);\n         return;\n       }\n       AppLevelTimelineCollector appCollector \u003d\n           (AppLevelTimelineCollector) collector;\n \n       synchronized (collector) {\n         if (!collector.isStopped()) {\n           try {\n-            long newExpirationTime \u003d renewTokenForAppCollector(appCollector);\n-            if (newExpirationTime \u003e 0) {\n-              long renewInterval \u003d newExpirationTime - Time.now();\n-              long renewalDelay \u003d (renewInterval \u003e TIME_BEFORE_RENEW_DATE) ?\n-                  renewInterval - TIME_BEFORE_RENEW_DATE : renewInterval;\n-              LOG.info(\"Renewed token for \" + appId + \" with new expiration \" +\n-                  \"timestamp \u003d \" + newExpirationTime);\n-              Future\u003c?\u003e renewalFuture \u003d tokenRenewalExecutor.schedule(\n-                  this, renewalDelay, TimeUnit.MILLISECONDS);\n-              appCollector.setRenewalFutureForApp(renewalFuture);\n+            if (timerForRenewal) {\n+              renewToken(appCollector);\n+            } else {\n+              regenerateToken(appCollector);\n             }\n           } catch (Exception e) {\n-            LOG.warn(\"Unable to renew token for \" + appId);\n+            LOG.warn(\"Unable to \" + (timerForRenewal ? \"renew\" : \"regenerate\") +\n+                \" token for \" + appId, e);\n           }\n         }\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void run() {\n      TimelineCollector collector \u003d get(appId);\n      if (collector \u003d\u003d null) {\n        LOG.info(\"Cannot find active collector while \" + (timerForRenewal ?\n            \"renewing\" : \"regenerating\") + \" token for \" + appId);\n        return;\n      }\n      AppLevelTimelineCollector appCollector \u003d\n          (AppLevelTimelineCollector) collector;\n\n      synchronized (collector) {\n        if (!collector.isStopped()) {\n          try {\n            if (timerForRenewal) {\n              renewToken(appCollector);\n            } else {\n              regenerateToken(appCollector);\n            }\n          } catch (Exception e) {\n            LOG.warn(\"Unable to \" + (timerForRenewal ? \"renew\" : \"regenerate\") +\n                \" token for \" + appId, e);\n          }\n        }\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/collector/NodeTimelineCollectorManager.java",
+      "extendedDetails": {}
+    },
+    "354be99dbf3b6effb45032b574210fd7161d83d4": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6133. [ATSv2 Security] Renew delegation token for app automatically if an app collector is active. Contributed by Varun Saxena.\n",
+      "commitDate": "29/08/17 10:59 PM",
+      "commitName": "354be99dbf3b6effb45032b574210fd7161d83d4",
+      "commitAuthor": "Rohith Sharma K S",
+      "diff": "@@ -0,0 +1,30 @@\n+    public void run() {\n+      TimelineCollector collector \u003d get(appId);\n+      if (collector \u003d\u003d null) {\n+        LOG.info(\"Cannot find active collector while renewing token for \" +\n+            appId);\n+        return;\n+      }\n+      AppLevelTimelineCollector appCollector \u003d\n+          (AppLevelTimelineCollector) collector;\n+\n+      synchronized (collector) {\n+        if (!collector.isStopped()) {\n+          try {\n+            long newExpirationTime \u003d renewTokenForAppCollector(appCollector);\n+            if (newExpirationTime \u003e 0) {\n+              long renewInterval \u003d newExpirationTime - Time.now();\n+              long renewalDelay \u003d (renewInterval \u003e TIME_BEFORE_RENEW_DATE) ?\n+                  renewInterval - TIME_BEFORE_RENEW_DATE : renewInterval;\n+              LOG.info(\"Renewed token for \" + appId + \" with new expiration \" +\n+                  \"timestamp \u003d \" + newExpirationTime);\n+              Future\u003c?\u003e renewalFuture \u003d tokenRenewalExecutor.schedule(\n+                  this, renewalDelay, TimeUnit.MILLISECONDS);\n+              appCollector.setRenewalFutureForApp(renewalFuture);\n+            }\n+          } catch (Exception e) {\n+            LOG.warn(\"Unable to renew token for \" + appId);\n+          }\n+        }\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void run() {\n      TimelineCollector collector \u003d get(appId);\n      if (collector \u003d\u003d null) {\n        LOG.info(\"Cannot find active collector while renewing token for \" +\n            appId);\n        return;\n      }\n      AppLevelTimelineCollector appCollector \u003d\n          (AppLevelTimelineCollector) collector;\n\n      synchronized (collector) {\n        if (!collector.isStopped()) {\n          try {\n            long newExpirationTime \u003d renewTokenForAppCollector(appCollector);\n            if (newExpirationTime \u003e 0) {\n              long renewInterval \u003d newExpirationTime - Time.now();\n              long renewalDelay \u003d (renewInterval \u003e TIME_BEFORE_RENEW_DATE) ?\n                  renewInterval - TIME_BEFORE_RENEW_DATE : renewInterval;\n              LOG.info(\"Renewed token for \" + appId + \" with new expiration \" +\n                  \"timestamp \u003d \" + newExpirationTime);\n              Future\u003c?\u003e renewalFuture \u003d tokenRenewalExecutor.schedule(\n                  this, renewalDelay, TimeUnit.MILLISECONDS);\n              appCollector.setRenewalFutureForApp(renewalFuture);\n            }\n          } catch (Exception e) {\n            LOG.warn(\"Unable to renew token for \" + appId);\n          }\n        }\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice/src/main/java/org/apache/hadoop/yarn/server/timelineservice/collector/NodeTimelineCollectorManager.java"
+    }
+  }
+}

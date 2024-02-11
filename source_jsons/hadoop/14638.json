@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSNetworkTopology.java",
+  "functionName": "chooseRandomWithStorageTypeTwoTrial",
+  "functionId": "chooseRandomWithStorageTypeTwoTrial___scope-String(modifiers-final)__excludedNodes-Collection__Node__(modifiers-final)__type-StorageType",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/net/DFSNetworkTopology.java",
+  "functionStartLine": 107,
+  "functionEndLine": 146,
+  "numCommitsSeen": 11,
+  "timeTaken": 852,
+  "changeHistory": [
+    "6b0933643835d7696ced011cfdb8b74f63022e8b"
+  ],
+  "changeHistoryShort": {
+    "6b0933643835d7696ced011cfdb8b74f63022e8b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6b0933643835d7696ced011cfdb8b74f63022e8b": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11577. Combine the old and the new chooseRandom for better performance. Contributed by Chen Liang.\n",
+      "commitDate": "28/03/17 8:02 AM",
+      "commitName": "6b0933643835d7696ced011cfdb8b74f63022e8b",
+      "commitAuthor": "Yiqun Lin",
+      "diff": "@@ -0,0 +1,40 @@\n+  public Node chooseRandomWithStorageTypeTwoTrial(final String scope,\n+      final Collection\u003cNode\u003e excludedNodes, StorageType type) {\n+    netlock.readLock().lock();\n+    try {\n+      String searchScope;\n+      String excludedScope;\n+      if (scope.startsWith(\"~\")) {\n+        searchScope \u003d NodeBase.ROOT;\n+        excludedScope \u003d scope.substring(1);\n+      } else {\n+        searchScope \u003d scope;\n+        excludedScope \u003d null;\n+      }\n+      // next do a two-trial search\n+      // first trial, call the old method, inherited from NetworkTopology\n+      Node n \u003d chooseRandom(searchScope, excludedScope, excludedNodes);\n+      if (n \u003d\u003d null) {\n+        if (LOG.isDebugEnabled()) {\n+          LOG.debug(\"No node to choose.\");\n+        }\n+        // this means there is simply no node to choose from\n+        return null;\n+      }\n+      Preconditions.checkArgument(n instanceof DatanodeDescriptor);\n+      DatanodeDescriptor dnDescriptor \u003d (DatanodeDescriptor)n;\n+\n+      if (dnDescriptor.hasStorageType(type)) {\n+        // the first trial succeeded, just return\n+        return dnDescriptor;\n+      } else {\n+        // otherwise, make the second trial by calling the new method\n+        LOG.debug(\"First trial failed, node has no type {}, \" +\n+            \"making second trial carrying this type\", type);\n+        return chooseRandomWithStorageType(searchScope, excludedScope,\n+            excludedNodes, type);\n+      }\n+    } finally {\n+      netlock.readLock().unlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public Node chooseRandomWithStorageTypeTwoTrial(final String scope,\n      final Collection\u003cNode\u003e excludedNodes, StorageType type) {\n    netlock.readLock().lock();\n    try {\n      String searchScope;\n      String excludedScope;\n      if (scope.startsWith(\"~\")) {\n        searchScope \u003d NodeBase.ROOT;\n        excludedScope \u003d scope.substring(1);\n      } else {\n        searchScope \u003d scope;\n        excludedScope \u003d null;\n      }\n      // next do a two-trial search\n      // first trial, call the old method, inherited from NetworkTopology\n      Node n \u003d chooseRandom(searchScope, excludedScope, excludedNodes);\n      if (n \u003d\u003d null) {\n        if (LOG.isDebugEnabled()) {\n          LOG.debug(\"No node to choose.\");\n        }\n        // this means there is simply no node to choose from\n        return null;\n      }\n      Preconditions.checkArgument(n instanceof DatanodeDescriptor);\n      DatanodeDescriptor dnDescriptor \u003d (DatanodeDescriptor)n;\n\n      if (dnDescriptor.hasStorageType(type)) {\n        // the first trial succeeded, just return\n        return dnDescriptor;\n      } else {\n        // otherwise, make the second trial by calling the new method\n        LOG.debug(\"First trial failed, node has no type {}, \" +\n            \"making second trial carrying this type\", type);\n        return chooseRandomWithStorageType(searchScope, excludedScope,\n            excludedNodes, type);\n      }\n    } finally {\n      netlock.readLock().unlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/net/DFSNetworkTopology.java"
+    }
+  }
+}

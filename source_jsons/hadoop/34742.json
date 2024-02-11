@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DeletionService.java",
+  "functionName": "recordDeletionTaskInStateStore",
+  "functionId": "recordDeletionTaskInStateStore___task-DeletionTask",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/DeletionService.java",
+  "functionStartLine": 142,
+  "functionEndLine": 165,
+  "numCommitsSeen": 22,
+  "timeTaken": 3058,
+  "changeHistory": [
+    "547f18cb96aeda55cc19b38be2be4d631b3a5f4f",
+    "072360d1286cf1de3f83664755144b4d468dae6e"
+  ],
+  "changeHistoryShort": {
+    "547f18cb96aeda55cc19b38be2be4d631b3a5f4f": "Ymultichange(Yparameterchange,Ybodychange)",
+    "072360d1286cf1de3f83664755144b4d468dae6e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "547f18cb96aeda55cc19b38be2be4d631b3a5f4f": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-6366. Refactor the NodeManager DeletionService to support additional DeletionTask types. Contributed by Shane Kumpf.\n",
+      "commitDate": "31/05/17 3:45 AM",
+      "commitName": "547f18cb96aeda55cc19b38be2be4d631b3a5f4f",
+      "commitAuthor": "Varun Vasudev",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-6366. Refactor the NodeManager DeletionService to support additional DeletionTask types. Contributed by Shane Kumpf.\n",
+          "commitDate": "31/05/17 3:45 AM",
+          "commitName": "547f18cb96aeda55cc19b38be2be4d631b3a5f4f",
+          "commitAuthor": "Varun Vasudev",
+          "commitDateOld": "01/11/16 2:21 AM",
+          "commitNameOld": "310aa4686eb697f0700a71d33106514c404dab1b",
+          "commitAuthorOld": "Varun Saxena",
+          "daysBetweenCommits": 211.06,
+          "commitsBetweenForRepo": 1194,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,45 +1,24 @@\n-  private void recordDeletionTaskInStateStore(FileDeletionTask task) {\n+  private void recordDeletionTaskInStateStore(DeletionTask task) {\n     if (!stateStore.canRecover()) {\n       // optimize the case where we aren\u0027t really recording\n       return;\n     }\n-    if (task.taskId !\u003d FileDeletionTask.INVALID_TASK_ID) {\n+    if (task.getTaskId() !\u003d DeletionTask.INVALID_TASK_ID) {\n       return;  // task already recorded\n     }\n \n-    task.taskId \u003d generateTaskId();\n-\n-    FileDeletionTask[] successors \u003d task.getSuccessorTasks();\n+    task.setTaskId(generateTaskId());\n \n     // store successors first to ensure task IDs have been generated for them\n-    for (FileDeletionTask successor : successors) {\n+    DeletionTask[] successors \u003d task.getSuccessorTasks();\n+    for (DeletionTask successor : successors) {\n       recordDeletionTaskInStateStore(successor);\n     }\n \n-    DeletionServiceDeleteTaskProto.Builder builder \u003d\n-        DeletionServiceDeleteTaskProto.newBuilder();\n-    builder.setId(task.taskId);\n-    if (task.getUser() !\u003d null) {\n-      builder.setUser(task.getUser());\n-    }\n-    if (task.getSubDir() !\u003d null) {\n-      builder.setSubdir(task.getSubDir().toString());\n-    }\n-    builder.setDeletionTime(System.currentTimeMillis() +\n-        TimeUnit.MILLISECONDS.convert(debugDelay, TimeUnit.SECONDS));\n-    if (task.getBaseDirs() !\u003d null) {\n-      for (Path dir : task.getBaseDirs()) {\n-        builder.addBasedirs(dir.toString());\n-      }\n-    }\n-    for (FileDeletionTask successor : successors) {\n-      builder.addSuccessorIds(successor.taskId);\n-    }\n-\n     try {\n-      stateStore.storeDeletionTask(task.taskId, builder.build());\n+      stateStore.storeDeletionTask(task.getTaskId(),\n+          task.convertDeletionTaskToProto());\n     } catch (IOException e) {\n-      LOG.error(\"Unable to store deletion task \" + task.taskId + \" for \"\n-          + task.getSubDir(), e);\n+      LOG.error(\"Unable to store deletion task \" + task.getTaskId(), e);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void recordDeletionTaskInStateStore(DeletionTask task) {\n    if (!stateStore.canRecover()) {\n      // optimize the case where we aren\u0027t really recording\n      return;\n    }\n    if (task.getTaskId() !\u003d DeletionTask.INVALID_TASK_ID) {\n      return;  // task already recorded\n    }\n\n    task.setTaskId(generateTaskId());\n\n    // store successors first to ensure task IDs have been generated for them\n    DeletionTask[] successors \u003d task.getSuccessorTasks();\n    for (DeletionTask successor : successors) {\n      recordDeletionTaskInStateStore(successor);\n    }\n\n    try {\n      stateStore.storeDeletionTask(task.getTaskId(),\n          task.convertDeletionTaskToProto());\n    } catch (IOException e) {\n      LOG.error(\"Unable to store deletion task \" + task.getTaskId(), e);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/DeletionService.java",
+          "extendedDetails": {
+            "oldValue": "[task-FileDeletionTask]",
+            "newValue": "[task-DeletionTask]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-6366. Refactor the NodeManager DeletionService to support additional DeletionTask types. Contributed by Shane Kumpf.\n",
+          "commitDate": "31/05/17 3:45 AM",
+          "commitName": "547f18cb96aeda55cc19b38be2be4d631b3a5f4f",
+          "commitAuthor": "Varun Vasudev",
+          "commitDateOld": "01/11/16 2:21 AM",
+          "commitNameOld": "310aa4686eb697f0700a71d33106514c404dab1b",
+          "commitAuthorOld": "Varun Saxena",
+          "daysBetweenCommits": 211.06,
+          "commitsBetweenForRepo": 1194,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,45 +1,24 @@\n-  private void recordDeletionTaskInStateStore(FileDeletionTask task) {\n+  private void recordDeletionTaskInStateStore(DeletionTask task) {\n     if (!stateStore.canRecover()) {\n       // optimize the case where we aren\u0027t really recording\n       return;\n     }\n-    if (task.taskId !\u003d FileDeletionTask.INVALID_TASK_ID) {\n+    if (task.getTaskId() !\u003d DeletionTask.INVALID_TASK_ID) {\n       return;  // task already recorded\n     }\n \n-    task.taskId \u003d generateTaskId();\n-\n-    FileDeletionTask[] successors \u003d task.getSuccessorTasks();\n+    task.setTaskId(generateTaskId());\n \n     // store successors first to ensure task IDs have been generated for them\n-    for (FileDeletionTask successor : successors) {\n+    DeletionTask[] successors \u003d task.getSuccessorTasks();\n+    for (DeletionTask successor : successors) {\n       recordDeletionTaskInStateStore(successor);\n     }\n \n-    DeletionServiceDeleteTaskProto.Builder builder \u003d\n-        DeletionServiceDeleteTaskProto.newBuilder();\n-    builder.setId(task.taskId);\n-    if (task.getUser() !\u003d null) {\n-      builder.setUser(task.getUser());\n-    }\n-    if (task.getSubDir() !\u003d null) {\n-      builder.setSubdir(task.getSubDir().toString());\n-    }\n-    builder.setDeletionTime(System.currentTimeMillis() +\n-        TimeUnit.MILLISECONDS.convert(debugDelay, TimeUnit.SECONDS));\n-    if (task.getBaseDirs() !\u003d null) {\n-      for (Path dir : task.getBaseDirs()) {\n-        builder.addBasedirs(dir.toString());\n-      }\n-    }\n-    for (FileDeletionTask successor : successors) {\n-      builder.addSuccessorIds(successor.taskId);\n-    }\n-\n     try {\n-      stateStore.storeDeletionTask(task.taskId, builder.build());\n+      stateStore.storeDeletionTask(task.getTaskId(),\n+          task.convertDeletionTaskToProto());\n     } catch (IOException e) {\n-      LOG.error(\"Unable to store deletion task \" + task.taskId + \" for \"\n-          + task.getSubDir(), e);\n+      LOG.error(\"Unable to store deletion task \" + task.getTaskId(), e);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private void recordDeletionTaskInStateStore(DeletionTask task) {\n    if (!stateStore.canRecover()) {\n      // optimize the case where we aren\u0027t really recording\n      return;\n    }\n    if (task.getTaskId() !\u003d DeletionTask.INVALID_TASK_ID) {\n      return;  // task already recorded\n    }\n\n    task.setTaskId(generateTaskId());\n\n    // store successors first to ensure task IDs have been generated for them\n    DeletionTask[] successors \u003d task.getSuccessorTasks();\n    for (DeletionTask successor : successors) {\n      recordDeletionTaskInStateStore(successor);\n    }\n\n    try {\n      stateStore.storeDeletionTask(task.getTaskId(),\n          task.convertDeletionTaskToProto());\n    } catch (IOException e) {\n      LOG.error(\"Unable to store deletion task \" + task.getTaskId(), e);\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/DeletionService.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "072360d1286cf1de3f83664755144b4d468dae6e": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-1339. Recover DeletionService state upon nodemanager restart. (Contributed by Jason Lowe)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1603036 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/06/14 6:02 PM",
+      "commitName": "072360d1286cf1de3f83664755144b4d468dae6e",
+      "commitAuthor": "Junping Du",
+      "diff": "@@ -0,0 +1,45 @@\n+  private void recordDeletionTaskInStateStore(FileDeletionTask task) {\n+    if (!stateStore.canRecover()) {\n+      // optimize the case where we aren\u0027t really recording\n+      return;\n+    }\n+    if (task.taskId !\u003d FileDeletionTask.INVALID_TASK_ID) {\n+      return;  // task already recorded\n+    }\n+\n+    task.taskId \u003d generateTaskId();\n+\n+    FileDeletionTask[] successors \u003d task.getSuccessorTasks();\n+\n+    // store successors first to ensure task IDs have been generated for them\n+    for (FileDeletionTask successor : successors) {\n+      recordDeletionTaskInStateStore(successor);\n+    }\n+\n+    DeletionServiceDeleteTaskProto.Builder builder \u003d\n+        DeletionServiceDeleteTaskProto.newBuilder();\n+    builder.setId(task.taskId);\n+    if (task.getUser() !\u003d null) {\n+      builder.setUser(task.getUser());\n+    }\n+    if (task.getSubDir() !\u003d null) {\n+      builder.setSubdir(task.getSubDir().toString());\n+    }\n+    builder.setDeletionTime(System.currentTimeMillis() +\n+        TimeUnit.MILLISECONDS.convert(debugDelay, TimeUnit.SECONDS));\n+    if (task.getBaseDirs() !\u003d null) {\n+      for (Path dir : task.getBaseDirs()) {\n+        builder.addBasedirs(dir.toString());\n+      }\n+    }\n+    for (FileDeletionTask successor : successors) {\n+      builder.addSuccessorIds(successor.taskId);\n+    }\n+\n+    try {\n+      stateStore.storeDeletionTask(task.taskId, builder.build());\n+    } catch (IOException e) {\n+      LOG.error(\"Unable to store deletion task \" + task.taskId + \" for \"\n+          + task.getSubDir(), e);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void recordDeletionTaskInStateStore(FileDeletionTask task) {\n    if (!stateStore.canRecover()) {\n      // optimize the case where we aren\u0027t really recording\n      return;\n    }\n    if (task.taskId !\u003d FileDeletionTask.INVALID_TASK_ID) {\n      return;  // task already recorded\n    }\n\n    task.taskId \u003d generateTaskId();\n\n    FileDeletionTask[] successors \u003d task.getSuccessorTasks();\n\n    // store successors first to ensure task IDs have been generated for them\n    for (FileDeletionTask successor : successors) {\n      recordDeletionTaskInStateStore(successor);\n    }\n\n    DeletionServiceDeleteTaskProto.Builder builder \u003d\n        DeletionServiceDeleteTaskProto.newBuilder();\n    builder.setId(task.taskId);\n    if (task.getUser() !\u003d null) {\n      builder.setUser(task.getUser());\n    }\n    if (task.getSubDir() !\u003d null) {\n      builder.setSubdir(task.getSubDir().toString());\n    }\n    builder.setDeletionTime(System.currentTimeMillis() +\n        TimeUnit.MILLISECONDS.convert(debugDelay, TimeUnit.SECONDS));\n    if (task.getBaseDirs() !\u003d null) {\n      for (Path dir : task.getBaseDirs()) {\n        builder.addBasedirs(dir.toString());\n      }\n    }\n    for (FileDeletionTask successor : successors) {\n      builder.addSuccessorIds(successor.taskId);\n    }\n\n    try {\n      stateStore.storeDeletionTask(task.taskId, builder.build());\n    } catch (IOException e) {\n      LOG.error(\"Unable to store deletion task \" + task.taskId + \" for \"\n          + task.getSubDir(), e);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/DeletionService.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DatanodeAdminBackoffMonitor.java",
+  "functionName": "processCompletedNodes",
+  "functionId": "processCompletedNodes___toRemove-List__DatanodeDescriptor__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeAdminBackoffMonitor.java",
+  "functionStartLine": 340,
+  "functionEndLine": 390,
+  "numCommitsSeen": 1,
+  "timeTaken": 888,
+  "changeHistory": [
+    "c93cb6790e0f1c64efd03d859f907a0522010894"
+  ],
+  "changeHistoryShort": {
+    "c93cb6790e0f1c64efd03d859f907a0522010894": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c93cb6790e0f1c64efd03d859f907a0522010894": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-14854. Create improved decommission monitor implementation. Contributed by Stephen O\u0027Donnell.\n\nReviewed-by: Inigo Goiri \u003cinigoiri@apache.org\u003e\nSigned-off-by: Wei-Chiu Chuang \u003cweichiu@apache.org\u003e\n",
+      "commitDate": "10/12/19 5:16 PM",
+      "commitName": "c93cb6790e0f1c64efd03d859f907a0522010894",
+      "commitAuthor": "Stephen O\u0027Donnell",
+      "diff": "@@ -0,0 +1,51 @@\n+  private void processCompletedNodes(List\u003cDatanodeDescriptor\u003e toRemove) {\n+    if (toRemove.size() \u003d\u003d 0) {\n+      // If there are no nodes to process simply return and avoid\n+      // taking the write lock at all.\n+      return;\n+    }\n+    namesystem.writeLock();\n+    try {\n+      for (DatanodeDescriptor dn : toRemove) {\n+        final boolean isHealthy \u003d\n+            blockManager.isNodeHealthyForDecommissionOrMaintenance(dn);\n+        if (isHealthy) {\n+          if (dn.isDecommissionInProgress()) {\n+            dnAdmin.setDecommissioned(dn);\n+            outOfServiceNodeBlocks.remove(dn);\n+            pendingRep.remove(dn);\n+          } else if (dn.isEnteringMaintenance()) {\n+            // IN_MAINTENANCE node remains in the outOfServiceNodeBlocks to\n+            // to track maintenance expiration.\n+            dnAdmin.setInMaintenance(dn);\n+            pendingRep.remove(dn);\n+          } else if (dn.isInService()) {\n+            // Decom / maint was cancelled and the node is yet to be processed\n+            // from cancelledNodes\n+            LOG.info(\"Node {} completed decommission and maintenance \" +\n+                \"but has been moved back to in service\", dn);\n+            pendingRep.remove(dn);\n+            outOfServiceNodeBlocks.remove(dn);\n+            continue;\n+          } else {\n+            // Should not happen\n+            LOG.error(\"Node {} is in an unexpected state {} and has been \"+\n+                    \"removed from tracking for decommission or maintenance\",\n+                dn, dn.getAdminState());\n+            pendingRep.remove(dn);\n+            outOfServiceNodeBlocks.remove(dn);\n+            continue;\n+          }\n+          LOG.info(\"Node {} is sufficiently replicated and healthy, \"\n+              + \"marked as {}.\", dn, dn.getAdminState());\n+        } else {\n+          LOG.info(\"Node {} isn\u0027t healthy.\"\n+                  + \" It needs to replicate {} more blocks.\"\n+                  + \" {} is still in progress.\", dn,\n+              getPendingCountForNode(dn), dn.getAdminState());\n+        }\n+      }\n+    } finally {\n+      namesystem.writeUnlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void processCompletedNodes(List\u003cDatanodeDescriptor\u003e toRemove) {\n    if (toRemove.size() \u003d\u003d 0) {\n      // If there are no nodes to process simply return and avoid\n      // taking the write lock at all.\n      return;\n    }\n    namesystem.writeLock();\n    try {\n      for (DatanodeDescriptor dn : toRemove) {\n        final boolean isHealthy \u003d\n            blockManager.isNodeHealthyForDecommissionOrMaintenance(dn);\n        if (isHealthy) {\n          if (dn.isDecommissionInProgress()) {\n            dnAdmin.setDecommissioned(dn);\n            outOfServiceNodeBlocks.remove(dn);\n            pendingRep.remove(dn);\n          } else if (dn.isEnteringMaintenance()) {\n            // IN_MAINTENANCE node remains in the outOfServiceNodeBlocks to\n            // to track maintenance expiration.\n            dnAdmin.setInMaintenance(dn);\n            pendingRep.remove(dn);\n          } else if (dn.isInService()) {\n            // Decom / maint was cancelled and the node is yet to be processed\n            // from cancelledNodes\n            LOG.info(\"Node {} completed decommission and maintenance \" +\n                \"but has been moved back to in service\", dn);\n            pendingRep.remove(dn);\n            outOfServiceNodeBlocks.remove(dn);\n            continue;\n          } else {\n            // Should not happen\n            LOG.error(\"Node {} is in an unexpected state {} and has been \"+\n                    \"removed from tracking for decommission or maintenance\",\n                dn, dn.getAdminState());\n            pendingRep.remove(dn);\n            outOfServiceNodeBlocks.remove(dn);\n            continue;\n          }\n          LOG.info(\"Node {} is sufficiently replicated and healthy, \"\n              + \"marked as {}.\", dn, dn.getAdminState());\n        } else {\n          LOG.info(\"Node {} isn\u0027t healthy.\"\n                  + \" It needs to replicate {} more blocks.\"\n                  + \" {} is still in progress.\", dn,\n              getPendingCountForNode(dn), dn.getAdminState());\n        }\n      }\n    } finally {\n      namesystem.writeUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/DatanodeAdminBackoffMonitor.java"
+    }
+  }
+}

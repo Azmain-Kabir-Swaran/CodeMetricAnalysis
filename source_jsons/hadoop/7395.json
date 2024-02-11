@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TransferFsImage.java",
+  "functionName": "copyFileToStream",
+  "functionId": "copyFileToStream___out-OutputStream__localfile-File__infile-FileInputStream__throttler-DataTransferThrottler",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+  "functionStartLine": 352,
+  "functionEndLine": 356,
+  "numCommitsSeen": 45,
+  "timeTaken": 1462,
+  "changeHistory": [
+    "01af3a31772ee820e932ac70973072e9509a30fa",
+    "94a1632fcb677fda6f4d812614026417f1d0a360"
+  ],
+  "changeHistoryShort": {
+    "01af3a31772ee820e932ac70973072e9509a30fa": "Ybodychange",
+    "94a1632fcb677fda6f4d812614026417f1d0a360": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "01af3a31772ee820e932ac70973072e9509a30fa": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6243. HA NameNode transition to active or shutdown may leave lingering image transfer thread. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1587410 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "14/04/14 9:49 PM",
+      "commitName": "01af3a31772ee820e932ac70973072e9509a30fa",
+      "commitAuthor": "Chris Nauroth",
+      "commitDateOld": "24/03/14 4:32 PM",
+      "commitNameOld": "c2ef7e239eb0e81cf8a3e971378e9e696202de67",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 21.22,
+      "commitsBetweenForRepo": 146,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,41 +1,5 @@\n   public static void copyFileToStream(OutputStream out, File localfile,\n       FileInputStream infile, DataTransferThrottler throttler)\n     throws IOException {\n-    byte buf[] \u003d new byte[HdfsConstants.IO_FILE_BUFFER_SIZE];\n-    try {\n-      CheckpointFaultInjector.getInstance()\n-          .aboutToSendFile(localfile);\n-\n-      if (CheckpointFaultInjector.getInstance().\n-            shouldSendShortFile(localfile)) {\n-          // Test sending image shorter than localfile\n-          long len \u003d localfile.length();\n-          buf \u003d new byte[(int)Math.min(len/2, HdfsConstants.IO_FILE_BUFFER_SIZE)];\n-          // This will read at most half of the image\n-          // and the rest of the image will be sent over the wire\n-          infile.read(buf);\n-      }\n-      int num \u003d 1;\n-      while (num \u003e 0) {\n-        num \u003d infile.read(buf);\n-        if (num \u003c\u003d 0) {\n-          break;\n-        }\n-        if (CheckpointFaultInjector.getInstance()\n-              .shouldCorruptAByte(localfile)) {\n-          // Simulate a corrupted byte on the wire\n-          LOG.warn(\"SIMULATING A CORRUPT BYTE IN IMAGE TRANSFER!\");\n-          buf[0]++;\n-        }\n-        \n-        out.write(buf, 0, num);\n-        if (throttler !\u003d null) {\n-          throttler.throttle(num);\n-        }\n-      }\n-    } finally {\n-      if (out !\u003d null) {\n-        out.close();\n-      }\n-    }\n+    copyFileToStream(out, localfile, infile, throttler, null);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void copyFileToStream(OutputStream out, File localfile,\n      FileInputStream infile, DataTransferThrottler throttler)\n    throws IOException {\n    copyFileToStream(out, localfile, infile, throttler, null);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java",
+      "extendedDetails": {}
+    },
+    "94a1632fcb677fda6f4d812614026417f1d0a360": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-3405. Checkpointing should use HTTP POST or PUT instead of GET-GET to send merged fsimages. Contributed by Vinayakumar B.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1575611 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "08/03/14 1:25 PM",
+      "commitName": "94a1632fcb677fda6f4d812614026417f1d0a360",
+      "commitAuthor": "Andrew Wang",
+      "diff": "@@ -0,0 +1,41 @@\n+  public static void copyFileToStream(OutputStream out, File localfile,\n+      FileInputStream infile, DataTransferThrottler throttler)\n+    throws IOException {\n+    byte buf[] \u003d new byte[HdfsConstants.IO_FILE_BUFFER_SIZE];\n+    try {\n+      CheckpointFaultInjector.getInstance()\n+          .aboutToSendFile(localfile);\n+\n+      if (CheckpointFaultInjector.getInstance().\n+            shouldSendShortFile(localfile)) {\n+          // Test sending image shorter than localfile\n+          long len \u003d localfile.length();\n+          buf \u003d new byte[(int)Math.min(len/2, HdfsConstants.IO_FILE_BUFFER_SIZE)];\n+          // This will read at most half of the image\n+          // and the rest of the image will be sent over the wire\n+          infile.read(buf);\n+      }\n+      int num \u003d 1;\n+      while (num \u003e 0) {\n+        num \u003d infile.read(buf);\n+        if (num \u003c\u003d 0) {\n+          break;\n+        }\n+        if (CheckpointFaultInjector.getInstance()\n+              .shouldCorruptAByte(localfile)) {\n+          // Simulate a corrupted byte on the wire\n+          LOG.warn(\"SIMULATING A CORRUPT BYTE IN IMAGE TRANSFER!\");\n+          buf[0]++;\n+        }\n+        \n+        out.write(buf, 0, num);\n+        if (throttler !\u003d null) {\n+          throttler.throttle(num);\n+        }\n+      }\n+    } finally {\n+      if (out !\u003d null) {\n+        out.close();\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void copyFileToStream(OutputStream out, File localfile,\n      FileInputStream infile, DataTransferThrottler throttler)\n    throws IOException {\n    byte buf[] \u003d new byte[HdfsConstants.IO_FILE_BUFFER_SIZE];\n    try {\n      CheckpointFaultInjector.getInstance()\n          .aboutToSendFile(localfile);\n\n      if (CheckpointFaultInjector.getInstance().\n            shouldSendShortFile(localfile)) {\n          // Test sending image shorter than localfile\n          long len \u003d localfile.length();\n          buf \u003d new byte[(int)Math.min(len/2, HdfsConstants.IO_FILE_BUFFER_SIZE)];\n          // This will read at most half of the image\n          // and the rest of the image will be sent over the wire\n          infile.read(buf);\n      }\n      int num \u003d 1;\n      while (num \u003e 0) {\n        num \u003d infile.read(buf);\n        if (num \u003c\u003d 0) {\n          break;\n        }\n        if (CheckpointFaultInjector.getInstance()\n              .shouldCorruptAByte(localfile)) {\n          // Simulate a corrupted byte on the wire\n          LOG.warn(\"SIMULATING A CORRUPT BYTE IN IMAGE TRANSFER!\");\n          buf[0]++;\n        }\n        \n        out.write(buf, 0, num);\n        if (throttler !\u003d null) {\n          throttler.throttle(num);\n        }\n      }\n    } finally {\n      if (out !\u003d null) {\n        out.close();\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/TransferFsImage.java"
+    }
+  }
+}

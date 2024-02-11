@@ -1,0 +1,56 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TimelineV2ClientImpl.java",
+  "functionName": "publishWithoutBlockingOnQueue",
+  "functionId": "publishWithoutBlockingOnQueue___entitiesHolder-EntitiesHolder",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineV2ClientImpl.java",
+  "functionStartLine": 505,
+  "functionEndLine": 542,
+  "numCommitsSeen": 56,
+  "timeTaken": 2199,
+  "changeHistory": [
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+    "0d02ab8729630ad3cfb4300702927333b1d349e3"
+  ],
+  "changeHistoryShort": {
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711": "Ymovefromfile",
+    "0d02ab8729630ad3cfb4300702927333b1d349e3": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711": {
+      "type": "Ymovefromfile",
+      "commitMessage": "YARN-4675. Reorganize TimelineClient and TimelineClientImpl into separate classes for ATSv1.x and ATSv2. Contributed by Naganarasimha G R.\n",
+      "commitDate": "16/02/17 11:41 AM",
+      "commitName": "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+      "commitAuthor": "Sangjin Lee",
+      "commitDateOld": "16/02/17 5:39 AM",
+      "commitNameOld": "5690b51ef7c708c0a71162ddaff04466bc71cdcc",
+      "commitAuthorOld": "Wei-Chiu Chuang",
+      "daysBetweenCommits": 0.25,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "        private void publishWithoutBlockingOnQueue(\n            EntitiesHolder entitiesHolder) {\n          if (entitiesHolder.isSync()) {\n            entitiesHolder.run();\n            return;\n          }\n          int count \u003d 1;\n          while (true) {\n            // loop till we find a sync put Entities or there is nothing\n            // to take\n            EntitiesHolder nextEntityInTheQueue \u003d timelineEntityQueue.poll();\n            if (nextEntityInTheQueue \u003d\u003d null) {\n              // Nothing in the queue just publish and get back to the\n              // blocked wait state\n              entitiesHolder.run();\n              break;\n            } else if (nextEntityInTheQueue.isSync()) {\n              // flush all the prev async entities first\n              entitiesHolder.run();\n              // and then flush the sync entity\n              nextEntityInTheQueue.run();\n              break;\n            } else {\n              // append all async entities together and then flush\n              entitiesHolder.getEntities().addEntities(\n                  nextEntityInTheQueue.getEntities().getEntities());\n              count++;\n              if (count \u003d\u003d numberOfAsyncsToMerge) {\n                // Flush the entities if the number of the async\n                // putEntites merged reaches the desired limit. To avoid\n                // collecting multiple entities and delaying for a long\n                // time.\n                entitiesHolder.run();\n                break;\n              }\n            }\n          }\n        }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineV2ClientImpl.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineV2ClientImpl.java",
+        "oldMethodName": "publishWithoutBlockingOnQueue",
+        "newMethodName": "publishWithoutBlockingOnQueue"
+      }
+    },
+    "0d02ab8729630ad3cfb4300702927333b1d349e3": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3367. Replace starting a separate thread for post entity with event loop in TimelineClient (Naganarasimha G R via sjlee)\n",
+      "commitDate": "10/07/16 8:45 AM",
+      "commitName": "0d02ab8729630ad3cfb4300702927333b1d349e3",
+      "commitAuthor": "Sangjin Lee",
+      "diff": "@@ -0,0 +1,38 @@\n+        private void publishWithoutBlockingOnQueue(\n+            EntitiesHolder entitiesHolder) {\n+          if (entitiesHolder.isSync()) {\n+            entitiesHolder.run();\n+            return;\n+          }\n+          int count \u003d 1;\n+          while (true) {\n+            // loop till we find a sync put Entities or there is nothing\n+            // to take\n+            EntitiesHolder nextEntityInTheQueue \u003d timelineEntityQueue.poll();\n+            if (nextEntityInTheQueue \u003d\u003d null) {\n+              // Nothing in the queue just publish and get back to the\n+              // blocked wait state\n+              entitiesHolder.run();\n+              break;\n+            } else if (nextEntityInTheQueue.isSync()) {\n+              // flush all the prev async entities first\n+              entitiesHolder.run();\n+              // and then flush the sync entity\n+              nextEntityInTheQueue.run();\n+              break;\n+            } else {\n+              // append all async entities together and then flush\n+              entitiesHolder.getEntities().addEntities(\n+                  nextEntityInTheQueue.getEntities().getEntities());\n+              count++;\n+              if (count \u003d\u003d numberOfAsyncsToMerge) {\n+                // Flush the entities if the number of the async\n+                // putEntites merged reaches the desired limit. To avoid\n+                // collecting multiple entities and delaying for a long\n+                // time.\n+                entitiesHolder.run();\n+                break;\n+              }\n+            }\n+          }\n+        }\n\\ No newline at end of file\n",
+      "actualSource": "        private void publishWithoutBlockingOnQueue(\n            EntitiesHolder entitiesHolder) {\n          if (entitiesHolder.isSync()) {\n            entitiesHolder.run();\n            return;\n          }\n          int count \u003d 1;\n          while (true) {\n            // loop till we find a sync put Entities or there is nothing\n            // to take\n            EntitiesHolder nextEntityInTheQueue \u003d timelineEntityQueue.poll();\n            if (nextEntityInTheQueue \u003d\u003d null) {\n              // Nothing in the queue just publish and get back to the\n              // blocked wait state\n              entitiesHolder.run();\n              break;\n            } else if (nextEntityInTheQueue.isSync()) {\n              // flush all the prev async entities first\n              entitiesHolder.run();\n              // and then flush the sync entity\n              nextEntityInTheQueue.run();\n              break;\n            } else {\n              // append all async entities together and then flush\n              entitiesHolder.getEntities().addEntities(\n                  nextEntityInTheQueue.getEntities().getEntities());\n              count++;\n              if (count \u003d\u003d numberOfAsyncsToMerge) {\n                // Flush the entities if the number of the async\n                // putEntites merged reaches the desired limit. To avoid\n                // collecting multiple entities and delaying for a long\n                // time.\n                entitiesHolder.run();\n                break;\n              }\n            }\n          }\n        }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineClientImpl.java"
+    }
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSUtil.java",
+  "functionName": "getInfoServer",
+  "functionId": "getInfoServer___namenodeAddr-InetSocketAddress__conf-Configuration__scheme-String",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+  "functionStartLine": 943,
+  "functionEndLine": 970,
+  "numCommitsSeen": 227,
+  "timeTaken": 3624,
+  "changeHistory": [
+    "045dc880e13271737b3cf316296e92fb95806663",
+    "675a7e4acba1417a80e1403b468c32efe597ba90"
+  ],
+  "changeHistoryShort": {
+    "045dc880e13271737b3cf316296e92fb95806663": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+    "675a7e4acba1417a80e1403b468c32efe597ba90": "Ymultichange(Yexceptionschange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "045dc880e13271737b3cf316296e92fb95806663": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-5312. Generate HTTP/HTTPS URL in DFSUtil#getInfoServer() based on the configured http policy. Contributed by Haohui Mai.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1548629 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/12/13 10:01 AM",
+      "commitName": "045dc880e13271737b3cf316296e92fb95806663",
+      "commitAuthor": "Jing Zhao",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-5312. Generate HTTP/HTTPS URL in DFSUtil#getInfoServer() based on the configured http policy. Contributed by Haohui Mai.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1548629 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "06/12/13 10:01 AM",
+          "commitName": "045dc880e13271737b3cf316296e92fb95806663",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "04/12/13 1:40 PM",
+          "commitNameOld": "d02baff9a0d8cec92bde751777f3e575da2339c8",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 1.85,
+          "commitsBetweenForRepo": 23,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,27 +1,28 @@\n-  public static String getInfoServer(InetSocketAddress namenodeAddr,\n-      Configuration conf, boolean httpsAddress) throws IOException {\n-    boolean securityOn \u003d UserGroupInformation.isSecurityEnabled();\n-    String httpAddressKey \u003d (securityOn \u0026\u0026 httpsAddress) ? \n-        DFS_NAMENODE_HTTPS_ADDRESS_KEY : DFS_NAMENODE_HTTP_ADDRESS_KEY;\n-    String httpAddressDefault \u003d (securityOn \u0026\u0026 httpsAddress) ? \n-        DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT : DFS_NAMENODE_HTTP_ADDRESS_DEFAULT;\n-      \n-    String suffixes[];\n+  public static URI getInfoServer(InetSocketAddress namenodeAddr,\n+      Configuration conf, String scheme) throws IOException {\n+    String[] suffixes \u003d null;\n     if (namenodeAddr !\u003d null) {\n       // if non-default namenode, try reverse look up \n       // the nameServiceID if it is available\n       suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n           DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n           DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n-    } else {\n-      suffixes \u003d new String[2];\n     }\n-    String configuredInfoAddr \u003d getSuffixedConf(conf, httpAddressKey,\n-        httpAddressDefault, suffixes);\n+\n+    String authority;\n+    if (\"http\".equals(scheme)) {\n+      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTP_ADDRESS_KEY,\n+          DFS_NAMENODE_HTTP_ADDRESS_DEFAULT, suffixes);\n+    } else if (\"https\".equals(scheme)) {\n+      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTPS_ADDRESS_KEY,\n+          DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT, suffixes);\n+    } else {\n+      throw new IllegalArgumentException(\"Invalid scheme:\" + scheme);\n+    }\n+\n     if (namenodeAddr !\u003d null) {\n-      return substituteForWildcardAddress(configuredInfoAddr,\n+      authority \u003d substituteForWildcardAddress(authority,\n           namenodeAddr.getHostName());\n-    } else {\n-      return configuredInfoAddr;\n     }\n+    return URI.create(scheme + \"://\" + authority);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static URI getInfoServer(InetSocketAddress namenodeAddr,\n      Configuration conf, String scheme) throws IOException {\n    String[] suffixes \u003d null;\n    if (namenodeAddr !\u003d null) {\n      // if non-default namenode, try reverse look up \n      // the nameServiceID if it is available\n      suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n          DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n          DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n    }\n\n    String authority;\n    if (\"http\".equals(scheme)) {\n      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTP_ADDRESS_KEY,\n          DFS_NAMENODE_HTTP_ADDRESS_DEFAULT, suffixes);\n    } else if (\"https\".equals(scheme)) {\n      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTPS_ADDRESS_KEY,\n          DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT, suffixes);\n    } else {\n      throw new IllegalArgumentException(\"Invalid scheme:\" + scheme);\n    }\n\n    if (namenodeAddr !\u003d null) {\n      authority \u003d substituteForWildcardAddress(authority,\n          namenodeAddr.getHostName());\n    }\n    return URI.create(scheme + \"://\" + authority);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {
+            "oldValue": "[namenodeAddr-InetSocketAddress, conf-Configuration, httpsAddress-boolean]",
+            "newValue": "[namenodeAddr-InetSocketAddress, conf-Configuration, scheme-String]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-5312. Generate HTTP/HTTPS URL in DFSUtil#getInfoServer() based on the configured http policy. Contributed by Haohui Mai.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1548629 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "06/12/13 10:01 AM",
+          "commitName": "045dc880e13271737b3cf316296e92fb95806663",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "04/12/13 1:40 PM",
+          "commitNameOld": "d02baff9a0d8cec92bde751777f3e575da2339c8",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 1.85,
+          "commitsBetweenForRepo": 23,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,27 +1,28 @@\n-  public static String getInfoServer(InetSocketAddress namenodeAddr,\n-      Configuration conf, boolean httpsAddress) throws IOException {\n-    boolean securityOn \u003d UserGroupInformation.isSecurityEnabled();\n-    String httpAddressKey \u003d (securityOn \u0026\u0026 httpsAddress) ? \n-        DFS_NAMENODE_HTTPS_ADDRESS_KEY : DFS_NAMENODE_HTTP_ADDRESS_KEY;\n-    String httpAddressDefault \u003d (securityOn \u0026\u0026 httpsAddress) ? \n-        DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT : DFS_NAMENODE_HTTP_ADDRESS_DEFAULT;\n-      \n-    String suffixes[];\n+  public static URI getInfoServer(InetSocketAddress namenodeAddr,\n+      Configuration conf, String scheme) throws IOException {\n+    String[] suffixes \u003d null;\n     if (namenodeAddr !\u003d null) {\n       // if non-default namenode, try reverse look up \n       // the nameServiceID if it is available\n       suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n           DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n           DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n-    } else {\n-      suffixes \u003d new String[2];\n     }\n-    String configuredInfoAddr \u003d getSuffixedConf(conf, httpAddressKey,\n-        httpAddressDefault, suffixes);\n+\n+    String authority;\n+    if (\"http\".equals(scheme)) {\n+      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTP_ADDRESS_KEY,\n+          DFS_NAMENODE_HTTP_ADDRESS_DEFAULT, suffixes);\n+    } else if (\"https\".equals(scheme)) {\n+      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTPS_ADDRESS_KEY,\n+          DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT, suffixes);\n+    } else {\n+      throw new IllegalArgumentException(\"Invalid scheme:\" + scheme);\n+    }\n+\n     if (namenodeAddr !\u003d null) {\n-      return substituteForWildcardAddress(configuredInfoAddr,\n+      authority \u003d substituteForWildcardAddress(authority,\n           namenodeAddr.getHostName());\n-    } else {\n-      return configuredInfoAddr;\n     }\n+    return URI.create(scheme + \"://\" + authority);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static URI getInfoServer(InetSocketAddress namenodeAddr,\n      Configuration conf, String scheme) throws IOException {\n    String[] suffixes \u003d null;\n    if (namenodeAddr !\u003d null) {\n      // if non-default namenode, try reverse look up \n      // the nameServiceID if it is available\n      suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n          DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n          DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n    }\n\n    String authority;\n    if (\"http\".equals(scheme)) {\n      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTP_ADDRESS_KEY,\n          DFS_NAMENODE_HTTP_ADDRESS_DEFAULT, suffixes);\n    } else if (\"https\".equals(scheme)) {\n      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTPS_ADDRESS_KEY,\n          DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT, suffixes);\n    } else {\n      throw new IllegalArgumentException(\"Invalid scheme:\" + scheme);\n    }\n\n    if (namenodeAddr !\u003d null) {\n      authority \u003d substituteForWildcardAddress(authority,\n          namenodeAddr.getHostName());\n    }\n    return URI.create(scheme + \"://\" + authority);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {
+            "oldValue": "String",
+            "newValue": "URI"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-5312. Generate HTTP/HTTPS URL in DFSUtil#getInfoServer() based on the configured http policy. Contributed by Haohui Mai.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1548629 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "06/12/13 10:01 AM",
+          "commitName": "045dc880e13271737b3cf316296e92fb95806663",
+          "commitAuthor": "Jing Zhao",
+          "commitDateOld": "04/12/13 1:40 PM",
+          "commitNameOld": "d02baff9a0d8cec92bde751777f3e575da2339c8",
+          "commitAuthorOld": "Jing Zhao",
+          "daysBetweenCommits": 1.85,
+          "commitsBetweenForRepo": 23,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,27 +1,28 @@\n-  public static String getInfoServer(InetSocketAddress namenodeAddr,\n-      Configuration conf, boolean httpsAddress) throws IOException {\n-    boolean securityOn \u003d UserGroupInformation.isSecurityEnabled();\n-    String httpAddressKey \u003d (securityOn \u0026\u0026 httpsAddress) ? \n-        DFS_NAMENODE_HTTPS_ADDRESS_KEY : DFS_NAMENODE_HTTP_ADDRESS_KEY;\n-    String httpAddressDefault \u003d (securityOn \u0026\u0026 httpsAddress) ? \n-        DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT : DFS_NAMENODE_HTTP_ADDRESS_DEFAULT;\n-      \n-    String suffixes[];\n+  public static URI getInfoServer(InetSocketAddress namenodeAddr,\n+      Configuration conf, String scheme) throws IOException {\n+    String[] suffixes \u003d null;\n     if (namenodeAddr !\u003d null) {\n       // if non-default namenode, try reverse look up \n       // the nameServiceID if it is available\n       suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n           DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n           DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n-    } else {\n-      suffixes \u003d new String[2];\n     }\n-    String configuredInfoAddr \u003d getSuffixedConf(conf, httpAddressKey,\n-        httpAddressDefault, suffixes);\n+\n+    String authority;\n+    if (\"http\".equals(scheme)) {\n+      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTP_ADDRESS_KEY,\n+          DFS_NAMENODE_HTTP_ADDRESS_DEFAULT, suffixes);\n+    } else if (\"https\".equals(scheme)) {\n+      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTPS_ADDRESS_KEY,\n+          DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT, suffixes);\n+    } else {\n+      throw new IllegalArgumentException(\"Invalid scheme:\" + scheme);\n+    }\n+\n     if (namenodeAddr !\u003d null) {\n-      return substituteForWildcardAddress(configuredInfoAddr,\n+      authority \u003d substituteForWildcardAddress(authority,\n           namenodeAddr.getHostName());\n-    } else {\n-      return configuredInfoAddr;\n     }\n+    return URI.create(scheme + \"://\" + authority);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static URI getInfoServer(InetSocketAddress namenodeAddr,\n      Configuration conf, String scheme) throws IOException {\n    String[] suffixes \u003d null;\n    if (namenodeAddr !\u003d null) {\n      // if non-default namenode, try reverse look up \n      // the nameServiceID if it is available\n      suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n          DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n          DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n    }\n\n    String authority;\n    if (\"http\".equals(scheme)) {\n      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTP_ADDRESS_KEY,\n          DFS_NAMENODE_HTTP_ADDRESS_DEFAULT, suffixes);\n    } else if (\"https\".equals(scheme)) {\n      authority \u003d getSuffixedConf(conf, DFS_NAMENODE_HTTPS_ADDRESS_KEY,\n          DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT, suffixes);\n    } else {\n      throw new IllegalArgumentException(\"Invalid scheme:\" + scheme);\n    }\n\n    if (namenodeAddr !\u003d null) {\n      authority \u003d substituteForWildcardAddress(authority,\n          namenodeAddr.getHostName());\n    }\n    return URI.create(scheme + \"://\" + authority);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "675a7e4acba1417a80e1403b468c32efe597ba90": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-3484. hdfs fsck doesn\u0027t work if NN HTTP address is set to 0.0.0.0 even if NN RPC address is configured. Contributed by Aaron T. Myers\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1344908 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "31/05/12 2:02 PM",
+      "commitName": "675a7e4acba1417a80e1403b468c32efe597ba90",
+      "commitAuthor": "Eli Collins",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-3484. hdfs fsck doesn\u0027t work if NN HTTP address is set to 0.0.0.0 even if NN RPC address is configured. Contributed by Aaron T. Myers\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1344908 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "31/05/12 2:02 PM",
+          "commitName": "675a7e4acba1417a80e1403b468c32efe597ba90",
+          "commitAuthor": "Eli Collins",
+          "commitDateOld": "20/05/12 2:13 PM",
+          "commitNameOld": "260dfa367e3c161edcc9d2b2217661710199c95e",
+          "commitAuthorOld": "Eli Collins",
+          "daysBetweenCommits": 10.99,
+          "commitsBetweenForRepo": 47,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,27 @@\n-  public static String getInfoServer(\n-      InetSocketAddress namenodeAddr, Configuration conf, boolean httpsAddress) {\n+  public static String getInfoServer(InetSocketAddress namenodeAddr,\n+      Configuration conf, boolean httpsAddress) throws IOException {\n     boolean securityOn \u003d UserGroupInformation.isSecurityEnabled();\n     String httpAddressKey \u003d (securityOn \u0026\u0026 httpsAddress) ? \n         DFS_NAMENODE_HTTPS_ADDRESS_KEY : DFS_NAMENODE_HTTP_ADDRESS_KEY;\n     String httpAddressDefault \u003d (securityOn \u0026\u0026 httpsAddress) ? \n         DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT : DFS_NAMENODE_HTTP_ADDRESS_DEFAULT;\n       \n     String suffixes[];\n     if (namenodeAddr !\u003d null) {\n       // if non-default namenode, try reverse look up \n       // the nameServiceID if it is available\n       suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n           DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n           DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n     } else {\n       suffixes \u003d new String[2];\n     }\n-\n-    return getSuffixedConf(conf, httpAddressKey, httpAddressDefault, suffixes);\n+    String configuredInfoAddr \u003d getSuffixedConf(conf, httpAddressKey,\n+        httpAddressDefault, suffixes);\n+    if (namenodeAddr !\u003d null) {\n+      return substituteForWildcardAddress(configuredInfoAddr,\n+          namenodeAddr.getHostName());\n+    } else {\n+      return configuredInfoAddr;\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static String getInfoServer(InetSocketAddress namenodeAddr,\n      Configuration conf, boolean httpsAddress) throws IOException {\n    boolean securityOn \u003d UserGroupInformation.isSecurityEnabled();\n    String httpAddressKey \u003d (securityOn \u0026\u0026 httpsAddress) ? \n        DFS_NAMENODE_HTTPS_ADDRESS_KEY : DFS_NAMENODE_HTTP_ADDRESS_KEY;\n    String httpAddressDefault \u003d (securityOn \u0026\u0026 httpsAddress) ? \n        DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT : DFS_NAMENODE_HTTP_ADDRESS_DEFAULT;\n      \n    String suffixes[];\n    if (namenodeAddr !\u003d null) {\n      // if non-default namenode, try reverse look up \n      // the nameServiceID if it is available\n      suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n          DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n          DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n    } else {\n      suffixes \u003d new String[2];\n    }\n    String configuredInfoAddr \u003d getSuffixedConf(conf, httpAddressKey,\n        httpAddressDefault, suffixes);\n    if (namenodeAddr !\u003d null) {\n      return substituteForWildcardAddress(configuredInfoAddr,\n          namenodeAddr.getHostName());\n    } else {\n      return configuredInfoAddr;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3484. hdfs fsck doesn\u0027t work if NN HTTP address is set to 0.0.0.0 even if NN RPC address is configured. Contributed by Aaron T. Myers\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1344908 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "31/05/12 2:02 PM",
+          "commitName": "675a7e4acba1417a80e1403b468c32efe597ba90",
+          "commitAuthor": "Eli Collins",
+          "commitDateOld": "20/05/12 2:13 PM",
+          "commitNameOld": "260dfa367e3c161edcc9d2b2217661710199c95e",
+          "commitAuthorOld": "Eli Collins",
+          "daysBetweenCommits": 10.99,
+          "commitsBetweenForRepo": 47,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,27 @@\n-  public static String getInfoServer(\n-      InetSocketAddress namenodeAddr, Configuration conf, boolean httpsAddress) {\n+  public static String getInfoServer(InetSocketAddress namenodeAddr,\n+      Configuration conf, boolean httpsAddress) throws IOException {\n     boolean securityOn \u003d UserGroupInformation.isSecurityEnabled();\n     String httpAddressKey \u003d (securityOn \u0026\u0026 httpsAddress) ? \n         DFS_NAMENODE_HTTPS_ADDRESS_KEY : DFS_NAMENODE_HTTP_ADDRESS_KEY;\n     String httpAddressDefault \u003d (securityOn \u0026\u0026 httpsAddress) ? \n         DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT : DFS_NAMENODE_HTTP_ADDRESS_DEFAULT;\n       \n     String suffixes[];\n     if (namenodeAddr !\u003d null) {\n       // if non-default namenode, try reverse look up \n       // the nameServiceID if it is available\n       suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n           DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n           DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n     } else {\n       suffixes \u003d new String[2];\n     }\n-\n-    return getSuffixedConf(conf, httpAddressKey, httpAddressDefault, suffixes);\n+    String configuredInfoAddr \u003d getSuffixedConf(conf, httpAddressKey,\n+        httpAddressDefault, suffixes);\n+    if (namenodeAddr !\u003d null) {\n+      return substituteForWildcardAddress(configuredInfoAddr,\n+          namenodeAddr.getHostName());\n+    } else {\n+      return configuredInfoAddr;\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static String getInfoServer(InetSocketAddress namenodeAddr,\n      Configuration conf, boolean httpsAddress) throws IOException {\n    boolean securityOn \u003d UserGroupInformation.isSecurityEnabled();\n    String httpAddressKey \u003d (securityOn \u0026\u0026 httpsAddress) ? \n        DFS_NAMENODE_HTTPS_ADDRESS_KEY : DFS_NAMENODE_HTTP_ADDRESS_KEY;\n    String httpAddressDefault \u003d (securityOn \u0026\u0026 httpsAddress) ? \n        DFS_NAMENODE_HTTPS_ADDRESS_DEFAULT : DFS_NAMENODE_HTTP_ADDRESS_DEFAULT;\n      \n    String suffixes[];\n    if (namenodeAddr !\u003d null) {\n      // if non-default namenode, try reverse look up \n      // the nameServiceID if it is available\n      suffixes \u003d getSuffixIDs(conf, namenodeAddr,\n          DFSConfigKeys.DFS_NAMENODE_SERVICE_RPC_ADDRESS_KEY,\n          DFSConfigKeys.DFS_NAMENODE_RPC_ADDRESS_KEY);\n    } else {\n      suffixes \u003d new String[2];\n    }\n    String configuredInfoAddr \u003d getSuffixedConf(conf, httpAddressKey,\n        httpAddressDefault, suffixes);\n    if (namenodeAddr !\u003d null) {\n      return substituteForWildcardAddress(configuredInfoAddr,\n          namenodeAddr.getHostName());\n    } else {\n      return configuredInfoAddr;\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSClient.java",
+  "functionName": "createWrappedInputStream",
+  "functionId": "createWrappedInputStream___dfsis-DFSInputStream",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java",
+  "functionStartLine": 953,
+  "functionEndLine": 967,
+  "numCommitsSeen": 330,
+  "timeTaken": 6428,
+  "changeHistory": [
+    "fde95d463c3123b315b3d07cb5b7b7dc19f7cb73",
+    "404eab4dc0582e0384b93664ea6ee77ccd5eeebc",
+    "bf37d3d80e5179dea27e5bd5aea804a38aa9934c",
+    "e96ce6f3e3e549202ce3c48d4733ba34098870ad"
+  ],
+  "changeHistoryShort": {
+    "fde95d463c3123b315b3d07cb5b7b7dc19f7cb73": "Ybodychange",
+    "404eab4dc0582e0384b93664ea6ee77ccd5eeebc": "Ybodychange",
+    "bf37d3d80e5179dea27e5bd5aea804a38aa9934c": "Yfilerename",
+    "e96ce6f3e3e549202ce3c48d4733ba34098870ad": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "fde95d463c3123b315b3d07cb5b7b7dc19f7cb73": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12574. Add CryptoInputStream to WebHdfsFileSystem read call. Contributed by Rushabh S Shah\n",
+      "commitDate": "29/01/18 3:23 PM",
+      "commitName": "fde95d463c3123b315b3d07cb5b7b7dc19f7cb73",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "26/01/18 1:09 PM",
+      "commitNameOld": "e990904dd568a1d8f98efb55c1dd2d598ae4752b",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 3.09,
+      "commitsBetweenForRepo": 10,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,15 @@\n   public HdfsDataInputStream createWrappedInputStream(DFSInputStream dfsis)\n       throws IOException {\n-    final FileEncryptionInfo feInfo \u003d dfsis.getFileEncryptionInfo();\n+    FileEncryptionInfo feInfo \u003d dfsis.getFileEncryptionInfo();\n     if (feInfo !\u003d null) {\n-      // File is encrypted, wrap the stream in a crypto stream.\n-      // Currently only one version, so no special logic based on the version #\n-      HdfsKMSUtil.getCryptoProtocolVersion(feInfo);\n-      final CryptoCodec codec \u003d HdfsKMSUtil.getCryptoCodec(conf, feInfo);\n-      final KeyVersion decrypted \u003d decryptEncryptedDataEncryptionKey(feInfo);\n-      final CryptoInputStream cryptoIn \u003d\n-          new CryptoInputStream(dfsis, codec, decrypted.getMaterial(),\n-              feInfo.getIV());\n+      CryptoInputStream cryptoIn;\n+      try (TraceScope ignored \u003d getTracer().newScope(\"decryptEDEK\")) {\n+        cryptoIn \u003d HdfsKMSUtil.createWrappedInputStream(dfsis,\n+            getKeyProvider(), feInfo, getConfiguration());\n+      }\n       return new HdfsDataInputStream(cryptoIn);\n     } else {\n       // No FileEncryptionInfo so no encryption.\n       return new HdfsDataInputStream(dfsis);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public HdfsDataInputStream createWrappedInputStream(DFSInputStream dfsis)\n      throws IOException {\n    FileEncryptionInfo feInfo \u003d dfsis.getFileEncryptionInfo();\n    if (feInfo !\u003d null) {\n      CryptoInputStream cryptoIn;\n      try (TraceScope ignored \u003d getTracer().newScope(\"decryptEDEK\")) {\n        cryptoIn \u003d HdfsKMSUtil.createWrappedInputStream(dfsis,\n            getKeyProvider(), feInfo, getConfiguration());\n      }\n      return new HdfsDataInputStream(cryptoIn);\n    } else {\n      // No FileEncryptionInfo so no encryption.\n      return new HdfsDataInputStream(dfsis);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java",
+      "extendedDetails": {}
+    },
+    "404eab4dc0582e0384b93664ea6ee77ccd5eeebc": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12396. Webhdfs file system should get delegation token from kms provider. Contributed by Rushabh S Shah.\n",
+      "commitDate": "04/12/17 10:40 AM",
+      "commitName": "404eab4dc0582e0384b93664ea6ee77ccd5eeebc",
+      "commitAuthor": "Xiao Chen",
+      "commitDateOld": "30/11/17 12:18 PM",
+      "commitNameOld": "b1c7654ee40b372ed777525a42981c7cf55b5c72",
+      "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+      "daysBetweenCommits": 3.93,
+      "commitsBetweenForRepo": 21,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,18 @@\n   public HdfsDataInputStream createWrappedInputStream(DFSInputStream dfsis)\n       throws IOException {\n     final FileEncryptionInfo feInfo \u003d dfsis.getFileEncryptionInfo();\n     if (feInfo !\u003d null) {\n       // File is encrypted, wrap the stream in a crypto stream.\n       // Currently only one version, so no special logic based on the version #\n-      getCryptoProtocolVersion(feInfo);\n-      final CryptoCodec codec \u003d getCryptoCodec(conf, feInfo);\n+      HdfsKMSUtil.getCryptoProtocolVersion(feInfo);\n+      final CryptoCodec codec \u003d HdfsKMSUtil.getCryptoCodec(conf, feInfo);\n       final KeyVersion decrypted \u003d decryptEncryptedDataEncryptionKey(feInfo);\n       final CryptoInputStream cryptoIn \u003d\n           new CryptoInputStream(dfsis, codec, decrypted.getMaterial(),\n               feInfo.getIV());\n       return new HdfsDataInputStream(cryptoIn);\n     } else {\n       // No FileEncryptionInfo so no encryption.\n       return new HdfsDataInputStream(dfsis);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public HdfsDataInputStream createWrappedInputStream(DFSInputStream dfsis)\n      throws IOException {\n    final FileEncryptionInfo feInfo \u003d dfsis.getFileEncryptionInfo();\n    if (feInfo !\u003d null) {\n      // File is encrypted, wrap the stream in a crypto stream.\n      // Currently only one version, so no special logic based on the version #\n      HdfsKMSUtil.getCryptoProtocolVersion(feInfo);\n      final CryptoCodec codec \u003d HdfsKMSUtil.getCryptoCodec(conf, feInfo);\n      final KeyVersion decrypted \u003d decryptEncryptedDataEncryptionKey(feInfo);\n      final CryptoInputStream cryptoIn \u003d\n          new CryptoInputStream(dfsis, codec, decrypted.getMaterial(),\n              feInfo.getIV());\n      return new HdfsDataInputStream(cryptoIn);\n    } else {\n      // No FileEncryptionInfo so no encryption.\n      return new HdfsDataInputStream(dfsis);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java",
+      "extendedDetails": {}
+    },
+    "bf37d3d80e5179dea27e5bd5aea804a38aa9934c": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-8053. Move DFSIn/OutputStream and related classes to hadoop-hdfs-client. Contributed by Mingliang Liu.\n",
+      "commitDate": "26/09/15 11:08 AM",
+      "commitName": "bf37d3d80e5179dea27e5bd5aea804a38aa9934c",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "26/09/15 9:06 AM",
+      "commitNameOld": "861b52db242f238d7e36ad75c158025be959a696",
+      "commitAuthorOld": "Vinayakumar B",
+      "daysBetweenCommits": 0.08,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public HdfsDataInputStream createWrappedInputStream(DFSInputStream dfsis)\n      throws IOException {\n    final FileEncryptionInfo feInfo \u003d dfsis.getFileEncryptionInfo();\n    if (feInfo !\u003d null) {\n      // File is encrypted, wrap the stream in a crypto stream.\n      // Currently only one version, so no special logic based on the version #\n      getCryptoProtocolVersion(feInfo);\n      final CryptoCodec codec \u003d getCryptoCodec(conf, feInfo);\n      final KeyVersion decrypted \u003d decryptEncryptedDataEncryptionKey(feInfo);\n      final CryptoInputStream cryptoIn \u003d\n          new CryptoInputStream(dfsis, codec, decrypted.getMaterial(),\n              feInfo.getIV());\n      return new HdfsDataInputStream(cryptoIn);\n    } else {\n      // No FileEncryptionInfo so no encryption.\n      return new HdfsDataInputStream(dfsis);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSClient.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSClient.java"
+      }
+    },
+    "e96ce6f3e3e549202ce3c48d4733ba34098870ad": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7077. Separate CipherSuite from crypto protocol version. (wang)\n",
+      "commitDate": "25/09/14 6:40 PM",
+      "commitName": "e96ce6f3e3e549202ce3c48d4733ba34098870ad",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "24/09/14 7:11 PM",
+      "commitNameOld": "428a76663a0de5d0d74cc9525273ddc470760e44",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 0.98,
+      "commitsBetweenForRepo": 13,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,18 @@\n   public HdfsDataInputStream createWrappedInputStream(DFSInputStream dfsis)\n       throws IOException {\n     final FileEncryptionInfo feInfo \u003d dfsis.getFileEncryptionInfo();\n     if (feInfo !\u003d null) {\n       // File is encrypted, wrap the stream in a crypto stream.\n-      KeyVersion decrypted \u003d decryptEncryptedDataEncryptionKey(feInfo);\n-      CryptoCodec codec \u003d CryptoCodec\n-          .getInstance(conf, feInfo.getCipherSuite());\n-      if (codec \u003d\u003d null) {\n-        throw new IOException(\"No configuration found for the cipher suite \"\n-            + feInfo.getCipherSuite().getConfigSuffix() + \" prefixed with \"\n-            + HADOOP_SECURITY_CRYPTO_CODEC_CLASSES_KEY_PREFIX\n-            + \". Please see the example configuration \"\n-            + \"hadoop.security.crypto.codec.classes.EXAMPLECIPHERSUITE \"\n-            + \"at core-default.xml for details.\");\n-      }\n+      // Currently only one version, so no special logic based on the version #\n+      getCryptoProtocolVersion(feInfo);\n+      final CryptoCodec codec \u003d getCryptoCodec(conf, feInfo);\n+      final KeyVersion decrypted \u003d decryptEncryptedDataEncryptionKey(feInfo);\n       final CryptoInputStream cryptoIn \u003d\n           new CryptoInputStream(dfsis, codec, decrypted.getMaterial(),\n               feInfo.getIV());\n       return new HdfsDataInputStream(cryptoIn);\n     } else {\n       // No FileEncryptionInfo so no encryption.\n       return new HdfsDataInputStream(dfsis);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public HdfsDataInputStream createWrappedInputStream(DFSInputStream dfsis)\n      throws IOException {\n    final FileEncryptionInfo feInfo \u003d dfsis.getFileEncryptionInfo();\n    if (feInfo !\u003d null) {\n      // File is encrypted, wrap the stream in a crypto stream.\n      // Currently only one version, so no special logic based on the version #\n      getCryptoProtocolVersion(feInfo);\n      final CryptoCodec codec \u003d getCryptoCodec(conf, feInfo);\n      final KeyVersion decrypted \u003d decryptEncryptedDataEncryptionKey(feInfo);\n      final CryptoInputStream cryptoIn \u003d\n          new CryptoInputStream(dfsis, codec, decrypted.getMaterial(),\n              feInfo.getIV());\n      return new HdfsDataInputStream(cryptoIn);\n    } else {\n      // No FileEncryptionInfo so no encryption.\n      return new HdfsDataInputStream(dfsis);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSClient.java",
+      "extendedDetails": {}
+    }
+  }
+}

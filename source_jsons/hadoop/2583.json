@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ClientNamenodeProtocolTranslatorPB.java",
+  "functionName": "getBatchedListing",
+  "functionId": "getBatchedListing___srcs-String[]__startAfter-byte[]__needLocation-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/protocolPB/ClientNamenodeProtocolTranslatorPB.java",
+  "functionStartLine": 700,
+  "functionEndLine": 740,
+  "numCommitsSeen": 58,
+  "timeTaken": 2121,
+  "changeHistory": [
+    "d7c4f8ab21c56a52afcfbd0a56d9120e61376d0c"
+  ],
+  "changeHistoryShort": {
+    "d7c4f8ab21c56a52afcfbd0a56d9120e61376d0c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d7c4f8ab21c56a52afcfbd0a56d9120e61376d0c": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13616. Batch listing of multiple directories (#1725)\n\n",
+      "commitDate": "15/01/20 5:22 PM",
+      "commitName": "d7c4f8ab21c56a52afcfbd0a56d9120e61376d0c",
+      "commitAuthor": "Chao Sun",
+      "diff": "@@ -0,0 +1,41 @@\n+  public BatchedDirectoryListing getBatchedListing(\n+      String[] srcs, byte[] startAfter, boolean needLocation)\n+      throws IOException {\n+    GetBatchedListingRequestProto req \u003d GetBatchedListingRequestProto\n+        .newBuilder()\n+        .addAllPaths(Arrays.asList(srcs))\n+        .setStartAfter(ByteString.copyFrom(startAfter))\n+        .setNeedLocation(needLocation).build();\n+    try {\n+      GetBatchedListingResponseProto result \u003d\n+          rpcProxy.getBatchedListing(null, req);\n+\n+      if (result.getListingsCount() \u003e 0) {\n+        HdfsPartialListing[] listingArray \u003d\n+            new HdfsPartialListing[result.getListingsCount()];\n+        int listingIdx \u003d 0;\n+        for (BatchedDirectoryListingProto proto : result.getListingsList()) {\n+          HdfsPartialListing listing;\n+          if (proto.hasException()) {\n+            HdfsProtos.RemoteExceptionProto reProto \u003d proto.getException();\n+            RemoteException ex \u003d new RemoteException(\n+                reProto.getClassName(), reProto.getMessage());\n+            listing \u003d new HdfsPartialListing(proto.getParentIdx(), ex);\n+          } else {\n+            List\u003cHdfsFileStatus\u003e statuses \u003d\n+                PBHelperClient.convertHdfsFileStatus(\n+                    proto.getPartialListingList());\n+            listing \u003d new HdfsPartialListing(proto.getParentIdx(), statuses);\n+          }\n+          listingArray[listingIdx++] \u003d listing;\n+        }\n+        BatchedDirectoryListing batchedListing \u003d\n+            new BatchedDirectoryListing(listingArray, result.getHasMore(),\n+                result.getStartAfter().toByteArray());\n+        return batchedListing;\n+      }\n+      return null;\n+    } catch (ServiceException e) {\n+      throw ProtobufHelper.getRemoteException(e);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public BatchedDirectoryListing getBatchedListing(\n      String[] srcs, byte[] startAfter, boolean needLocation)\n      throws IOException {\n    GetBatchedListingRequestProto req \u003d GetBatchedListingRequestProto\n        .newBuilder()\n        .addAllPaths(Arrays.asList(srcs))\n        .setStartAfter(ByteString.copyFrom(startAfter))\n        .setNeedLocation(needLocation).build();\n    try {\n      GetBatchedListingResponseProto result \u003d\n          rpcProxy.getBatchedListing(null, req);\n\n      if (result.getListingsCount() \u003e 0) {\n        HdfsPartialListing[] listingArray \u003d\n            new HdfsPartialListing[result.getListingsCount()];\n        int listingIdx \u003d 0;\n        for (BatchedDirectoryListingProto proto : result.getListingsList()) {\n          HdfsPartialListing listing;\n          if (proto.hasException()) {\n            HdfsProtos.RemoteExceptionProto reProto \u003d proto.getException();\n            RemoteException ex \u003d new RemoteException(\n                reProto.getClassName(), reProto.getMessage());\n            listing \u003d new HdfsPartialListing(proto.getParentIdx(), ex);\n          } else {\n            List\u003cHdfsFileStatus\u003e statuses \u003d\n                PBHelperClient.convertHdfsFileStatus(\n                    proto.getPartialListingList());\n            listing \u003d new HdfsPartialListing(proto.getParentIdx(), statuses);\n          }\n          listingArray[listingIdx++] \u003d listing;\n        }\n        BatchedDirectoryListing batchedListing \u003d\n            new BatchedDirectoryListing(listingArray, result.getHasMore(),\n                result.getStartAfter().toByteArray());\n        return batchedListing;\n      }\n      return null;\n    } catch (ServiceException e) {\n      throw ProtobufHelper.getRemoteException(e);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/protocolPB/ClientNamenodeProtocolTranslatorPB.java"
+    }
+  }
+}

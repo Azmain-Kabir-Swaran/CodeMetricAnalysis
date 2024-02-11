@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "Fetcher.java",
+  "functionName": "verifyConnection",
+  "functionId": "verifyConnection___url-URL__msgToEncode-String__encHash-String",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java",
+  "functionStartLine": 432,
+  "functionEndLine": 470,
+  "numCommitsSeen": 35,
+  "timeTaken": 1924,
+  "changeHistory": [
+    "d4725bfcb2d300219d65395a78f957afbf37b201",
+    "dc2b2ae31f2eb6dae324c2e14ed7660ce605a89b",
+    "2c3da25fd718b3a9c1ed67f05b577975ae613f4e"
+  ],
+  "changeHistoryShort": {
+    "d4725bfcb2d300219d65395a78f957afbf37b201": "Ybodychange",
+    "dc2b2ae31f2eb6dae324c2e14ed7660ce605a89b": "Ybodychange",
+    "2c3da25fd718b3a9c1ed67f05b577975ae613f4e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d4725bfcb2d300219d65395a78f957afbf37b201": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6728. Give fetchers hint when ShuffleHandler rejects a shuffling connection (haibochen via rkanter)\n",
+      "commitDate": "21/10/16 5:46 PM",
+      "commitName": "d4725bfcb2d300219d65395a78f957afbf37b201",
+      "commitAuthor": "Robert Kanter",
+      "commitDateOld": "23/08/16 1:04 AM",
+      "commitNameOld": "8cc4a67059e37b2083cd5468b35a64a403a3e3ae",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 59.7,
+      "commitsBetweenForRepo": 399,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,39 @@\n   private void verifyConnection(URL url, String msgToEncode, String encHash)\n       throws IOException {\n     // Validate response code\n     int rc \u003d connection.getResponseCode();\n+    // See if the shuffleHandler rejected the connection due to too many\n+    // reducer requests. If so, signal fetchers to back off.\n+    if (rc \u003d\u003d TOO_MANY_REQ_STATUS_CODE) {\n+      long backoff \u003d connection.getHeaderFieldLong(FETCH_RETRY_AFTER_HEADER,\n+          FETCH_RETRY_DELAY_DEFAULT);\n+      // in case we get a negative backoff from ShuffleHandler\n+      if (backoff \u003c 0) {\n+        backoff \u003d FETCH_RETRY_DELAY_DEFAULT;\n+        LOG.warn(\"Get a negative backoff value from ShuffleHandler. Setting\" +\n+            \" it to the default value \" + FETCH_RETRY_DELAY_DEFAULT);\n+      }\n+      throw new TryAgainLaterException(backoff, url.getHost());\n+    }\n     if (rc !\u003d HttpURLConnection.HTTP_OK) {\n       throw new IOException(\n           \"Got invalid response code \" + rc + \" from \" + url +\n           \": \" + connection.getResponseMessage());\n     }\n     // get the shuffle version\n     if (!ShuffleHeader.DEFAULT_HTTP_HEADER_NAME.equals(\n         connection.getHeaderField(ShuffleHeader.HTTP_HEADER_NAME))\n         || !ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION.equals(\n             connection.getHeaderField(ShuffleHeader.HTTP_HEADER_VERSION))) {\n       throw new IOException(\"Incompatible shuffle response version\");\n     }\n     // get the replyHash which is HMac of the encHash we sent to the server\n     String replyHash \u003d connection.getHeaderField(SecureShuffleUtils.HTTP_HEADER_REPLY_URL_HASH);\n     if(replyHash\u003d\u003dnull) {\n       throw new IOException(\"security validation of TT Map output failed\");\n     }\n     LOG.debug(\"url\u003d\"+msgToEncode+\";encHash\u003d\"+encHash+\";replyHash\u003d\"+replyHash);\n     // verify that replyHash is HMac of encHash\n     SecureShuffleUtils.verifyReply(replyHash, encHash, shuffleSecretKey);\n     LOG.debug(\"for url\u003d\"+msgToEncode+\" sent hash and received reply\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void verifyConnection(URL url, String msgToEncode, String encHash)\n      throws IOException {\n    // Validate response code\n    int rc \u003d connection.getResponseCode();\n    // See if the shuffleHandler rejected the connection due to too many\n    // reducer requests. If so, signal fetchers to back off.\n    if (rc \u003d\u003d TOO_MANY_REQ_STATUS_CODE) {\n      long backoff \u003d connection.getHeaderFieldLong(FETCH_RETRY_AFTER_HEADER,\n          FETCH_RETRY_DELAY_DEFAULT);\n      // in case we get a negative backoff from ShuffleHandler\n      if (backoff \u003c 0) {\n        backoff \u003d FETCH_RETRY_DELAY_DEFAULT;\n        LOG.warn(\"Get a negative backoff value from ShuffleHandler. Setting\" +\n            \" it to the default value \" + FETCH_RETRY_DELAY_DEFAULT);\n      }\n      throw new TryAgainLaterException(backoff, url.getHost());\n    }\n    if (rc !\u003d HttpURLConnection.HTTP_OK) {\n      throw new IOException(\n          \"Got invalid response code \" + rc + \" from \" + url +\n          \": \" + connection.getResponseMessage());\n    }\n    // get the shuffle version\n    if (!ShuffleHeader.DEFAULT_HTTP_HEADER_NAME.equals(\n        connection.getHeaderField(ShuffleHeader.HTTP_HEADER_NAME))\n        || !ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION.equals(\n            connection.getHeaderField(ShuffleHeader.HTTP_HEADER_VERSION))) {\n      throw new IOException(\"Incompatible shuffle response version\");\n    }\n    // get the replyHash which is HMac of the encHash we sent to the server\n    String replyHash \u003d connection.getHeaderField(SecureShuffleUtils.HTTP_HEADER_REPLY_URL_HASH);\n    if(replyHash\u003d\u003dnull) {\n      throw new IOException(\"security validation of TT Map output failed\");\n    }\n    LOG.debug(\"url\u003d\"+msgToEncode+\";encHash\u003d\"+encHash+\";replyHash\u003d\"+replyHash);\n    // verify that replyHash is HMac of encHash\n    SecureShuffleUtils.verifyReply(replyHash, encHash, shuffleSecretKey);\n    LOG.debug(\"for url\u003d\"+msgToEncode+\" sent hash and received reply\");\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java",
+      "extendedDetails": {}
+    },
+    "dc2b2ae31f2eb6dae324c2e14ed7660ce605a89b": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-5981. Log levels of certain MR logs can be changed to DEBUG.\nContributed by Varun Saxena.\n",
+      "commitDate": "08/05/15 8:57 AM",
+      "commitName": "dc2b2ae31f2eb6dae324c2e14ed7660ce605a89b",
+      "commitAuthor": "Devaraj K",
+      "commitDateOld": "28/04/15 1:19 PM",
+      "commitNameOld": "bc1bd7e5c4047b374420683d36a8c30eda6d75b6",
+      "commitAuthorOld": "Jason Lowe",
+      "daysBetweenCommits": 9.82,
+      "commitsBetweenForRepo": 124,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,26 @@\n   private void verifyConnection(URL url, String msgToEncode, String encHash)\n       throws IOException {\n     // Validate response code\n     int rc \u003d connection.getResponseCode();\n     if (rc !\u003d HttpURLConnection.HTTP_OK) {\n       throw new IOException(\n           \"Got invalid response code \" + rc + \" from \" + url +\n           \": \" + connection.getResponseMessage());\n     }\n     // get the shuffle version\n     if (!ShuffleHeader.DEFAULT_HTTP_HEADER_NAME.equals(\n         connection.getHeaderField(ShuffleHeader.HTTP_HEADER_NAME))\n         || !ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION.equals(\n             connection.getHeaderField(ShuffleHeader.HTTP_HEADER_VERSION))) {\n       throw new IOException(\"Incompatible shuffle response version\");\n     }\n     // get the replyHash which is HMac of the encHash we sent to the server\n     String replyHash \u003d connection.getHeaderField(SecureShuffleUtils.HTTP_HEADER_REPLY_URL_HASH);\n     if(replyHash\u003d\u003dnull) {\n       throw new IOException(\"security validation of TT Map output failed\");\n     }\n     LOG.debug(\"url\u003d\"+msgToEncode+\";encHash\u003d\"+encHash+\";replyHash\u003d\"+replyHash);\n     // verify that replyHash is HMac of encHash\n     SecureShuffleUtils.verifyReply(replyHash, encHash, shuffleSecretKey);\n-    LOG.info(\"for url\u003d\"+msgToEncode+\" sent hash and received reply\");\n+    LOG.debug(\"for url\u003d\"+msgToEncode+\" sent hash and received reply\");\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void verifyConnection(URL url, String msgToEncode, String encHash)\n      throws IOException {\n    // Validate response code\n    int rc \u003d connection.getResponseCode();\n    if (rc !\u003d HttpURLConnection.HTTP_OK) {\n      throw new IOException(\n          \"Got invalid response code \" + rc + \" from \" + url +\n          \": \" + connection.getResponseMessage());\n    }\n    // get the shuffle version\n    if (!ShuffleHeader.DEFAULT_HTTP_HEADER_NAME.equals(\n        connection.getHeaderField(ShuffleHeader.HTTP_HEADER_NAME))\n        || !ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION.equals(\n            connection.getHeaderField(ShuffleHeader.HTTP_HEADER_VERSION))) {\n      throw new IOException(\"Incompatible shuffle response version\");\n    }\n    // get the replyHash which is HMac of the encHash we sent to the server\n    String replyHash \u003d connection.getHeaderField(SecureShuffleUtils.HTTP_HEADER_REPLY_URL_HASH);\n    if(replyHash\u003d\u003dnull) {\n      throw new IOException(\"security validation of TT Map output failed\");\n    }\n    LOG.debug(\"url\u003d\"+msgToEncode+\";encHash\u003d\"+encHash+\";replyHash\u003d\"+replyHash);\n    // verify that replyHash is HMac of encHash\n    SecureShuffleUtils.verifyReply(replyHash, encHash, shuffleSecretKey);\n    LOG.debug(\"for url\u003d\"+msgToEncode+\" sent hash and received reply\");\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java",
+      "extendedDetails": {}
+    },
+    "2c3da25fd718b3a9c1ed67f05b577975ae613f4e": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-5891. Improved shuffle error handling across NM restarts. Contributed by Junping Du\n",
+      "commitDate": "18/09/14 3:00 PM",
+      "commitName": "2c3da25fd718b3a9c1ed67f05b577975ae613f4e",
+      "commitAuthor": "Jason Lowe",
+      "diff": "@@ -0,0 +1,26 @@\n+  private void verifyConnection(URL url, String msgToEncode, String encHash)\n+      throws IOException {\n+    // Validate response code\n+    int rc \u003d connection.getResponseCode();\n+    if (rc !\u003d HttpURLConnection.HTTP_OK) {\n+      throw new IOException(\n+          \"Got invalid response code \" + rc + \" from \" + url +\n+          \": \" + connection.getResponseMessage());\n+    }\n+    // get the shuffle version\n+    if (!ShuffleHeader.DEFAULT_HTTP_HEADER_NAME.equals(\n+        connection.getHeaderField(ShuffleHeader.HTTP_HEADER_NAME))\n+        || !ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION.equals(\n+            connection.getHeaderField(ShuffleHeader.HTTP_HEADER_VERSION))) {\n+      throw new IOException(\"Incompatible shuffle response version\");\n+    }\n+    // get the replyHash which is HMac of the encHash we sent to the server\n+    String replyHash \u003d connection.getHeaderField(SecureShuffleUtils.HTTP_HEADER_REPLY_URL_HASH);\n+    if(replyHash\u003d\u003dnull) {\n+      throw new IOException(\"security validation of TT Map output failed\");\n+    }\n+    LOG.debug(\"url\u003d\"+msgToEncode+\";encHash\u003d\"+encHash+\";replyHash\u003d\"+replyHash);\n+    // verify that replyHash is HMac of encHash\n+    SecureShuffleUtils.verifyReply(replyHash, encHash, shuffleSecretKey);\n+    LOG.info(\"for url\u003d\"+msgToEncode+\" sent hash and received reply\");\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void verifyConnection(URL url, String msgToEncode, String encHash)\n      throws IOException {\n    // Validate response code\n    int rc \u003d connection.getResponseCode();\n    if (rc !\u003d HttpURLConnection.HTTP_OK) {\n      throw new IOException(\n          \"Got invalid response code \" + rc + \" from \" + url +\n          \": \" + connection.getResponseMessage());\n    }\n    // get the shuffle version\n    if (!ShuffleHeader.DEFAULT_HTTP_HEADER_NAME.equals(\n        connection.getHeaderField(ShuffleHeader.HTTP_HEADER_NAME))\n        || !ShuffleHeader.DEFAULT_HTTP_HEADER_VERSION.equals(\n            connection.getHeaderField(ShuffleHeader.HTTP_HEADER_VERSION))) {\n      throw new IOException(\"Incompatible shuffle response version\");\n    }\n    // get the replyHash which is HMac of the encHash we sent to the server\n    String replyHash \u003d connection.getHeaderField(SecureShuffleUtils.HTTP_HEADER_REPLY_URL_HASH);\n    if(replyHash\u003d\u003dnull) {\n      throw new IOException(\"security validation of TT Map output failed\");\n    }\n    LOG.debug(\"url\u003d\"+msgToEncode+\";encHash\u003d\"+encHash+\";replyHash\u003d\"+replyHash);\n    // verify that replyHash is HMac of encHash\n    SecureShuffleUtils.verifyReply(replyHash, encHash, shuffleSecretKey);\n    LOG.info(\"for url\u003d\"+msgToEncode+\" sent hash and received reply\");\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapreduce/task/reduce/Fetcher.java"
+    }
+  }
+}

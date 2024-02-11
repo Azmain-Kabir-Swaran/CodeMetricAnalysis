@@ -1,0 +1,434 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RPC.java",
+  "functionName": "waitForProtocolProxy",
+  "functionId": "waitForProtocolProxy___protocol-Class__T____clientVersion-long__addr-InetSocketAddress__conf-Configuration__rpcTimeout-int__connectionRetryPolicy-RetryPolicy__timeout-long",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java",
+  "functionStartLine": 393,
+  "functionEndLine": 435,
+  "numCommitsSeen": 103,
+  "timeTaken": 2379,
+  "changeHistory": [
+    "1f2b6956c2012a7d6ea7e7ba5116d3ad71c23d7e",
+    "4a5ba3b7bd2360fd9605863630b477d362874e1e",
+    "45fafc2b8fc1aab0a082600b0d50ad693491ea70",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+    "b1e3037296e5687ef04e86a35e1f00195faab244",
+    "714e5f7165b101f72a43e8c3fb27be5def93fe42",
+    "2bec54de58ca8c5feaa24aee6444e1d7d507b14f",
+    "d115e2cc3a15c7fb26cd9af509a6a5b203031914",
+    "6c842ad4b5cbb730bb02c6a586b604ea85665cf9",
+    "53c127013ce1d751f0dac6d1d0f99ea8161f4d2c",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36"
+  ],
+  "changeHistoryShort": {
+    "1f2b6956c2012a7d6ea7e7ba5116d3ad71c23d7e": "Ybodychange",
+    "4a5ba3b7bd2360fd9605863630b477d362874e1e": "Ybodychange",
+    "45fafc2b8fc1aab0a082600b0d50ad693491ea70": "Ymultichange(Yparameterchange,Ybodychange)",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yfilerename",
+    "b1e3037296e5687ef04e86a35e1f00195faab244": "Ymultichange(Yrename,Yparameterchange,Yreturntypechange,Ybodychange)",
+    "714e5f7165b101f72a43e8c3fb27be5def93fe42": "Ymultichange(Yparameterchange,Ybodychange)",
+    "2bec54de58ca8c5feaa24aee6444e1d7d507b14f": "Ybodychange",
+    "d115e2cc3a15c7fb26cd9af509a6a5b203031914": "Ymodifierchange",
+    "6c842ad4b5cbb730bb02c6a586b604ea85665cf9": "Ymultichange(Yparameterchange,Yreturntypechange)",
+    "53c127013ce1d751f0dac6d1d0f99ea8161f4d2c": "Yparameterchange",
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1f2b6956c2012a7d6ea7e7ba5116d3ad71c23d7e": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-6221 RPC Client operations cannot be interrupted (stevel)\n",
+      "commitDate": "26/01/15 2:04 PM",
+      "commitName": "1f2b6956c2012a7d6ea7e7ba5116d3ad71c23d7e",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "19/09/14 9:23 PM",
+      "commitNameOld": "f85cc14eb49a46e81d2edcdc1ffe4d0852f193a5",
+      "commitAuthorOld": "cnauroth",
+      "daysBetweenCommits": 128.74,
+      "commitsBetweenForRepo": 984,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,43 @@\n   public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                                long clientVersion,\n                                InetSocketAddress addr, Configuration conf,\n                                int rpcTimeout,\n                                RetryPolicy connectionRetryPolicy,\n                                long timeout) throws IOException { \n     long startTime \u003d Time.now();\n     IOException ioe;\n     while (true) {\n       try {\n         return getProtocolProxy(protocol, clientVersion, addr, \n             UserGroupInformation.getCurrentUser(), conf, NetUtils\n             .getDefaultSocketFactory(conf), rpcTimeout, connectionRetryPolicy);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (Time.now()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n+      if (Thread.currentThread().isInterrupted()) {\n+        // interrupted during some IO; this may not have been caught\n+        throw new InterruptedIOException(\"Interrupted waiting for the proxy\");\n+      }\n+\n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n-        // IGNORE\n+        Thread.currentThread().interrupt();\n+        throw (IOException) new InterruptedIOException(\n+            \"Interrupted waiting for the proxy\").initCause(ioe);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               RetryPolicy connectionRetryPolicy,\n                               long timeout) throws IOException { \n    long startTime \u003d Time.now();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout, connectionRetryPolicy);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (Time.now()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      if (Thread.currentThread().isInterrupted()) {\n        // interrupted during some IO; this may not have been caught\n        throw new InterruptedIOException(\"Interrupted waiting for the proxy\");\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        Thread.currentThread().interrupt();\n        throw (IOException) new InterruptedIOException(\n            \"Interrupted waiting for the proxy\").initCause(ioe);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java",
+      "extendedDetails": {}
+    },
+    "4a5ba3b7bd2360fd9605863630b477d362874e1e": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3641. Move server Util time methods to common and use now instead of System#currentTimeMillis. Contributed by Eli Collins\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1360858 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/07/12 12:01 PM",
+      "commitName": "4a5ba3b7bd2360fd9605863630b477d362874e1e",
+      "commitAuthor": "Eli Collins",
+      "commitDateOld": "02/07/12 3:15 PM",
+      "commitNameOld": "22822df7c3d08f157cf268b907083d0782d3fa67",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 9.87,
+      "commitsBetweenForRepo": 64,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,36 @@\n   public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                                long clientVersion,\n                                InetSocketAddress addr, Configuration conf,\n                                int rpcTimeout,\n                                RetryPolicy connectionRetryPolicy,\n                                long timeout) throws IOException { \n-    long startTime \u003d System.currentTimeMillis();\n+    long startTime \u003d Time.now();\n     IOException ioe;\n     while (true) {\n       try {\n         return getProtocolProxy(protocol, clientVersion, addr, \n             UserGroupInformation.getCurrentUser(), conf, NetUtils\n             .getDefaultSocketFactory(conf), rpcTimeout, connectionRetryPolicy);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n-      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n+      if (Time.now()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               RetryPolicy connectionRetryPolicy,\n                               long timeout) throws IOException { \n    long startTime \u003d Time.now();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout, connectionRetryPolicy);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (Time.now()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java",
+      "extendedDetails": {}
+    },
+    "45fafc2b8fc1aab0a082600b0d50ad693491ea70": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-3504. Support configurable retry policy in DFSClient for RPC connections and RPC calls, and add MultipleLinearRandomRetry, a new retry policy.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1349124 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "11/06/12 10:27 PM",
+      "commitName": "45fafc2b8fc1aab0a082600b0d50ad693491ea70",
+      "commitAuthor": "Tsz-wo Sze",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-3504. Support configurable retry policy in DFSClient for RPC connections and RPC calls, and add MultipleLinearRandomRetry, a new retry policy.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1349124 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "11/06/12 10:27 PM",
+          "commitName": "45fafc2b8fc1aab0a082600b0d50ad693491ea70",
+          "commitAuthor": "Tsz-wo Sze",
+          "commitDateOld": "23/04/12 9:34 AM",
+          "commitNameOld": "589c68ae09effd6c4f26505d61636f779c22e99f",
+          "commitAuthorOld": "Sanjay Radia",
+          "daysBetweenCommits": 49.54,
+          "commitsBetweenForRepo": 280,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,35 +1,36 @@\n   public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                                long clientVersion,\n                                InetSocketAddress addr, Configuration conf,\n                                int rpcTimeout,\n+                               RetryPolicy connectionRetryPolicy,\n                                long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n         return getProtocolProxy(protocol, clientVersion, addr, \n             UserGroupInformation.getCurrentUser(), conf, NetUtils\n-            .getDefaultSocketFactory(conf), rpcTimeout);\n+            .getDefaultSocketFactory(conf), rpcTimeout, connectionRetryPolicy);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               RetryPolicy connectionRetryPolicy,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout, connectionRetryPolicy);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {
+            "oldValue": "[protocol-Class\u003cT\u003e, clientVersion-long, addr-InetSocketAddress, conf-Configuration, rpcTimeout-int, timeout-long]",
+            "newValue": "[protocol-Class\u003cT\u003e, clientVersion-long, addr-InetSocketAddress, conf-Configuration, rpcTimeout-int, connectionRetryPolicy-RetryPolicy, timeout-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3504. Support configurable retry policy in DFSClient for RPC connections and RPC calls, and add MultipleLinearRandomRetry, a new retry policy.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1349124 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "11/06/12 10:27 PM",
+          "commitName": "45fafc2b8fc1aab0a082600b0d50ad693491ea70",
+          "commitAuthor": "Tsz-wo Sze",
+          "commitDateOld": "23/04/12 9:34 AM",
+          "commitNameOld": "589c68ae09effd6c4f26505d61636f779c22e99f",
+          "commitAuthorOld": "Sanjay Radia",
+          "daysBetweenCommits": 49.54,
+          "commitsBetweenForRepo": 280,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,35 +1,36 @@\n   public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                                long clientVersion,\n                                InetSocketAddress addr, Configuration conf,\n                                int rpcTimeout,\n+                               RetryPolicy connectionRetryPolicy,\n                                long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n         return getProtocolProxy(protocol, clientVersion, addr, \n             UserGroupInformation.getCurrentUser(), conf, NetUtils\n-            .getDefaultSocketFactory(conf), rpcTimeout);\n+            .getDefaultSocketFactory(conf), rpcTimeout, connectionRetryPolicy);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               RetryPolicy connectionRetryPolicy,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout, connectionRetryPolicy);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java",
+        "newPath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java"
+      }
+    },
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-6671. Use maven for hadoop common builds. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153184 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/08/11 9:37 AM",
+      "commitName": "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "01/08/11 3:53 PM",
+      "commitNameOld": "9bac807cedbcff34e1a144fb475eff267e5ed86d",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+      "path": "hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java",
+      "extendedDetails": {
+        "oldPath": "common/src/java/org/apache/hadoop/ipc/RPC.java",
+        "newPath": "hadoop-common/src/main/java/org/apache/hadoop/ipc/RPC.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "11/06/11 9:13 PM",
+      "commitNameOld": "a285fb5effe9ba3be4ec5f942afaf5ddd1186151",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+      "path": "common/src/java/org/apache/hadoop/ipc/RPC.java",
+      "extendedDetails": {
+        "oldPath": "src/java/org/apache/hadoop/ipc/RPC.java",
+        "newPath": "common/src/java/org/apache/hadoop/ipc/RPC.java"
+      }
+    },
+    "b1e3037296e5687ef04e86a35e1f00195faab244": {
+      "type": "Ymultichange(Yrename,Yparameterchange,Yreturntypechange,Ybodychange)",
+      "commitMessage": "HADOOP-6904. Support method based RPC compatiblity. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1064919 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "28/01/11 2:45 PM",
+      "commitName": "b1e3037296e5687ef04e86a35e1f00195faab244",
+      "commitAuthor": "Hairong Kuang",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HADOOP-6904. Support method based RPC compatiblity. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1064919 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "28/01/11 2:45 PM",
+          "commitName": "b1e3037296e5687ef04e86a35e1f00195faab244",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "24/11/10 8:36 PM",
+          "commitNameOld": "3a43e5930baa4f1ad97a45fff3c7a1800fc11649",
+          "commitAuthorOld": "Hairong Kuang",
+          "daysBetweenCommits": 64.76,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,34 +1,35 @@\n-    public static Object waitForProxy(Class\u003c?\u003e protocol, long clientVersion,\n+  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n+                               long clientVersion,\n                                InetSocketAddress addr, Configuration conf,\n                                int rpcTimeout,\n                                long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n-        return getProxy(protocol, clientVersion, addr, \n+        return getProtocolProxy(protocol, clientVersion, addr, \n             UserGroupInformation.getCurrentUser(), conf, NetUtils\n             .getDefaultSocketFactory(conf), rpcTimeout);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {
+            "oldValue": "waitForProxy",
+            "newValue": "waitForProtocolProxy"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-6904. Support method based RPC compatiblity. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1064919 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "28/01/11 2:45 PM",
+          "commitName": "b1e3037296e5687ef04e86a35e1f00195faab244",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "24/11/10 8:36 PM",
+          "commitNameOld": "3a43e5930baa4f1ad97a45fff3c7a1800fc11649",
+          "commitAuthorOld": "Hairong Kuang",
+          "daysBetweenCommits": 64.76,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,34 +1,35 @@\n-    public static Object waitForProxy(Class\u003c?\u003e protocol, long clientVersion,\n+  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n+                               long clientVersion,\n                                InetSocketAddress addr, Configuration conf,\n                                int rpcTimeout,\n                                long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n-        return getProxy(protocol, clientVersion, addr, \n+        return getProtocolProxy(protocol, clientVersion, addr, \n             UserGroupInformation.getCurrentUser(), conf, NetUtils\n             .getDefaultSocketFactory(conf), rpcTimeout);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {
+            "oldValue": "[protocol-Class\u003c?\u003e, clientVersion-long, addr-InetSocketAddress, conf-Configuration, rpcTimeout-int, timeout-long]",
+            "newValue": "[protocol-Class\u003cT\u003e, clientVersion-long, addr-InetSocketAddress, conf-Configuration, rpcTimeout-int, timeout-long]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-6904. Support method based RPC compatiblity. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1064919 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "28/01/11 2:45 PM",
+          "commitName": "b1e3037296e5687ef04e86a35e1f00195faab244",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "24/11/10 8:36 PM",
+          "commitNameOld": "3a43e5930baa4f1ad97a45fff3c7a1800fc11649",
+          "commitAuthorOld": "Hairong Kuang",
+          "daysBetweenCommits": 64.76,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,34 +1,35 @@\n-    public static Object waitForProxy(Class\u003c?\u003e protocol, long clientVersion,\n+  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n+                               long clientVersion,\n                                InetSocketAddress addr, Configuration conf,\n                                int rpcTimeout,\n                                long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n-        return getProxy(protocol, clientVersion, addr, \n+        return getProtocolProxy(protocol, clientVersion, addr, \n             UserGroupInformation.getCurrentUser(), conf, NetUtils\n             .getDefaultSocketFactory(conf), rpcTimeout);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {
+            "oldValue": "Object",
+            "newValue": "ProtocolProxy\u003cT\u003e"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-6904. Support method based RPC compatiblity. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1064919 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "28/01/11 2:45 PM",
+          "commitName": "b1e3037296e5687ef04e86a35e1f00195faab244",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "24/11/10 8:36 PM",
+          "commitNameOld": "3a43e5930baa4f1ad97a45fff3c7a1800fc11649",
+          "commitAuthorOld": "Hairong Kuang",
+          "daysBetweenCommits": 64.76,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,34 +1,35 @@\n-    public static Object waitForProxy(Class\u003c?\u003e protocol, long clientVersion,\n+  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n+                               long clientVersion,\n                                InetSocketAddress addr, Configuration conf,\n                                int rpcTimeout,\n                                long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n-        return getProxy(protocol, clientVersion, addr, \n+        return getProtocolProxy(protocol, clientVersion, addr, \n             UserGroupInformation.getCurrentUser(), conf, NetUtils\n             .getDefaultSocketFactory(conf), rpcTimeout);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static \u003cT\u003e ProtocolProxy\u003cT\u003e waitForProtocolProxy(Class\u003cT\u003e protocol,\n                               long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProtocolProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "714e5f7165b101f72a43e8c3fb27be5def93fe42": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-6889. Make RPC to have an option to timeout. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@982681 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "05/08/10 9:39 AM",
+      "commitName": "714e5f7165b101f72a43e8c3fb27be5def93fe42",
+      "commitAuthor": "Hairong Kuang",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-6889. Make RPC to have an option to timeout. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@982681 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "05/08/10 9:39 AM",
+          "commitName": "714e5f7165b101f72a43e8c3fb27be5def93fe42",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "04/06/10 5:34 PM",
+          "commitNameOld": "4b9c956bc56cec2c5b669102340d0912e0db3517",
+          "commitAuthorOld": "Devaraj Das",
+          "daysBetweenCommits": 61.67,
+          "commitsBetweenForRepo": 61,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,34 @@\n-  public static Object waitForProxy(Class protocol, long clientVersion,\n-                             InetSocketAddress addr, Configuration conf,\n-                             long timeout) throws IOException { \n+    public static Object waitForProxy(Class\u003c?\u003e protocol, long clientVersion,\n+                               InetSocketAddress addr, Configuration conf,\n+                               int rpcTimeout,\n+                               long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n-        return getProxy(protocol, clientVersion, addr, conf);\n+        return getProxy(protocol, clientVersion, addr, \n+            UserGroupInformation.getCurrentUser(), conf, NetUtils\n+            .getDefaultSocketFactory(conf), rpcTimeout);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "    public static Object waitForProxy(Class\u003c?\u003e protocol, long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {
+            "oldValue": "[protocol-Class, clientVersion-long, addr-InetSocketAddress, conf-Configuration, timeout-long]",
+            "newValue": "[protocol-Class\u003c?\u003e, clientVersion-long, addr-InetSocketAddress, conf-Configuration, rpcTimeout-int, timeout-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-6889. Make RPC to have an option to timeout. Contributed by Hairong Kuang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@982681 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "05/08/10 9:39 AM",
+          "commitName": "714e5f7165b101f72a43e8c3fb27be5def93fe42",
+          "commitAuthor": "Hairong Kuang",
+          "commitDateOld": "04/06/10 5:34 PM",
+          "commitNameOld": "4b9c956bc56cec2c5b669102340d0912e0db3517",
+          "commitAuthorOld": "Devaraj Das",
+          "daysBetweenCommits": 61.67,
+          "commitsBetweenForRepo": 61,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,34 @@\n-  public static Object waitForProxy(Class protocol, long clientVersion,\n-                             InetSocketAddress addr, Configuration conf,\n-                             long timeout) throws IOException { \n+    public static Object waitForProxy(Class\u003c?\u003e protocol, long clientVersion,\n+                               InetSocketAddress addr, Configuration conf,\n+                               int rpcTimeout,\n+                               long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n-        return getProxy(protocol, clientVersion, addr, conf);\n+        return getProxy(protocol, clientVersion, addr, \n+            UserGroupInformation.getCurrentUser(), conf, NetUtils\n+            .getDefaultSocketFactory(conf), rpcTimeout);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n         LOG.info(\"No route to host for server: \" + addr);\n         ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "    public static Object waitForProxy(Class\u003c?\u003e protocol, long clientVersion,\n                               InetSocketAddress addr, Configuration conf,\n                               int rpcTimeout,\n                               long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProxy(protocol, clientVersion, addr, \n            UserGroupInformation.getCurrentUser(), conf, NetUtils\n            .getDefaultSocketFactory(conf), rpcTimeout);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "2bec54de58ca8c5feaa24aee6444e1d7d507b14f": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-6667. RPC.waitForProxy should retry through NoRouteToHostException. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@938322 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "26/04/10 9:38 PM",
+      "commitName": "2bec54de58ca8c5feaa24aee6444e1d7d507b14f",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "17/02/10 10:22 AM",
+      "commitNameOld": "4b4e9d741e3a62e8e38925c5c4033931708a81c0",
+      "commitAuthorOld": "Hairong Kuang",
+      "daysBetweenCommits": 68.43,
+      "commitsBetweenForRepo": 58,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,31 @@\n   public static Object waitForProxy(Class protocol, long clientVersion,\n                              InetSocketAddress addr, Configuration conf,\n                              long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n         return getProxy(protocol, clientVersion, addr, conf);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n+      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n+        LOG.info(\"No route to host for server: \" + addr);\n+        ioe \u003d nrthe;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Object waitForProxy(Class protocol, long clientVersion,\n                             InetSocketAddress addr, Configuration conf,\n                             long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProxy(protocol, clientVersion, addr, conf);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      } catch(NoRouteToHostException nrthe) { // perhaps a VIP is failing over\n        LOG.info(\"No route to host for server: \" + addr);\n        ioe \u003d nrthe;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+      "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+      "extendedDetails": {}
+    },
+    "d115e2cc3a15c7fb26cd9af509a6a5b203031914": {
+      "type": "Ymodifierchange",
+      "commitMessage": "HADOOP-6435. Make RPC.waitForProxy with timeout public. Contributed by Steve Loughran.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@893612 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "23/12/09 11:36 AM",
+      "commitName": "d115e2cc3a15c7fb26cd9af509a6a5b203031914",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "14/12/09 9:45 AM",
+      "commitNameOld": "2ee80854a5d113cfe654643481ff8ca2e5978003",
+      "commitAuthorOld": "Doug Cutting",
+      "daysBetweenCommits": 9.08,
+      "commitsBetweenForRepo": 21,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,28 @@\n-  static Object waitForProxy(Class protocol, long clientVersion,\n+  public static Object waitForProxy(Class protocol, long clientVersion,\n                              InetSocketAddress addr, Configuration conf,\n                              long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n         return getProxy(protocol, clientVersion, addr, conf);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Object waitForProxy(Class protocol, long clientVersion,\n                             InetSocketAddress addr, Configuration conf,\n                             long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProxy(protocol, clientVersion, addr, conf);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+      "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+      "extendedDetails": {
+        "oldValue": "[static]",
+        "newValue": "[public, static]"
+      }
+    },
+    "6c842ad4b5cbb730bb02c6a586b604ea85665cf9": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange)",
+      "commitMessage": "AVRO-6422. Make RPC backend plugable.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@889889 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "11/12/09 8:37 PM",
+      "commitName": "6c842ad4b5cbb730bb02c6a586b604ea85665cf9",
+      "commitAuthor": "Doug Cutting",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "AVRO-6422. Make RPC backend plugable.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@889889 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "11/12/09 8:37 PM",
+          "commitName": "6c842ad4b5cbb730bb02c6a586b604ea85665cf9",
+          "commitAuthor": "Doug Cutting",
+          "commitDateOld": "02/11/09 5:30 PM",
+          "commitNameOld": "f5f95fe43aa5ee12ca755d8c5c540452a6613fd7",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 39.13,
+          "commitsBetweenForRepo": 23,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,28 @@\n-  static VersionedProtocol waitForProxy(\n-                      Class\u003c? extends VersionedProtocol\u003e protocol,\n-                                               long clientVersion,\n-                                               InetSocketAddress addr,\n-                                               Configuration conf,\n-                                               long timeout\n-                                               ) throws IOException { \n+  static Object waitForProxy(Class protocol, long clientVersion,\n+                             InetSocketAddress addr, Configuration conf,\n+                             long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n         return getProxy(protocol, clientVersion, addr, conf);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static Object waitForProxy(Class protocol, long clientVersion,\n                             InetSocketAddress addr, Configuration conf,\n                             long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProxy(protocol, clientVersion, addr, conf);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {
+            "oldValue": "[protocol-Class\u003c? extends VersionedProtocol\u003e, clientVersion-long, addr-InetSocketAddress, conf-Configuration, timeout-long]",
+            "newValue": "[protocol-Class, clientVersion-long, addr-InetSocketAddress, conf-Configuration, timeout-long]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "AVRO-6422. Make RPC backend plugable.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@889889 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "11/12/09 8:37 PM",
+          "commitName": "6c842ad4b5cbb730bb02c6a586b604ea85665cf9",
+          "commitAuthor": "Doug Cutting",
+          "commitDateOld": "02/11/09 5:30 PM",
+          "commitNameOld": "f5f95fe43aa5ee12ca755d8c5c540452a6613fd7",
+          "commitAuthorOld": "Tsz-wo Sze",
+          "daysBetweenCommits": 39.13,
+          "commitsBetweenForRepo": 23,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,28 @@\n-  static VersionedProtocol waitForProxy(\n-                      Class\u003c? extends VersionedProtocol\u003e protocol,\n-                                               long clientVersion,\n-                                               InetSocketAddress addr,\n-                                               Configuration conf,\n-                                               long timeout\n-                                               ) throws IOException { \n+  static Object waitForProxy(Class protocol, long clientVersion,\n+                             InetSocketAddress addr, Configuration conf,\n+                             long timeout) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n         return getProxy(protocol, clientVersion, addr, conf);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static Object waitForProxy(Class protocol, long clientVersion,\n                             InetSocketAddress addr, Configuration conf,\n                             long timeout) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProxy(protocol, clientVersion, addr, conf);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+          "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+          "extendedDetails": {
+            "oldValue": "VersionedProtocol",
+            "newValue": "Object"
+          }
+        }
+      ]
+    },
+    "53c127013ce1d751f0dac6d1d0f99ea8161f4d2c": {
+      "type": "Yparameterchange",
+      "commitMessage": "HADOOP-6132. RPC client create an extra connection because of incorrect\nkey for connection cache. (Kan Zhang via rangadi)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@797248 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "23/07/09 3:28 PM",
+      "commitName": "53c127013ce1d751f0dac6d1d0f99ea8161f4d2c",
+      "commitAuthor": "Raghu Angadi",
+      "commitDateOld": "18/05/09 9:20 PM",
+      "commitNameOld": "5128a9a453d64bfe1ed978cf9ffed27985eeef36",
+      "commitAuthorOld": "Owen O\u0027Malley",
+      "daysBetweenCommits": 65.76,
+      "commitsBetweenForRepo": 52,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,32 @@\n-  static VersionedProtocol waitForProxy(Class protocol,\n+  static VersionedProtocol waitForProxy(\n+                      Class\u003c? extends VersionedProtocol\u003e protocol,\n                                                long clientVersion,\n                                                InetSocketAddress addr,\n                                                Configuration conf,\n                                                long timeout\n                                                ) throws IOException { \n     long startTime \u003d System.currentTimeMillis();\n     IOException ioe;\n     while (true) {\n       try {\n         return getProxy(protocol, clientVersion, addr, conf);\n       } catch(ConnectException se) {  // namenode has not been started\n         LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n         ioe \u003d se;\n       } catch(SocketTimeoutException te) {  // namenode is busy\n         LOG.info(\"Problem connecting to server: \" + addr);\n         ioe \u003d te;\n       }\n       // check if timed out\n       if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n         throw ioe;\n       }\n \n       // wait for retry\n       try {\n         Thread.sleep(1000);\n       } catch (InterruptedException ie) {\n         // IGNORE\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static VersionedProtocol waitForProxy(\n                      Class\u003c? extends VersionedProtocol\u003e protocol,\n                                               long clientVersion,\n                                               InetSocketAddress addr,\n                                               Configuration conf,\n                                               long timeout\n                                               ) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProxy(protocol, clientVersion, addr, conf);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+      "path": "src/java/org/apache/hadoop/ipc/RPC.java",
+      "extendedDetails": {
+        "oldValue": "[protocol-Class, clientVersion-long, addr-InetSocketAddress, conf-Configuration, timeout-long]",
+        "newValue": "[protocol-Class\u003c? extends VersionedProtocol\u003e, clientVersion-long, addr-InetSocketAddress, conf-Configuration, timeout-long]"
+      }
+    },
+    "5128a9a453d64bfe1ed978cf9ffed27985eeef36": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-4687 Moving src directories on branch\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/core/branches/HADOOP-4687/core@776174 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/05/09 9:20 PM",
+      "commitName": "5128a9a453d64bfe1ed978cf9ffed27985eeef36",
+      "commitAuthor": "Owen O\u0027Malley",
+      "diff": "@@ -0,0 +1,31 @@\n+  static VersionedProtocol waitForProxy(Class protocol,\n+                                               long clientVersion,\n+                                               InetSocketAddress addr,\n+                                               Configuration conf,\n+                                               long timeout\n+                                               ) throws IOException { \n+    long startTime \u003d System.currentTimeMillis();\n+    IOException ioe;\n+    while (true) {\n+      try {\n+        return getProxy(protocol, clientVersion, addr, conf);\n+      } catch(ConnectException se) {  // namenode has not been started\n+        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n+        ioe \u003d se;\n+      } catch(SocketTimeoutException te) {  // namenode is busy\n+        LOG.info(\"Problem connecting to server: \" + addr);\n+        ioe \u003d te;\n+      }\n+      // check if timed out\n+      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n+        throw ioe;\n+      }\n+\n+      // wait for retry\n+      try {\n+        Thread.sleep(1000);\n+      } catch (InterruptedException ie) {\n+        // IGNORE\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static VersionedProtocol waitForProxy(Class protocol,\n                                               long clientVersion,\n                                               InetSocketAddress addr,\n                                               Configuration conf,\n                                               long timeout\n                                               ) throws IOException { \n    long startTime \u003d System.currentTimeMillis();\n    IOException ioe;\n    while (true) {\n      try {\n        return getProxy(protocol, clientVersion, addr, conf);\n      } catch(ConnectException se) {  // namenode has not been started\n        LOG.info(\"Server at \" + addr + \" not available yet, Zzzzz...\");\n        ioe \u003d se;\n      } catch(SocketTimeoutException te) {  // namenode is busy\n        LOG.info(\"Problem connecting to server: \" + addr);\n        ioe \u003d te;\n      }\n      // check if timed out\n      if (System.currentTimeMillis()-timeout \u003e\u003d startTime) {\n        throw ioe;\n      }\n\n      // wait for retry\n      try {\n        Thread.sleep(1000);\n      } catch (InterruptedException ie) {\n        // IGNORE\n      }\n    }\n  }",
+      "path": "src/java/org/apache/hadoop/ipc/RPC.java"
+    }
+  }
+}

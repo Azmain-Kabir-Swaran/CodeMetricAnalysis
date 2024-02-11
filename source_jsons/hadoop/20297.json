@@ -1,0 +1,116 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "Task.java",
+  "functionName": "statusUpdate",
+  "functionId": "statusUpdate___umbilical-TaskUmbilicalProtocol",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/Task.java",
+  "functionStartLine": 1311,
+  "functionEndLine": 1338,
+  "numCommitsSeen": 47,
+  "timeTaken": 9526,
+  "changeHistory": [
+    "87e2570a1419d3616de2de3b553108ad1a8af425",
+    "47cca0cb6d1f4e5979d11d9a624b005e6e666f2f",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "87e2570a1419d3616de2de3b553108ad1a8af425": "Ybodychange",
+    "47cca0cb6d1f4e5979d11d9a624b005e6e666f2f": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Ymovefromfile",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "87e2570a1419d3616de2de3b553108ad1a8af425": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-7048. Uber AM can crash due to unknown task in statusUpdate. Contributed by Peter Bacsko\n",
+      "commitDate": "12/02/18 11:21 AM",
+      "commitName": "87e2570a1419d3616de2de3b553108ad1a8af425",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "26/01/18 1:31 PM",
+      "commitNameOld": "6eef3d7f1a1e5e3f27fb3bf7596663640d786181",
+      "commitAuthorOld": "Jason Lowe",
+      "daysBetweenCommits": 16.91,
+      "commitsBetweenForRepo": 114,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,28 @@\n   public void statusUpdate(TaskUmbilicalProtocol umbilical) \n   throws IOException {\n     int retries \u003d MAX_RETRIES;\n+\n     while (true) {\n       try {\n         if (!umbilical.statusUpdate(getTaskID(), taskStatus).getTaskFound()) {\n-          LOG.warn(\"Parent died.  Exiting \"+taskId);\n-          System.exit(66);\n+          if (uberized) {\n+            LOG.warn(\"Task no longer available: \" + taskId);\n+            break;\n+          } else {\n+            LOG.warn(\"Parent died.  Exiting \" + taskId);\n+            ExitUtil.terminate(66);\n+          }\n         }\n         taskStatus.clearStatus();\n         return;\n       } catch (InterruptedException ie) {\n         Thread.currentThread().interrupt(); // interrupt ourself\n       } catch (IOException ie) {\n         LOG.warn(\"Failure sending status update: \" + \n                   StringUtils.stringifyException(ie));\n         if (--retries \u003d\u003d 0) {\n           throw ie;\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void statusUpdate(TaskUmbilicalProtocol umbilical) \n  throws IOException {\n    int retries \u003d MAX_RETRIES;\n\n    while (true) {\n      try {\n        if (!umbilical.statusUpdate(getTaskID(), taskStatus).getTaskFound()) {\n          if (uberized) {\n            LOG.warn(\"Task no longer available: \" + taskId);\n            break;\n          } else {\n            LOG.warn(\"Parent died.  Exiting \" + taskId);\n            ExitUtil.terminate(66);\n          }\n        }\n        taskStatus.clearStatus();\n        return;\n      } catch (InterruptedException ie) {\n        Thread.currentThread().interrupt(); // interrupt ourself\n      } catch (IOException ie) {\n        LOG.warn(\"Failure sending status update: \" + \n                  StringUtils.stringifyException(ie));\n        if (--retries \u003d\u003d 0) {\n          throw ie;\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/Task.java",
+      "extendedDetails": {}
+    },
+    "47cca0cb6d1f4e5979d11d9a624b005e6e666f2f": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-5196. Add bookkeeping for managing checkpoints of task state.\nContributed by Carlo Curino\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1553939 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "28/12/13 1:58 PM",
+      "commitName": "47cca0cb6d1f4e5979d11d9a624b005e6e666f2f",
+      "commitAuthor": "Christopher Douglas",
+      "commitDateOld": "15/03/13 2:09 PM",
+      "commitNameOld": "7d7553c4eb7d9a282410a3213d26a89fea9b7865",
+      "commitAuthorOld": "Robert Joseph Evans",
+      "daysBetweenCommits": 288.03,
+      "commitsBetweenForRepo": 1794,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,22 @@\n   public void statusUpdate(TaskUmbilicalProtocol umbilical) \n   throws IOException {\n     int retries \u003d MAX_RETRIES;\n     while (true) {\n       try {\n-        if (!umbilical.statusUpdate(getTaskID(), taskStatus)) {\n+        if (!umbilical.statusUpdate(getTaskID(), taskStatus).getTaskFound()) {\n           LOG.warn(\"Parent died.  Exiting \"+taskId);\n           System.exit(66);\n         }\n         taskStatus.clearStatus();\n         return;\n       } catch (InterruptedException ie) {\n         Thread.currentThread().interrupt(); // interrupt ourself\n       } catch (IOException ie) {\n         LOG.warn(\"Failure sending status update: \" + \n                   StringUtils.stringifyException(ie));\n         if (--retries \u003d\u003d 0) {\n           throw ie;\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void statusUpdate(TaskUmbilicalProtocol umbilical) \n  throws IOException {\n    int retries \u003d MAX_RETRIES;\n    while (true) {\n      try {\n        if (!umbilical.statusUpdate(getTaskID(), taskStatus).getTaskFound()) {\n          LOG.warn(\"Parent died.  Exiting \"+taskId);\n          System.exit(66);\n        }\n        taskStatus.clearStatus();\n        return;\n      } catch (InterruptedException ie) {\n        Thread.currentThread().interrupt(); // interrupt ourself\n      } catch (IOException ie) {\n        LOG.warn(\"Failure sending status update: \" + \n                  StringUtils.stringifyException(ie));\n        if (--retries \u003d\u003d 0) {\n          throw ie;\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/Task.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void statusUpdate(TaskUmbilicalProtocol umbilical) \n  throws IOException {\n    int retries \u003d MAX_RETRIES;\n    while (true) {\n      try {\n        if (!umbilical.statusUpdate(getTaskID(), taskStatus)) {\n          LOG.warn(\"Parent died.  Exiting \"+taskId);\n          System.exit(66);\n        }\n        taskStatus.clearStatus();\n        return;\n      } catch (InterruptedException ie) {\n        Thread.currentThread().interrupt(); // interrupt ourself\n      } catch (IOException ie) {\n        LOG.warn(\"Failure sending status update: \" + \n                  StringUtils.stringifyException(ie));\n        if (--retries \u003d\u003d 0) {\n          throw ie;\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/Task.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/Task.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/Task.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Ymovefromfile",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "17/08/11 8:02 PM",
+      "commitNameOld": "dd86860633d2ed64705b669a75bf318442ed6225",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 0.34,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void statusUpdate(TaskUmbilicalProtocol umbilical) \n  throws IOException {\n    int retries \u003d MAX_RETRIES;\n    while (true) {\n      try {\n        if (!umbilical.statusUpdate(getTaskID(), taskStatus)) {\n          LOG.warn(\"Parent died.  Exiting \"+taskId);\n          System.exit(66);\n        }\n        taskStatus.clearStatus();\n        return;\n      } catch (InterruptedException ie) {\n        Thread.currentThread().interrupt(); // interrupt ourself\n      } catch (IOException ie) {\n        LOG.warn(\"Failure sending status update: \" + \n                  StringUtils.stringifyException(ie));\n        if (--retries \u003d\u003d 0) {\n          throw ie;\n        }\n      }\n    }\n  }",
+      "path": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/Task.java",
+      "extendedDetails": {
+        "oldPath": "mapreduce/src/java/org/apache/hadoop/mapred/Task.java",
+        "newPath": "hadoop-mapreduce/hadoop-mr-client/hadoop-mapreduce-client-core/src/main/java/org/apache/hadoop/mapred/Task.java",
+        "oldMethodName": "statusUpdate",
+        "newMethodName": "statusUpdate"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,22 @@\n+  public void statusUpdate(TaskUmbilicalProtocol umbilical) \n+  throws IOException {\n+    int retries \u003d MAX_RETRIES;\n+    while (true) {\n+      try {\n+        if (!umbilical.statusUpdate(getTaskID(), taskStatus)) {\n+          LOG.warn(\"Parent died.  Exiting \"+taskId);\n+          System.exit(66);\n+        }\n+        taskStatus.clearStatus();\n+        return;\n+      } catch (InterruptedException ie) {\n+        Thread.currentThread().interrupt(); // interrupt ourself\n+      } catch (IOException ie) {\n+        LOG.warn(\"Failure sending status update: \" + \n+                  StringUtils.stringifyException(ie));\n+        if (--retries \u003d\u003d 0) {\n+          throw ie;\n+        }\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void statusUpdate(TaskUmbilicalProtocol umbilical) \n  throws IOException {\n    int retries \u003d MAX_RETRIES;\n    while (true) {\n      try {\n        if (!umbilical.statusUpdate(getTaskID(), taskStatus)) {\n          LOG.warn(\"Parent died.  Exiting \"+taskId);\n          System.exit(66);\n        }\n        taskStatus.clearStatus();\n        return;\n      } catch (InterruptedException ie) {\n        Thread.currentThread().interrupt(); // interrupt ourself\n      } catch (IOException ie) {\n        LOG.warn(\"Failure sending status update: \" + \n                  StringUtils.stringifyException(ie));\n        if (--retries \u003d\u003d 0) {\n          throw ie;\n        }\n      }\n    }\n  }",
+      "path": "mapreduce/src/java/org/apache/hadoop/mapred/Task.java"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "MRAppMaster.java",
+  "functionName": "createOutputCommitter",
+  "functionId": "createOutputCommitter___conf-Configuration",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/MRAppMaster.java",
+  "functionStartLine": 533,
+  "functionEndLine": 565,
+  "numCommitsSeen": 124,
+  "timeTaken": 2791,
+  "changeHistory": [
+    "9e62bcca4e2ee4aaa3844d1d975dc0adc93ab602",
+    "a83fb61ac07c0468cbc7a38526e92683883dd932",
+    "408656614495674992349fbda3981559ada3de0b"
+  ],
+  "changeHistoryShort": {
+    "9e62bcca4e2ee4aaa3844d1d975dc0adc93ab602": "Ybodychange",
+    "a83fb61ac07c0468cbc7a38526e92683883dd932": "Ybodychange",
+    "408656614495674992349fbda3981559ada3de0b": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9e62bcca4e2ee4aaa3844d1d975dc0adc93ab602": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-5957. AM throws ClassNotFoundException with job classloader enabled if custom output format/committer is used. Contributed by Sangjin Lee\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1612358 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "21/07/14 10:54 AM",
+      "commitName": "9e62bcca4e2ee4aaa3844d1d975dc0adc93ab602",
+      "commitAuthor": "Jason Darrell Lowe",
+      "commitDateOld": "11/07/14 1:45 AM",
+      "commitNameOld": "64306aa1b5f280e5ffaf2186bef706acd93b1412",
+      "commitAuthorOld": "Zhijie Shen",
+      "daysBetweenCommits": 10.38,
+      "commitsBetweenForRepo": 64,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,33 @@\n   private OutputCommitter createOutputCommitter(Configuration conf) {\n-    OutputCommitter committer \u003d null;\n+    return callWithJobClassLoader(conf, new Action\u003cOutputCommitter\u003e() {\n+      public OutputCommitter call(Configuration conf) {\n+        OutputCommitter committer \u003d null;\n \n-    LOG.info(\"OutputCommitter set in config \"\n-        + conf.get(\"mapred.output.committer.class\"));\n+        LOG.info(\"OutputCommitter set in config \"\n+            + conf.get(\"mapred.output.committer.class\"));\n \n-    if (newApiCommitter) {\n-      org.apache.hadoop.mapreduce.v2.api.records.TaskId taskID \u003d MRBuilderUtils\n-          .newTaskId(jobId, 0, TaskType.MAP);\n-      org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID \u003d MRBuilderUtils\n-          .newTaskAttemptId(taskID, 0);\n-      TaskAttemptContext taskContext \u003d new TaskAttemptContextImpl(conf,\n-          TypeConverter.fromYarn(attemptID));\n-      OutputFormat outputFormat;\n-      try {\n-        outputFormat \u003d ReflectionUtils.newInstance(taskContext\n-            .getOutputFormatClass(), conf);\n-        committer \u003d outputFormat.getOutputCommitter(taskContext);\n-      } catch (Exception e) {\n-        throw new YarnRuntimeException(e);\n+        if (newApiCommitter) {\n+          org.apache.hadoop.mapreduce.v2.api.records.TaskId taskID \u003d\n+              MRBuilderUtils.newTaskId(jobId, 0, TaskType.MAP);\n+          org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID \u003d\n+              MRBuilderUtils.newTaskAttemptId(taskID, 0);\n+          TaskAttemptContext taskContext \u003d new TaskAttemptContextImpl(conf,\n+              TypeConverter.fromYarn(attemptID));\n+          OutputFormat outputFormat;\n+          try {\n+            outputFormat \u003d ReflectionUtils.newInstance(taskContext\n+                .getOutputFormatClass(), conf);\n+            committer \u003d outputFormat.getOutputCommitter(taskContext);\n+          } catch (Exception e) {\n+            throw new YarnRuntimeException(e);\n+          }\n+        } else {\n+          committer \u003d ReflectionUtils.newInstance(conf.getClass(\n+              \"mapred.output.committer.class\", FileOutputCommitter.class,\n+              org.apache.hadoop.mapred.OutputCommitter.class), conf);\n+        }\n+        LOG.info(\"OutputCommitter is \" + committer.getClass().getName());\n+        return committer;\n       }\n-    } else {\n-      committer \u003d ReflectionUtils.newInstance(conf.getClass(\n-          \"mapred.output.committer.class\", FileOutputCommitter.class,\n-          org.apache.hadoop.mapred.OutputCommitter.class), conf);\n-    }\n-    LOG.info(\"OutputCommitter is \" + committer.getClass().getName());\n-    return committer;\n+    });\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private OutputCommitter createOutputCommitter(Configuration conf) {\n    return callWithJobClassLoader(conf, new Action\u003cOutputCommitter\u003e() {\n      public OutputCommitter call(Configuration conf) {\n        OutputCommitter committer \u003d null;\n\n        LOG.info(\"OutputCommitter set in config \"\n            + conf.get(\"mapred.output.committer.class\"));\n\n        if (newApiCommitter) {\n          org.apache.hadoop.mapreduce.v2.api.records.TaskId taskID \u003d\n              MRBuilderUtils.newTaskId(jobId, 0, TaskType.MAP);\n          org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID \u003d\n              MRBuilderUtils.newTaskAttemptId(taskID, 0);\n          TaskAttemptContext taskContext \u003d new TaskAttemptContextImpl(conf,\n              TypeConverter.fromYarn(attemptID));\n          OutputFormat outputFormat;\n          try {\n            outputFormat \u003d ReflectionUtils.newInstance(taskContext\n                .getOutputFormatClass(), conf);\n            committer \u003d outputFormat.getOutputCommitter(taskContext);\n          } catch (Exception e) {\n            throw new YarnRuntimeException(e);\n          }\n        } else {\n          committer \u003d ReflectionUtils.newInstance(conf.getClass(\n              \"mapred.output.committer.class\", FileOutputCommitter.class,\n              org.apache.hadoop.mapred.OutputCommitter.class), conf);\n        }\n        LOG.info(\"OutputCommitter is \" + committer.getClass().getName());\n        return committer;\n      }\n    });\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/MRAppMaster.java",
+      "extendedDetails": {}
+    },
+    "a83fb61ac07c0468cbc7a38526e92683883dd932": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-635. Renamed YarnRemoteException to YarnException. Contributed by Siddharth Seth.\nMAPREDUCE-5301. Updated MR code to work with YARN-635 changes of renaming YarnRemoteException to YarnException. Contributed by Siddharth Seth\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1489283 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "03/06/13 9:05 PM",
+      "commitName": "a83fb61ac07c0468cbc7a38526e92683883dd932",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "14/05/13 4:43 PM",
+      "commitNameOld": "4d8e350750748b919ee2158690a44cd9fd80dcae",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 20.18,
+      "commitsBetweenForRepo": 112,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,29 @@\n   private OutputCommitter createOutputCommitter(Configuration conf) {\n     OutputCommitter committer \u003d null;\n \n     LOG.info(\"OutputCommitter set in config \"\n         + conf.get(\"mapred.output.committer.class\"));\n \n     if (newApiCommitter) {\n       org.apache.hadoop.mapreduce.v2.api.records.TaskId taskID \u003d MRBuilderUtils\n           .newTaskId(jobId, 0, TaskType.MAP);\n       org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID \u003d MRBuilderUtils\n           .newTaskAttemptId(taskID, 0);\n       TaskAttemptContext taskContext \u003d new TaskAttemptContextImpl(conf,\n           TypeConverter.fromYarn(attemptID));\n       OutputFormat outputFormat;\n       try {\n         outputFormat \u003d ReflectionUtils.newInstance(taskContext\n             .getOutputFormatClass(), conf);\n         committer \u003d outputFormat.getOutputCommitter(taskContext);\n       } catch (Exception e) {\n-        throw new YarnException(e);\n+        throw new YarnRuntimeException(e);\n       }\n     } else {\n       committer \u003d ReflectionUtils.newInstance(conf.getClass(\n           \"mapred.output.committer.class\", FileOutputCommitter.class,\n           org.apache.hadoop.mapred.OutputCommitter.class), conf);\n     }\n     LOG.info(\"OutputCommitter is \" + committer.getClass().getName());\n     return committer;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private OutputCommitter createOutputCommitter(Configuration conf) {\n    OutputCommitter committer \u003d null;\n\n    LOG.info(\"OutputCommitter set in config \"\n        + conf.get(\"mapred.output.committer.class\"));\n\n    if (newApiCommitter) {\n      org.apache.hadoop.mapreduce.v2.api.records.TaskId taskID \u003d MRBuilderUtils\n          .newTaskId(jobId, 0, TaskType.MAP);\n      org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID \u003d MRBuilderUtils\n          .newTaskAttemptId(taskID, 0);\n      TaskAttemptContext taskContext \u003d new TaskAttemptContextImpl(conf,\n          TypeConverter.fromYarn(attemptID));\n      OutputFormat outputFormat;\n      try {\n        outputFormat \u003d ReflectionUtils.newInstance(taskContext\n            .getOutputFormatClass(), conf);\n        committer \u003d outputFormat.getOutputCommitter(taskContext);\n      } catch (Exception e) {\n        throw new YarnRuntimeException(e);\n      }\n    } else {\n      committer \u003d ReflectionUtils.newInstance(conf.getClass(\n          \"mapred.output.committer.class\", FileOutputCommitter.class,\n          org.apache.hadoop.mapred.OutputCommitter.class), conf);\n    }\n    LOG.info(\"OutputCommitter is \" + committer.getClass().getName());\n    return committer;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/MRAppMaster.java",
+      "extendedDetails": {}
+    },
+    "408656614495674992349fbda3981559ada3de0b": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-2708. Designed and implemented MR Application Master recovery to make MR AMs resume their progress after restart. Contributed by Sharad Agarwal.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1188043 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/10/11 1:41 AM",
+      "commitName": "408656614495674992349fbda3981559ada3de0b",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,29 @@\n+  private OutputCommitter createOutputCommitter(Configuration conf) {\n+    OutputCommitter committer \u003d null;\n+\n+    LOG.info(\"OutputCommitter set in config \"\n+        + conf.get(\"mapred.output.committer.class\"));\n+\n+    if (newApiCommitter) {\n+      org.apache.hadoop.mapreduce.v2.api.records.TaskId taskID \u003d MRBuilderUtils\n+          .newTaskId(jobId, 0, TaskType.MAP);\n+      org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID \u003d MRBuilderUtils\n+          .newTaskAttemptId(taskID, 0);\n+      TaskAttemptContext taskContext \u003d new TaskAttemptContextImpl(conf,\n+          TypeConverter.fromYarn(attemptID));\n+      OutputFormat outputFormat;\n+      try {\n+        outputFormat \u003d ReflectionUtils.newInstance(taskContext\n+            .getOutputFormatClass(), conf);\n+        committer \u003d outputFormat.getOutputCommitter(taskContext);\n+      } catch (Exception e) {\n+        throw new YarnException(e);\n+      }\n+    } else {\n+      committer \u003d ReflectionUtils.newInstance(conf.getClass(\n+          \"mapred.output.committer.class\", FileOutputCommitter.class,\n+          org.apache.hadoop.mapred.OutputCommitter.class), conf);\n+    }\n+    LOG.info(\"OutputCommitter is \" + committer.getClass().getName());\n+    return committer;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private OutputCommitter createOutputCommitter(Configuration conf) {\n    OutputCommitter committer \u003d null;\n\n    LOG.info(\"OutputCommitter set in config \"\n        + conf.get(\"mapred.output.committer.class\"));\n\n    if (newApiCommitter) {\n      org.apache.hadoop.mapreduce.v2.api.records.TaskId taskID \u003d MRBuilderUtils\n          .newTaskId(jobId, 0, TaskType.MAP);\n      org.apache.hadoop.mapreduce.v2.api.records.TaskAttemptId attemptID \u003d MRBuilderUtils\n          .newTaskAttemptId(taskID, 0);\n      TaskAttemptContext taskContext \u003d new TaskAttemptContextImpl(conf,\n          TypeConverter.fromYarn(attemptID));\n      OutputFormat outputFormat;\n      try {\n        outputFormat \u003d ReflectionUtils.newInstance(taskContext\n            .getOutputFormatClass(), conf);\n        committer \u003d outputFormat.getOutputCommitter(taskContext);\n      } catch (Exception e) {\n        throw new YarnException(e);\n      }\n    } else {\n      committer \u003d ReflectionUtils.newInstance(conf.getClass(\n          \"mapred.output.committer.class\", FileOutputCommitter.class,\n          org.apache.hadoop.mapred.OutputCommitter.class), conf);\n    }\n    LOG.info(\"OutputCommitter is \" + committer.getClass().getName());\n    return committer;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/MRAppMaster.java"
+    }
+  }
+}

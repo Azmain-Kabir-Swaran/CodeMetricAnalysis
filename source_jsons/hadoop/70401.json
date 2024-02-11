@@ -1,0 +1,92 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NativeAzureFileSystem.java",
+  "functionName": "getDelegationToken",
+  "functionId": "getDelegationToken___renewer-String(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/NativeAzureFileSystem.java",
+  "functionStartLine": 3704,
+  "functionEndLine": 3710,
+  "numCommitsSeen": 66,
+  "timeTaken": 2806,
+  "changeHistory": [
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329",
+    "eed731496f63537350206274af09d2118b116a17",
+    "8b5f2c372e70999f3ee0a0bd685a494e06bc3652",
+    "8e15e240597f821968e14893eabfea39815de207"
+  ],
+  "changeHistoryShort": {
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329": "Ybodychange",
+    "eed731496f63537350206274af09d2118b116a17": "Ymodifierchange",
+    "8b5f2c372e70999f3ee0a0bd685a494e06bc3652": "Ybodychange",
+    "8e15e240597f821968e14893eabfea39815de207": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "38996fdcf0987d1da00ce46f8284d8fcdce57329": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14443. Azure: Support retry and client side failover for authorization, SASKey and delegation token generation. Contributed by Santhosh G Nayak\n",
+      "commitDate": "30/06/17 4:53 PM",
+      "commitName": "38996fdcf0987d1da00ce46f8284d8fcdce57329",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "29/06/17 9:22 AM",
+      "commitNameOld": "b08cc973964b4eb7e7a7445a440b19d3a0f3d4d5",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 1.31,
+      "commitsBetweenForRepo": 11,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,7 @@\n   public synchronized Token\u003c?\u003e getDelegationToken(final String renewer) throws IOException {\n     if (kerberosSupportEnabled) {\n-      try {\n-        final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n-        UserGroupInformation connectUgi \u003d ugi.getRealUser();\n-        final UserGroupInformation proxyUser \u003d connectUgi;\n-        if (connectUgi \u003d\u003d null) {\n-          connectUgi \u003d ugi;\n-        }\n-        connectUgi.checkTGTAndReloginFromKeytab();\n-        return connectUgi.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e\u003e() {\n-          @Override\n-          public Token\u003c?\u003e run() throws Exception {\n-            return authURL.getDelegationToken(new URL(credServiceUrl\n-                    + Constants.DEFAULT_DELEGATION_TOKEN_MANAGER_ENDPOINT),\n-                authToken, renewer, (proxyUser !\u003d null)? ugi.getShortUserName(): null);\n-          }\n-        });\n-      } catch (Exception ex) {\n-        LOG.error(\"Error in fetching the delegation token from remote service\",\n-            ex);\n-        if (ex instanceof IOException) {\n-          throw (IOException) ex;\n-        } else {\n-          throw new IOException(ex);\n-        }\n-      }\n+      return wasbDelegationTokenManager.getDelegationToken(renewer);\n     } else {\n       return super.getDelegationToken(renewer);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized Token\u003c?\u003e getDelegationToken(final String renewer) throws IOException {\n    if (kerberosSupportEnabled) {\n      return wasbDelegationTokenManager.getDelegationToken(renewer);\n    } else {\n      return super.getDelegationToken(renewer);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/NativeAzureFileSystem.java",
+      "extendedDetails": {}
+    },
+    "eed731496f63537350206274af09d2118b116a17": {
+      "type": "Ymodifierchange",
+      "commitMessage": "HADOOP-14361. Azure: NativeAzureFileSystem.getDelegationToken() call fails sometimes when invoked concurrently. Contributed by Santhosh G Nayak\n",
+      "commitDate": "10/05/17 3:05 PM",
+      "commitName": "eed731496f63537350206274af09d2118b116a17",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "10/05/17 3:57 AM",
+      "commitNameOld": "2ba9903932e3c99afb0e6abb7cd3c5d29a554bd9",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 0.46,
+      "commitsBetweenForRepo": 9,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,31 @@\n-  public Token\u003c?\u003e getDelegationToken(final String renewer) throws IOException {\n+  public synchronized Token\u003c?\u003e getDelegationToken(final String renewer) throws IOException {\n     if (kerberosSupportEnabled) {\n       try {\n         final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n         UserGroupInformation connectUgi \u003d ugi.getRealUser();\n         final UserGroupInformation proxyUser \u003d connectUgi;\n         if (connectUgi \u003d\u003d null) {\n           connectUgi \u003d ugi;\n         }\n         connectUgi.checkTGTAndReloginFromKeytab();\n         return connectUgi.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e\u003e() {\n           @Override\n           public Token\u003c?\u003e run() throws Exception {\n             return authURL.getDelegationToken(new URL(credServiceUrl\n                     + Constants.DEFAULT_DELEGATION_TOKEN_MANAGER_ENDPOINT),\n                 authToken, renewer, (proxyUser !\u003d null)? ugi.getShortUserName(): null);\n           }\n         });\n       } catch (Exception ex) {\n         LOG.error(\"Error in fetching the delegation token from remote service\",\n             ex);\n         if (ex instanceof IOException) {\n           throw (IOException) ex;\n         } else {\n           throw new IOException(ex);\n         }\n       }\n     } else {\n       return super.getDelegationToken(renewer);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized Token\u003c?\u003e getDelegationToken(final String renewer) throws IOException {\n    if (kerberosSupportEnabled) {\n      try {\n        final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n        UserGroupInformation connectUgi \u003d ugi.getRealUser();\n        final UserGroupInformation proxyUser \u003d connectUgi;\n        if (connectUgi \u003d\u003d null) {\n          connectUgi \u003d ugi;\n        }\n        connectUgi.checkTGTAndReloginFromKeytab();\n        return connectUgi.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e\u003e() {\n          @Override\n          public Token\u003c?\u003e run() throws Exception {\n            return authURL.getDelegationToken(new URL(credServiceUrl\n                    + Constants.DEFAULT_DELEGATION_TOKEN_MANAGER_ENDPOINT),\n                authToken, renewer, (proxyUser !\u003d null)? ugi.getShortUserName(): null);\n          }\n        });\n      } catch (Exception ex) {\n        LOG.error(\"Error in fetching the delegation token from remote service\",\n            ex);\n        if (ex instanceof IOException) {\n          throw (IOException) ex;\n        } else {\n          throw new IOException(ex);\n        }\n      }\n    } else {\n      return super.getDelegationToken(renewer);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/NativeAzureFileSystem.java",
+      "extendedDetails": {
+        "oldValue": "[public]",
+        "newValue": "[public, synchronized]"
+      }
+    },
+    "8b5f2c372e70999f3ee0a0bd685a494e06bc3652": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14351. Azure: RemoteWasbAuthorizerImpl and RemoteSASKeyGeneratorImpl should not use Kerberos interactive user cache. Contributed by Santhosh G Nayak\n",
+      "commitDate": "26/04/17 1:47 PM",
+      "commitName": "8b5f2c372e70999f3ee0a0bd685a494e06bc3652",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "12/04/17 4:07 PM",
+      "commitNameOld": "0cab57223e3f54be17a5f27cefdb6d1da1b073e5",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 13.9,
+      "commitsBetweenForRepo": 55,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,31 @@\n   public Token\u003c?\u003e getDelegationToken(final String renewer) throws IOException {\n     if (kerberosSupportEnabled) {\n       try {\n         final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n         UserGroupInformation connectUgi \u003d ugi.getRealUser();\n         final UserGroupInformation proxyUser \u003d connectUgi;\n         if (connectUgi \u003d\u003d null) {\n           connectUgi \u003d ugi;\n         }\n-        if (!connectUgi.hasKerberosCredentials()) {\n-          connectUgi \u003d UserGroupInformation.getLoginUser();\n-        }\n         connectUgi.checkTGTAndReloginFromKeytab();\n         return connectUgi.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e\u003e() {\n           @Override\n           public Token\u003c?\u003e run() throws Exception {\n             return authURL.getDelegationToken(new URL(credServiceUrl\n                     + Constants.DEFAULT_DELEGATION_TOKEN_MANAGER_ENDPOINT),\n                 authToken, renewer, (proxyUser !\u003d null)? ugi.getShortUserName(): null);\n           }\n         });\n       } catch (Exception ex) {\n         LOG.error(\"Error in fetching the delegation token from remote service\",\n             ex);\n         if (ex instanceof IOException) {\n           throw (IOException) ex;\n         } else {\n           throw new IOException(ex);\n         }\n       }\n     } else {\n       return super.getDelegationToken(renewer);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Token\u003c?\u003e getDelegationToken(final String renewer) throws IOException {\n    if (kerberosSupportEnabled) {\n      try {\n        final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n        UserGroupInformation connectUgi \u003d ugi.getRealUser();\n        final UserGroupInformation proxyUser \u003d connectUgi;\n        if (connectUgi \u003d\u003d null) {\n          connectUgi \u003d ugi;\n        }\n        connectUgi.checkTGTAndReloginFromKeytab();\n        return connectUgi.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e\u003e() {\n          @Override\n          public Token\u003c?\u003e run() throws Exception {\n            return authURL.getDelegationToken(new URL(credServiceUrl\n                    + Constants.DEFAULT_DELEGATION_TOKEN_MANAGER_ENDPOINT),\n                authToken, renewer, (proxyUser !\u003d null)? ugi.getShortUserName(): null);\n          }\n        });\n      } catch (Exception ex) {\n        LOG.error(\"Error in fetching the delegation token from remote service\",\n            ex);\n        if (ex instanceof IOException) {\n          throw (IOException) ex;\n        } else {\n          throw new IOException(ex);\n        }\n      }\n    } else {\n      return super.getDelegationToken(renewer);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/NativeAzureFileSystem.java",
+      "extendedDetails": {}
+    },
+    "8e15e240597f821968e14893eabfea39815de207": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13945. Azure: Add Kerberos and Delegation token support to WASB client. Contributed by Santhosh G Nayak\n\nChange-Id: I39fb0a3b0491bf2160571366939a0502a0045429\n",
+      "commitDate": "20/03/17 4:31 PM",
+      "commitName": "8e15e240597f821968e14893eabfea39815de207",
+      "commitAuthor": "Mingliang Liu",
+      "diff": "@@ -0,0 +1,34 @@\n+  public Token\u003c?\u003e getDelegationToken(final String renewer) throws IOException {\n+    if (kerberosSupportEnabled) {\n+      try {\n+        final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n+        UserGroupInformation connectUgi \u003d ugi.getRealUser();\n+        final UserGroupInformation proxyUser \u003d connectUgi;\n+        if (connectUgi \u003d\u003d null) {\n+          connectUgi \u003d ugi;\n+        }\n+        if (!connectUgi.hasKerberosCredentials()) {\n+          connectUgi \u003d UserGroupInformation.getLoginUser();\n+        }\n+        connectUgi.checkTGTAndReloginFromKeytab();\n+        return connectUgi.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e\u003e() {\n+          @Override\n+          public Token\u003c?\u003e run() throws Exception {\n+            return authURL.getDelegationToken(new URL(credServiceUrl\n+                    + Constants.DEFAULT_DELEGATION_TOKEN_MANAGER_ENDPOINT),\n+                authToken, renewer, (proxyUser !\u003d null)? ugi.getShortUserName(): null);\n+          }\n+        });\n+      } catch (Exception ex) {\n+        LOG.error(\"Error in fetching the delegation token from remote service\",\n+            ex);\n+        if (ex instanceof IOException) {\n+          throw (IOException) ex;\n+        } else {\n+          throw new IOException(ex);\n+        }\n+      }\n+    } else {\n+      return super.getDelegationToken(renewer);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public Token\u003c?\u003e getDelegationToken(final String renewer) throws IOException {\n    if (kerberosSupportEnabled) {\n      try {\n        final UserGroupInformation ugi \u003d UserGroupInformation.getCurrentUser();\n        UserGroupInformation connectUgi \u003d ugi.getRealUser();\n        final UserGroupInformation proxyUser \u003d connectUgi;\n        if (connectUgi \u003d\u003d null) {\n          connectUgi \u003d ugi;\n        }\n        if (!connectUgi.hasKerberosCredentials()) {\n          connectUgi \u003d UserGroupInformation.getLoginUser();\n        }\n        connectUgi.checkTGTAndReloginFromKeytab();\n        return connectUgi.doAs(new PrivilegedExceptionAction\u003cToken\u003c?\u003e\u003e() {\n          @Override\n          public Token\u003c?\u003e run() throws Exception {\n            return authURL.getDelegationToken(new URL(credServiceUrl\n                    + Constants.DEFAULT_DELEGATION_TOKEN_MANAGER_ENDPOINT),\n                authToken, renewer, (proxyUser !\u003d null)? ugi.getShortUserName(): null);\n          }\n        });\n      } catch (Exception ex) {\n        LOG.error(\"Error in fetching the delegation token from remote service\",\n            ex);\n        if (ex instanceof IOException) {\n          throw (IOException) ex;\n        } else {\n          throw new IOException(ex);\n        }\n      }\n    } else {\n      return super.getDelegationToken(renewer);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/NativeAzureFileSystem.java"
+    }
+  }
+}

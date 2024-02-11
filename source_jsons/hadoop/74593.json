@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ShellBasedUnixGroupsMapping.java",
+  "functionName": "resolvePartialGroupNames",
+  "functionId": "resolvePartialGroupNames___userName-String__errMessage-String__groupNames-String",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/ShellBasedUnixGroupsMapping.java",
+  "functionStartLine": 283,
+  "functionEndLine": 322,
+  "numCommitsSeen": 10,
+  "timeTaken": 1322,
+  "changeHistory": [
+    "e8694deb6ad180449f8ce6c1c8b4f84873c0587a",
+    "0348e769abc507c69d644db7bc56d31d971c51d1"
+  ],
+  "changeHistoryShort": {
+    "e8694deb6ad180449f8ce6c1c8b4f84873c0587a": "Ybodychange",
+    "0348e769abc507c69d644db7bc56d31d971c51d1": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e8694deb6ad180449f8ce6c1c8b4f84873c0587a": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13817. Add a finite shell command timeout to ShellBasedUnixGroupsMapping. (harsh)\n",
+      "commitDate": "24/02/17 8:04 AM",
+      "commitName": "e8694deb6ad180449f8ce6c1c8b4f84873c0587a",
+      "commitAuthor": "Harsh J",
+      "commitDateOld": "25/11/15 6:37 PM",
+      "commitNameOld": "0348e769abc507c69d644db7bc56d31d971c51d1",
+      "commitAuthorOld": "Yongjun Zhang",
+      "daysBetweenCommits": 456.56,
+      "commitsBetweenForRepo": 2998,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,32 +1,40 @@\n   private List\u003cString\u003e resolvePartialGroupNames(String userName,\n       String errMessage, String groupNames) throws PartialGroupNameException {\n     // Exception may indicate that some group names are not resolvable.\n     // Shell-based implementation should tolerate unresolvable groups names,\n     // and return resolvable ones, similar to what JNI-based implementation\n     // does.\n     if (Shell.WINDOWS) {\n       throw new PartialGroupNameException(\"Does not support partial group\"\n       + \" name resolution on Windows. \" + errMessage);\n     }\n     if (groupNames.isEmpty()) {\n       throw new PartialGroupNameException(\"The user name \u0027\" + userName\n           + \"\u0027 is not found. \" + errMessage);\n     } else {\n-      LOG.warn(\"Some group names for \u0027\" + userName + \"\u0027 are not resolvable. \"\n-          + errMessage);\n+      LOG.warn(\"Some group names for \u0027{}\u0027 are not resolvable. {}\",\n+          userName, errMessage);\n       // attempt to partially resolve group names\n+      ShellCommandExecutor partialResolver \u003d createGroupIDExecutor(userName);\n       try {\n-        ShellCommandExecutor exec2 \u003d createGroupIDExecutor(userName);\n-        exec2.execute();\n-        return parsePartialGroupNames(groupNames, exec2.getOutput());\n+        partialResolver.execute();\n+        return parsePartialGroupNames(\n+            groupNames, partialResolver.getOutput());\n       } catch (ExitCodeException ece) {\n         // If exception is thrown trying to get group id list,\n         // something is terribly wrong, so give up.\n-        throw new PartialGroupNameException(\"failed to get group id list for \" +\n-        \"user \u0027\" + userName + \"\u0027\", ece);\n+        throw new PartialGroupNameException(\n+            \"failed to get group id list for user \u0027\" + userName + \"\u0027\", ece);\n       } catch (IOException ioe) {\n-        throw new PartialGroupNameException(\"can\u0027t execute the shell command to\"\n-        + \" get the list of group id for user \u0027\" + userName + \"\u0027\", ioe);\n+        String message \u003d\n+            \"Can\u0027t execute the shell command to \" +\n+            \"get the list of group id for user \u0027\" + userName + \"\u0027\";\n+        if (partialResolver.isTimedOut()) {\n+          message +\u003d\n+              \" because of the command taking longer than \" +\n+              \"the configured timeout: \" + timeout + \" seconds\";\n+        }\n+        throw new PartialGroupNameException(message, ioe);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private List\u003cString\u003e resolvePartialGroupNames(String userName,\n      String errMessage, String groupNames) throws PartialGroupNameException {\n    // Exception may indicate that some group names are not resolvable.\n    // Shell-based implementation should tolerate unresolvable groups names,\n    // and return resolvable ones, similar to what JNI-based implementation\n    // does.\n    if (Shell.WINDOWS) {\n      throw new PartialGroupNameException(\"Does not support partial group\"\n      + \" name resolution on Windows. \" + errMessage);\n    }\n    if (groupNames.isEmpty()) {\n      throw new PartialGroupNameException(\"The user name \u0027\" + userName\n          + \"\u0027 is not found. \" + errMessage);\n    } else {\n      LOG.warn(\"Some group names for \u0027{}\u0027 are not resolvable. {}\",\n          userName, errMessage);\n      // attempt to partially resolve group names\n      ShellCommandExecutor partialResolver \u003d createGroupIDExecutor(userName);\n      try {\n        partialResolver.execute();\n        return parsePartialGroupNames(\n            groupNames, partialResolver.getOutput());\n      } catch (ExitCodeException ece) {\n        // If exception is thrown trying to get group id list,\n        // something is terribly wrong, so give up.\n        throw new PartialGroupNameException(\n            \"failed to get group id list for user \u0027\" + userName + \"\u0027\", ece);\n      } catch (IOException ioe) {\n        String message \u003d\n            \"Can\u0027t execute the shell command to \" +\n            \"get the list of group id for user \u0027\" + userName + \"\u0027\";\n        if (partialResolver.isTimedOut()) {\n          message +\u003d\n              \" because of the command taking longer than \" +\n              \"the configured timeout: \" + timeout + \" seconds\";\n        }\n        throw new PartialGroupNameException(message, ioe);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/ShellBasedUnixGroupsMapping.java",
+      "extendedDetails": {}
+    },
+    "0348e769abc507c69d644db7bc56d31d971c51d1": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12468. Partial group resolution failure should not result in user lockout. (Wei-Chiu Chuang via Yongjun Zhang)\n",
+      "commitDate": "25/11/15 6:37 PM",
+      "commitName": "0348e769abc507c69d644db7bc56d31d971c51d1",
+      "commitAuthor": "Yongjun Zhang",
+      "diff": "@@ -0,0 +1,32 @@\n+  private List\u003cString\u003e resolvePartialGroupNames(String userName,\n+      String errMessage, String groupNames) throws PartialGroupNameException {\n+    // Exception may indicate that some group names are not resolvable.\n+    // Shell-based implementation should tolerate unresolvable groups names,\n+    // and return resolvable ones, similar to what JNI-based implementation\n+    // does.\n+    if (Shell.WINDOWS) {\n+      throw new PartialGroupNameException(\"Does not support partial group\"\n+      + \" name resolution on Windows. \" + errMessage);\n+    }\n+    if (groupNames.isEmpty()) {\n+      throw new PartialGroupNameException(\"The user name \u0027\" + userName\n+          + \"\u0027 is not found. \" + errMessage);\n+    } else {\n+      LOG.warn(\"Some group names for \u0027\" + userName + \"\u0027 are not resolvable. \"\n+          + errMessage);\n+      // attempt to partially resolve group names\n+      try {\n+        ShellCommandExecutor exec2 \u003d createGroupIDExecutor(userName);\n+        exec2.execute();\n+        return parsePartialGroupNames(groupNames, exec2.getOutput());\n+      } catch (ExitCodeException ece) {\n+        // If exception is thrown trying to get group id list,\n+        // something is terribly wrong, so give up.\n+        throw new PartialGroupNameException(\"failed to get group id list for \" +\n+        \"user \u0027\" + userName + \"\u0027\", ece);\n+      } catch (IOException ioe) {\n+        throw new PartialGroupNameException(\"can\u0027t execute the shell command to\"\n+        + \" get the list of group id for user \u0027\" + userName + \"\u0027\", ioe);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private List\u003cString\u003e resolvePartialGroupNames(String userName,\n      String errMessage, String groupNames) throws PartialGroupNameException {\n    // Exception may indicate that some group names are not resolvable.\n    // Shell-based implementation should tolerate unresolvable groups names,\n    // and return resolvable ones, similar to what JNI-based implementation\n    // does.\n    if (Shell.WINDOWS) {\n      throw new PartialGroupNameException(\"Does not support partial group\"\n      + \" name resolution on Windows. \" + errMessage);\n    }\n    if (groupNames.isEmpty()) {\n      throw new PartialGroupNameException(\"The user name \u0027\" + userName\n          + \"\u0027 is not found. \" + errMessage);\n    } else {\n      LOG.warn(\"Some group names for \u0027\" + userName + \"\u0027 are not resolvable. \"\n          + errMessage);\n      // attempt to partially resolve group names\n      try {\n        ShellCommandExecutor exec2 \u003d createGroupIDExecutor(userName);\n        exec2.execute();\n        return parsePartialGroupNames(groupNames, exec2.getOutput());\n      } catch (ExitCodeException ece) {\n        // If exception is thrown trying to get group id list,\n        // something is terribly wrong, so give up.\n        throw new PartialGroupNameException(\"failed to get group id list for \" +\n        \"user \u0027\" + userName + \"\u0027\", ece);\n      } catch (IOException ioe) {\n        throw new PartialGroupNameException(\"can\u0027t execute the shell command to\"\n        + \" get the list of group id for user \u0027\" + userName + \"\u0027\", ioe);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/ShellBasedUnixGroupsMapping.java"
+    }
+  }
+}

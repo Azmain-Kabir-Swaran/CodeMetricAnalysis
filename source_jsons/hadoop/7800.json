@@ -1,0 +1,61 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "JournalSet.java",
+  "functionName": "chainAndMakeRedundantStreams",
+  "functionId": "chainAndMakeRedundantStreams___outStreams-Collection__EditLogInputStream____allStreams-PriorityQueue__EditLogInputStream____fromTxId-long",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java",
+  "functionStartLine": 285,
+  "functionEndLine": 335,
+  "numCommitsSeen": 52,
+  "timeTaken": 1646,
+  "changeHistory": [
+    "faa4455be512e070fa420084be8d1be5c72f3b08",
+    "8172215e5601c3bb03fb5c0a0d88768142ea5087"
+  ],
+  "changeHistoryShort": {
+    "faa4455be512e070fa420084be8d1be5c72f3b08": "Ybodychange",
+    "8172215e5601c3bb03fb5c0a0d88768142ea5087": "Yparameterchange"
+  },
+  "changeHistoryDetails": {
+    "faa4455be512e070fa420084be8d1be5c72f3b08": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6634. inotify in HDFS. Contributed by James Thomas.\n",
+      "commitDate": "02/09/14 2:02 PM",
+      "commitName": "faa4455be512e070fa420084be8d1be5c72f3b08",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "24/03/14 4:32 PM",
+      "commitNameOld": "c2ef7e239eb0e81cf8a3e971378e9e696202de67",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 161.9,
+      "commitsBetweenForRepo": 1116,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,35 +1,51 @@\n   public static void chainAndMakeRedundantStreams(\n       Collection\u003cEditLogInputStream\u003e outStreams,\n       PriorityQueue\u003cEditLogInputStream\u003e allStreams, long fromTxId) {\n     // We want to group together all the streams that start on the same start\n     // transaction ID.  To do this, we maintain an accumulator (acc) of all\n     // the streams we\u0027ve seen at a given start transaction ID.  When we see a\n     // higher start transaction ID, we select a stream from the accumulator and\n     // clear it.  Then we begin accumulating streams with the new, higher start\n     // transaction ID.\n     LinkedList\u003cEditLogInputStream\u003e acc \u003d\n         new LinkedList\u003cEditLogInputStream\u003e();\n     EditLogInputStream elis;\n     while ((elis \u003d allStreams.poll()) !\u003d null) {\n       if (acc.isEmpty()) {\n         acc.add(elis);\n       } else {\n-        long accFirstTxId \u003d acc.get(0).getFirstTxId();\n+        EditLogInputStream accFirst \u003d acc.get(0);\n+        long accFirstTxId \u003d accFirst.getFirstTxId();\n         if (accFirstTxId \u003d\u003d elis.getFirstTxId()) {\n-          acc.add(elis);\n+          // if we have a finalized log segment available at this txid,\n+          // we should throw out all in-progress segments at this txid\n+          if (elis.isInProgress()) {\n+            if (accFirst.isInProgress()) {\n+              acc.add(elis);\n+            }\n+          } else {\n+            if (accFirst.isInProgress()) {\n+              acc.clear();\n+            }\n+            acc.add(elis);\n+          }\n         } else if (accFirstTxId \u003c elis.getFirstTxId()) {\n+          // try to read from the local logs first since the throughput should\n+          // be higher\n+          Collections.sort(acc, LOCAL_LOG_PREFERENCE_COMPARATOR);\n           outStreams.add(new RedundantEditLogInputStream(acc, fromTxId));\n           acc.clear();\n           acc.add(elis);\n         } else if (accFirstTxId \u003e elis.getFirstTxId()) {\n           throw new RuntimeException(\"sorted set invariants violated!  \" +\n               \"Got stream with first txid \" + elis.getFirstTxId() +\n               \", but the last firstTxId was \" + accFirstTxId);\n         }\n       }\n     }\n     if (!acc.isEmpty()) {\n+      Collections.sort(acc, LOCAL_LOG_PREFERENCE_COMPARATOR);\n       outStreams.add(new RedundantEditLogInputStream(acc, fromTxId));\n       acc.clear();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void chainAndMakeRedundantStreams(\n      Collection\u003cEditLogInputStream\u003e outStreams,\n      PriorityQueue\u003cEditLogInputStream\u003e allStreams, long fromTxId) {\n    // We want to group together all the streams that start on the same start\n    // transaction ID.  To do this, we maintain an accumulator (acc) of all\n    // the streams we\u0027ve seen at a given start transaction ID.  When we see a\n    // higher start transaction ID, we select a stream from the accumulator and\n    // clear it.  Then we begin accumulating streams with the new, higher start\n    // transaction ID.\n    LinkedList\u003cEditLogInputStream\u003e acc \u003d\n        new LinkedList\u003cEditLogInputStream\u003e();\n    EditLogInputStream elis;\n    while ((elis \u003d allStreams.poll()) !\u003d null) {\n      if (acc.isEmpty()) {\n        acc.add(elis);\n      } else {\n        EditLogInputStream accFirst \u003d acc.get(0);\n        long accFirstTxId \u003d accFirst.getFirstTxId();\n        if (accFirstTxId \u003d\u003d elis.getFirstTxId()) {\n          // if we have a finalized log segment available at this txid,\n          // we should throw out all in-progress segments at this txid\n          if (elis.isInProgress()) {\n            if (accFirst.isInProgress()) {\n              acc.add(elis);\n            }\n          } else {\n            if (accFirst.isInProgress()) {\n              acc.clear();\n            }\n            acc.add(elis);\n          }\n        } else if (accFirstTxId \u003c elis.getFirstTxId()) {\n          // try to read from the local logs first since the throughput should\n          // be higher\n          Collections.sort(acc, LOCAL_LOG_PREFERENCE_COMPARATOR);\n          outStreams.add(new RedundantEditLogInputStream(acc, fromTxId));\n          acc.clear();\n          acc.add(elis);\n        } else if (accFirstTxId \u003e elis.getFirstTxId()) {\n          throw new RuntimeException(\"sorted set invariants violated!  \" +\n              \"Got stream with first txid \" + elis.getFirstTxId() +\n              \", but the last firstTxId was \" + accFirstTxId);\n        }\n      }\n    }\n    if (!acc.isEmpty()) {\n      Collections.sort(acc, LOCAL_LOG_PREFERENCE_COMPARATOR);\n      outStreams.add(new RedundantEditLogInputStream(acc, fromTxId));\n      acc.clear();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java",
+      "extendedDetails": {}
+    },
+    "8172215e5601c3bb03fb5c0a0d88768142ea5087": {
+      "type": "Yparameterchange",
+      "commitMessage": "HDFS-5080. BootstrapStandby not working with QJM when the existing NN is active. Contributed by Jing Zhao.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1514386 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "15/08/13 10:19 AM",
+      "commitName": "8172215e5601c3bb03fb5c0a0d88768142ea5087",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "22/05/13 12:37 PM",
+      "commitNameOld": "8c62c46046656c01b327c378e89d57b4bf37e16e",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 84.9,
+      "commitsBetweenForRepo": 539,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,35 @@\n   public static void chainAndMakeRedundantStreams(\n       Collection\u003cEditLogInputStream\u003e outStreams,\n-      PriorityQueue\u003cEditLogInputStream\u003e allStreams,\n-      long fromTxId, boolean inProgressOk) {\n+      PriorityQueue\u003cEditLogInputStream\u003e allStreams, long fromTxId) {\n     // We want to group together all the streams that start on the same start\n     // transaction ID.  To do this, we maintain an accumulator (acc) of all\n     // the streams we\u0027ve seen at a given start transaction ID.  When we see a\n     // higher start transaction ID, we select a stream from the accumulator and\n     // clear it.  Then we begin accumulating streams with the new, higher start\n     // transaction ID.\n     LinkedList\u003cEditLogInputStream\u003e acc \u003d\n         new LinkedList\u003cEditLogInputStream\u003e();\n     EditLogInputStream elis;\n     while ((elis \u003d allStreams.poll()) !\u003d null) {\n       if (acc.isEmpty()) {\n         acc.add(elis);\n       } else {\n         long accFirstTxId \u003d acc.get(0).getFirstTxId();\n         if (accFirstTxId \u003d\u003d elis.getFirstTxId()) {\n           acc.add(elis);\n         } else if (accFirstTxId \u003c elis.getFirstTxId()) {\n           outStreams.add(new RedundantEditLogInputStream(acc, fromTxId));\n           acc.clear();\n           acc.add(elis);\n         } else if (accFirstTxId \u003e elis.getFirstTxId()) {\n           throw new RuntimeException(\"sorted set invariants violated!  \" +\n               \"Got stream with first txid \" + elis.getFirstTxId() +\n               \", but the last firstTxId was \" + accFirstTxId);\n         }\n       }\n     }\n     if (!acc.isEmpty()) {\n       outStreams.add(new RedundantEditLogInputStream(acc, fromTxId));\n       acc.clear();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void chainAndMakeRedundantStreams(\n      Collection\u003cEditLogInputStream\u003e outStreams,\n      PriorityQueue\u003cEditLogInputStream\u003e allStreams, long fromTxId) {\n    // We want to group together all the streams that start on the same start\n    // transaction ID.  To do this, we maintain an accumulator (acc) of all\n    // the streams we\u0027ve seen at a given start transaction ID.  When we see a\n    // higher start transaction ID, we select a stream from the accumulator and\n    // clear it.  Then we begin accumulating streams with the new, higher start\n    // transaction ID.\n    LinkedList\u003cEditLogInputStream\u003e acc \u003d\n        new LinkedList\u003cEditLogInputStream\u003e();\n    EditLogInputStream elis;\n    while ((elis \u003d allStreams.poll()) !\u003d null) {\n      if (acc.isEmpty()) {\n        acc.add(elis);\n      } else {\n        long accFirstTxId \u003d acc.get(0).getFirstTxId();\n        if (accFirstTxId \u003d\u003d elis.getFirstTxId()) {\n          acc.add(elis);\n        } else if (accFirstTxId \u003c elis.getFirstTxId()) {\n          outStreams.add(new RedundantEditLogInputStream(acc, fromTxId));\n          acc.clear();\n          acc.add(elis);\n        } else if (accFirstTxId \u003e elis.getFirstTxId()) {\n          throw new RuntimeException(\"sorted set invariants violated!  \" +\n              \"Got stream with first txid \" + elis.getFirstTxId() +\n              \", but the last firstTxId was \" + accFirstTxId);\n        }\n      }\n    }\n    if (!acc.isEmpty()) {\n      outStreams.add(new RedundantEditLogInputStream(acc, fromTxId));\n      acc.clear();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/JournalSet.java",
+      "extendedDetails": {
+        "oldValue": "[outStreams-Collection\u003cEditLogInputStream\u003e, allStreams-PriorityQueue\u003cEditLogInputStream\u003e, fromTxId-long, inProgressOk-boolean]",
+        "newValue": "[outStreams-Collection\u003cEditLogInputStream\u003e, allStreams-PriorityQueue\u003cEditLogInputStream\u003e, fromTxId-long]"
+      }
+    }
+  }
+}

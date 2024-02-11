@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "WasbFsck.java",
+  "functionName": "run",
+  "functionId": "run___args-String[]",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/WasbFsck.java",
+  "functionStartLine": 66,
+  "functionEndLine": 127,
+  "numCommitsSeen": 2,
+  "timeTaken": 437,
+  "changeHistory": [
+    "81bc395deb3ba00567dc067d6ca71bacf9e3bc82"
+  ],
+  "changeHistoryShort": {
+    "81bc395deb3ba00567dc067d6ca71bacf9e3bc82": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "81bc395deb3ba00567dc067d6ca71bacf9e3bc82": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-9629. Support Windows Azure Storage - Blob as a file system in Hadoop. Contributed by Dexter Bradshaw, Mostafa Elhemali, Xi Fang, Johannes Klein, David Lao, Mike Liddell, Chuan Liu, Lengning Liu, Ivan Mitic, Michael Rys, Alexander Stojanovic, Brian Swan, and Min Wei.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1601781 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/06/14 3:26 PM",
+      "commitName": "81bc395deb3ba00567dc067d6ca71bacf9e3bc82",
+      "commitAuthor": "Chris Nauroth",
+      "diff": "@@ -0,0 +1,62 @@\n+  public int run(String[] args) throws Exception {\n+    if (doPrintUsage(Arrays.asList(args))) {\n+      printUsage();\n+      return -1;\n+    }\n+    Path pathToCheck \u003d null;\n+    boolean doRecover \u003d false;\n+    boolean doDelete \u003d false;\n+    for (String arg : args) {\n+      if (!arg.startsWith(\"-\")) {\n+        if (pathToCheck !\u003d null) {\n+          System.err\n+              .println(\"Can\u0027t specify multiple paths to check on the command-line\");\n+          return 1;\n+        }\n+        pathToCheck \u003d new Path(arg);\n+      } else if (arg.equals(\"-move\")) {\n+        doRecover \u003d true;\n+      } else if (arg.equals(\"-delete\")) {\n+        doDelete \u003d true;\n+      }\n+    }\n+    if (doRecover \u0026\u0026 doDelete) {\n+      System.err\n+          .println(\"Conflicting options: can\u0027t specify both -move and -delete.\");\n+      return 1;\n+    }\n+    if (pathToCheck \u003d\u003d null) {\n+      pathToCheck \u003d new Path(\"/\"); // Check everything.\n+    }\n+    FileSystem fs;\n+    if (mockFileSystemForTesting \u003d\u003d null) {\n+      fs \u003d FileSystem.get(pathToCheck.toUri(), getConf());\n+    } else {\n+      fs \u003d mockFileSystemForTesting;\n+    }\n+\n+    if (!recursiveCheckChildPathName(fs, fs.makeQualified(pathToCheck))) {\n+      pathNameWarning \u003d true;\n+    }\n+\n+    if (!(fs instanceof NativeAzureFileSystem)) {\n+      System.err\n+          .println(\"Can only check WASB file system. Instead I\u0027m asked to\"\n+              + \" check: \" + fs.getUri());\n+      return 2;\n+    }\n+    NativeAzureFileSystem wasbFs \u003d (NativeAzureFileSystem) fs;\n+    if (doRecover) {\n+      System.out.println(\"Recovering files with dangling data under: \"\n+          + pathToCheck);\n+      wasbFs.recoverFilesWithDanglingTempData(pathToCheck, new Path(\n+          LOST_AND_FOUND_PATH));\n+    } else if (doDelete) {\n+      System.out.println(\"Deleting temp files with dangling data under: \"\n+          + pathToCheck);\n+      wasbFs.deleteFilesWithDanglingTempData(pathToCheck);\n+    } else {\n+      System.out.println(\"Please specify -move or -delete\");\n+    }\n+    return 0;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public int run(String[] args) throws Exception {\n    if (doPrintUsage(Arrays.asList(args))) {\n      printUsage();\n      return -1;\n    }\n    Path pathToCheck \u003d null;\n    boolean doRecover \u003d false;\n    boolean doDelete \u003d false;\n    for (String arg : args) {\n      if (!arg.startsWith(\"-\")) {\n        if (pathToCheck !\u003d null) {\n          System.err\n              .println(\"Can\u0027t specify multiple paths to check on the command-line\");\n          return 1;\n        }\n        pathToCheck \u003d new Path(arg);\n      } else if (arg.equals(\"-move\")) {\n        doRecover \u003d true;\n      } else if (arg.equals(\"-delete\")) {\n        doDelete \u003d true;\n      }\n    }\n    if (doRecover \u0026\u0026 doDelete) {\n      System.err\n          .println(\"Conflicting options: can\u0027t specify both -move and -delete.\");\n      return 1;\n    }\n    if (pathToCheck \u003d\u003d null) {\n      pathToCheck \u003d new Path(\"/\"); // Check everything.\n    }\n    FileSystem fs;\n    if (mockFileSystemForTesting \u003d\u003d null) {\n      fs \u003d FileSystem.get(pathToCheck.toUri(), getConf());\n    } else {\n      fs \u003d mockFileSystemForTesting;\n    }\n\n    if (!recursiveCheckChildPathName(fs, fs.makeQualified(pathToCheck))) {\n      pathNameWarning \u003d true;\n    }\n\n    if (!(fs instanceof NativeAzureFileSystem)) {\n      System.err\n          .println(\"Can only check WASB file system. Instead I\u0027m asked to\"\n              + \" check: \" + fs.getUri());\n      return 2;\n    }\n    NativeAzureFileSystem wasbFs \u003d (NativeAzureFileSystem) fs;\n    if (doRecover) {\n      System.out.println(\"Recovering files with dangling data under: \"\n          + pathToCheck);\n      wasbFs.recoverFilesWithDanglingTempData(pathToCheck, new Path(\n          LOST_AND_FOUND_PATH));\n    } else if (doDelete) {\n      System.out.println(\"Deleting temp files with dangling data under: \"\n          + pathToCheck);\n      wasbFs.deleteFilesWithDanglingTempData(pathToCheck);\n    } else {\n      System.out.println(\"Please specify -move or -delete\");\n    }\n    return 0;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azure/WasbFsck.java"
+    }
+  }
+}

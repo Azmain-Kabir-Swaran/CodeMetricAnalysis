@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LogAggregationFileControllerFactory.java",
+  "functionName": "getFileControllerForRead",
+  "functionId": "getFileControllerForRead___appId-ApplicationId__appOwner-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/filecontroller/LogAggregationFileControllerFactory.java",
+  "functionStartLine": 158,
+  "functionEndLine": 193,
+  "numCommitsSeen": 4,
+  "timeTaken": 1649,
+  "changeHistory": [
+    "accb811e5727f2a780a41cd5e50bab47a0cccb68",
+    "c2cb7ea1ef6532020b69031dbd18b0f9b8369f0f"
+  ],
+  "changeHistoryShort": {
+    "accb811e5727f2a780a41cd5e50bab47a0cccb68": "Ybodychange",
+    "c2cb7ea1ef6532020b69031dbd18b0f9b8369f0f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "accb811e5727f2a780a41cd5e50bab47a0cccb68": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6929.  Improved partition algorithm for yarn remote-app-log-dir.\n            Contributed by Prabhu Joseph\n",
+      "commitDate": "30/04/19 2:04 PM",
+      "commitName": "accb811e5727f2a780a41cd5e50bab47a0cccb68",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "03/03/19 11:59 PM",
+      "commitNameOld": "bd8d299ded742813cabd4b4e7ce1e33e0d1f9509",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 57.55,
+      "commitsBetweenForRepo": 409,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,36 @@\n   public LogAggregationFileController getFileControllerForRead(\n       ApplicationId appId, String appOwner) throws IOException {\n-    StringBuilder diagnosis \u003d new StringBuilder();\n-    for(LogAggregationFileController fileController : controllers) {\n+    StringBuilder diagnosticsMsg \u003d new StringBuilder();\n+\n+    if (LogAggregationUtils.isOlderPathEnabled(conf)) {\n+      for (LogAggregationFileController fileController : controllers) {\n+        try {\n+          Path remoteAppLogDir \u003d fileController.getOlderRemoteAppLogDir(appId,\n+              appOwner);\n+          if (LogAggregationUtils.getNodeFiles(conf, remoteAppLogDir, appId,\n+              appOwner).hasNext()) {\n+            return fileController;\n+          }\n+        } catch (Exception ex) {\n+          diagnosticsMsg.append(ex.getMessage() + \"\\n\");\n+          continue;\n+        }\n+      }\n+    }\n+\n+    for (LogAggregationFileController fileController : controllers) {\n       try {\n         Path remoteAppLogDir \u003d fileController.getRemoteAppLogDir(\n             appId, appOwner);\n-        Path qualifiedLogDir \u003d FileContext.getFileContext(conf).makeQualified(\n-            remoteAppLogDir);\n-        RemoteIterator\u003cFileStatus\u003e nodeFiles \u003d FileContext.getFileContext(\n-            qualifiedLogDir.toUri(), conf).listStatus(remoteAppLogDir);\n-        if (nodeFiles.hasNext()) {\n+        if (LogAggregationUtils.getNodeFiles(conf, remoteAppLogDir,\n+            appId, appOwner).hasNext()) {\n           return fileController;\n         }\n       } catch (Exception ex) {\n-        diagnosis.append(ex.getMessage() + \"\\n\");\n+        diagnosticsMsg.append(ex.getMessage() + \"\\n\");\n         continue;\n       }\n     }\n-    throw new IOException(diagnosis.toString());\n+\n+    throw new IOException(diagnosticsMsg.toString());\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public LogAggregationFileController getFileControllerForRead(\n      ApplicationId appId, String appOwner) throws IOException {\n    StringBuilder diagnosticsMsg \u003d new StringBuilder();\n\n    if (LogAggregationUtils.isOlderPathEnabled(conf)) {\n      for (LogAggregationFileController fileController : controllers) {\n        try {\n          Path remoteAppLogDir \u003d fileController.getOlderRemoteAppLogDir(appId,\n              appOwner);\n          if (LogAggregationUtils.getNodeFiles(conf, remoteAppLogDir, appId,\n              appOwner).hasNext()) {\n            return fileController;\n          }\n        } catch (Exception ex) {\n          diagnosticsMsg.append(ex.getMessage() + \"\\n\");\n          continue;\n        }\n      }\n    }\n\n    for (LogAggregationFileController fileController : controllers) {\n      try {\n        Path remoteAppLogDir \u003d fileController.getRemoteAppLogDir(\n            appId, appOwner);\n        if (LogAggregationUtils.getNodeFiles(conf, remoteAppLogDir,\n            appId, appOwner).hasNext()) {\n          return fileController;\n        }\n      } catch (Exception ex) {\n        diagnosticsMsg.append(ex.getMessage() + \"\\n\");\n        continue;\n      }\n    }\n\n    throw new IOException(diagnosticsMsg.toString());\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/filecontroller/LogAggregationFileControllerFactory.java",
+      "extendedDetails": {}
+    },
+    "c2cb7ea1ef6532020b69031dbd18b0f9b8369f0f": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6876. Create an abstract log writer for extendability. Contributed by Xuan Gong.\n",
+      "commitDate": "24/08/17 1:36 PM",
+      "commitName": "c2cb7ea1ef6532020b69031dbd18b0f9b8369f0f",
+      "commitAuthor": "Junping Du",
+      "diff": "@@ -0,0 +1,21 @@\n+  public LogAggregationFileController getFileControllerForRead(\n+      ApplicationId appId, String appOwner) throws IOException {\n+    StringBuilder diagnosis \u003d new StringBuilder();\n+    for(LogAggregationFileController fileController : controllers) {\n+      try {\n+        Path remoteAppLogDir \u003d fileController.getRemoteAppLogDir(\n+            appId, appOwner);\n+        Path qualifiedLogDir \u003d FileContext.getFileContext(conf).makeQualified(\n+            remoteAppLogDir);\n+        RemoteIterator\u003cFileStatus\u003e nodeFiles \u003d FileContext.getFileContext(\n+            qualifiedLogDir.toUri(), conf).listStatus(remoteAppLogDir);\n+        if (nodeFiles.hasNext()) {\n+          return fileController;\n+        }\n+      } catch (Exception ex) {\n+        diagnosis.append(ex.getMessage() + \"\\n\");\n+        continue;\n+      }\n+    }\n+    throw new IOException(diagnosis.toString());\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public LogAggregationFileController getFileControllerForRead(\n      ApplicationId appId, String appOwner) throws IOException {\n    StringBuilder diagnosis \u003d new StringBuilder();\n    for(LogAggregationFileController fileController : controllers) {\n      try {\n        Path remoteAppLogDir \u003d fileController.getRemoteAppLogDir(\n            appId, appOwner);\n        Path qualifiedLogDir \u003d FileContext.getFileContext(conf).makeQualified(\n            remoteAppLogDir);\n        RemoteIterator\u003cFileStatus\u003e nodeFiles \u003d FileContext.getFileContext(\n            qualifiedLogDir.toUri(), conf).listStatus(remoteAppLogDir);\n        if (nodeFiles.hasNext()) {\n          return fileController;\n        }\n      } catch (Exception ex) {\n        diagnosis.append(ex.getMessage() + \"\\n\");\n        continue;\n      }\n    }\n    throw new IOException(diagnosis.toString());\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/logaggregation/filecontroller/LogAggregationFileControllerFactory.java"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileSystem.java",
+  "functionName": "getFileSystemClass",
+  "functionId": "getFileSystemClass___scheme-String__conf-Configuration",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystem.java",
+  "functionStartLine": 3369,
+  "functionEndLine": 3396,
+  "numCommitsSeen": 143,
+  "timeTaken": 4579,
+  "changeHistory": [
+    "860d49aa6ae7790d970d7f2322fed890b0e5cda2",
+    "706e861a859a247661b027f4e473814995556c2e"
+  ],
+  "changeHistoryShort": {
+    "860d49aa6ae7790d970d7f2322fed890b0e5cda2": "Ybodychange",
+    "706e861a859a247661b027f4e473814995556c2e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "860d49aa6ae7790d970d7f2322fed890b0e5cda2": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13605. Clean up FileSystem javadocs, logging; improve diagnostics on FS load. Contributed by Steve Loughran\n",
+      "commitDate": "23/11/16 4:42 PM",
+      "commitName": "860d49aa6ae7790d970d7f2322fed890b0e5cda2",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "16/11/16 8:08 PM",
+      "commitNameOld": "aab9737a058c0bdeeb17c173e530b7e571315a56",
+      "commitAuthorOld": "Mingliang Liu",
+      "daysBetweenCommits": 6.86,
+      "commitsBetweenForRepo": 38,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,28 @@\n   public static Class\u003c? extends FileSystem\u003e getFileSystemClass(String scheme,\n       Configuration conf) throws IOException {\n     if (!FILE_SYSTEMS_LOADED) {\n       loadFileSystems();\n     }\n+    LOGGER.debug(\"Looking for FS supporting {}\", scheme);\n     Class\u003c? extends FileSystem\u003e clazz \u003d null;\n     if (conf !\u003d null) {\n-      clazz \u003d (Class\u003c? extends FileSystem\u003e) conf.getClass(\"fs.\" + scheme + \".impl\", null);\n+      String property \u003d \"fs.\" + scheme + \".impl\";\n+      LOGGER.debug(\"looking for configuration option {}\", property);\n+      clazz \u003d (Class\u003c? extends FileSystem\u003e) conf.getClass(\n+          property, null);\n+    } else {\n+      LOGGER.debug(\"No configuration: skipping check for fs.{}.impl\", scheme);\n     }\n     if (clazz \u003d\u003d null) {\n+      LOGGER.debug(\"Looking in service filesystems for implementation class\");\n       clazz \u003d SERVICE_FILE_SYSTEMS.get(scheme);\n+    } else {\n+      LOGGER.debug(\"Filesystem {} defined in configuration option\", scheme);\n     }\n     if (clazz \u003d\u003d null) {\n-      throw new IOException(\"No FileSystem for scheme: \" + scheme);\n+      throw new UnsupportedFileSystemException(\"No FileSystem for scheme \"\n+          + \"\\\"\" + scheme + \"\\\"\");\n     }\n+    LOGGER.debug(\"FS for {} is {}\", scheme, clazz);\n     return clazz;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Class\u003c? extends FileSystem\u003e getFileSystemClass(String scheme,\n      Configuration conf) throws IOException {\n    if (!FILE_SYSTEMS_LOADED) {\n      loadFileSystems();\n    }\n    LOGGER.debug(\"Looking for FS supporting {}\", scheme);\n    Class\u003c? extends FileSystem\u003e clazz \u003d null;\n    if (conf !\u003d null) {\n      String property \u003d \"fs.\" + scheme + \".impl\";\n      LOGGER.debug(\"looking for configuration option {}\", property);\n      clazz \u003d (Class\u003c? extends FileSystem\u003e) conf.getClass(\n          property, null);\n    } else {\n      LOGGER.debug(\"No configuration: skipping check for fs.{}.impl\", scheme);\n    }\n    if (clazz \u003d\u003d null) {\n      LOGGER.debug(\"Looking in service filesystems for implementation class\");\n      clazz \u003d SERVICE_FILE_SYSTEMS.get(scheme);\n    } else {\n      LOGGER.debug(\"Filesystem {} defined in configuration option\", scheme);\n    }\n    if (clazz \u003d\u003d null) {\n      throw new UnsupportedFileSystemException(\"No FileSystem for scheme \"\n          + \"\\\"\" + scheme + \"\\\"\");\n    }\n    LOGGER.debug(\"FS for {} is {}\", scheme, clazz);\n    return clazz;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystem.java",
+      "extendedDetails": {}
+    },
+    "706e861a859a247661b027f4e473814995556c2e": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7549. Use JDK ServiceLoader mechanism to find FileSystem implementations. (tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1329994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/04/12 1:33 PM",
+      "commitName": "706e861a859a247661b027f4e473814995556c2e",
+      "commitAuthor": "Alejandro Abdelnur",
+      "diff": "@@ -0,0 +1,17 @@\n+  public static Class\u003c? extends FileSystem\u003e getFileSystemClass(String scheme,\n+      Configuration conf) throws IOException {\n+    if (!FILE_SYSTEMS_LOADED) {\n+      loadFileSystems();\n+    }\n+    Class\u003c? extends FileSystem\u003e clazz \u003d null;\n+    if (conf !\u003d null) {\n+      clazz \u003d (Class\u003c? extends FileSystem\u003e) conf.getClass(\"fs.\" + scheme + \".impl\", null);\n+    }\n+    if (clazz \u003d\u003d null) {\n+      clazz \u003d SERVICE_FILE_SYSTEMS.get(scheme);\n+    }\n+    if (clazz \u003d\u003d null) {\n+      throw new IOException(\"No FileSystem for scheme: \" + scheme);\n+    }\n+    return clazz;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static Class\u003c? extends FileSystem\u003e getFileSystemClass(String scheme,\n      Configuration conf) throws IOException {\n    if (!FILE_SYSTEMS_LOADED) {\n      loadFileSystems();\n    }\n    Class\u003c? extends FileSystem\u003e clazz \u003d null;\n    if (conf !\u003d null) {\n      clazz \u003d (Class\u003c? extends FileSystem\u003e) conf.getClass(\"fs.\" + scheme + \".impl\", null);\n    }\n    if (clazz \u003d\u003d null) {\n      clazz \u003d SERVICE_FILE_SYSTEMS.get(scheme);\n    }\n    if (clazz \u003d\u003d null) {\n      throw new IOException(\"No FileSystem for scheme: \" + scheme);\n    }\n    return clazz;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileSystem.java"
+    }
+  }
+}

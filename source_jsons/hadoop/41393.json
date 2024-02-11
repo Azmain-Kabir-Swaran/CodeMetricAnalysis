@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FairSchedulerConfiguration.java",
+  "functionName": "getIncrementAllocation",
+  "functionId": "getIncrementAllocation",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+  "functionStartLine": 282,
+  "functionEndLine": 335,
+  "numCommitsSeen": 48,
+  "timeTaken": 1839,
+  "changeHistory": [
+    "f8e7dd9b10f0b1b9d80e6196eb2b0296b523d8f4",
+    "b9753e509ce2487aa71174d2dab440c33c6a17a4"
+  ],
+  "changeHistoryShort": {
+    "f8e7dd9b10f0b1b9d80e6196eb2b0296b523d8f4": "Ybodychange",
+    "b9753e509ce2487aa71174d2dab440c33c6a17a4": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f8e7dd9b10f0b1b9d80e6196eb2b0296b523d8f4": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7557. It should be possible to specify resource types in the fair scheduler increment value (grepas via rkanter)\n",
+      "commitDate": "05/01/18 11:15 AM",
+      "commitName": "f8e7dd9b10f0b1b9d80e6196eb2b0296b523d8f4",
+      "commitAuthor": "Robert Kanter",
+      "commitDateOld": "22/11/17 2:18 PM",
+      "commitNameOld": "4cc9479dae2bfb7d14d29b55d103eea9fa35a586",
+      "commitAuthorOld": "Yufei Gu",
+      "daysBetweenCommits": 43.87,
+      "commitsBetweenForRepo": 237,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,9 +1,54 @@\n   public Resource getIncrementAllocation() {\n-    int incrementMemory \u003d getInt(\n-      RM_SCHEDULER_INCREMENT_ALLOCATION_MB,\n-      DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_MB);\n-    int incrementCores \u003d getInt(\n-      RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES,\n-      DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES);\n-    return Resources.createResource(incrementMemory, incrementCores);\n+    Long memory \u003d null;\n+    Integer vCores \u003d null;\n+    Map\u003cString, Long\u003e others \u003d new HashMap\u003c\u003e();\n+    ResourceInformation[] resourceTypes \u003d ResourceUtils.getResourceTypesArray();\n+    for (int i\u003d0; i \u003c resourceTypes.length; ++i) {\n+      String name \u003d resourceTypes[i].getName();\n+      String propertyKey \u003d getAllocationIncrementPropKey(name);\n+      String propValue \u003d get(propertyKey);\n+      if (propValue !\u003d null) {\n+        Matcher matcher \u003d RESOURCE_REQUEST_VALUE_PATTERN.matcher(propValue);\n+        if (matcher.matches()) {\n+          long value \u003d Long.parseLong(matcher.group(1));\n+          String unit \u003d matcher.group(2);\n+          long valueInDefaultUnits \u003d getValueInDefaultUnits(value, unit, name);\n+          others.put(name, valueInDefaultUnits);\n+        } else {\n+          throw new IllegalArgumentException(\"Property \" + propertyKey +\n+              \" is not in \\\"value [unit]\\\" format: \" + propValue);\n+        }\n+      }\n+    }\n+    if (others.containsKey(ResourceInformation.MEMORY_MB.getName())) {\n+      memory \u003d others.get(ResourceInformation.MEMORY_MB.getName());\n+      if (get(RM_SCHEDULER_INCREMENT_ALLOCATION_MB) !\u003d null) {\n+        String overridingKey \u003d getAllocationIncrementPropKey(\n+                ResourceInformation.MEMORY_MB.getName());\n+        LOG.warn(\"Configuration \" + overridingKey + \"\u003d\" + get(overridingKey) +\n+            \" is overriding the \" + RM_SCHEDULER_INCREMENT_ALLOCATION_MB +\n+            \"\u003d\" + get(RM_SCHEDULER_INCREMENT_ALLOCATION_MB) + \" property\");\n+      }\n+      others.remove(ResourceInformation.MEMORY_MB.getName());\n+    } else {\n+      memory \u003d getLong(\n+          RM_SCHEDULER_INCREMENT_ALLOCATION_MB,\n+          DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_MB);\n+    }\n+    if (others.containsKey(ResourceInformation.VCORES.getName())) {\n+      vCores \u003d others.get(ResourceInformation.VCORES.getName()).intValue();\n+      if (get(RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES) !\u003d null) {\n+        String overridingKey \u003d getAllocationIncrementPropKey(\n+            ResourceInformation.VCORES.getName());\n+        LOG.warn(\"Configuration \" + overridingKey + \"\u003d\" + get(overridingKey) +\n+            \" is overriding the \" + RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES +\n+            \"\u003d\" + get(RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES) + \" property\");\n+      }\n+      others.remove(ResourceInformation.VCORES.getName());\n+    } else {\n+      vCores \u003d getInt(\n+          RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES,\n+          DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES);\n+    }\n+    return Resource.newInstance(memory, vCores, others);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Resource getIncrementAllocation() {\n    Long memory \u003d null;\n    Integer vCores \u003d null;\n    Map\u003cString, Long\u003e others \u003d new HashMap\u003c\u003e();\n    ResourceInformation[] resourceTypes \u003d ResourceUtils.getResourceTypesArray();\n    for (int i\u003d0; i \u003c resourceTypes.length; ++i) {\n      String name \u003d resourceTypes[i].getName();\n      String propertyKey \u003d getAllocationIncrementPropKey(name);\n      String propValue \u003d get(propertyKey);\n      if (propValue !\u003d null) {\n        Matcher matcher \u003d RESOURCE_REQUEST_VALUE_PATTERN.matcher(propValue);\n        if (matcher.matches()) {\n          long value \u003d Long.parseLong(matcher.group(1));\n          String unit \u003d matcher.group(2);\n          long valueInDefaultUnits \u003d getValueInDefaultUnits(value, unit, name);\n          others.put(name, valueInDefaultUnits);\n        } else {\n          throw new IllegalArgumentException(\"Property \" + propertyKey +\n              \" is not in \\\"value [unit]\\\" format: \" + propValue);\n        }\n      }\n    }\n    if (others.containsKey(ResourceInformation.MEMORY_MB.getName())) {\n      memory \u003d others.get(ResourceInformation.MEMORY_MB.getName());\n      if (get(RM_SCHEDULER_INCREMENT_ALLOCATION_MB) !\u003d null) {\n        String overridingKey \u003d getAllocationIncrementPropKey(\n                ResourceInformation.MEMORY_MB.getName());\n        LOG.warn(\"Configuration \" + overridingKey + \"\u003d\" + get(overridingKey) +\n            \" is overriding the \" + RM_SCHEDULER_INCREMENT_ALLOCATION_MB +\n            \"\u003d\" + get(RM_SCHEDULER_INCREMENT_ALLOCATION_MB) + \" property\");\n      }\n      others.remove(ResourceInformation.MEMORY_MB.getName());\n    } else {\n      memory \u003d getLong(\n          RM_SCHEDULER_INCREMENT_ALLOCATION_MB,\n          DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_MB);\n    }\n    if (others.containsKey(ResourceInformation.VCORES.getName())) {\n      vCores \u003d others.get(ResourceInformation.VCORES.getName()).intValue();\n      if (get(RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES) !\u003d null) {\n        String overridingKey \u003d getAllocationIncrementPropKey(\n            ResourceInformation.VCORES.getName());\n        LOG.warn(\"Configuration \" + overridingKey + \"\u003d\" + get(overridingKey) +\n            \" is overriding the \" + RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES +\n            \"\u003d\" + get(RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES) + \" property\");\n      }\n      others.remove(ResourceInformation.VCORES.getName());\n    } else {\n      vCores \u003d getInt(\n          RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES,\n          DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES);\n    }\n    return Resource.newInstance(memory, vCores, others);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java",
+      "extendedDetails": {}
+    },
+    "b9753e509ce2487aa71174d2dab440c33c6a17a4": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-789. Enable zero capabilities resource requests in fair scheduler. (tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1493219 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "14/06/13 12:16 PM",
+      "commitName": "b9753e509ce2487aa71174d2dab440c33c6a17a4",
+      "commitAuthor": "Alejandro Abdelnur",
+      "diff": "@@ -0,0 +1,9 @@\n+  public Resource getIncrementAllocation() {\n+    int incrementMemory \u003d getInt(\n+      RM_SCHEDULER_INCREMENT_ALLOCATION_MB,\n+      DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_MB);\n+    int incrementCores \u003d getInt(\n+      RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES,\n+      DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES);\n+    return Resources.createResource(incrementMemory, incrementCores);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public Resource getIncrementAllocation() {\n    int incrementMemory \u003d getInt(\n      RM_SCHEDULER_INCREMENT_ALLOCATION_MB,\n      DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_MB);\n    int incrementCores \u003d getInt(\n      RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES,\n      DEFAULT_RM_SCHEDULER_INCREMENT_ALLOCATION_VCORES);\n    return Resources.createResource(incrementMemory, incrementCores);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FairSchedulerConfiguration.java"
+    }
+  }
+}

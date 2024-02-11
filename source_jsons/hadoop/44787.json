@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMAdminCLI.java",
+  "functionName": "handleUpdateNodeResource",
+  "functionId": "handleUpdateNodeResource___args-String[]__cmd-String__isHAEnabled-boolean",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-client/src/main/java/org/apache/hadoop/yarn/client/cli/RMAdminCLI.java",
+  "functionStartLine": 877,
+  "functionEndLine": 917,
+  "numCommitsSeen": 51,
+  "timeTaken": 2273,
+  "changeHistory": [
+    "2564b4d07f63de142fe1909d61904831c108667c",
+    "0da69c324dee9baab0f0b9700db1cc5b623f8421"
+  ],
+  "changeHistoryShort": {
+    "2564b4d07f63de142fe1909d61904831c108667c": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "0da69c324dee9baab0f0b9700db1cc5b623f8421": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2564b4d07f63de142fe1909d61904831c108667c": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "YARN-7119. Support multiple resource types in rmadmin updateNodeResource command. Contributed by Manikandan R.\n",
+      "commitDate": "14/12/17 2:41 AM",
+      "commitName": "2564b4d07f63de142fe1909d61904831c108667c",
+      "commitAuthor": "Sunil G",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "YARN-7119. Support multiple resource types in rmadmin updateNodeResource command. Contributed by Manikandan R.\n",
+          "commitDate": "14/12/17 2:41 AM",
+          "commitName": "2564b4d07f63de142fe1909d61904831c108667c",
+          "commitAuthor": "Sunil G",
+          "commitDateOld": "30/08/17 6:04 PM",
+          "commitNameOld": "ce79f7be29dfbad444614cb340c59e4ff8137e89",
+          "commitAuthorOld": "Robert Kanter",
+          "daysBetweenCommits": 105.4,
+          "commitsBetweenForRepo": 847,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,41 @@\n   private int handleUpdateNodeResource(\n       String[] args, String cmd, boolean isHAEnabled)\n-          throws NumberFormatException, IOException, YarnException {\n+          throws YarnException, IOException {\n     int i \u003d 1;\n-    if (args.length \u003c 4 || args.length \u003e 5) {\n+    int overCommitTimeout \u003d ResourceOption.OVER_COMMIT_TIMEOUT_MILLIS_DEFAULT;\n+    String nodeID \u003d args[i++];\n+    Resource resource \u003d Resource.newInstance(0, 0);\n+    if (args.length \u003c 3 || args.length \u003e 5) {\n       System.err.println(\"Number of parameters specified for \" +\n           \"updateNodeResource is wrong.\");\n       printUsage(cmd, isHAEnabled);\n       return -1;\n-    } else {\n-      String nodeID \u003d args[i++];\n-      String memSize \u003d args[i++];\n-      String cores \u003d args[i++];\n-      int overCommitTimeout \u003d ResourceOption.OVER_COMMIT_TIMEOUT_MILLIS_DEFAULT;\n-      if (i \u003d\u003d args.length - 1) {\n-        overCommitTimeout \u003d Integer.parseInt(args[i]);\n+    } else if ((args.length \u003d\u003d 4 || args.length \u003d\u003d 5) \u0026\u0026\n+        RESOURCE_TYPES_ARGS_PATTERN.matcher(args[2]).matches()) {\n+      int memSize \u003d Integer.parseInt(args[i++]);\n+      int cores \u003d Integer.parseInt(args[i++]);\n+\n+      // check resource value first\n+      if (invalidResourceValue(memSize, cores)) {\n+        throw new IllegalArgumentException(\"Invalid resource value: \" + \"(\" +\n+            memSize + \",\" + cores + \") for updateNodeResource.\");\n       }\n-      return updateNodeResource(nodeID, Integer.parseInt(memSize),\n-          Integer.parseInt(cores), overCommitTimeout);\n+      resource \u003d Resources.createResource(memSize, cores);\n+    } else {\n+      String resourceTypes \u003d args[i++];\n+      if (!resourceTypes.contains(\"\u003d\")) {\n+        System.err.println(\"Resource Types parameter specified for \"\n+            + \"updateNodeResource is wrong. It should be comma-delimited \"\n+            + \"key value pairs. For example, memory-mb\u003d1024Mi,\"\n+            + \"vcores\u003d1,resource1\u003d3Gi,resource2\u003d2\");\n+        printUsage(cmd, isHAEnabled);\n+        return -1;\n+      }\n+      resource \u003d parseCommandAndCreateResource(resourceTypes);\n+      ResourceUtils.areMandatoryResourcesAvailable(resource);\n     }\n+    if (i \u003d\u003d args.length - 1) {\n+      overCommitTimeout \u003d Integer.parseInt(args[i]);\n+    }\n+    return updateNodeResource(nodeID, resource, overCommitTimeout);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private int handleUpdateNodeResource(\n      String[] args, String cmd, boolean isHAEnabled)\n          throws YarnException, IOException {\n    int i \u003d 1;\n    int overCommitTimeout \u003d ResourceOption.OVER_COMMIT_TIMEOUT_MILLIS_DEFAULT;\n    String nodeID \u003d args[i++];\n    Resource resource \u003d Resource.newInstance(0, 0);\n    if (args.length \u003c 3 || args.length \u003e 5) {\n      System.err.println(\"Number of parameters specified for \" +\n          \"updateNodeResource is wrong.\");\n      printUsage(cmd, isHAEnabled);\n      return -1;\n    } else if ((args.length \u003d\u003d 4 || args.length \u003d\u003d 5) \u0026\u0026\n        RESOURCE_TYPES_ARGS_PATTERN.matcher(args[2]).matches()) {\n      int memSize \u003d Integer.parseInt(args[i++]);\n      int cores \u003d Integer.parseInt(args[i++]);\n\n      // check resource value first\n      if (invalidResourceValue(memSize, cores)) {\n        throw new IllegalArgumentException(\"Invalid resource value: \" + \"(\" +\n            memSize + \",\" + cores + \") for updateNodeResource.\");\n      }\n      resource \u003d Resources.createResource(memSize, cores);\n    } else {\n      String resourceTypes \u003d args[i++];\n      if (!resourceTypes.contains(\"\u003d\")) {\n        System.err.println(\"Resource Types parameter specified for \"\n            + \"updateNodeResource is wrong. It should be comma-delimited \"\n            + \"key value pairs. For example, memory-mb\u003d1024Mi,\"\n            + \"vcores\u003d1,resource1\u003d3Gi,resource2\u003d2\");\n        printUsage(cmd, isHAEnabled);\n        return -1;\n      }\n      resource \u003d parseCommandAndCreateResource(resourceTypes);\n      ResourceUtils.areMandatoryResourcesAvailable(resource);\n    }\n    if (i \u003d\u003d args.length - 1) {\n      overCommitTimeout \u003d Integer.parseInt(args[i]);\n    }\n    return updateNodeResource(nodeID, resource, overCommitTimeout);\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-client/src/main/java/org/apache/hadoop/yarn/client/cli/RMAdminCLI.java",
+          "extendedDetails": {
+            "oldValue": "[NumberFormatException, IOException, YarnException]",
+            "newValue": "[YarnException, IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-7119. Support multiple resource types in rmadmin updateNodeResource command. Contributed by Manikandan R.\n",
+          "commitDate": "14/12/17 2:41 AM",
+          "commitName": "2564b4d07f63de142fe1909d61904831c108667c",
+          "commitAuthor": "Sunil G",
+          "commitDateOld": "30/08/17 6:04 PM",
+          "commitNameOld": "ce79f7be29dfbad444614cb340c59e4ff8137e89",
+          "commitAuthorOld": "Robert Kanter",
+          "daysBetweenCommits": 105.4,
+          "commitsBetweenForRepo": 847,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,41 @@\n   private int handleUpdateNodeResource(\n       String[] args, String cmd, boolean isHAEnabled)\n-          throws NumberFormatException, IOException, YarnException {\n+          throws YarnException, IOException {\n     int i \u003d 1;\n-    if (args.length \u003c 4 || args.length \u003e 5) {\n+    int overCommitTimeout \u003d ResourceOption.OVER_COMMIT_TIMEOUT_MILLIS_DEFAULT;\n+    String nodeID \u003d args[i++];\n+    Resource resource \u003d Resource.newInstance(0, 0);\n+    if (args.length \u003c 3 || args.length \u003e 5) {\n       System.err.println(\"Number of parameters specified for \" +\n           \"updateNodeResource is wrong.\");\n       printUsage(cmd, isHAEnabled);\n       return -1;\n-    } else {\n-      String nodeID \u003d args[i++];\n-      String memSize \u003d args[i++];\n-      String cores \u003d args[i++];\n-      int overCommitTimeout \u003d ResourceOption.OVER_COMMIT_TIMEOUT_MILLIS_DEFAULT;\n-      if (i \u003d\u003d args.length - 1) {\n-        overCommitTimeout \u003d Integer.parseInt(args[i]);\n+    } else if ((args.length \u003d\u003d 4 || args.length \u003d\u003d 5) \u0026\u0026\n+        RESOURCE_TYPES_ARGS_PATTERN.matcher(args[2]).matches()) {\n+      int memSize \u003d Integer.parseInt(args[i++]);\n+      int cores \u003d Integer.parseInt(args[i++]);\n+\n+      // check resource value first\n+      if (invalidResourceValue(memSize, cores)) {\n+        throw new IllegalArgumentException(\"Invalid resource value: \" + \"(\" +\n+            memSize + \",\" + cores + \") for updateNodeResource.\");\n       }\n-      return updateNodeResource(nodeID, Integer.parseInt(memSize),\n-          Integer.parseInt(cores), overCommitTimeout);\n+      resource \u003d Resources.createResource(memSize, cores);\n+    } else {\n+      String resourceTypes \u003d args[i++];\n+      if (!resourceTypes.contains(\"\u003d\")) {\n+        System.err.println(\"Resource Types parameter specified for \"\n+            + \"updateNodeResource is wrong. It should be comma-delimited \"\n+            + \"key value pairs. For example, memory-mb\u003d1024Mi,\"\n+            + \"vcores\u003d1,resource1\u003d3Gi,resource2\u003d2\");\n+        printUsage(cmd, isHAEnabled);\n+        return -1;\n+      }\n+      resource \u003d parseCommandAndCreateResource(resourceTypes);\n+      ResourceUtils.areMandatoryResourcesAvailable(resource);\n     }\n+    if (i \u003d\u003d args.length - 1) {\n+      overCommitTimeout \u003d Integer.parseInt(args[i]);\n+    }\n+    return updateNodeResource(nodeID, resource, overCommitTimeout);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private int handleUpdateNodeResource(\n      String[] args, String cmd, boolean isHAEnabled)\n          throws YarnException, IOException {\n    int i \u003d 1;\n    int overCommitTimeout \u003d ResourceOption.OVER_COMMIT_TIMEOUT_MILLIS_DEFAULT;\n    String nodeID \u003d args[i++];\n    Resource resource \u003d Resource.newInstance(0, 0);\n    if (args.length \u003c 3 || args.length \u003e 5) {\n      System.err.println(\"Number of parameters specified for \" +\n          \"updateNodeResource is wrong.\");\n      printUsage(cmd, isHAEnabled);\n      return -1;\n    } else if ((args.length \u003d\u003d 4 || args.length \u003d\u003d 5) \u0026\u0026\n        RESOURCE_TYPES_ARGS_PATTERN.matcher(args[2]).matches()) {\n      int memSize \u003d Integer.parseInt(args[i++]);\n      int cores \u003d Integer.parseInt(args[i++]);\n\n      // check resource value first\n      if (invalidResourceValue(memSize, cores)) {\n        throw new IllegalArgumentException(\"Invalid resource value: \" + \"(\" +\n            memSize + \",\" + cores + \") for updateNodeResource.\");\n      }\n      resource \u003d Resources.createResource(memSize, cores);\n    } else {\n      String resourceTypes \u003d args[i++];\n      if (!resourceTypes.contains(\"\u003d\")) {\n        System.err.println(\"Resource Types parameter specified for \"\n            + \"updateNodeResource is wrong. It should be comma-delimited \"\n            + \"key value pairs. For example, memory-mb\u003d1024Mi,\"\n            + \"vcores\u003d1,resource1\u003d3Gi,resource2\u003d2\");\n        printUsage(cmd, isHAEnabled);\n        return -1;\n      }\n      resource \u003d parseCommandAndCreateResource(resourceTypes);\n      ResourceUtils.areMandatoryResourcesAvailable(resource);\n    }\n    if (i \u003d\u003d args.length - 1) {\n      overCommitTimeout \u003d Integer.parseInt(args[i]);\n    }\n    return updateNodeResource(nodeID, resource, overCommitTimeout);\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-client/src/main/java/org/apache/hadoop/yarn/client/cli/RMAdminCLI.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "0da69c324dee9baab0f0b9700db1cc5b623f8421": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4676. Automatic and Asynchronous Decommissioning Nodes Status Tracking. Contributed by Diniel Zhi.\n(cherry picked from commit d464483bf7f0b3e3be3ba32cd6c3eee546747ab5)\n\nConflicts:\n\n\thadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/ResourceTrackerService.java\n\thadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmnode/RMNode.java\n\thadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/rmnode/RMNodeImpl.java\n",
+      "commitDate": "18/08/16 7:27 AM",
+      "commitName": "0da69c324dee9baab0f0b9700db1cc5b623f8421",
+      "commitAuthor": "Junping Du",
+      "diff": "@@ -0,0 +1,21 @@\n+  private int handleUpdateNodeResource(\n+      String[] args, String cmd, boolean isHAEnabled)\n+          throws NumberFormatException, IOException, YarnException {\n+    int i \u003d 1;\n+    if (args.length \u003c 4 || args.length \u003e 5) {\n+      System.err.println(\"Number of parameters specified for \" +\n+          \"updateNodeResource is wrong.\");\n+      printUsage(cmd, isHAEnabled);\n+      return -1;\n+    } else {\n+      String nodeID \u003d args[i++];\n+      String memSize \u003d args[i++];\n+      String cores \u003d args[i++];\n+      int overCommitTimeout \u003d ResourceOption.OVER_COMMIT_TIMEOUT_MILLIS_DEFAULT;\n+      if (i \u003d\u003d args.length - 1) {\n+        overCommitTimeout \u003d Integer.parseInt(args[i]);\n+      }\n+      return updateNodeResource(nodeID, Integer.parseInt(memSize),\n+          Integer.parseInt(cores), overCommitTimeout);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private int handleUpdateNodeResource(\n      String[] args, String cmd, boolean isHAEnabled)\n          throws NumberFormatException, IOException, YarnException {\n    int i \u003d 1;\n    if (args.length \u003c 4 || args.length \u003e 5) {\n      System.err.println(\"Number of parameters specified for \" +\n          \"updateNodeResource is wrong.\");\n      printUsage(cmd, isHAEnabled);\n      return -1;\n    } else {\n      String nodeID \u003d args[i++];\n      String memSize \u003d args[i++];\n      String cores \u003d args[i++];\n      int overCommitTimeout \u003d ResourceOption.OVER_COMMIT_TIMEOUT_MILLIS_DEFAULT;\n      if (i \u003d\u003d args.length - 1) {\n        overCommitTimeout \u003d Integer.parseInt(args[i]);\n      }\n      return updateNodeResource(nodeID, Integer.parseInt(memSize),\n          Integer.parseInt(cores), overCommitTimeout);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-client/src/main/java/org/apache/hadoop/yarn/client/cli/RMAdminCLI.java"
+    }
+  }
+}

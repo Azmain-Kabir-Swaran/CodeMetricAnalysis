@@ -1,0 +1,130 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PositionStripeReader.java",
+  "functionName": "prepareParityChunk",
+  "functionId": "prepareParityChunk___index-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/PositionStripeReader.java",
+  "functionStartLine": 57,
+  "functionEndLine": 69,
+  "numCommitsSeen": 18,
+  "timeTaken": 2109,
+  "changeHistory": [
+    "7a96033b15580a01a2867fa3cab9c1e409dbaafd",
+    "734d54c1a8950446e68098f62d8964e02ecc2890",
+    "c201cf951d5adefefe7c68e882a0c07962248577",
+    "7136e8c5582dc4061b566cb9f11a0d6a6d08bb93"
+  ],
+  "changeHistoryShort": {
+    "7a96033b15580a01a2867fa3cab9c1e409dbaafd": "Ybodychange",
+    "734d54c1a8950446e68098f62d8964e02ecc2890": "Ymultichange(Ymovefromfile,Ybodychange)",
+    "c201cf951d5adefefe7c68e882a0c07962248577": "Ybodychange",
+    "7136e8c5582dc4061b566cb9f11a0d6a6d08bb93": "Yexceptionschange"
+  },
+  "changeHistoryDetails": {
+    "7a96033b15580a01a2867fa3cab9c1e409dbaafd": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11964. Decoding inputs should be correctly prepared in pread. Contributed by Takanobu Asanuma\n",
+      "commitDate": "01/09/17 2:48 AM",
+      "commitName": "7a96033b15580a01a2867fa3cab9c1e409dbaafd",
+      "commitAuthor": "Kai Zheng",
+      "commitDateOld": "17/11/16 8:48 PM",
+      "commitNameOld": "c0b1a44f6c6e6f9e4ac5cecea0d4a50e237a4c9c",
+      "commitAuthorOld": "Wei-Chiu Chuang",
+      "daysBetweenCommits": 287.21,
+      "commitsBetweenForRepo": 1648,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,9 +1,13 @@\n   boolean prepareParityChunk(int index) {\n     Preconditions.checkState(index \u003e\u003d dataBlkNum \u0026\u0026\n         alignedStripe.chunks[index] \u003d\u003d null);\n \n+    int bufLen \u003d (int) alignedStripe.getSpanInBlock();\n+    decodeInputs[index] \u003d new ECChunk(codingBuffer.duplicate(), index * bufLen,\n+        bufLen);\n+\n     alignedStripe.chunks[index] \u003d\n         new StripingChunk(decodeInputs[index].getBuffer());\n \n     return true;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  boolean prepareParityChunk(int index) {\n    Preconditions.checkState(index \u003e\u003d dataBlkNum \u0026\u0026\n        alignedStripe.chunks[index] \u003d\u003d null);\n\n    int bufLen \u003d (int) alignedStripe.getSpanInBlock();\n    decodeInputs[index] \u003d new ECChunk(codingBuffer.duplicate(), index * bufLen,\n        bufLen);\n\n    alignedStripe.chunks[index] \u003d\n        new StripingChunk(decodeInputs[index].getBuffer());\n\n    return true;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/PositionStripeReader.java",
+      "extendedDetails": {}
+    },
+    "734d54c1a8950446e68098f62d8964e02ecc2890": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange)",
+      "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+      "commitDate": "21/09/16 6:34 AM",
+      "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+      "commitAuthor": "Kai Zheng",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+          "commitDate": "21/09/16 6:34 AM",
+          "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "20/09/16 12:03 AM",
+          "commitNameOld": "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 1.27,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,9 @@\n-    boolean prepareParityChunk(int index) {\n-      Preconditions.checkState(index \u003e\u003d dataBlkNum\n-          \u0026\u0026 alignedStripe.chunks[index] \u003d\u003d null);\n-      if (blockReaders[index] !\u003d null \u0026\u0026 blockReaders[index].shouldSkip) {\n-        alignedStripe.chunks[index] \u003d new StripingChunk(StripingChunk.MISSING);\n-        // we have failed the block reader before\n-        return false;\n-      }\n-      final int parityIndex \u003d index - dataBlkNum;\n-      ByteBuffer buf \u003d getParityBuffer().duplicate();\n-      buf.position(cellSize * parityIndex);\n-      buf.limit(cellSize * parityIndex + (int) alignedStripe.range.spanInBlock);\n-      decodeInputs[index] \u003d buf.slice();\n-      alignedStripe.chunks[index] \u003d new StripingChunk(decodeInputs[index]);\n-      return true;\n-    }\n\\ No newline at end of file\n+  boolean prepareParityChunk(int index) {\n+    Preconditions.checkState(index \u003e\u003d dataBlkNum \u0026\u0026\n+        alignedStripe.chunks[index] \u003d\u003d null);\n+\n+    alignedStripe.chunks[index] \u003d\n+        new StripingChunk(decodeInputs[index].getBuffer());\n+\n+    return true;\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  boolean prepareParityChunk(int index) {\n    Preconditions.checkState(index \u003e\u003d dataBlkNum \u0026\u0026\n        alignedStripe.chunks[index] \u003d\u003d null);\n\n    alignedStripe.chunks[index] \u003d\n        new StripingChunk(decodeInputs[index].getBuffer());\n\n    return true;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/PositionStripeReader.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedInputStream.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/PositionStripeReader.java",
+            "oldMethodName": "prepareParityChunk",
+            "newMethodName": "prepareParityChunk"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+          "commitDate": "21/09/16 6:34 AM",
+          "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "20/09/16 12:03 AM",
+          "commitNameOld": "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 1.27,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,9 @@\n-    boolean prepareParityChunk(int index) {\n-      Preconditions.checkState(index \u003e\u003d dataBlkNum\n-          \u0026\u0026 alignedStripe.chunks[index] \u003d\u003d null);\n-      if (blockReaders[index] !\u003d null \u0026\u0026 blockReaders[index].shouldSkip) {\n-        alignedStripe.chunks[index] \u003d new StripingChunk(StripingChunk.MISSING);\n-        // we have failed the block reader before\n-        return false;\n-      }\n-      final int parityIndex \u003d index - dataBlkNum;\n-      ByteBuffer buf \u003d getParityBuffer().duplicate();\n-      buf.position(cellSize * parityIndex);\n-      buf.limit(cellSize * parityIndex + (int) alignedStripe.range.spanInBlock);\n-      decodeInputs[index] \u003d buf.slice();\n-      alignedStripe.chunks[index] \u003d new StripingChunk(decodeInputs[index]);\n-      return true;\n-    }\n\\ No newline at end of file\n+  boolean prepareParityChunk(int index) {\n+    Preconditions.checkState(index \u003e\u003d dataBlkNum \u0026\u0026\n+        alignedStripe.chunks[index] \u003d\u003d null);\n+\n+    alignedStripe.chunks[index] \u003d\n+        new StripingChunk(decodeInputs[index].getBuffer());\n+\n+    return true;\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  boolean prepareParityChunk(int index) {\n    Preconditions.checkState(index \u003e\u003d dataBlkNum \u0026\u0026\n        alignedStripe.chunks[index] \u003d\u003d null);\n\n    alignedStripe.chunks[index] \u003d\n        new StripingChunk(decodeInputs[index].getBuffer());\n\n    return true;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/PositionStripeReader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "c201cf951d5adefefe7c68e882a0c07962248577": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-12040. Adjust inputs order for the decode API in raw erasure coder. (Kai Zheng via yliu)\n",
+      "commitDate": "28/10/15 1:18 AM",
+      "commitName": "c201cf951d5adefefe7c68e882a0c07962248577",
+      "commitAuthor": "yliu",
+      "commitDateOld": "07/10/15 6:12 PM",
+      "commitNameOld": "66e2cfa1a0285f2b4f62a4ffb4d5c1ee54f76156",
+      "commitAuthorOld": "Andrew Wang",
+      "daysBetweenCommits": 20.3,
+      "commitsBetweenForRepo": 184,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,16 @@\n     boolean prepareParityChunk(int index) {\n       Preconditions.checkState(index \u003e\u003d dataBlkNum\n           \u0026\u0026 alignedStripe.chunks[index] \u003d\u003d null);\n       if (blockReaders[index] !\u003d null \u0026\u0026 blockReaders[index].shouldSkip) {\n         alignedStripe.chunks[index] \u003d new StripingChunk(StripingChunk.MISSING);\n         // we have failed the block reader before\n         return false;\n       }\n-      final int decodeIndex \u003d StripedBlockUtil.convertIndex4Decode(index,\n-          dataBlkNum, parityBlkNum);\n+      final int parityIndex \u003d index - dataBlkNum;\n       ByteBuffer buf \u003d getParityBuffer().duplicate();\n-      buf.position(cellSize * decodeIndex);\n-      buf.limit(cellSize * decodeIndex + (int) alignedStripe.range.spanInBlock);\n-      decodeInputs[decodeIndex] \u003d buf.slice();\n-      alignedStripe.chunks[index] \u003d new StripingChunk(decodeInputs[decodeIndex]);\n+      buf.position(cellSize * parityIndex);\n+      buf.limit(cellSize * parityIndex + (int) alignedStripe.range.spanInBlock);\n+      decodeInputs[index] \u003d buf.slice();\n+      alignedStripe.chunks[index] \u003d new StripingChunk(decodeInputs[index]);\n       return true;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    boolean prepareParityChunk(int index) {\n      Preconditions.checkState(index \u003e\u003d dataBlkNum\n          \u0026\u0026 alignedStripe.chunks[index] \u003d\u003d null);\n      if (blockReaders[index] !\u003d null \u0026\u0026 blockReaders[index].shouldSkip) {\n        alignedStripe.chunks[index] \u003d new StripingChunk(StripingChunk.MISSING);\n        // we have failed the block reader before\n        return false;\n      }\n      final int parityIndex \u003d index - dataBlkNum;\n      ByteBuffer buf \u003d getParityBuffer().duplicate();\n      buf.position(cellSize * parityIndex);\n      buf.limit(cellSize * parityIndex + (int) alignedStripe.range.spanInBlock);\n      decodeInputs[index] \u003d buf.slice();\n      alignedStripe.chunks[index] \u003d new StripingChunk(decodeInputs[index]);\n      return true;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedInputStream.java",
+      "extendedDetails": {}
+    },
+    "7136e8c5582dc4061b566cb9f11a0d6a6d08bb93": {
+      "type": "Yexceptionschange",
+      "commitMessage": "HDFS-8979. Clean up checkstyle warnings in hadoop-hdfs-client module. Contributed by Mingliang Liu.\n",
+      "commitDate": "03/10/15 11:38 AM",
+      "commitName": "7136e8c5582dc4061b566cb9f11a0d6a6d08bb93",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "29/09/15 1:39 AM",
+      "commitNameOld": "8fd55202468b28422b0df888641c9b08906fe4a7",
+      "commitAuthorOld": "",
+      "daysBetweenCommits": 4.42,
+      "commitsBetweenForRepo": 29,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,17 @@\n-    boolean prepareParityChunk(int index) throws IOException {\n+    boolean prepareParityChunk(int index) {\n       Preconditions.checkState(index \u003e\u003d dataBlkNum\n           \u0026\u0026 alignedStripe.chunks[index] \u003d\u003d null);\n       if (blockReaders[index] !\u003d null \u0026\u0026 blockReaders[index].shouldSkip) {\n         alignedStripe.chunks[index] \u003d new StripingChunk(StripingChunk.MISSING);\n         // we have failed the block reader before\n         return false;\n       }\n       final int decodeIndex \u003d StripedBlockUtil.convertIndex4Decode(index,\n           dataBlkNum, parityBlkNum);\n       ByteBuffer buf \u003d getParityBuffer().duplicate();\n       buf.position(cellSize * decodeIndex);\n       buf.limit(cellSize * decodeIndex + (int) alignedStripe.range.spanInBlock);\n       decodeInputs[decodeIndex] \u003d buf.slice();\n       alignedStripe.chunks[index] \u003d new StripingChunk(decodeInputs[decodeIndex]);\n       return true;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    boolean prepareParityChunk(int index) {\n      Preconditions.checkState(index \u003e\u003d dataBlkNum\n          \u0026\u0026 alignedStripe.chunks[index] \u003d\u003d null);\n      if (blockReaders[index] !\u003d null \u0026\u0026 blockReaders[index].shouldSkip) {\n        alignedStripe.chunks[index] \u003d new StripingChunk(StripingChunk.MISSING);\n        // we have failed the block reader before\n        return false;\n      }\n      final int decodeIndex \u003d StripedBlockUtil.convertIndex4Decode(index,\n          dataBlkNum, parityBlkNum);\n      ByteBuffer buf \u003d getParityBuffer().duplicate();\n      buf.position(cellSize * decodeIndex);\n      buf.limit(cellSize * decodeIndex + (int) alignedStripe.range.spanInBlock);\n      decodeInputs[decodeIndex] \u003d buf.slice();\n      alignedStripe.chunks[index] \u003d new StripingChunk(decodeInputs[decodeIndex]);\n      return true;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedInputStream.java",
+      "extendedDetails": {
+        "oldValue": "[IOException]",
+        "newValue": "[]"
+      }
+    }
+  }
+}

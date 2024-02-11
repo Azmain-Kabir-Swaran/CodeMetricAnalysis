@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FsVolumeImpl.java",
+  "functionName": "convertTemporaryToRbw",
+  "functionId": "convertTemporaryToRbw___b-ExtendedBlock__temp-ReplicaInfo",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+  "functionStartLine": 1237,
+  "functionEndLine": 1267,
+  "numCommitsSeen": 71,
+  "timeTaken": 2601,
+  "changeHistory": [
+    "c619e9b43fd00ba0e59a98ae09685ff719bb722b",
+    "86c9862bec0248d671e657aa56094a2919b8ac14"
+  ],
+  "changeHistoryShort": {
+    "c619e9b43fd00ba0e59a98ae09685ff719bb722b": "Ybodychange",
+    "86c9862bec0248d671e657aa56094a2919b8ac14": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c619e9b43fd00ba0e59a98ae09685ff719bb722b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11056. Concurrent append and read operations lead to checksum error. Contributed by Wei-Chiu Chuang.\n",
+      "commitDate": "09/11/16 9:16 AM",
+      "commitName": "c619e9b43fd00ba0e59a98ae09685ff719bb722b",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "06/11/16 6:16 PM",
+      "commitNameOld": "049e7d27bea13d4254baccf49401daae820b71df",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 2.63,
+      "commitsBetweenForRepo": 23,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,31 @@\n   public ReplicaInPipeline convertTemporaryToRbw(ExtendedBlock b,\n       ReplicaInfo temp) throws IOException {\n \n     final long blockId \u003d b.getBlockId();\n     final long expectedGs \u003d b.getGenerationStamp();\n     final long visible \u003d b.getNumBytes();\n     final long numBytes \u003d temp.getNumBytes();\n \n     // move block files to the rbw directory\n     BlockPoolSlice bpslice \u003d getBlockPoolSlice(b.getBlockPoolId());\n     final File dest \u003d FsDatasetImpl.moveBlockFiles(b.getLocalBlock(), temp,\n         bpslice.getRbwDir());\n     // create RBW\n     final LocalReplicaInPipeline rbw \u003d new ReplicaBuilder(ReplicaState.RBW)\n         .setBlockId(blockId)\n         .setLength(numBytes)\n         .setGenerationStamp(expectedGs)\n         .setFsVolume(this)\n         .setDirectoryToUse(dest.getParentFile())\n         .setWriterThread(Thread.currentThread())\n         .setBytesToReserve(0)\n         .buildLocalReplicaInPipeline();\n     rbw.setBytesAcked(visible);\n+\n+    // load last checksum and datalen\n+    final File destMeta \u003d FsDatasetUtil.getMetaFile(dest,\n+        b.getGenerationStamp());\n+    byte[] lastChunkChecksum \u003d loadLastPartialChunkChecksum(dest, destMeta);\n+    rbw.setLastChecksumAndDataLen(numBytes, lastChunkChecksum);\n     return rbw;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ReplicaInPipeline convertTemporaryToRbw(ExtendedBlock b,\n      ReplicaInfo temp) throws IOException {\n\n    final long blockId \u003d b.getBlockId();\n    final long expectedGs \u003d b.getGenerationStamp();\n    final long visible \u003d b.getNumBytes();\n    final long numBytes \u003d temp.getNumBytes();\n\n    // move block files to the rbw directory\n    BlockPoolSlice bpslice \u003d getBlockPoolSlice(b.getBlockPoolId());\n    final File dest \u003d FsDatasetImpl.moveBlockFiles(b.getLocalBlock(), temp,\n        bpslice.getRbwDir());\n    // create RBW\n    final LocalReplicaInPipeline rbw \u003d new ReplicaBuilder(ReplicaState.RBW)\n        .setBlockId(blockId)\n        .setLength(numBytes)\n        .setGenerationStamp(expectedGs)\n        .setFsVolume(this)\n        .setDirectoryToUse(dest.getParentFile())\n        .setWriterThread(Thread.currentThread())\n        .setBytesToReserve(0)\n        .buildLocalReplicaInPipeline();\n    rbw.setBytesAcked(visible);\n\n    // load last checksum and datalen\n    final File destMeta \u003d FsDatasetUtil.getMetaFile(dest,\n        b.getGenerationStamp());\n    byte[] lastChunkChecksum \u003d loadLastPartialChunkChecksum(dest, destMeta);\n    rbw.setLastChecksumAndDataLen(numBytes, lastChunkChecksum);\n    return rbw;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java",
+      "extendedDetails": {}
+    },
+    "86c9862bec0248d671e657aa56094a2919b8ac14": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10636. Modify ReplicaInfo to remove the assumption that replica metadata and data are stored in java.io.File. (Virajith Jalaparti via lei)\n",
+      "commitDate": "13/09/16 12:54 PM",
+      "commitName": "86c9862bec0248d671e657aa56094a2919b8ac14",
+      "commitAuthor": "Lei Xu",
+      "diff": "@@ -0,0 +1,25 @@\n+  public ReplicaInPipeline convertTemporaryToRbw(ExtendedBlock b,\n+      ReplicaInfo temp) throws IOException {\n+\n+    final long blockId \u003d b.getBlockId();\n+    final long expectedGs \u003d b.getGenerationStamp();\n+    final long visible \u003d b.getNumBytes();\n+    final long numBytes \u003d temp.getNumBytes();\n+\n+    // move block files to the rbw directory\n+    BlockPoolSlice bpslice \u003d getBlockPoolSlice(b.getBlockPoolId());\n+    final File dest \u003d FsDatasetImpl.moveBlockFiles(b.getLocalBlock(), temp,\n+        bpslice.getRbwDir());\n+    // create RBW\n+    final LocalReplicaInPipeline rbw \u003d new ReplicaBuilder(ReplicaState.RBW)\n+        .setBlockId(blockId)\n+        .setLength(numBytes)\n+        .setGenerationStamp(expectedGs)\n+        .setFsVolume(this)\n+        .setDirectoryToUse(dest.getParentFile())\n+        .setWriterThread(Thread.currentThread())\n+        .setBytesToReserve(0)\n+        .buildLocalReplicaInPipeline();\n+    rbw.setBytesAcked(visible);\n+    return rbw;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public ReplicaInPipeline convertTemporaryToRbw(ExtendedBlock b,\n      ReplicaInfo temp) throws IOException {\n\n    final long blockId \u003d b.getBlockId();\n    final long expectedGs \u003d b.getGenerationStamp();\n    final long visible \u003d b.getNumBytes();\n    final long numBytes \u003d temp.getNumBytes();\n\n    // move block files to the rbw directory\n    BlockPoolSlice bpslice \u003d getBlockPoolSlice(b.getBlockPoolId());\n    final File dest \u003d FsDatasetImpl.moveBlockFiles(b.getLocalBlock(), temp,\n        bpslice.getRbwDir());\n    // create RBW\n    final LocalReplicaInPipeline rbw \u003d new ReplicaBuilder(ReplicaState.RBW)\n        .setBlockId(blockId)\n        .setLength(numBytes)\n        .setGenerationStamp(expectedGs)\n        .setFsVolume(this)\n        .setDirectoryToUse(dest.getParentFile())\n        .setWriterThread(Thread.currentThread())\n        .setBytesToReserve(0)\n        .buildLocalReplicaInPipeline();\n    rbw.setBytesAcked(visible);\n    return rbw;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsVolumeImpl.java"
+    }
+  }
+}

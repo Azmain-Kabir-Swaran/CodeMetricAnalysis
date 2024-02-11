@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "QuorumJournalManager.java",
+  "functionName": "selectStreamingInputStreams",
+  "functionId": "selectStreamingInputStreams___streams-Collection__EditLogInputStream____fromTxnId-long__inProgressOk-boolean__onlyDurableTxns-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java",
+  "functionStartLine": 613,
+  "functionEndLine": 659,
+  "numCommitsSeen": 42,
+  "timeTaken": 1461,
+  "changeHistory": [
+    "00e99c65943e64fd696ec715cf21e851b93115f1"
+  ],
+  "changeHistoryShort": {
+    "00e99c65943e64fd696ec715cf21e851b93115f1": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "00e99c65943e64fd696ec715cf21e851b93115f1": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13609. [SBN read] Edit Tail Fast Path Part 3: NameNode-side changes to support tailing edits via RPC. Contributed by Erik Krogen.\n",
+      "commitDate": "24/12/18 9:33 AM",
+      "commitName": "00e99c65943e64fd696ec715cf21e851b93115f1",
+      "commitAuthor": "Erik Krogen",
+      "diff": "@@ -0,0 +1,47 @@\n+  private void selectStreamingInputStreams(\n+      Collection\u003cEditLogInputStream\u003e streams, long fromTxnId,\n+      boolean inProgressOk, boolean onlyDurableTxns) throws IOException {\n+    QuorumCall\u003cAsyncLogger, RemoteEditLogManifest\u003e q \u003d\n+        loggers.getEditLogManifest(fromTxnId, inProgressOk);\n+    Map\u003cAsyncLogger, RemoteEditLogManifest\u003e resps \u003d\n+        loggers.waitForWriteQuorum(q, selectInputStreamsTimeoutMs,\n+            \"selectStreamingInputStreams\");\n+\n+    LOG.debug(\"selectStreamingInputStream manifests:\\n\" +\n+        Joiner.on(\"\\n\").withKeyValueSeparator(\": \").join(resps));\n+\n+    final PriorityQueue\u003cEditLogInputStream\u003e allStreams \u003d\n+        new PriorityQueue\u003cEditLogInputStream\u003e(64,\n+            JournalSet.EDIT_LOG_INPUT_STREAM_COMPARATOR);\n+    for (Map.Entry\u003cAsyncLogger, RemoteEditLogManifest\u003e e : resps.entrySet()) {\n+      AsyncLogger logger \u003d e.getKey();\n+      RemoteEditLogManifest manifest \u003d e.getValue();\n+      long committedTxnId \u003d manifest.getCommittedTxnId();\n+\n+      for (RemoteEditLog remoteLog : manifest.getLogs()) {\n+        URL url \u003d logger.buildURLToFetchLogs(remoteLog.getStartTxId());\n+\n+        long endTxId \u003d remoteLog.getEndTxId();\n+\n+        // If it\u0027s bounded by durable Txns, endTxId could not be larger\n+        // than committedTxnId. This ensures the consistency.\n+        // We don\u0027t do the following for finalized log segments, since all\n+        // edits in those are guaranteed to be committed.\n+        if (onlyDurableTxns \u0026\u0026 inProgressOk \u0026\u0026 remoteLog.isInProgress()) {\n+          endTxId \u003d Math.min(endTxId, committedTxnId);\n+          if (endTxId \u003c remoteLog.getStartTxId()) {\n+            LOG.warn(\"Found endTxId (\" + endTxId + \") that is less than \" +\n+                \"the startTxId (\" + remoteLog.getStartTxId() +\n+                \") - setting it to startTxId.\");\n+            endTxId \u003d remoteLog.getStartTxId();\n+          }\n+        }\n+\n+        EditLogInputStream elis \u003d EditLogFileInputStream.fromUrl(\n+            connectionFactory, url, remoteLog.getStartTxId(),\n+            endTxId, remoteLog.isInProgress());\n+        allStreams.add(elis);\n+      }\n+    }\n+    JournalSet.chainAndMakeRedundantStreams(streams, allStreams, fromTxnId);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void selectStreamingInputStreams(\n      Collection\u003cEditLogInputStream\u003e streams, long fromTxnId,\n      boolean inProgressOk, boolean onlyDurableTxns) throws IOException {\n    QuorumCall\u003cAsyncLogger, RemoteEditLogManifest\u003e q \u003d\n        loggers.getEditLogManifest(fromTxnId, inProgressOk);\n    Map\u003cAsyncLogger, RemoteEditLogManifest\u003e resps \u003d\n        loggers.waitForWriteQuorum(q, selectInputStreamsTimeoutMs,\n            \"selectStreamingInputStreams\");\n\n    LOG.debug(\"selectStreamingInputStream manifests:\\n\" +\n        Joiner.on(\"\\n\").withKeyValueSeparator(\": \").join(resps));\n\n    final PriorityQueue\u003cEditLogInputStream\u003e allStreams \u003d\n        new PriorityQueue\u003cEditLogInputStream\u003e(64,\n            JournalSet.EDIT_LOG_INPUT_STREAM_COMPARATOR);\n    for (Map.Entry\u003cAsyncLogger, RemoteEditLogManifest\u003e e : resps.entrySet()) {\n      AsyncLogger logger \u003d e.getKey();\n      RemoteEditLogManifest manifest \u003d e.getValue();\n      long committedTxnId \u003d manifest.getCommittedTxnId();\n\n      for (RemoteEditLog remoteLog : manifest.getLogs()) {\n        URL url \u003d logger.buildURLToFetchLogs(remoteLog.getStartTxId());\n\n        long endTxId \u003d remoteLog.getEndTxId();\n\n        // If it\u0027s bounded by durable Txns, endTxId could not be larger\n        // than committedTxnId. This ensures the consistency.\n        // We don\u0027t do the following for finalized log segments, since all\n        // edits in those are guaranteed to be committed.\n        if (onlyDurableTxns \u0026\u0026 inProgressOk \u0026\u0026 remoteLog.isInProgress()) {\n          endTxId \u003d Math.min(endTxId, committedTxnId);\n          if (endTxId \u003c remoteLog.getStartTxId()) {\n            LOG.warn(\"Found endTxId (\" + endTxId + \") that is less than \" +\n                \"the startTxId (\" + remoteLog.getStartTxId() +\n                \") - setting it to startTxId.\");\n            endTxId \u003d remoteLog.getStartTxId();\n          }\n        }\n\n        EditLogInputStream elis \u003d EditLogFileInputStream.fromUrl(\n            connectionFactory, url, remoteLog.getStartTxId(),\n            endTxId, remoteLog.isInProgress());\n        allStreams.add(elis);\n      }\n    }\n    JournalSet.chainAndMakeRedundantStreams(streams, allStreams, fromTxnId);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/qjournal/client/QuorumJournalManager.java"
+    }
+  }
+}

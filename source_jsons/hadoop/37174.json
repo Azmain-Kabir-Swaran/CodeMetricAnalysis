@@ -1,0 +1,120 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StageAllocatorLowCostAligned.java",
+  "functionName": "getDurationInterval",
+  "functionId": "getDurationInterval___startTime-long__endTime-long__planLoads-RLESparseResourceAllocation__planModifications-RLESparseResourceAllocation__capacity-Resource__netRLERes-RLESparseResourceAllocation__resCalc-ResourceCalculator__step-long__requestedResources-Resource",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/StageAllocatorLowCostAligned.java",
+  "functionStartLine": 236,
+  "functionEndLine": 254,
+  "numCommitsSeen": 11,
+  "timeTaken": 3835,
+  "changeHistory": [
+    "a3a615eeab8c14ccdc548311097e62a916963dc5",
+    "156f24ead00436faad5d4aeef327a546392cd265"
+  ],
+  "changeHistoryShort": {
+    "a3a615eeab8c14ccdc548311097e62a916963dc5": "Ymultichange(Yparameterchange,Ymodifierchange,Yexceptionschange,Ybodychange)",
+    "156f24ead00436faad5d4aeef327a546392cd265": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a3a615eeab8c14ccdc548311097e62a916963dc5": {
+      "type": "Ymultichange(Yparameterchange,Ymodifierchange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "YARN-4359. Update LowCost agents logic to take advantage of YARN-4358. (Jonathan Yaniv and Ishai Menache via Subru).\n",
+      "commitDate": "01/05/17 4:01 PM",
+      "commitName": "a3a615eeab8c14ccdc548311097e62a916963dc5",
+      "commitAuthor": "Subru Krishnan",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-4359. Update LowCost agents logic to take advantage of YARN-4358. (Jonathan Yaniv and Ishai Menache via Subru).\n",
+          "commitDate": "01/05/17 4:01 PM",
+          "commitName": "a3a615eeab8c14ccdc548311097e62a916963dc5",
+          "commitAuthor": "Subru Krishnan",
+          "commitDateOld": "05/12/15 9:26 PM",
+          "commitNameOld": "742632e346604fd2b263bd42367165638fcf2416",
+          "commitAuthorOld": "Arun Suresh",
+          "daysBetweenCommits": 512.73,
+          "commitsBetweenForRepo": 3348,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,19 @@\n-  protected DurationInterval getDurationInterval(long startTime, long endTime,\n-      Map\u003cLong, Resource\u003e planLoads,\n+  protected static DurationInterval getDurationInterval(long startTime,\n+      long endTime, RLESparseResourceAllocation planLoads,\n       RLESparseResourceAllocation planModifications, Resource capacity,\n-      ResourceCalculator resCalc, long step) {\n+      RLESparseResourceAllocation netRLERes, ResourceCalculator resCalc,\n+      long step, Resource requestedResources) throws PlanningException {\n \n-    // Initialize the dominant loads structure\n-    Resource dominantResources \u003d Resource.newInstance(0, 0);\n+    // Get the total cost associated with the duration interval\n+    double totalCost \u003d getDurationIntervalTotalCost(startTime, endTime,\n+        planLoads, planModifications, capacity, resCalc, step);\n \n-    // Calculate totalCost and maxLoad\n-    double totalCost \u003d 0.0;\n-    for (long t \u003d startTime; t \u003c endTime; t +\u003d step) {\n+    // Calculate how many gangs can fit, i.e., how many times can \u0027capacity\u0027\n+    // be allocated within the duration interval [startTime, endTime)\n+    int gangsCanFit \u003d getDurationIntervalGangsCanFit(startTime, endTime,\n+        planModifications, capacity, netRLERes, resCalc, requestedResources);\n \n-      // Get the load\n-      Resource load \u003d getLoadAtTime(t, planLoads, planModifications);\n-\n-      // Increase the total cost\n-      totalCost +\u003d calcCostOfLoad(load, capacity, resCalc);\n-\n-      // Update the dominant resources\n-      dominantResources \u003d Resources.componentwiseMax(dominantResources, load);\n-\n-    }\n-\n-    // Return the corresponding durationInterval\n-    return new DurationInterval(startTime, endTime, totalCost,\n-        dominantResources);\n+    // Return the desired durationInterval\n+    return new DurationInterval(startTime, endTime, totalCost, gangsCanFit);\n \n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected static DurationInterval getDurationInterval(long startTime,\n      long endTime, RLESparseResourceAllocation planLoads,\n      RLESparseResourceAllocation planModifications, Resource capacity,\n      RLESparseResourceAllocation netRLERes, ResourceCalculator resCalc,\n      long step, Resource requestedResources) throws PlanningException {\n\n    // Get the total cost associated with the duration interval\n    double totalCost \u003d getDurationIntervalTotalCost(startTime, endTime,\n        planLoads, planModifications, capacity, resCalc, step);\n\n    // Calculate how many gangs can fit, i.e., how many times can \u0027capacity\u0027\n    // be allocated within the duration interval [startTime, endTime)\n    int gangsCanFit \u003d getDurationIntervalGangsCanFit(startTime, endTime,\n        planModifications, capacity, netRLERes, resCalc, requestedResources);\n\n    // Return the desired durationInterval\n    return new DurationInterval(startTime, endTime, totalCost, gangsCanFit);\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/StageAllocatorLowCostAligned.java",
+          "extendedDetails": {
+            "oldValue": "[startTime-long, endTime-long, planLoads-Map\u003cLong,Resource\u003e, planModifications-RLESparseResourceAllocation, capacity-Resource, resCalc-ResourceCalculator, step-long]",
+            "newValue": "[startTime-long, endTime-long, planLoads-RLESparseResourceAllocation, planModifications-RLESparseResourceAllocation, capacity-Resource, netRLERes-RLESparseResourceAllocation, resCalc-ResourceCalculator, step-long, requestedResources-Resource]"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "YARN-4359. Update LowCost agents logic to take advantage of YARN-4358. (Jonathan Yaniv and Ishai Menache via Subru).\n",
+          "commitDate": "01/05/17 4:01 PM",
+          "commitName": "a3a615eeab8c14ccdc548311097e62a916963dc5",
+          "commitAuthor": "Subru Krishnan",
+          "commitDateOld": "05/12/15 9:26 PM",
+          "commitNameOld": "742632e346604fd2b263bd42367165638fcf2416",
+          "commitAuthorOld": "Arun Suresh",
+          "daysBetweenCommits": 512.73,
+          "commitsBetweenForRepo": 3348,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,19 @@\n-  protected DurationInterval getDurationInterval(long startTime, long endTime,\n-      Map\u003cLong, Resource\u003e planLoads,\n+  protected static DurationInterval getDurationInterval(long startTime,\n+      long endTime, RLESparseResourceAllocation planLoads,\n       RLESparseResourceAllocation planModifications, Resource capacity,\n-      ResourceCalculator resCalc, long step) {\n+      RLESparseResourceAllocation netRLERes, ResourceCalculator resCalc,\n+      long step, Resource requestedResources) throws PlanningException {\n \n-    // Initialize the dominant loads structure\n-    Resource dominantResources \u003d Resource.newInstance(0, 0);\n+    // Get the total cost associated with the duration interval\n+    double totalCost \u003d getDurationIntervalTotalCost(startTime, endTime,\n+        planLoads, planModifications, capacity, resCalc, step);\n \n-    // Calculate totalCost and maxLoad\n-    double totalCost \u003d 0.0;\n-    for (long t \u003d startTime; t \u003c endTime; t +\u003d step) {\n+    // Calculate how many gangs can fit, i.e., how many times can \u0027capacity\u0027\n+    // be allocated within the duration interval [startTime, endTime)\n+    int gangsCanFit \u003d getDurationIntervalGangsCanFit(startTime, endTime,\n+        planModifications, capacity, netRLERes, resCalc, requestedResources);\n \n-      // Get the load\n-      Resource load \u003d getLoadAtTime(t, planLoads, planModifications);\n-\n-      // Increase the total cost\n-      totalCost +\u003d calcCostOfLoad(load, capacity, resCalc);\n-\n-      // Update the dominant resources\n-      dominantResources \u003d Resources.componentwiseMax(dominantResources, load);\n-\n-    }\n-\n-    // Return the corresponding durationInterval\n-    return new DurationInterval(startTime, endTime, totalCost,\n-        dominantResources);\n+    // Return the desired durationInterval\n+    return new DurationInterval(startTime, endTime, totalCost, gangsCanFit);\n \n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected static DurationInterval getDurationInterval(long startTime,\n      long endTime, RLESparseResourceAllocation planLoads,\n      RLESparseResourceAllocation planModifications, Resource capacity,\n      RLESparseResourceAllocation netRLERes, ResourceCalculator resCalc,\n      long step, Resource requestedResources) throws PlanningException {\n\n    // Get the total cost associated with the duration interval\n    double totalCost \u003d getDurationIntervalTotalCost(startTime, endTime,\n        planLoads, planModifications, capacity, resCalc, step);\n\n    // Calculate how many gangs can fit, i.e., how many times can \u0027capacity\u0027\n    // be allocated within the duration interval [startTime, endTime)\n    int gangsCanFit \u003d getDurationIntervalGangsCanFit(startTime, endTime,\n        planModifications, capacity, netRLERes, resCalc, requestedResources);\n\n    // Return the desired durationInterval\n    return new DurationInterval(startTime, endTime, totalCost, gangsCanFit);\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/StageAllocatorLowCostAligned.java",
+          "extendedDetails": {
+            "oldValue": "[protected]",
+            "newValue": "[protected, static]"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "YARN-4359. Update LowCost agents logic to take advantage of YARN-4358. (Jonathan Yaniv and Ishai Menache via Subru).\n",
+          "commitDate": "01/05/17 4:01 PM",
+          "commitName": "a3a615eeab8c14ccdc548311097e62a916963dc5",
+          "commitAuthor": "Subru Krishnan",
+          "commitDateOld": "05/12/15 9:26 PM",
+          "commitNameOld": "742632e346604fd2b263bd42367165638fcf2416",
+          "commitAuthorOld": "Arun Suresh",
+          "daysBetweenCommits": 512.73,
+          "commitsBetweenForRepo": 3348,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,19 @@\n-  protected DurationInterval getDurationInterval(long startTime, long endTime,\n-      Map\u003cLong, Resource\u003e planLoads,\n+  protected static DurationInterval getDurationInterval(long startTime,\n+      long endTime, RLESparseResourceAllocation planLoads,\n       RLESparseResourceAllocation planModifications, Resource capacity,\n-      ResourceCalculator resCalc, long step) {\n+      RLESparseResourceAllocation netRLERes, ResourceCalculator resCalc,\n+      long step, Resource requestedResources) throws PlanningException {\n \n-    // Initialize the dominant loads structure\n-    Resource dominantResources \u003d Resource.newInstance(0, 0);\n+    // Get the total cost associated with the duration interval\n+    double totalCost \u003d getDurationIntervalTotalCost(startTime, endTime,\n+        planLoads, planModifications, capacity, resCalc, step);\n \n-    // Calculate totalCost and maxLoad\n-    double totalCost \u003d 0.0;\n-    for (long t \u003d startTime; t \u003c endTime; t +\u003d step) {\n+    // Calculate how many gangs can fit, i.e., how many times can \u0027capacity\u0027\n+    // be allocated within the duration interval [startTime, endTime)\n+    int gangsCanFit \u003d getDurationIntervalGangsCanFit(startTime, endTime,\n+        planModifications, capacity, netRLERes, resCalc, requestedResources);\n \n-      // Get the load\n-      Resource load \u003d getLoadAtTime(t, planLoads, planModifications);\n-\n-      // Increase the total cost\n-      totalCost +\u003d calcCostOfLoad(load, capacity, resCalc);\n-\n-      // Update the dominant resources\n-      dominantResources \u003d Resources.componentwiseMax(dominantResources, load);\n-\n-    }\n-\n-    // Return the corresponding durationInterval\n-    return new DurationInterval(startTime, endTime, totalCost,\n-        dominantResources);\n+    // Return the desired durationInterval\n+    return new DurationInterval(startTime, endTime, totalCost, gangsCanFit);\n \n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected static DurationInterval getDurationInterval(long startTime,\n      long endTime, RLESparseResourceAllocation planLoads,\n      RLESparseResourceAllocation planModifications, Resource capacity,\n      RLESparseResourceAllocation netRLERes, ResourceCalculator resCalc,\n      long step, Resource requestedResources) throws PlanningException {\n\n    // Get the total cost associated with the duration interval\n    double totalCost \u003d getDurationIntervalTotalCost(startTime, endTime,\n        planLoads, planModifications, capacity, resCalc, step);\n\n    // Calculate how many gangs can fit, i.e., how many times can \u0027capacity\u0027\n    // be allocated within the duration interval [startTime, endTime)\n    int gangsCanFit \u003d getDurationIntervalGangsCanFit(startTime, endTime,\n        planModifications, capacity, netRLERes, resCalc, requestedResources);\n\n    // Return the desired durationInterval\n    return new DurationInterval(startTime, endTime, totalCost, gangsCanFit);\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/StageAllocatorLowCostAligned.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[PlanningException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-4359. Update LowCost agents logic to take advantage of YARN-4358. (Jonathan Yaniv and Ishai Menache via Subru).\n",
+          "commitDate": "01/05/17 4:01 PM",
+          "commitName": "a3a615eeab8c14ccdc548311097e62a916963dc5",
+          "commitAuthor": "Subru Krishnan",
+          "commitDateOld": "05/12/15 9:26 PM",
+          "commitNameOld": "742632e346604fd2b263bd42367165638fcf2416",
+          "commitAuthorOld": "Arun Suresh",
+          "daysBetweenCommits": 512.73,
+          "commitsBetweenForRepo": 3348,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,19 @@\n-  protected DurationInterval getDurationInterval(long startTime, long endTime,\n-      Map\u003cLong, Resource\u003e planLoads,\n+  protected static DurationInterval getDurationInterval(long startTime,\n+      long endTime, RLESparseResourceAllocation planLoads,\n       RLESparseResourceAllocation planModifications, Resource capacity,\n-      ResourceCalculator resCalc, long step) {\n+      RLESparseResourceAllocation netRLERes, ResourceCalculator resCalc,\n+      long step, Resource requestedResources) throws PlanningException {\n \n-    // Initialize the dominant loads structure\n-    Resource dominantResources \u003d Resource.newInstance(0, 0);\n+    // Get the total cost associated with the duration interval\n+    double totalCost \u003d getDurationIntervalTotalCost(startTime, endTime,\n+        planLoads, planModifications, capacity, resCalc, step);\n \n-    // Calculate totalCost and maxLoad\n-    double totalCost \u003d 0.0;\n-    for (long t \u003d startTime; t \u003c endTime; t +\u003d step) {\n+    // Calculate how many gangs can fit, i.e., how many times can \u0027capacity\u0027\n+    // be allocated within the duration interval [startTime, endTime)\n+    int gangsCanFit \u003d getDurationIntervalGangsCanFit(startTime, endTime,\n+        planModifications, capacity, netRLERes, resCalc, requestedResources);\n \n-      // Get the load\n-      Resource load \u003d getLoadAtTime(t, planLoads, planModifications);\n-\n-      // Increase the total cost\n-      totalCost +\u003d calcCostOfLoad(load, capacity, resCalc);\n-\n-      // Update the dominant resources\n-      dominantResources \u003d Resources.componentwiseMax(dominantResources, load);\n-\n-    }\n-\n-    // Return the corresponding durationInterval\n-    return new DurationInterval(startTime, endTime, totalCost,\n-        dominantResources);\n+    // Return the desired durationInterval\n+    return new DurationInterval(startTime, endTime, totalCost, gangsCanFit);\n \n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected static DurationInterval getDurationInterval(long startTime,\n      long endTime, RLESparseResourceAllocation planLoads,\n      RLESparseResourceAllocation planModifications, Resource capacity,\n      RLESparseResourceAllocation netRLERes, ResourceCalculator resCalc,\n      long step, Resource requestedResources) throws PlanningException {\n\n    // Get the total cost associated with the duration interval\n    double totalCost \u003d getDurationIntervalTotalCost(startTime, endTime,\n        planLoads, planModifications, capacity, resCalc, step);\n\n    // Calculate how many gangs can fit, i.e., how many times can \u0027capacity\u0027\n    // be allocated within the duration interval [startTime, endTime)\n    int gangsCanFit \u003d getDurationIntervalGangsCanFit(startTime, endTime,\n        planModifications, capacity, netRLERes, resCalc, requestedResources);\n\n    // Return the desired durationInterval\n    return new DurationInterval(startTime, endTime, totalCost, gangsCanFit);\n\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/StageAllocatorLowCostAligned.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "156f24ead00436faad5d4aeef327a546392cd265": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-3656. LowCost: A Cost-Based Placement Agent for YARN Reservations. (Jonathan Yaniv and Ishai Menache via curino)\n",
+      "commitDate": "25/07/15 7:39 AM",
+      "commitName": "156f24ead00436faad5d4aeef327a546392cd265",
+      "commitAuthor": "ccurino",
+      "diff": "@@ -0,0 +1,28 @@\n+  protected DurationInterval getDurationInterval(long startTime, long endTime,\n+      Map\u003cLong, Resource\u003e planLoads,\n+      RLESparseResourceAllocation planModifications, Resource capacity,\n+      ResourceCalculator resCalc, long step) {\n+\n+    // Initialize the dominant loads structure\n+    Resource dominantResources \u003d Resource.newInstance(0, 0);\n+\n+    // Calculate totalCost and maxLoad\n+    double totalCost \u003d 0.0;\n+    for (long t \u003d startTime; t \u003c endTime; t +\u003d step) {\n+\n+      // Get the load\n+      Resource load \u003d getLoadAtTime(t, planLoads, planModifications);\n+\n+      // Increase the total cost\n+      totalCost +\u003d calcCostOfLoad(load, capacity, resCalc);\n+\n+      // Update the dominant resources\n+      dominantResources \u003d Resources.componentwiseMax(dominantResources, load);\n+\n+    }\n+\n+    // Return the corresponding durationInterval\n+    return new DurationInterval(startTime, endTime, totalCost,\n+        dominantResources);\n+\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected DurationInterval getDurationInterval(long startTime, long endTime,\n      Map\u003cLong, Resource\u003e planLoads,\n      RLESparseResourceAllocation planModifications, Resource capacity,\n      ResourceCalculator resCalc, long step) {\n\n    // Initialize the dominant loads structure\n    Resource dominantResources \u003d Resource.newInstance(0, 0);\n\n    // Calculate totalCost and maxLoad\n    double totalCost \u003d 0.0;\n    for (long t \u003d startTime; t \u003c endTime; t +\u003d step) {\n\n      // Get the load\n      Resource load \u003d getLoadAtTime(t, planLoads, planModifications);\n\n      // Increase the total cost\n      totalCost +\u003d calcCostOfLoad(load, capacity, resCalc);\n\n      // Update the dominant resources\n      dominantResources \u003d Resources.componentwiseMax(dominantResources, load);\n\n    }\n\n    // Return the corresponding durationInterval\n    return new DurationInterval(startTime, endTime, totalCost,\n        dominantResources);\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/StageAllocatorLowCostAligned.java"
+    }
+  }
+}

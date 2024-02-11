@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DumpS3GuardDynamoTable.java",
+  "functionName": "dumpStoreEntries",
+  "functionId": "dumpStoreEntries___csv-CsvFile__dir-DirListingMetadata",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DumpS3GuardDynamoTable.java",
+  "functionStartLine": 387,
+  "functionEndLine": 420,
+  "numCommitsSeen": 2,
+  "timeTaken": 1066,
+  "changeHistory": [
+    "b15ef7dc3d91c6d50fa515158104fba29f43e6b0"
+  ],
+  "changeHistoryShort": {
+    "b15ef7dc3d91c6d50fa515158104fba29f43e6b0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b15ef7dc3d91c6d50fa515158104fba29f43e6b0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-16384: S3A: Avoid inconsistencies between DDB and S3.\n\nContributed by Steve Loughran\n\nContains\n\n- HADOOP-16397. Hadoop S3Guard Prune command to support a -tombstone option.\n- HADOOP-16406. ITestDynamoDBMetadataStore.testProvisionTable times out intermittently\n\nThis patch doesn\u0027t fix the underlying problem but it\n\n* changes some tests to clean up better\n* does a lot more in logging operations in against DDB, if enabled\n* adds an entry point to dump the state of the metastore and s3 tables (precursor to fsck)\n* adds a purge entry point to help clean up after a test run has got a store into a mess\n* s3guard prune command adds -tombstone option to only clear tombstones\n\nThe outcome is that tests should pass consistently and if problems occur we have better diagnostics.\n\nChange-Id: I3eca3f5529d7f6fec398c0ff0472919f08f054eb\n",
+      "commitDate": "12/07/19 5:02 AM",
+      "commitName": "b15ef7dc3d91c6d50fa515158104fba29f43e6b0",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,34 @@\n+  private Pair\u003cLong, Long\u003e dumpStoreEntries(\n+      CsvFile csv,\n+      DirListingMetadata dir) throws IOException {\n+    ArrayDeque\u003cDirListingMetadata\u003e queue \u003d new ArrayDeque\u003c\u003e();\n+    queue.add(dir);\n+    long files \u003d 0, dirs \u003d 1;\n+    while (!queue.isEmpty()) {\n+      DirListingMetadata next \u003d queue.pop();\n+      List\u003cDDBPathMetadata\u003e childDirs \u003d new ArrayList\u003c\u003e();\n+      Collection\u003cPathMetadata\u003e listing \u003d next.getListing();\n+      // sort by name\n+      List\u003cPathMetadata\u003e sorted \u003d new ArrayList\u003c\u003e(listing);\n+      sorted.sort(new PathOrderComparators.PathMetadataComparator(\n+          (l, r) -\u003e l.compareTo(r)));\n+\n+      for (PathMetadata pmd : sorted) {\n+        DDBPathMetadata ddbMd \u003d (DDBPathMetadata) pmd;\n+        dumpEntry(csv, ddbMd);\n+        if (ddbMd.getFileStatus().isDirectory()) {\n+          childDirs.add(ddbMd);\n+        } else {\n+          files++;\n+        }\n+      }\n+      List\u003cDirListingMetadata\u003e childMD \u003d new ArrayList\u003c\u003e(childDirs.size());\n+      for (DDBPathMetadata childDir : childDirs) {\n+        childMD.add(getStore().listChildren(\n+            childDir.getFileStatus().getPath()));\n+      }\n+      pushAll(queue, childMD);\n+    }\n+\n+    return Pair.of(dirs, files);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Pair\u003cLong, Long\u003e dumpStoreEntries(\n      CsvFile csv,\n      DirListingMetadata dir) throws IOException {\n    ArrayDeque\u003cDirListingMetadata\u003e queue \u003d new ArrayDeque\u003c\u003e();\n    queue.add(dir);\n    long files \u003d 0, dirs \u003d 1;\n    while (!queue.isEmpty()) {\n      DirListingMetadata next \u003d queue.pop();\n      List\u003cDDBPathMetadata\u003e childDirs \u003d new ArrayList\u003c\u003e();\n      Collection\u003cPathMetadata\u003e listing \u003d next.getListing();\n      // sort by name\n      List\u003cPathMetadata\u003e sorted \u003d new ArrayList\u003c\u003e(listing);\n      sorted.sort(new PathOrderComparators.PathMetadataComparator(\n          (l, r) -\u003e l.compareTo(r)));\n\n      for (PathMetadata pmd : sorted) {\n        DDBPathMetadata ddbMd \u003d (DDBPathMetadata) pmd;\n        dumpEntry(csv, ddbMd);\n        if (ddbMd.getFileStatus().isDirectory()) {\n          childDirs.add(ddbMd);\n        } else {\n          files++;\n        }\n      }\n      List\u003cDirListingMetadata\u003e childMD \u003d new ArrayList\u003c\u003e(childDirs.size());\n      for (DDBPathMetadata childDir : childDirs) {\n        childMD.add(getStore().listChildren(\n            childDir.getFileStatus().getPath()));\n      }\n      pushAll(queue, childMD);\n    }\n\n    return Pair.of(dirs, files);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DumpS3GuardDynamoTable.java"
+    }
+  }
+}

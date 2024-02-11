@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FifoIntraQueuePreemptionPlugin.java",
+  "functionName": "calculateToBePreemptedResourcePerApp",
+  "functionId": "calculateToBePreemptedResourcePerApp___clusterResource-Resource__orderedApps-TreeSet__TempAppPerPartition____preemptionLimit-Resource",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/monitor/capacity/FifoIntraQueuePreemptionPlugin.java",
+  "functionStartLine": 191,
+  "functionEndLine": 223,
+  "numCommitsSeen": 11,
+  "timeTaken": 1875,
+  "changeHistory": [
+    "61ace174cdcbca9d22abce7aa0aa71148f37ad55",
+    "c583ab02c730be0a63d974039a78f2dc67dc2db6",
+    "90dd3a8148468ac37a3f2173ad8d45e38bfcb0c9"
+  ],
+  "changeHistoryShort": {
+    "61ace174cdcbca9d22abce7aa0aa71148f37ad55": "Ybodychange",
+    "c583ab02c730be0a63d974039a78f2dc67dc2db6": "Ybodychange",
+    "90dd3a8148468ac37a3f2173ad8d45e38bfcb0c9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "61ace174cdcbca9d22abce7aa0aa71148f37ad55": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7469. Capacity Scheduler Intra-queue preemption: User can starve if newest app is exactly at user limit. Contributed by Eric Payne.\n",
+      "commitDate": "16/11/17 9:04 AM",
+      "commitName": "61ace174cdcbca9d22abce7aa0aa71148f37ad55",
+      "commitAuthor": "Sunil G",
+      "commitDateOld": "27/08/17 11:52 PM",
+      "commitNameOld": "02599bda04e0ef46f4628b006f2430ad63cac97e",
+      "commitAuthorOld": "Sunil G",
+      "daysBetweenCommits": 80.42,
+      "commitsBetweenForRepo": 786,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,33 @@\n   private void calculateToBePreemptedResourcePerApp(Resource clusterResource,\n       TreeSet\u003cTempAppPerPartition\u003e orderedApps, Resource preemptionLimit) {\n \n     for (TempAppPerPartition tmpApp : orderedApps) {\n       if (Resources.lessThanOrEqual(rc, clusterResource, preemptionLimit,\n           Resources.none())\n           || Resources.lessThanOrEqual(rc, clusterResource, tmpApp.getUsed(),\n               Resources.none())) {\n         continue;\n       }\n \n       Resource preemtableFromApp \u003d Resources.subtract(tmpApp.getUsed(),\n           tmpApp.idealAssigned);\n       Resources.subtractFromNonNegative(preemtableFromApp, tmpApp.selected);\n       Resources.subtractFromNonNegative(preemtableFromApp, tmpApp.getAMUsed());\n \n+      if (context.getIntraQueuePreemptionOrderPolicy()\n+            .equals(IntraQueuePreemptionOrderPolicy.USERLIMIT_FIRST)) {\n+        Resources.subtractFromNonNegative(preemtableFromApp,\n+          tmpApp.getFiCaSchedulerApp().getCSLeafQueue().getMinimumAllocation());\n+      }\n+\n       // Calculate toBePreempted from apps as follows:\n       // app.preemptable \u003d min(max(app.used - app.selected - app.ideal, 0),\n       // intra_q_preemptable)\n       tmpApp.toBePreempted \u003d Resources.min(rc, clusterResource, Resources\n           .max(rc, clusterResource, preemtableFromApp, Resources.none()),\n           Resources.clone(preemptionLimit));\n \n       preemptionLimit \u003d Resources.subtractFromNonNegative(preemptionLimit,\n           tmpApp.toBePreempted);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void calculateToBePreemptedResourcePerApp(Resource clusterResource,\n      TreeSet\u003cTempAppPerPartition\u003e orderedApps, Resource preemptionLimit) {\n\n    for (TempAppPerPartition tmpApp : orderedApps) {\n      if (Resources.lessThanOrEqual(rc, clusterResource, preemptionLimit,\n          Resources.none())\n          || Resources.lessThanOrEqual(rc, clusterResource, tmpApp.getUsed(),\n              Resources.none())) {\n        continue;\n      }\n\n      Resource preemtableFromApp \u003d Resources.subtract(tmpApp.getUsed(),\n          tmpApp.idealAssigned);\n      Resources.subtractFromNonNegative(preemtableFromApp, tmpApp.selected);\n      Resources.subtractFromNonNegative(preemtableFromApp, tmpApp.getAMUsed());\n\n      if (context.getIntraQueuePreemptionOrderPolicy()\n            .equals(IntraQueuePreemptionOrderPolicy.USERLIMIT_FIRST)) {\n        Resources.subtractFromNonNegative(preemtableFromApp,\n          tmpApp.getFiCaSchedulerApp().getCSLeafQueue().getMinimumAllocation());\n      }\n\n      // Calculate toBePreempted from apps as follows:\n      // app.preemptable \u003d min(max(app.used - app.selected - app.ideal, 0),\n      // intra_q_preemptable)\n      tmpApp.toBePreempted \u003d Resources.min(rc, clusterResource, Resources\n          .max(rc, clusterResource, preemtableFromApp, Resources.none()),\n          Resources.clone(preemptionLimit));\n\n      preemptionLimit \u003d Resources.subtractFromNonNegative(preemptionLimit,\n          tmpApp.toBePreempted);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/monitor/capacity/FifoIntraQueuePreemptionPlugin.java",
+      "extendedDetails": {}
+    },
+    "c583ab02c730be0a63d974039a78f2dc67dc2db6": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-2113. Add cross-user preemption within CapacityScheduler\u0027s leaf-queue. (Sunil G via wangda)\n\nChange-Id: I9b19f69788068be05b3295247cdd7b972f8a573c\n",
+      "commitDate": "22/05/17 2:26 PM",
+      "commitName": "c583ab02c730be0a63d974039a78f2dc67dc2db6",
+      "commitAuthor": "Wangda Tan",
+      "commitDateOld": "09/02/17 10:23 AM",
+      "commitNameOld": "5fb723bb77722d41df6959eee23e1b0cfeb5584e",
+      "commitAuthorOld": "Wangda Tan",
+      "daysBetweenCommits": 102.13,
+      "commitsBetweenForRepo": 587,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,27 @@\n   private void calculateToBePreemptedResourcePerApp(Resource clusterResource,\n       TreeSet\u003cTempAppPerPartition\u003e orderedApps, Resource preemptionLimit) {\n \n     for (TempAppPerPartition tmpApp : orderedApps) {\n       if (Resources.lessThanOrEqual(rc, clusterResource, preemptionLimit,\n           Resources.none())\n           || Resources.lessThanOrEqual(rc, clusterResource, tmpApp.getUsed(),\n               Resources.none())) {\n         continue;\n       }\n \n       Resource preemtableFromApp \u003d Resources.subtract(tmpApp.getUsed(),\n           tmpApp.idealAssigned);\n-      Resources.subtractFrom(preemtableFromApp, tmpApp.selected);\n-      Resources.subtractFrom(preemtableFromApp, tmpApp.getAMUsed());\n+      Resources.subtractFromNonNegative(preemtableFromApp, tmpApp.selected);\n+      Resources.subtractFromNonNegative(preemtableFromApp, tmpApp.getAMUsed());\n \n       // Calculate toBePreempted from apps as follows:\n       // app.preemptable \u003d min(max(app.used - app.selected - app.ideal, 0),\n       // intra_q_preemptable)\n       tmpApp.toBePreempted \u003d Resources.min(rc, clusterResource, Resources\n           .max(rc, clusterResource, preemtableFromApp, Resources.none()),\n-          preemptionLimit);\n+          Resources.clone(preemptionLimit));\n \n-      preemptionLimit \u003d Resources.subtract(preemptionLimit,\n+      preemptionLimit \u003d Resources.subtractFromNonNegative(preemptionLimit,\n           tmpApp.toBePreempted);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void calculateToBePreemptedResourcePerApp(Resource clusterResource,\n      TreeSet\u003cTempAppPerPartition\u003e orderedApps, Resource preemptionLimit) {\n\n    for (TempAppPerPartition tmpApp : orderedApps) {\n      if (Resources.lessThanOrEqual(rc, clusterResource, preemptionLimit,\n          Resources.none())\n          || Resources.lessThanOrEqual(rc, clusterResource, tmpApp.getUsed(),\n              Resources.none())) {\n        continue;\n      }\n\n      Resource preemtableFromApp \u003d Resources.subtract(tmpApp.getUsed(),\n          tmpApp.idealAssigned);\n      Resources.subtractFromNonNegative(preemtableFromApp, tmpApp.selected);\n      Resources.subtractFromNonNegative(preemtableFromApp, tmpApp.getAMUsed());\n\n      // Calculate toBePreempted from apps as follows:\n      // app.preemptable \u003d min(max(app.used - app.selected - app.ideal, 0),\n      // intra_q_preemptable)\n      tmpApp.toBePreempted \u003d Resources.min(rc, clusterResource, Resources\n          .max(rc, clusterResource, preemtableFromApp, Resources.none()),\n          Resources.clone(preemptionLimit));\n\n      preemptionLimit \u003d Resources.subtractFromNonNegative(preemptionLimit,\n          tmpApp.toBePreempted);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/monitor/capacity/FifoIntraQueuePreemptionPlugin.java",
+      "extendedDetails": {}
+    },
+    "90dd3a8148468ac37a3f2173ad8d45e38bfcb0c9": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2009. CapacityScheduler: Add intra-queue preemption for app priority support. (Sunil G via wangda)\n",
+      "commitDate": "31/10/16 3:18 PM",
+      "commitName": "90dd3a8148468ac37a3f2173ad8d45e38bfcb0c9",
+      "commitAuthor": "Wangda Tan",
+      "diff": "@@ -0,0 +1,27 @@\n+  private void calculateToBePreemptedResourcePerApp(Resource clusterResource,\n+      TreeSet\u003cTempAppPerPartition\u003e orderedApps, Resource preemptionLimit) {\n+\n+    for (TempAppPerPartition tmpApp : orderedApps) {\n+      if (Resources.lessThanOrEqual(rc, clusterResource, preemptionLimit,\n+          Resources.none())\n+          || Resources.lessThanOrEqual(rc, clusterResource, tmpApp.getUsed(),\n+              Resources.none())) {\n+        continue;\n+      }\n+\n+      Resource preemtableFromApp \u003d Resources.subtract(tmpApp.getUsed(),\n+          tmpApp.idealAssigned);\n+      Resources.subtractFrom(preemtableFromApp, tmpApp.selected);\n+      Resources.subtractFrom(preemtableFromApp, tmpApp.getAMUsed());\n+\n+      // Calculate toBePreempted from apps as follows:\n+      // app.preemptable \u003d min(max(app.used - app.selected - app.ideal, 0),\n+      // intra_q_preemptable)\n+      tmpApp.toBePreempted \u003d Resources.min(rc, clusterResource, Resources\n+          .max(rc, clusterResource, preemtableFromApp, Resources.none()),\n+          preemptionLimit);\n+\n+      preemptionLimit \u003d Resources.subtract(preemptionLimit,\n+          tmpApp.toBePreempted);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void calculateToBePreemptedResourcePerApp(Resource clusterResource,\n      TreeSet\u003cTempAppPerPartition\u003e orderedApps, Resource preemptionLimit) {\n\n    for (TempAppPerPartition tmpApp : orderedApps) {\n      if (Resources.lessThanOrEqual(rc, clusterResource, preemptionLimit,\n          Resources.none())\n          || Resources.lessThanOrEqual(rc, clusterResource, tmpApp.getUsed(),\n              Resources.none())) {\n        continue;\n      }\n\n      Resource preemtableFromApp \u003d Resources.subtract(tmpApp.getUsed(),\n          tmpApp.idealAssigned);\n      Resources.subtractFrom(preemtableFromApp, tmpApp.selected);\n      Resources.subtractFrom(preemtableFromApp, tmpApp.getAMUsed());\n\n      // Calculate toBePreempted from apps as follows:\n      // app.preemptable \u003d min(max(app.used - app.selected - app.ideal, 0),\n      // intra_q_preemptable)\n      tmpApp.toBePreempted \u003d Resources.min(rc, clusterResource, Resources\n          .max(rc, clusterResource, preemtableFromApp, Resources.none()),\n          preemptionLimit);\n\n      preemptionLimit \u003d Resources.subtract(preemptionLimit,\n          tmpApp.toBePreempted);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/monitor/capacity/FifoIntraQueuePreemptionPlugin.java"
+    }
+  }
+}

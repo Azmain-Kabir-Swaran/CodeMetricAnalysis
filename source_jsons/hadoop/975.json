@@ -1,0 +1,58 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSStripedOutputStream.java",
+  "functionName": "writeParity",
+  "functionId": "writeParity___index-int__buffer-ByteBuffer__checksumBuf-byte[]",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+  "functionStartLine": 1154,
+  "functionEndLine": 1184,
+  "numCommitsSeen": 38,
+  "timeTaken": 1333,
+  "changeHistory": [
+    "b5af9be72c72734d668f817c99d889031922a951",
+    "e30ce01ddce1cfd1e9d49c4784eb4a6bc87e36ca"
+  ],
+  "changeHistoryShort": {
+    "b5af9be72c72734d668f817c99d889031922a951": "Ybodychange",
+    "e30ce01ddce1cfd1e9d49c4784eb4a6bc87e36ca": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "b5af9be72c72734d668f817c99d889031922a951": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8668. Erasure Coding: revisit buffer used for encoding and decoding. Contributed by Sammi Chen\n",
+      "commitDate": "12/08/16 10:52 PM",
+      "commitName": "b5af9be72c72734d668f817c99d889031922a951",
+      "commitAuthor": "Kai Zheng",
+      "commitDateOld": "26/05/16 10:23 PM",
+      "commitNameOld": "77202fa1035a54496d11d07472fbc399148ff630",
+      "commitAuthorOld": "Kai Zheng",
+      "daysBetweenCommits": 78.02,
+      "commitsBetweenForRepo": 643,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,31 @@\n   void writeParity(int index, ByteBuffer buffer, byte[] checksumBuf)\n       throws IOException {\n     final StripedDataStreamer current \u003d setCurrentStreamer(index);\n     final int len \u003d buffer.limit();\n \n     final long oldBytes \u003d current.getBytesCurBlock();\n     if (current.isHealthy()) {\n       try {\n         DataChecksum sum \u003d getDataChecksum();\n-        sum.calculateChunkedSums(buffer.array(), 0, len, checksumBuf, 0);\n+        if (buffer.isDirect()) {\n+          ByteBuffer directCheckSumBuf \u003d\n+              BUFFER_POOL.getBuffer(true, checksumBuf.length);\n+          sum.calculateChunkedSums(buffer, directCheckSumBuf);\n+          directCheckSumBuf.get(checksumBuf);\n+          BUFFER_POOL.putBuffer(directCheckSumBuf);\n+        } else {\n+          sum.calculateChunkedSums(buffer.array(), 0, len, checksumBuf, 0);\n+        }\n+\n         for (int i \u003d 0; i \u003c len; i +\u003d sum.getBytesPerChecksum()) {\n           int chunkLen \u003d Math.min(sum.getBytesPerChecksum(), len - i);\n           int ckOffset \u003d i / sum.getBytesPerChecksum() * getChecksumSize();\n-          super.writeChunk(buffer.array(), i, chunkLen, checksumBuf, ckOffset,\n+          super.writeChunk(buffer, chunkLen, checksumBuf, ckOffset,\n               getChecksumSize());\n         }\n       } catch(Exception e) {\n         handleCurrentStreamerFailure(\"oldBytes\u003d\" + oldBytes + \", len\u003d\" + len,\n             e);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void writeParity(int index, ByteBuffer buffer, byte[] checksumBuf)\n      throws IOException {\n    final StripedDataStreamer current \u003d setCurrentStreamer(index);\n    final int len \u003d buffer.limit();\n\n    final long oldBytes \u003d current.getBytesCurBlock();\n    if (current.isHealthy()) {\n      try {\n        DataChecksum sum \u003d getDataChecksum();\n        if (buffer.isDirect()) {\n          ByteBuffer directCheckSumBuf \u003d\n              BUFFER_POOL.getBuffer(true, checksumBuf.length);\n          sum.calculateChunkedSums(buffer, directCheckSumBuf);\n          directCheckSumBuf.get(checksumBuf);\n          BUFFER_POOL.putBuffer(directCheckSumBuf);\n        } else {\n          sum.calculateChunkedSums(buffer.array(), 0, len, checksumBuf, 0);\n        }\n\n        for (int i \u003d 0; i \u003c len; i +\u003d sum.getBytesPerChecksum()) {\n          int chunkLen \u003d Math.min(sum.getBytesPerChecksum(), len - i);\n          int ckOffset \u003d i / sum.getBytesPerChecksum() * getChecksumSize();\n          super.writeChunk(buffer, chunkLen, checksumBuf, ckOffset,\n              getChecksumSize());\n        }\n      } catch(Exception e) {\n        handleCurrentStreamerFailure(\"oldBytes\u003d\" + oldBytes + \", len\u003d\" + len,\n            e);\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+      "extendedDetails": {}
+    },
+    "e30ce01ddce1cfd1e9d49c4784eb4a6bc87e36ca": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9494. Parallel optimization of DFSStripedOutputStream#flushAllInternals. Contributed by Gao Rui.\n",
+      "commitDate": "01/02/16 1:02 PM",
+      "commitName": "e30ce01ddce1cfd1e9d49c4784eb4a6bc87e36ca",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "18/12/15 3:57 PM",
+      "commitNameOld": "61ab0440f7eaff0f631cbae0378403912f88d7ad",
+      "commitAuthorOld": "Zhe Zhang",
+      "daysBetweenCommits": 44.88,
+      "commitsBetweenForRepo": 252,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,22 @@\n   void writeParity(int index, ByteBuffer buffer, byte[] checksumBuf)\n       throws IOException {\n     final StripedDataStreamer current \u003d setCurrentStreamer(index);\n     final int len \u003d buffer.limit();\n \n     final long oldBytes \u003d current.getBytesCurBlock();\n     if (current.isHealthy()) {\n       try {\n         DataChecksum sum \u003d getDataChecksum();\n         sum.calculateChunkedSums(buffer.array(), 0, len, checksumBuf, 0);\n         for (int i \u003d 0; i \u003c len; i +\u003d sum.getBytesPerChecksum()) {\n           int chunkLen \u003d Math.min(sum.getBytesPerChecksum(), len - i);\n           int ckOffset \u003d i / sum.getBytesPerChecksum() * getChecksumSize();\n           super.writeChunk(buffer.array(), i, chunkLen, checksumBuf, ckOffset,\n               getChecksumSize());\n         }\n       } catch(Exception e) {\n-        handleStreamerFailure(\"oldBytes\u003d\" + oldBytes + \", len\u003d\" + len, e);\n+        handleCurrentStreamerFailure(\"oldBytes\u003d\" + oldBytes + \", len\u003d\" + len,\n+            e);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void writeParity(int index, ByteBuffer buffer, byte[] checksumBuf)\n      throws IOException {\n    final StripedDataStreamer current \u003d setCurrentStreamer(index);\n    final int len \u003d buffer.limit();\n\n    final long oldBytes \u003d current.getBytesCurBlock();\n    if (current.isHealthy()) {\n      try {\n        DataChecksum sum \u003d getDataChecksum();\n        sum.calculateChunkedSums(buffer.array(), 0, len, checksumBuf, 0);\n        for (int i \u003d 0; i \u003c len; i +\u003d sum.getBytesPerChecksum()) {\n          int chunkLen \u003d Math.min(sum.getBytesPerChecksum(), len - i);\n          int ckOffset \u003d i / sum.getBytesPerChecksum() * getChecksumSize();\n          super.writeChunk(buffer.array(), i, chunkLen, checksumBuf, ckOffset,\n              getChecksumSize());\n        }\n      } catch(Exception e) {\n        handleCurrentStreamerFailure(\"oldBytes\u003d\" + oldBytes + \", len\u003d\" + len,\n            e);\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DFSStripedOutputStream.java",
+      "extendedDetails": {}
+    }
+  }
+}

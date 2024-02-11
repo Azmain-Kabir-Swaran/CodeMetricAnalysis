@@ -1,0 +1,237 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3ABlockOutputStream.java",
+  "functionName": "complete",
+  "functionId": "complete___partETags-List__PartETag__",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+  "functionStartLine": 712,
+  "functionEndLine": 725,
+  "numCommitsSeen": 18,
+  "timeTaken": 3671,
+  "changeHistory": [
+    "29b19cd59245c8809b697b3d7d7445813a685aad",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+    "6c348c56918973fd988b110e79231324a8befe12",
+    "39ec1515a205952eda7e171408a8b83eceb4abde",
+    "15b7076ad5f2ae92d231140b2f8cebc392a92c87"
+  ],
+  "changeHistoryShort": {
+    "29b19cd59245c8809b697b3d7d7445813a685aad": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "6c348c56918973fd988b110e79231324a8befe12": "Ymultichange(Ymovefromfile,Yreturntypechange,Ybodychange)",
+    "39ec1515a205952eda7e171408a8b83eceb4abde": "Ymultichange(Ymodifierchange,Yexceptionschange,Ybodychange)",
+    "15b7076ad5f2ae92d231140b2f8cebc392a92c87": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "29b19cd59245c8809b697b3d7d7445813a685aad": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16900. Very large files can be truncated when written through the S3A FileSystem.\n\nContributed by Mukund Thakur and Steve Loughran.\n\nThis patch ensures that writes to S3A fail when more than 10,000 blocks are\nwritten. That upper bound still exists. To write massive files, make sure\nthat the value of fs.s3a.multipart.size is set to a size which is large\nenough to upload the files in fewer than 10,000 blocks.\n\nChange-Id: Icec604e2a357ffd38d7ae7bc3f887ff55f2d721a\n",
+      "commitDate": "20/05/20 5:42 AM",
+      "commitName": "29b19cd59245c8809b697b3d7d7445813a685aad",
+      "commitAuthor": "Mukund Thakur",
+      "commitDateOld": "12/11/19 10:17 AM",
+      "commitNameOld": "990063d2af0a37e9474949f33128805e34c3f016",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 189.77,
+      "commitsBetweenForRepo": 658,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,14 @@\n     private void complete(List\u003cPartETag\u003e partETags)\n         throws IOException {\n+      maybeRethrowUploadFailure();\n       AtomicInteger errorCount \u003d new AtomicInteger(0);\n       try {\n         writeOperationHelper.completeMPUwithRetries(key,\n             uploadId,\n             partETags,\n             bytesSubmitted,\n             errorCount);\n       } finally {\n         statistics.exceptionInMultipartComplete(errorCount.get());\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private void complete(List\u003cPartETag\u003e partETags)\n        throws IOException {\n      maybeRethrowUploadFailure();\n      AtomicInteger errorCount \u003d new AtomicInteger(0);\n      try {\n        writeOperationHelper.completeMPUwithRetries(key,\n            uploadId,\n            partETags,\n            bytesSubmitted,\n            errorCount);\n      } finally {\n        statistics.exceptionInMultipartComplete(errorCount.get());\n      }\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "01/09/17 6:13 AM",
+          "commitNameOld": "621b43e254afaff708cd6fc4698b29628f6abc33",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 82.09,
+          "commitsBetweenForRepo": 710,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,13 @@\n-    private CompleteMultipartUploadResult complete(List\u003cPartETag\u003e partETags)\n+    private void complete(List\u003cPartETag\u003e partETags)\n         throws IOException {\n-      int retryCount \u003d 0;\n-      AmazonClientException lastException;\n-      String operation \u003d\n-          String.format(\"Completing multi-part upload for key \u0027%s\u0027,\" +\n-                  \" id \u0027%s\u0027 with %s partitions \",\n-              key, uploadId, partETags.size());\n-      do {\n-        try {\n-          LOG.debug(operation);\n-          return writeOperationHelper.completeMultipartUpload(\n-                  uploadId,\n-                  partETags);\n-        } catch (AmazonClientException e) {\n-          lastException \u003d e;\n-          statistics.exceptionInMultipartComplete();\n-        }\n-      } while (shouldRetry(operation, lastException, retryCount++));\n-      // this point is only reached if the operation failed more than\n-      // the allowed retry count\n-      throw translateException(operation, key, lastException);\n+      AtomicInteger errorCount \u003d new AtomicInteger(0);\n+      try {\n+        writeOperationHelper.completeMPUwithRetries(key,\n+            uploadId,\n+            partETags,\n+            bytesSubmitted,\n+            errorCount);\n+      } finally {\n+        statistics.exceptionInMultipartComplete(errorCount.get());\n+      }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private void complete(List\u003cPartETag\u003e partETags)\n        throws IOException {\n      AtomicInteger errorCount \u003d new AtomicInteger(0);\n      try {\n        writeOperationHelper.completeMPUwithRetries(key,\n            uploadId,\n            partETags,\n            bytesSubmitted,\n            errorCount);\n      } finally {\n        statistics.exceptionInMultipartComplete(errorCount.get());\n      }\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {
+            "oldValue": "CompleteMultipartUploadResult",
+            "newValue": "void"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "01/09/17 6:13 AM",
+          "commitNameOld": "621b43e254afaff708cd6fc4698b29628f6abc33",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 82.09,
+          "commitsBetweenForRepo": 710,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,13 @@\n-    private CompleteMultipartUploadResult complete(List\u003cPartETag\u003e partETags)\n+    private void complete(List\u003cPartETag\u003e partETags)\n         throws IOException {\n-      int retryCount \u003d 0;\n-      AmazonClientException lastException;\n-      String operation \u003d\n-          String.format(\"Completing multi-part upload for key \u0027%s\u0027,\" +\n-                  \" id \u0027%s\u0027 with %s partitions \",\n-              key, uploadId, partETags.size());\n-      do {\n-        try {\n-          LOG.debug(operation);\n-          return writeOperationHelper.completeMultipartUpload(\n-                  uploadId,\n-                  partETags);\n-        } catch (AmazonClientException e) {\n-          lastException \u003d e;\n-          statistics.exceptionInMultipartComplete();\n-        }\n-      } while (shouldRetry(operation, lastException, retryCount++));\n-      // this point is only reached if the operation failed more than\n-      // the allowed retry count\n-      throw translateException(operation, key, lastException);\n+      AtomicInteger errorCount \u003d new AtomicInteger(0);\n+      try {\n+        writeOperationHelper.completeMPUwithRetries(key,\n+            uploadId,\n+            partETags,\n+            bytesSubmitted,\n+            errorCount);\n+      } finally {\n+        statistics.exceptionInMultipartComplete(errorCount.get());\n+      }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private void complete(List\u003cPartETag\u003e partETags)\n        throws IOException {\n      AtomicInteger errorCount \u003d new AtomicInteger(0);\n      try {\n        writeOperationHelper.completeMPUwithRetries(key,\n            uploadId,\n            partETags,\n            bytesSubmitted,\n            errorCount);\n      } finally {\n        statistics.exceptionInMultipartComplete(errorCount.get());\n      }\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "6c348c56918973fd988b110e79231324a8befe12": {
+      "type": "Ymultichange(Ymovefromfile,Yreturntypechange,Ybodychange)",
+      "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+      "commitDate": "18/10/16 1:16 PM",
+      "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+          "commitDate": "18/10/16 1:16 PM",
+          "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "18/10/16 11:06 AM",
+          "commitNameOld": "b733a6f86262522e535cebc972baecbe6a6eab50",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 0.09,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,13 +1,23 @@\n-    private void complete(List\u003cPartETag\u003e partETags) throws IOException {\n-      try {\n-        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\",\n-            key, uploadId);\n-        client.completeMultipartUpload(\n-            new CompleteMultipartUploadRequest(bucket,\n-                key,\n-                uploadId,\n-                partETags));\n-      } catch (AmazonClientException e) {\n-        throw translateException(\"Completing multi-part upload\", key, e);\n-      }\n+    private CompleteMultipartUploadResult complete(List\u003cPartETag\u003e partETags)\n+        throws IOException {\n+      int retryCount \u003d 0;\n+      AmazonClientException lastException;\n+      String operation \u003d\n+          String.format(\"Completing multi-part upload for key \u0027%s\u0027,\" +\n+                  \" id \u0027%s\u0027 with %s partitions \",\n+              key, uploadId, partETags.size());\n+      do {\n+        try {\n+          LOG.debug(operation);\n+          return writeOperationHelper.completeMultipartUpload(\n+                  uploadId,\n+                  partETags);\n+        } catch (AmazonClientException e) {\n+          lastException \u003d e;\n+          statistics.exceptionInMultipartComplete();\n+        }\n+      } while (shouldRetry(operation, lastException, retryCount++));\n+      // this point is only reached if the operation failed more than\n+      // the allowed retry count\n+      throw translateException(operation, key, lastException);\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private CompleteMultipartUploadResult complete(List\u003cPartETag\u003e partETags)\n        throws IOException {\n      int retryCount \u003d 0;\n      AmazonClientException lastException;\n      String operation \u003d\n          String.format(\"Completing multi-part upload for key \u0027%s\u0027,\" +\n                  \" id \u0027%s\u0027 with %s partitions \",\n              key, uploadId, partETags.size());\n      do {\n        try {\n          LOG.debug(operation);\n          return writeOperationHelper.completeMultipartUpload(\n                  uploadId,\n                  partETags);\n        } catch (AmazonClientException e) {\n          lastException \u003d e;\n          statistics.exceptionInMultipartComplete();\n        }\n      } while (shouldRetry(operation, lastException, retryCount++));\n      // this point is only reached if the operation failed more than\n      // the allowed retry count\n      throw translateException(operation, key, lastException);\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java",
+            "newPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+            "oldMethodName": "complete",
+            "newMethodName": "complete"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+          "commitDate": "18/10/16 1:16 PM",
+          "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "18/10/16 11:06 AM",
+          "commitNameOld": "b733a6f86262522e535cebc972baecbe6a6eab50",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 0.09,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,13 +1,23 @@\n-    private void complete(List\u003cPartETag\u003e partETags) throws IOException {\n-      try {\n-        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\",\n-            key, uploadId);\n-        client.completeMultipartUpload(\n-            new CompleteMultipartUploadRequest(bucket,\n-                key,\n-                uploadId,\n-                partETags));\n-      } catch (AmazonClientException e) {\n-        throw translateException(\"Completing multi-part upload\", key, e);\n-      }\n+    private CompleteMultipartUploadResult complete(List\u003cPartETag\u003e partETags)\n+        throws IOException {\n+      int retryCount \u003d 0;\n+      AmazonClientException lastException;\n+      String operation \u003d\n+          String.format(\"Completing multi-part upload for key \u0027%s\u0027,\" +\n+                  \" id \u0027%s\u0027 with %s partitions \",\n+              key, uploadId, partETags.size());\n+      do {\n+        try {\n+          LOG.debug(operation);\n+          return writeOperationHelper.completeMultipartUpload(\n+                  uploadId,\n+                  partETags);\n+        } catch (AmazonClientException e) {\n+          lastException \u003d e;\n+          statistics.exceptionInMultipartComplete();\n+        }\n+      } while (shouldRetry(operation, lastException, retryCount++));\n+      // this point is only reached if the operation failed more than\n+      // the allowed retry count\n+      throw translateException(operation, key, lastException);\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private CompleteMultipartUploadResult complete(List\u003cPartETag\u003e partETags)\n        throws IOException {\n      int retryCount \u003d 0;\n      AmazonClientException lastException;\n      String operation \u003d\n          String.format(\"Completing multi-part upload for key \u0027%s\u0027,\" +\n                  \" id \u0027%s\u0027 with %s partitions \",\n              key, uploadId, partETags.size());\n      do {\n        try {\n          LOG.debug(operation);\n          return writeOperationHelper.completeMultipartUpload(\n                  uploadId,\n                  partETags);\n        } catch (AmazonClientException e) {\n          lastException \u003d e;\n          statistics.exceptionInMultipartComplete();\n        }\n      } while (shouldRetry(operation, lastException, retryCount++));\n      // this point is only reached if the operation failed more than\n      // the allowed retry count\n      throw translateException(operation, key, lastException);\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "CompleteMultipartUploadResult"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+          "commitDate": "18/10/16 1:16 PM",
+          "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "18/10/16 11:06 AM",
+          "commitNameOld": "b733a6f86262522e535cebc972baecbe6a6eab50",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 0.09,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,13 +1,23 @@\n-    private void complete(List\u003cPartETag\u003e partETags) throws IOException {\n-      try {\n-        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\",\n-            key, uploadId);\n-        client.completeMultipartUpload(\n-            new CompleteMultipartUploadRequest(bucket,\n-                key,\n-                uploadId,\n-                partETags));\n-      } catch (AmazonClientException e) {\n-        throw translateException(\"Completing multi-part upload\", key, e);\n-      }\n+    private CompleteMultipartUploadResult complete(List\u003cPartETag\u003e partETags)\n+        throws IOException {\n+      int retryCount \u003d 0;\n+      AmazonClientException lastException;\n+      String operation \u003d\n+          String.format(\"Completing multi-part upload for key \u0027%s\u0027,\" +\n+                  \" id \u0027%s\u0027 with %s partitions \",\n+              key, uploadId, partETags.size());\n+      do {\n+        try {\n+          LOG.debug(operation);\n+          return writeOperationHelper.completeMultipartUpload(\n+                  uploadId,\n+                  partETags);\n+        } catch (AmazonClientException e) {\n+          lastException \u003d e;\n+          statistics.exceptionInMultipartComplete();\n+        }\n+      } while (shouldRetry(operation, lastException, retryCount++));\n+      // this point is only reached if the operation failed more than\n+      // the allowed retry count\n+      throw translateException(operation, key, lastException);\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private CompleteMultipartUploadResult complete(List\u003cPartETag\u003e partETags)\n        throws IOException {\n      int retryCount \u003d 0;\n      AmazonClientException lastException;\n      String operation \u003d\n          String.format(\"Completing multi-part upload for key \u0027%s\u0027,\" +\n                  \" id \u0027%s\u0027 with %s partitions \",\n              key, uploadId, partETags.size());\n      do {\n        try {\n          LOG.debug(operation);\n          return writeOperationHelper.completeMultipartUpload(\n                  uploadId,\n                  partETags);\n        } catch (AmazonClientException e) {\n          lastException \u003d e;\n          statistics.exceptionInMultipartComplete();\n        }\n      } while (shouldRetry(operation, lastException, retryCount++));\n      // this point is only reached if the operation failed more than\n      // the allowed retry count\n      throw translateException(operation, key, lastException);\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "39ec1515a205952eda7e171408a8b83eceb4abde": {
+      "type": "Ymultichange(Ymodifierchange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HADOOP-13130. s3a failures can surface as RTEs, not IOEs. (Steve Loughran)\n",
+      "commitDate": "21/05/16 8:39 AM",
+      "commitName": "39ec1515a205952eda7e171408a8b83eceb4abde",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-13130. s3a failures can surface as RTEs, not IOEs. (Steve Loughran)\n",
+          "commitDate": "21/05/16 8:39 AM",
+          "commitName": "39ec1515a205952eda7e171408a8b83eceb4abde",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "12/05/16 11:24 AM",
+          "commitNameOld": "27c4e90efce04e1b1302f668b5eb22412e00d033",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 8.89,
+          "commitsBetweenForRepo": 74,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,13 @@\n-    public void complete(List\u003cPartETag\u003e partETags) {\n-      if (LOG.isDebugEnabled()) {\n-        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\", key,\n-            uploadId);\n+    private void complete(List\u003cPartETag\u003e partETags) throws IOException {\n+      try {\n+        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\",\n+            key, uploadId);\n+        client.completeMultipartUpload(\n+            new CompleteMultipartUploadRequest(bucket,\n+                key,\n+                uploadId,\n+                partETags));\n+      } catch (AmazonClientException e) {\n+        throw translateException(\"Completing multi-part upload\", key, e);\n       }\n-      final CompleteMultipartUploadRequest completeRequest \u003d\n-          new CompleteMultipartUploadRequest(bucket, key, uploadId, partETags);\n-      client.completeMultipartUpload(completeRequest);\n-\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private void complete(List\u003cPartETag\u003e partETags) throws IOException {\n      try {\n        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\",\n            key, uploadId);\n        client.completeMultipartUpload(\n            new CompleteMultipartUploadRequest(bucket,\n                key,\n                uploadId,\n                partETags));\n      } catch (AmazonClientException e) {\n        throw translateException(\"Completing multi-part upload\", key, e);\n      }\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java",
+          "extendedDetails": {
+            "oldValue": "[public]",
+            "newValue": "[private]"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-13130. s3a failures can surface as RTEs, not IOEs. (Steve Loughran)\n",
+          "commitDate": "21/05/16 8:39 AM",
+          "commitName": "39ec1515a205952eda7e171408a8b83eceb4abde",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "12/05/16 11:24 AM",
+          "commitNameOld": "27c4e90efce04e1b1302f668b5eb22412e00d033",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 8.89,
+          "commitsBetweenForRepo": 74,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,13 @@\n-    public void complete(List\u003cPartETag\u003e partETags) {\n-      if (LOG.isDebugEnabled()) {\n-        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\", key,\n-            uploadId);\n+    private void complete(List\u003cPartETag\u003e partETags) throws IOException {\n+      try {\n+        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\",\n+            key, uploadId);\n+        client.completeMultipartUpload(\n+            new CompleteMultipartUploadRequest(bucket,\n+                key,\n+                uploadId,\n+                partETags));\n+      } catch (AmazonClientException e) {\n+        throw translateException(\"Completing multi-part upload\", key, e);\n       }\n-      final CompleteMultipartUploadRequest completeRequest \u003d\n-          new CompleteMultipartUploadRequest(bucket, key, uploadId, partETags);\n-      client.completeMultipartUpload(completeRequest);\n-\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private void complete(List\u003cPartETag\u003e partETags) throws IOException {\n      try {\n        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\",\n            key, uploadId);\n        client.completeMultipartUpload(\n            new CompleteMultipartUploadRequest(bucket,\n                key,\n                uploadId,\n                partETags));\n      } catch (AmazonClientException e) {\n        throw translateException(\"Completing multi-part upload\", key, e);\n      }\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13130. s3a failures can surface as RTEs, not IOEs. (Steve Loughran)\n",
+          "commitDate": "21/05/16 8:39 AM",
+          "commitName": "39ec1515a205952eda7e171408a8b83eceb4abde",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "12/05/16 11:24 AM",
+          "commitNameOld": "27c4e90efce04e1b1302f668b5eb22412e00d033",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 8.89,
+          "commitsBetweenForRepo": 74,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,13 @@\n-    public void complete(List\u003cPartETag\u003e partETags) {\n-      if (LOG.isDebugEnabled()) {\n-        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\", key,\n-            uploadId);\n+    private void complete(List\u003cPartETag\u003e partETags) throws IOException {\n+      try {\n+        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\",\n+            key, uploadId);\n+        client.completeMultipartUpload(\n+            new CompleteMultipartUploadRequest(bucket,\n+                key,\n+                uploadId,\n+                partETags));\n+      } catch (AmazonClientException e) {\n+        throw translateException(\"Completing multi-part upload\", key, e);\n       }\n-      final CompleteMultipartUploadRequest completeRequest \u003d\n-          new CompleteMultipartUploadRequest(bucket, key, uploadId, partETags);\n-      client.completeMultipartUpload(completeRequest);\n-\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    private void complete(List\u003cPartETag\u003e partETags) throws IOException {\n      try {\n        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\",\n            key, uploadId);\n        client.completeMultipartUpload(\n            new CompleteMultipartUploadRequest(bucket,\n                key,\n                uploadId,\n                partETags));\n      } catch (AmazonClientException e) {\n        throw translateException(\"Completing multi-part upload\", key, e);\n      }\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "15b7076ad5f2ae92d231140b2f8cebc392a92c87": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-11183. Memory-based S3AOutputstream. (Thomas Demoor via stevel)\n",
+      "commitDate": "03/03/15 4:18 PM",
+      "commitName": "15b7076ad5f2ae92d231140b2f8cebc392a92c87",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,10 @@\n+    public void complete(List\u003cPartETag\u003e partETags) {\n+      if (LOG.isDebugEnabled()) {\n+        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\", key,\n+            uploadId);\n+      }\n+      final CompleteMultipartUploadRequest completeRequest \u003d\n+          new CompleteMultipartUploadRequest(bucket, key, uploadId, partETags);\n+      client.completeMultipartUpload(completeRequest);\n+\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void complete(List\u003cPartETag\u003e partETags) {\n      if (LOG.isDebugEnabled()) {\n        LOG.debug(\"Completing multi-part upload for key \u0027{}\u0027, id \u0027{}\u0027\", key,\n            uploadId);\n      }\n      final CompleteMultipartUploadRequest completeRequest \u003d\n          new CompleteMultipartUploadRequest(bucket, key, uploadId, partETags);\n      client.completeMultipartUpload(completeRequest);\n\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java"
+    }
+  }
+}

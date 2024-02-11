@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "HadoopArchiveLogsRunner.java",
+  "functionName": "runInternal",
+  "functionId": "runInternal",
+  "sourceFilePath": "hadoop-tools/hadoop-archive-logs/src/main/java/org/apache/hadoop/tools/HadoopArchiveLogsRunner.java",
+  "functionStartLine": 133,
+  "functionEndLine": 190,
+  "numCommitsSeen": 4,
+  "timeTaken": 1432,
+  "changeHistory": [
+    "68ce193efcb595f75d7addf751559c806a5aa399",
+    "6d84cc16b3e0685fef01d0e3526b0f7556ceff51"
+  ],
+  "changeHistoryShort": {
+    "68ce193efcb595f75d7addf751559c806a5aa399": "Ybodychange",
+    "6d84cc16b3e0685fef01d0e3526b0f7556ceff51": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "68ce193efcb595f75d7addf751559c806a5aa399": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-7027: HadoopArchiveLogs shouldn\u0027t delete the original logs if the HAR creation fails. Contributed by Gergely Novák\n",
+      "commitDate": "23/02/18 2:37 PM",
+      "commitName": "68ce193efcb595f75d7addf751559c806a5aa399",
+      "commitAuthor": "Xuan Gong",
+      "commitDateOld": "25/11/15 5:12 PM",
+      "commitNameOld": "6d84cc16b3e0685fef01d0e3526b0f7556ceff51",
+      "commitAuthorOld": "Robert Kanter",
+      "daysBetweenCommits": 820.89,
+      "commitsBetweenForRepo": 5404,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,47 +1,58 @@\n   private int runInternal() throws Exception {\n     String remoteAppLogDir \u003d remoteLogDir + File.separator + user\n         + File.separator + suffix + File.separator + appId;\n     // Run \u0027hadoop archives\u0027 command in local mode\n     conf.set(\"mapreduce.framework.name\", \"local\");\n     // Set the umask so we get 640 files and 750 dirs\n     conf.set(\"fs.permissions.umask-mode\", \"027\");\n-    HadoopArchives ha \u003d new HadoopArchives(conf);\n+    String harName \u003d appId + \".har\";\n     String[] haArgs \u003d {\n         \"-archiveName\",\n-        appId + \".har\",\n+        harName,\n         \"-p\",\n         remoteAppLogDir,\n         \"*\",\n         workingDir\n     };\n     StringBuilder sb \u003d new StringBuilder(\"Executing \u0027hadoop archives\u0027\");\n     for (String haArg : haArgs) {\n       sb.append(\"\\n\\t\").append(haArg);\n     }\n     LOG.info(sb.toString());\n-    ha.run(haArgs);\n+    int exitCode \u003d hadoopArchives.run(haArgs);\n+    if (exitCode !\u003d 0) {\n+      LOG.warn(\"Failed to create archives for \" + appId);\n+      return -1;\n+    }\n \n     FileSystem fs \u003d null;\n     // Move har file to correct location and delete original logs\n     try {\n       fs \u003d FileSystem.get(conf);\n-      Path harDest \u003d new Path(remoteAppLogDir, appId + \".har\");\n+      Path harPath \u003d new Path(workingDir, harName);\n+      if (!fs.exists(harPath) ||\n+          fs.listStatus(harPath).length \u003d\u003d 0) {\n+        LOG.warn(\"The created archive \\\"\" + harName +\n+            \"\\\" is missing or empty.\");\n+        return -1;\n+      }\n+      Path harDest \u003d new Path(remoteAppLogDir, harName);\n       LOG.info(\"Moving har to original location\");\n-      fs.rename(new Path(workingDir, appId + \".har\"), harDest);\n+      fs.rename(harPath, harDest);\n       LOG.info(\"Deleting original logs\");\n       for (FileStatus original : fs.listStatus(new Path(remoteAppLogDir),\n           new PathFilter() {\n             @Override\n             public boolean accept(Path path) {\n               return !path.getName().endsWith(\".har\");\n             }\n           })) {\n         fs.delete(original.getPath(), false);\n       }\n     } finally {\n       if (fs !\u003d null) {\n         fs.close();\n       }\n     }\n     return 0;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private int runInternal() throws Exception {\n    String remoteAppLogDir \u003d remoteLogDir + File.separator + user\n        + File.separator + suffix + File.separator + appId;\n    // Run \u0027hadoop archives\u0027 command in local mode\n    conf.set(\"mapreduce.framework.name\", \"local\");\n    // Set the umask so we get 640 files and 750 dirs\n    conf.set(\"fs.permissions.umask-mode\", \"027\");\n    String harName \u003d appId + \".har\";\n    String[] haArgs \u003d {\n        \"-archiveName\",\n        harName,\n        \"-p\",\n        remoteAppLogDir,\n        \"*\",\n        workingDir\n    };\n    StringBuilder sb \u003d new StringBuilder(\"Executing \u0027hadoop archives\u0027\");\n    for (String haArg : haArgs) {\n      sb.append(\"\\n\\t\").append(haArg);\n    }\n    LOG.info(sb.toString());\n    int exitCode \u003d hadoopArchives.run(haArgs);\n    if (exitCode !\u003d 0) {\n      LOG.warn(\"Failed to create archives for \" + appId);\n      return -1;\n    }\n\n    FileSystem fs \u003d null;\n    // Move har file to correct location and delete original logs\n    try {\n      fs \u003d FileSystem.get(conf);\n      Path harPath \u003d new Path(workingDir, harName);\n      if (!fs.exists(harPath) ||\n          fs.listStatus(harPath).length \u003d\u003d 0) {\n        LOG.warn(\"The created archive \\\"\" + harName +\n            \"\\\" is missing or empty.\");\n        return -1;\n      }\n      Path harDest \u003d new Path(remoteAppLogDir, harName);\n      LOG.info(\"Moving har to original location\");\n      fs.rename(harPath, harDest);\n      LOG.info(\"Deleting original logs\");\n      for (FileStatus original : fs.listStatus(new Path(remoteAppLogDir),\n          new PathFilter() {\n            @Override\n            public boolean accept(Path path) {\n              return !path.getName().endsWith(\".har\");\n            }\n          })) {\n        fs.delete(original.getPath(), false);\n      }\n    } finally {\n      if (fs !\u003d null) {\n        fs.close();\n      }\n    }\n    return 0;\n  }",
+      "path": "hadoop-tools/hadoop-archive-logs/src/main/java/org/apache/hadoop/tools/HadoopArchiveLogsRunner.java",
+      "extendedDetails": {}
+    },
+    "6d84cc16b3e0685fef01d0e3526b0f7556ceff51": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-6550. archive-logs tool changes log ownership to the Yarn user when using DefaultContainerExecutor (rkanter)\n",
+      "commitDate": "25/11/15 5:12 PM",
+      "commitName": "6d84cc16b3e0685fef01d0e3526b0f7556ceff51",
+      "commitAuthor": "Robert Kanter",
+      "diff": "@@ -0,0 +1,47 @@\n+  private int runInternal() throws Exception {\n+    String remoteAppLogDir \u003d remoteLogDir + File.separator + user\n+        + File.separator + suffix + File.separator + appId;\n+    // Run \u0027hadoop archives\u0027 command in local mode\n+    conf.set(\"mapreduce.framework.name\", \"local\");\n+    // Set the umask so we get 640 files and 750 dirs\n+    conf.set(\"fs.permissions.umask-mode\", \"027\");\n+    HadoopArchives ha \u003d new HadoopArchives(conf);\n+    String[] haArgs \u003d {\n+        \"-archiveName\",\n+        appId + \".har\",\n+        \"-p\",\n+        remoteAppLogDir,\n+        \"*\",\n+        workingDir\n+    };\n+    StringBuilder sb \u003d new StringBuilder(\"Executing \u0027hadoop archives\u0027\");\n+    for (String haArg : haArgs) {\n+      sb.append(\"\\n\\t\").append(haArg);\n+    }\n+    LOG.info(sb.toString());\n+    ha.run(haArgs);\n+\n+    FileSystem fs \u003d null;\n+    // Move har file to correct location and delete original logs\n+    try {\n+      fs \u003d FileSystem.get(conf);\n+      Path harDest \u003d new Path(remoteAppLogDir, appId + \".har\");\n+      LOG.info(\"Moving har to original location\");\n+      fs.rename(new Path(workingDir, appId + \".har\"), harDest);\n+      LOG.info(\"Deleting original logs\");\n+      for (FileStatus original : fs.listStatus(new Path(remoteAppLogDir),\n+          new PathFilter() {\n+            @Override\n+            public boolean accept(Path path) {\n+              return !path.getName().endsWith(\".har\");\n+            }\n+          })) {\n+        fs.delete(original.getPath(), false);\n+      }\n+    } finally {\n+      if (fs !\u003d null) {\n+        fs.close();\n+      }\n+    }\n+    return 0;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private int runInternal() throws Exception {\n    String remoteAppLogDir \u003d remoteLogDir + File.separator + user\n        + File.separator + suffix + File.separator + appId;\n    // Run \u0027hadoop archives\u0027 command in local mode\n    conf.set(\"mapreduce.framework.name\", \"local\");\n    // Set the umask so we get 640 files and 750 dirs\n    conf.set(\"fs.permissions.umask-mode\", \"027\");\n    HadoopArchives ha \u003d new HadoopArchives(conf);\n    String[] haArgs \u003d {\n        \"-archiveName\",\n        appId + \".har\",\n        \"-p\",\n        remoteAppLogDir,\n        \"*\",\n        workingDir\n    };\n    StringBuilder sb \u003d new StringBuilder(\"Executing \u0027hadoop archives\u0027\");\n    for (String haArg : haArgs) {\n      sb.append(\"\\n\\t\").append(haArg);\n    }\n    LOG.info(sb.toString());\n    ha.run(haArgs);\n\n    FileSystem fs \u003d null;\n    // Move har file to correct location and delete original logs\n    try {\n      fs \u003d FileSystem.get(conf);\n      Path harDest \u003d new Path(remoteAppLogDir, appId + \".har\");\n      LOG.info(\"Moving har to original location\");\n      fs.rename(new Path(workingDir, appId + \".har\"), harDest);\n      LOG.info(\"Deleting original logs\");\n      for (FileStatus original : fs.listStatus(new Path(remoteAppLogDir),\n          new PathFilter() {\n            @Override\n            public boolean accept(Path path) {\n              return !path.getName().endsWith(\".har\");\n            }\n          })) {\n        fs.delete(original.getPath(), false);\n      }\n    } finally {\n      if (fs !\u003d null) {\n        fs.close();\n      }\n    }\n    return 0;\n  }",
+      "path": "hadoop-tools/hadoop-archive-logs/src/main/java/org/apache/hadoop/tools/HadoopArchiveLogsRunner.java"
+    }
+  }
+}

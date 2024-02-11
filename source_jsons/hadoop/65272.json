@@ -1,0 +1,102 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3ABlockOutputStream.java",
+  "functionName": "write",
+  "functionId": "write___source-byte[]__offset-int__len-int",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+  "functionStartLine": 277,
+  "functionEndLine": 303,
+  "numCommitsSeen": 18,
+  "timeTaken": 1877,
+  "changeHistory": [
+    "6c348c56918973fd988b110e79231324a8befe12",
+    "15b7076ad5f2ae92d231140b2f8cebc392a92c87"
+  ],
+  "changeHistoryShort": {
+    "6c348c56918973fd988b110e79231324a8befe12": "Ymultichange(Ymovefromfile,Ybodychange,Yparameterchange)",
+    "15b7076ad5f2ae92d231140b2f8cebc392a92c87": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6c348c56918973fd988b110e79231324a8befe12": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange,Yparameterchange)",
+      "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+      "commitDate": "18/10/16 1:16 PM",
+      "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+          "commitDate": "18/10/16 1:16 PM",
+          "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "18/10/16 11:06 AM",
+          "commitNameOld": "b733a6f86262522e535cebc972baecbe6a6eab50",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 0.09,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,27 @@\n-  public synchronized void write(byte[] b, int off, int len)\n+  public synchronized void write(byte[] source, int offset, int len)\n       throws IOException {\n-    if (b \u003d\u003d null) {\n-      throw new NullPointerException();\n-    } else if ((off \u003c 0) || (off \u003e b.length) || (len \u003c 0) ||\n-        ((off + len) \u003e b.length) || ((off + len) \u003c 0)) {\n-      throw new IndexOutOfBoundsException();\n-    } else if (len \u003d\u003d 0) {\n+\n+    S3ADataBlocks.validateWriteArgs(source, offset, len);\n+    checkOpen();\n+    if (len \u003d\u003d 0) {\n       return;\n     }\n-    if (buffer.size() + len \u003c bufferLimit) {\n-      buffer.write(b, off, len);\n+    S3ADataBlocks.DataBlock block \u003d createBlockIfNeeded();\n+    int written \u003d block.write(source, offset, len);\n+    int remainingCapacity \u003d block.remainingCapacity();\n+    if (written \u003c len) {\n+      // not everything was written ￢ﾀﾔthe block has run out\n+      // of capacity\n+      // Trigger an upload then process the remainder.\n+      LOG.debug(\"writing more data than block has capacity -triggering upload\");\n+      uploadCurrentBlock();\n+      // tail recursion is mildly expensive, but given buffer sizes must be MB.\n+      // it\u0027s unlikely to recurse very deeply.\n+      this.write(source, offset + written, len - written);\n     } else {\n-      int firstPart \u003d bufferLimit - buffer.size();\n-      buffer.write(b, off, firstPart);\n-      uploadBuffer();\n-      this.write(b, off + firstPart, len - firstPart);\n+      if (remainingCapacity \u003d\u003d 0) {\n+        // the whole buffer is done, trigger an upload\n+        uploadCurrentBlock();\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void write(byte[] source, int offset, int len)\n      throws IOException {\n\n    S3ADataBlocks.validateWriteArgs(source, offset, len);\n    checkOpen();\n    if (len \u003d\u003d 0) {\n      return;\n    }\n    S3ADataBlocks.DataBlock block \u003d createBlockIfNeeded();\n    int written \u003d block.write(source, offset, len);\n    int remainingCapacity \u003d block.remainingCapacity();\n    if (written \u003c len) {\n      // not everything was written ￢ﾀﾔthe block has run out\n      // of capacity\n      // Trigger an upload then process the remainder.\n      LOG.debug(\"writing more data than block has capacity -triggering upload\");\n      uploadCurrentBlock();\n      // tail recursion is mildly expensive, but given buffer sizes must be MB.\n      // it\u0027s unlikely to recurse very deeply.\n      this.write(source, offset + written, len - written);\n    } else {\n      if (remainingCapacity \u003d\u003d 0) {\n        // the whole buffer is done, trigger an upload\n        uploadCurrentBlock();\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java",
+            "newPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+            "oldMethodName": "write",
+            "newMethodName": "write"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+          "commitDate": "18/10/16 1:16 PM",
+          "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "18/10/16 11:06 AM",
+          "commitNameOld": "b733a6f86262522e535cebc972baecbe6a6eab50",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 0.09,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,27 @@\n-  public synchronized void write(byte[] b, int off, int len)\n+  public synchronized void write(byte[] source, int offset, int len)\n       throws IOException {\n-    if (b \u003d\u003d null) {\n-      throw new NullPointerException();\n-    } else if ((off \u003c 0) || (off \u003e b.length) || (len \u003c 0) ||\n-        ((off + len) \u003e b.length) || ((off + len) \u003c 0)) {\n-      throw new IndexOutOfBoundsException();\n-    } else if (len \u003d\u003d 0) {\n+\n+    S3ADataBlocks.validateWriteArgs(source, offset, len);\n+    checkOpen();\n+    if (len \u003d\u003d 0) {\n       return;\n     }\n-    if (buffer.size() + len \u003c bufferLimit) {\n-      buffer.write(b, off, len);\n+    S3ADataBlocks.DataBlock block \u003d createBlockIfNeeded();\n+    int written \u003d block.write(source, offset, len);\n+    int remainingCapacity \u003d block.remainingCapacity();\n+    if (written \u003c len) {\n+      // not everything was written ￢ﾀﾔthe block has run out\n+      // of capacity\n+      // Trigger an upload then process the remainder.\n+      LOG.debug(\"writing more data than block has capacity -triggering upload\");\n+      uploadCurrentBlock();\n+      // tail recursion is mildly expensive, but given buffer sizes must be MB.\n+      // it\u0027s unlikely to recurse very deeply.\n+      this.write(source, offset + written, len - written);\n     } else {\n-      int firstPart \u003d bufferLimit - buffer.size();\n-      buffer.write(b, off, firstPart);\n-      uploadBuffer();\n-      this.write(b, off + firstPart, len - firstPart);\n+      if (remainingCapacity \u003d\u003d 0) {\n+        // the whole buffer is done, trigger an upload\n+        uploadCurrentBlock();\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void write(byte[] source, int offset, int len)\n      throws IOException {\n\n    S3ADataBlocks.validateWriteArgs(source, offset, len);\n    checkOpen();\n    if (len \u003d\u003d 0) {\n      return;\n    }\n    S3ADataBlocks.DataBlock block \u003d createBlockIfNeeded();\n    int written \u003d block.write(source, offset, len);\n    int remainingCapacity \u003d block.remainingCapacity();\n    if (written \u003c len) {\n      // not everything was written ￢ﾀﾔthe block has run out\n      // of capacity\n      // Trigger an upload then process the remainder.\n      LOG.debug(\"writing more data than block has capacity -triggering upload\");\n      uploadCurrentBlock();\n      // tail recursion is mildly expensive, but given buffer sizes must be MB.\n      // it\u0027s unlikely to recurse very deeply.\n      this.write(source, offset + written, len - written);\n    } else {\n      if (remainingCapacity \u003d\u003d 0) {\n        // the whole buffer is done, trigger an upload\n        uploadCurrentBlock();\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+          "commitDate": "18/10/16 1:16 PM",
+          "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "18/10/16 11:06 AM",
+          "commitNameOld": "b733a6f86262522e535cebc972baecbe6a6eab50",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 0.09,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,27 @@\n-  public synchronized void write(byte[] b, int off, int len)\n+  public synchronized void write(byte[] source, int offset, int len)\n       throws IOException {\n-    if (b \u003d\u003d null) {\n-      throw new NullPointerException();\n-    } else if ((off \u003c 0) || (off \u003e b.length) || (len \u003c 0) ||\n-        ((off + len) \u003e b.length) || ((off + len) \u003c 0)) {\n-      throw new IndexOutOfBoundsException();\n-    } else if (len \u003d\u003d 0) {\n+\n+    S3ADataBlocks.validateWriteArgs(source, offset, len);\n+    checkOpen();\n+    if (len \u003d\u003d 0) {\n       return;\n     }\n-    if (buffer.size() + len \u003c bufferLimit) {\n-      buffer.write(b, off, len);\n+    S3ADataBlocks.DataBlock block \u003d createBlockIfNeeded();\n+    int written \u003d block.write(source, offset, len);\n+    int remainingCapacity \u003d block.remainingCapacity();\n+    if (written \u003c len) {\n+      // not everything was written ￢ﾀﾔthe block has run out\n+      // of capacity\n+      // Trigger an upload then process the remainder.\n+      LOG.debug(\"writing more data than block has capacity -triggering upload\");\n+      uploadCurrentBlock();\n+      // tail recursion is mildly expensive, but given buffer sizes must be MB.\n+      // it\u0027s unlikely to recurse very deeply.\n+      this.write(source, offset + written, len - written);\n     } else {\n-      int firstPart \u003d bufferLimit - buffer.size();\n-      buffer.write(b, off, firstPart);\n-      uploadBuffer();\n-      this.write(b, off + firstPart, len - firstPart);\n+      if (remainingCapacity \u003d\u003d 0) {\n+        // the whole buffer is done, trigger an upload\n+        uploadCurrentBlock();\n+      }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public synchronized void write(byte[] source, int offset, int len)\n      throws IOException {\n\n    S3ADataBlocks.validateWriteArgs(source, offset, len);\n    checkOpen();\n    if (len \u003d\u003d 0) {\n      return;\n    }\n    S3ADataBlocks.DataBlock block \u003d createBlockIfNeeded();\n    int written \u003d block.write(source, offset, len);\n    int remainingCapacity \u003d block.remainingCapacity();\n    if (written \u003c len) {\n      // not everything was written ￢ﾀﾔthe block has run out\n      // of capacity\n      // Trigger an upload then process the remainder.\n      LOG.debug(\"writing more data than block has capacity -triggering upload\");\n      uploadCurrentBlock();\n      // tail recursion is mildly expensive, but given buffer sizes must be MB.\n      // it\u0027s unlikely to recurse very deeply.\n      this.write(source, offset + written, len - written);\n    } else {\n      if (remainingCapacity \u003d\u003d 0) {\n        // the whole buffer is done, trigger an upload\n        uploadCurrentBlock();\n      }\n    }\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {
+            "oldValue": "[b-byte[], off-int, len-int]",
+            "newValue": "[source-byte[], offset-int, len-int]"
+          }
+        }
+      ]
+    },
+    "15b7076ad5f2ae92d231140b2f8cebc392a92c87": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-11183. Memory-based S3AOutputstream. (Thomas Demoor via stevel)\n",
+      "commitDate": "03/03/15 4:18 PM",
+      "commitName": "15b7076ad5f2ae92d231140b2f8cebc392a92c87",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,19 @@\n+  public synchronized void write(byte b[], int off, int len)\n+      throws IOException {\n+    if (b \u003d\u003d null) {\n+      throw new NullPointerException();\n+    } else if ((off \u003c 0) || (off \u003e b.length) || (len \u003c 0) ||\n+        ((off + len) \u003e b.length) || ((off + len) \u003c 0)) {\n+      throw new IndexOutOfBoundsException();\n+    } else if (len \u003d\u003d 0) {\n+      return;\n+    }\n+    if (buffer.size() + len \u003c bufferLimit) {\n+      buffer.write(b, off, len);\n+    } else {\n+      int firstPart \u003d bufferLimit - buffer.size();\n+      buffer.write(b, off, firstPart);\n+      uploadBuffer();\n+      this.write(b, off + firstPart, len - firstPart);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void write(byte b[], int off, int len)\n      throws IOException {\n    if (b \u003d\u003d null) {\n      throw new NullPointerException();\n    } else if ((off \u003c 0) || (off \u003e b.length) || (len \u003c 0) ||\n        ((off + len) \u003e b.length) || ((off + len) \u003c 0)) {\n      throw new IndexOutOfBoundsException();\n    } else if (len \u003d\u003d 0) {\n      return;\n    }\n    if (buffer.size() + len \u003c bufferLimit) {\n      buffer.write(b, off, len);\n    } else {\n      int firstPart \u003d bufferLimit - buffer.size();\n      buffer.write(b, off, firstPart);\n      uploadBuffer();\n      this.write(b, off + firstPart, len - firstPart);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java"
+    }
+  }
+}

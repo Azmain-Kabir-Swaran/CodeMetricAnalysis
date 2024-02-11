@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSLeafQueue.java",
+  "functionName": "computeMaxAMResource",
+  "functionId": "computeMaxAMResource",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSLeafQueue.java",
+  "functionStartLine": 505,
+  "functionEndLine": 526,
+  "numCommitsSeen": 69,
+  "timeTaken": 2897,
+  "changeHistory": [
+    "91ce09e7065bacd7b4f09696fff35b789c52bcd7",
+    "538bb4880da43714af68143e9a1dde195bd77099",
+    "a96afae125ba02fb4480542d3fb0891623ee4c37",
+    "3b9d3acd203cef4d861c5182fc4dccc55128d347"
+  ],
+  "changeHistoryShort": {
+    "91ce09e7065bacd7b4f09696fff35b789c52bcd7": "Ybodychange",
+    "538bb4880da43714af68143e9a1dde195bd77099": "Ybodychange",
+    "a96afae125ba02fb4480542d3fb0891623ee4c37": "Ybodychange",
+    "3b9d3acd203cef4d861c5182fc4dccc55128d347": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "91ce09e7065bacd7b4f09696fff35b789c52bcd7": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9360. Do not expose innards of QueueMetrics object into FSLeafQueue#computeMaxAMResource. Contributed by Peter Bacsko\n",
+      "commitDate": "15/07/19 1:47 AM",
+      "commitName": "91ce09e7065bacd7b4f09696fff35b789c52bcd7",
+      "commitAuthor": "Szilard Nemeth",
+      "commitDateOld": "15/03/19 4:20 PM",
+      "commitNameOld": "2064ca015d1584263aac0cc20c60b925a3aff612",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 121.39,
+      "commitsBetweenForRepo": 830,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,40 +1,22 @@\n   private Resource computeMaxAMResource() {\n     Resource maxResource \u003d Resources.clone(getFairShare());\n+    Resource maxShare \u003d getMaxShare();\n+\n     if (maxResource.getMemorySize() \u003d\u003d 0) {\n       maxResource.setMemorySize(\n           Math.min(scheduler.getRootQueueMetrics().getAvailableMB(),\n-                   getMaxShare().getMemorySize()));\n+                   maxShare.getMemorySize()));\n     }\n \n     if (maxResource.getVirtualCores() \u003d\u003d 0) {\n       maxResource.setVirtualCores(Math.min(\n           scheduler.getRootQueueMetrics().getAvailableVirtualCores(),\n-          getMaxShare().getVirtualCores()));\n+          maxShare.getVirtualCores()));\n     }\n \n-    QueueMetricsForCustomResources metricsForCustomResources \u003d\n-        scheduler.getRootQueueMetrics().getQueueMetricsForCustomResources();\n-\n-    if (metricsForCustomResources !\u003d null) {\n-      QueueMetricsCustomResource availableResources \u003d\n-          metricsForCustomResources.getAvailable();\n-\n-      // We expect all custom resources contained in availableResources,\n-      // so we will loop through all of them.\n-      for (Map.Entry\u003cString, Long\u003e availableEntry : availableResources\n-          .getValues().entrySet()) {\n-        String resourceName \u003d availableEntry.getKey();\n-\n-        // We only update the value if fairshare is 0 for that resource.\n-        if (maxResource.getResourceValue(resourceName) \u003d\u003d 0) {\n-          Long availableValue \u003d availableEntry.getValue();\n-          long value \u003d Math.min(availableValue,\n-              getMaxShare().getResourceValue(resourceName));\n-          maxResource.setResourceValue(resourceName, value);\n-        }\n-      }\n-    }\n+    scheduler.getRootQueueMetrics()\n+        .fillInValuesFromAvailableResources(maxShare, maxResource);\n \n     // Round up to allow AM to run when there is only one vcore on the cluster\n     return Resources.multiplyAndRoundUp(maxResource, maxAMShare);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Resource computeMaxAMResource() {\n    Resource maxResource \u003d Resources.clone(getFairShare());\n    Resource maxShare \u003d getMaxShare();\n\n    if (maxResource.getMemorySize() \u003d\u003d 0) {\n      maxResource.setMemorySize(\n          Math.min(scheduler.getRootQueueMetrics().getAvailableMB(),\n                   maxShare.getMemorySize()));\n    }\n\n    if (maxResource.getVirtualCores() \u003d\u003d 0) {\n      maxResource.setVirtualCores(Math.min(\n          scheduler.getRootQueueMetrics().getAvailableVirtualCores(),\n          maxShare.getVirtualCores()));\n    }\n\n    scheduler.getRootQueueMetrics()\n        .fillInValuesFromAvailableResources(maxShare, maxResource);\n\n    // Round up to allow AM to run when there is only one vcore on the cluster\n    return Resources.multiplyAndRoundUp(maxResource, maxAMShare);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSLeafQueue.java",
+      "extendedDetails": {}
+    },
+    "538bb4880da43714af68143e9a1dde195bd77099": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9323. FSLeafQueue#computeMaxAMResource does not override zero values for custom resources\n(Contributed by Szilard Nemeth via Daniel Templeton)\n\nChange-Id: Id844ccf09488f367c0c7de0a3b2d4aca1bba31cc\n",
+      "commitDate": "27/02/19 7:59 PM",
+      "commitName": "538bb4880da43714af68143e9a1dde195bd77099",
+      "commitAuthor": "Szilard Nemeth",
+      "commitDateOld": "20/11/18 2:12 PM",
+      "commitNameOld": "a41b648e98b6a1c5a9cdb7393e73e576a97f56d4",
+      "commitAuthorOld": "Haibo Chen",
+      "daysBetweenCommits": 99.24,
+      "commitsBetweenForRepo": 694,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,40 @@\n   private Resource computeMaxAMResource() {\n     Resource maxResource \u003d Resources.clone(getFairShare());\n     if (maxResource.getMemorySize() \u003d\u003d 0) {\n       maxResource.setMemorySize(\n           Math.min(scheduler.getRootQueueMetrics().getAvailableMB(),\n                    getMaxShare().getMemorySize()));\n     }\n \n     if (maxResource.getVirtualCores() \u003d\u003d 0) {\n       maxResource.setVirtualCores(Math.min(\n           scheduler.getRootQueueMetrics().getAvailableVirtualCores(),\n           getMaxShare().getVirtualCores()));\n     }\n \n+    QueueMetricsForCustomResources metricsForCustomResources \u003d\n+        scheduler.getRootQueueMetrics().getQueueMetricsForCustomResources();\n+\n+    if (metricsForCustomResources !\u003d null) {\n+      QueueMetricsCustomResource availableResources \u003d\n+          metricsForCustomResources.getAvailable();\n+\n+      // We expect all custom resources contained in availableResources,\n+      // so we will loop through all of them.\n+      for (Map.Entry\u003cString, Long\u003e availableEntry : availableResources\n+          .getValues().entrySet()) {\n+        String resourceName \u003d availableEntry.getKey();\n+\n+        // We only update the value if fairshare is 0 for that resource.\n+        if (maxResource.getResourceValue(resourceName) \u003d\u003d 0) {\n+          Long availableValue \u003d availableEntry.getValue();\n+          long value \u003d Math.min(availableValue,\n+              getMaxShare().getResourceValue(resourceName));\n+          maxResource.setResourceValue(resourceName, value);\n+        }\n+      }\n+    }\n+\n     // Round up to allow AM to run when there is only one vcore on the cluster\n     return Resources.multiplyAndRoundUp(maxResource, maxAMShare);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Resource computeMaxAMResource() {\n    Resource maxResource \u003d Resources.clone(getFairShare());\n    if (maxResource.getMemorySize() \u003d\u003d 0) {\n      maxResource.setMemorySize(\n          Math.min(scheduler.getRootQueueMetrics().getAvailableMB(),\n                   getMaxShare().getMemorySize()));\n    }\n\n    if (maxResource.getVirtualCores() \u003d\u003d 0) {\n      maxResource.setVirtualCores(Math.min(\n          scheduler.getRootQueueMetrics().getAvailableVirtualCores(),\n          getMaxShare().getVirtualCores()));\n    }\n\n    QueueMetricsForCustomResources metricsForCustomResources \u003d\n        scheduler.getRootQueueMetrics().getQueueMetricsForCustomResources();\n\n    if (metricsForCustomResources !\u003d null) {\n      QueueMetricsCustomResource availableResources \u003d\n          metricsForCustomResources.getAvailable();\n\n      // We expect all custom resources contained in availableResources,\n      // so we will loop through all of them.\n      for (Map.Entry\u003cString, Long\u003e availableEntry : availableResources\n          .getValues().entrySet()) {\n        String resourceName \u003d availableEntry.getKey();\n\n        // We only update the value if fairshare is 0 for that resource.\n        if (maxResource.getResourceValue(resourceName) \u003d\u003d 0) {\n          Long availableValue \u003d availableEntry.getValue();\n          long value \u003d Math.min(availableValue,\n              getMaxShare().getResourceValue(resourceName));\n          maxResource.setResourceValue(resourceName, value);\n        }\n      }\n    }\n\n    // Round up to allow AM to run when there is only one vcore on the cluster\n    return Resources.multiplyAndRoundUp(maxResource, maxAMShare);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSLeafQueue.java",
+      "extendedDetails": {}
+    },
+    "a96afae125ba02fb4480542d3fb0891623ee4c37": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6264. AM not launched when a single vcore is available on the cluster. (Yufei Gu via kasha)\n",
+      "commitDate": "09/03/17 11:11 PM",
+      "commitName": "a96afae125ba02fb4480542d3fb0891623ee4c37",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "26/02/17 8:36 PM",
+      "commitNameOld": "fbfe86deea5f2aa857cd13fee913b7becee57f93",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 11.11,
+      "commitsBetweenForRepo": 80,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,17 @@\n   private Resource computeMaxAMResource() {\n     Resource maxResource \u003d Resources.clone(getFairShare());\n     if (maxResource.getMemorySize() \u003d\u003d 0) {\n       maxResource.setMemorySize(\n           Math.min(scheduler.getRootQueueMetrics().getAvailableMB(),\n                    getMaxShare().getMemorySize()));\n     }\n \n     if (maxResource.getVirtualCores() \u003d\u003d 0) {\n       maxResource.setVirtualCores(Math.min(\n           scheduler.getRootQueueMetrics().getAvailableVirtualCores(),\n           getMaxShare().getVirtualCores()));\n     }\n \n-    return Resources.multiply(maxResource, maxAMShare);\n+    // Round up to allow AM to run when there is only one vcore on the cluster\n+    return Resources.multiplyAndRoundUp(maxResource, maxAMShare);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private Resource computeMaxAMResource() {\n    Resource maxResource \u003d Resources.clone(getFairShare());\n    if (maxResource.getMemorySize() \u003d\u003d 0) {\n      maxResource.setMemorySize(\n          Math.min(scheduler.getRootQueueMetrics().getAvailableMB(),\n                   getMaxShare().getMemorySize()));\n    }\n\n    if (maxResource.getVirtualCores() \u003d\u003d 0) {\n      maxResource.setVirtualCores(Math.min(\n          scheduler.getRootQueueMetrics().getAvailableVirtualCores(),\n          getMaxShare().getVirtualCores()));\n    }\n\n    // Round up to allow AM to run when there is only one vcore on the cluster\n    return Resources.multiplyAndRoundUp(maxResource, maxAMShare);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSLeafQueue.java",
+      "extendedDetails": {}
+    },
+    "3b9d3acd203cef4d861c5182fc4dccc55128d347": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5890. FairScheduler should log information about AM-resource-usage and max-AM-share for queues\n(Contributed by Yufei Gu via Daniel Templeton)\n",
+      "commitDate": "29/11/16 12:46 PM",
+      "commitName": "3b9d3acd203cef4d861c5182fc4dccc55128d347",
+      "commitAuthor": "Daniel Templeton",
+      "diff": "@@ -0,0 +1,16 @@\n+  private Resource computeMaxAMResource() {\n+    Resource maxResource \u003d Resources.clone(getFairShare());\n+    if (maxResource.getMemorySize() \u003d\u003d 0) {\n+      maxResource.setMemorySize(\n+          Math.min(scheduler.getRootQueueMetrics().getAvailableMB(),\n+                   getMaxShare().getMemorySize()));\n+    }\n+\n+    if (maxResource.getVirtualCores() \u003d\u003d 0) {\n+      maxResource.setVirtualCores(Math.min(\n+          scheduler.getRootQueueMetrics().getAvailableVirtualCores(),\n+          getMaxShare().getVirtualCores()));\n+    }\n+\n+    return Resources.multiply(maxResource, maxAMShare);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Resource computeMaxAMResource() {\n    Resource maxResource \u003d Resources.clone(getFairShare());\n    if (maxResource.getMemorySize() \u003d\u003d 0) {\n      maxResource.setMemorySize(\n          Math.min(scheduler.getRootQueueMetrics().getAvailableMB(),\n                   getMaxShare().getMemorySize()));\n    }\n\n    if (maxResource.getVirtualCores() \u003d\u003d 0) {\n      maxResource.setVirtualCores(Math.min(\n          scheduler.getRootQueueMetrics().getAvailableVirtualCores(),\n          getMaxShare().getVirtualCores()));\n    }\n\n    return Resources.multiply(maxResource, maxAMShare);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/fair/FSLeafQueue.java"
+    }
+  }
+}

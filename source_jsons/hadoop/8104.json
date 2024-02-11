@@ -1,0 +1,234 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "GlobalStateIdContext.java",
+  "functionName": "receiveRequestState",
+  "functionId": "receiveRequestState___header-RpcRequestHeaderProto__clientWaitTime-long",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+  "functionStartLine": 128,
+  "functionEndLine": 164,
+  "numCommitsSeen": 14,
+  "timeTaken": 4722,
+  "changeHistory": [
+    "02bd02b5af761b6b24fdc4e8e7ede72a51870d5b",
+    "d6d95d2686bfc1d1e5511f60f169195734e2998e",
+    "080a421911edf59eba388199b81c1b4b05379ab3",
+    "b73fb70f97983aef281a67f100bb28ba270a8b1c",
+    "66ec3a67e8563d17521b65cdae8374d28a24c624",
+    "9bf0696c7348879678693176da0071628ca42566"
+  ],
+  "changeHistoryShort": {
+    "02bd02b5af761b6b24fdc4e8e7ede72a51870d5b": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "d6d95d2686bfc1d1e5511f60f169195734e2998e": "Ybodychange",
+    "080a421911edf59eba388199b81c1b4b05379ab3": "Ybodychange",
+    "b73fb70f97983aef281a67f100bb28ba270a8b1c": "Ymultichange(Yparameterchange,Yexceptionschange,Ybodychange)",
+    "66ec3a67e8563d17521b65cdae8374d28a24c624": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "9bf0696c7348879678693176da0071628ca42566": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "02bd02b5af761b6b24fdc4e8e7ede72a51870d5b": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-14660. [SBN Read] ObserverNameNode should throw StandbyException for requests not from ObserverProxyProvider. Contributed by Chao Sun.\n",
+      "commitDate": "27/07/19 8:11 PM",
+      "commitName": "02bd02b5af761b6b24fdc4e8e7ede72a51870d5b",
+      "commitAuthor": "Ayush Saxena",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-14660. [SBN Read] ObserverNameNode should throw StandbyException for requests not from ObserverProxyProvider. Contributed by Chao Sun.\n",
+          "commitDate": "27/07/19 8:11 PM",
+          "commitName": "02bd02b5af761b6b24fdc4e8e7ede72a51870d5b",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "10/06/19 10:23 AM",
+          "commitNameOld": "d6d95d2686bfc1d1e5511f60f169195734e2998e",
+          "commitAuthorOld": "Shweta Yakkali",
+          "daysBetweenCommits": 47.41,
+          "commitsBetweenForRepo": 395,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,37 @@\n   public long receiveRequestState(RpcRequestHeaderProto header,\n-      long clientWaitTime) throws RetriableException {\n+      long clientWaitTime) throws IOException {\n+    if (!header.hasStateId() \u0026\u0026\n+        HAServiceState.OBSERVER.equals(namesystem.getState())) {\n+      // This could happen if client configured with non-observer proxy provider\n+      // (e.g., ConfiguredFailoverProxyProvider) is accessing a cluster with\n+      // observers. In this case, we should let the client failover to the\n+      // active node, rather than potentially serving stale result (client\n+      // stateId is 0 if not set).\n+      throw new StandbyException(\"Observer Node received request without \"\n+          + \"stateId. This mostly likely is because client is not configured \"\n+          + \"with \" + ObserverReadProxyProvider.class.getSimpleName());\n+    }\n     long serverStateId \u003d getLastSeenStateId();\n     long clientStateId \u003d header.getStateId();\n     FSNamesystem.LOG.trace(\"Client State ID\u003d {} and Server State ID\u003d {}\",\n         clientStateId, serverStateId);\n \n     if (clientStateId \u003e serverStateId \u0026\u0026\n         HAServiceState.ACTIVE.equals(namesystem.getState())) {\n       FSNamesystem.LOG.warn(\"The client stateId: {} is greater than \"\n           + \"the server stateId: {} This is unexpected. \"\n           + \"Resetting client stateId to server stateId\",\n           clientStateId, serverStateId);\n       return serverStateId;\n     }\n     if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n         clientStateId - serverStateId \u003e\n         ESTIMATED_TRANSACTIONS_PER_SECOND\n             * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n             * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n       throw new RetriableException(\n           \"Observer Node is too far behind: serverStateId \u003d \"\n               + serverStateId + \" clientStateId \u003d \" + clientStateId);\n     }\n     return clientStateId;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public long receiveRequestState(RpcRequestHeaderProto header,\n      long clientWaitTime) throws IOException {\n    if (!header.hasStateId() \u0026\u0026\n        HAServiceState.OBSERVER.equals(namesystem.getState())) {\n      // This could happen if client configured with non-observer proxy provider\n      // (e.g., ConfiguredFailoverProxyProvider) is accessing a cluster with\n      // observers. In this case, we should let the client failover to the\n      // active node, rather than potentially serving stale result (client\n      // stateId is 0 if not set).\n      throw new StandbyException(\"Observer Node received request without \"\n          + \"stateId. This mostly likely is because client is not configured \"\n          + \"with \" + ObserverReadProxyProvider.class.getSimpleName());\n    }\n    long serverStateId \u003d getLastSeenStateId();\n    long clientStateId \u003d header.getStateId();\n    FSNamesystem.LOG.trace(\"Client State ID\u003d {} and Server State ID\u003d {}\",\n        clientStateId, serverStateId);\n\n    if (clientStateId \u003e serverStateId \u0026\u0026\n        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n      FSNamesystem.LOG.warn(\"The client stateId: {} is greater than \"\n          + \"the server stateId: {} This is unexpected. \"\n          + \"Resetting client stateId to server stateId\",\n          clientStateId, serverStateId);\n      return serverStateId;\n    }\n    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n        clientStateId - serverStateId \u003e\n        ESTIMATED_TRANSACTIONS_PER_SECOND\n            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n      throw new RetriableException(\n          \"Observer Node is too far behind: serverStateId \u003d \"\n              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n    }\n    return clientStateId;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+          "extendedDetails": {
+            "oldValue": "[RetriableException]",
+            "newValue": "[IOException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-14660. [SBN Read] ObserverNameNode should throw StandbyException for requests not from ObserverProxyProvider. Contributed by Chao Sun.\n",
+          "commitDate": "27/07/19 8:11 PM",
+          "commitName": "02bd02b5af761b6b24fdc4e8e7ede72a51870d5b",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "10/06/19 10:23 AM",
+          "commitNameOld": "d6d95d2686bfc1d1e5511f60f169195734e2998e",
+          "commitAuthorOld": "Shweta Yakkali",
+          "daysBetweenCommits": 47.41,
+          "commitsBetweenForRepo": 395,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,37 @@\n   public long receiveRequestState(RpcRequestHeaderProto header,\n-      long clientWaitTime) throws RetriableException {\n+      long clientWaitTime) throws IOException {\n+    if (!header.hasStateId() \u0026\u0026\n+        HAServiceState.OBSERVER.equals(namesystem.getState())) {\n+      // This could happen if client configured with non-observer proxy provider\n+      // (e.g., ConfiguredFailoverProxyProvider) is accessing a cluster with\n+      // observers. In this case, we should let the client failover to the\n+      // active node, rather than potentially serving stale result (client\n+      // stateId is 0 if not set).\n+      throw new StandbyException(\"Observer Node received request without \"\n+          + \"stateId. This mostly likely is because client is not configured \"\n+          + \"with \" + ObserverReadProxyProvider.class.getSimpleName());\n+    }\n     long serverStateId \u003d getLastSeenStateId();\n     long clientStateId \u003d header.getStateId();\n     FSNamesystem.LOG.trace(\"Client State ID\u003d {} and Server State ID\u003d {}\",\n         clientStateId, serverStateId);\n \n     if (clientStateId \u003e serverStateId \u0026\u0026\n         HAServiceState.ACTIVE.equals(namesystem.getState())) {\n       FSNamesystem.LOG.warn(\"The client stateId: {} is greater than \"\n           + \"the server stateId: {} This is unexpected. \"\n           + \"Resetting client stateId to server stateId\",\n           clientStateId, serverStateId);\n       return serverStateId;\n     }\n     if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n         clientStateId - serverStateId \u003e\n         ESTIMATED_TRANSACTIONS_PER_SECOND\n             * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n             * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n       throw new RetriableException(\n           \"Observer Node is too far behind: serverStateId \u003d \"\n               + serverStateId + \" clientStateId \u003d \" + clientStateId);\n     }\n     return clientStateId;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public long receiveRequestState(RpcRequestHeaderProto header,\n      long clientWaitTime) throws IOException {\n    if (!header.hasStateId() \u0026\u0026\n        HAServiceState.OBSERVER.equals(namesystem.getState())) {\n      // This could happen if client configured with non-observer proxy provider\n      // (e.g., ConfiguredFailoverProxyProvider) is accessing a cluster with\n      // observers. In this case, we should let the client failover to the\n      // active node, rather than potentially serving stale result (client\n      // stateId is 0 if not set).\n      throw new StandbyException(\"Observer Node received request without \"\n          + \"stateId. This mostly likely is because client is not configured \"\n          + \"with \" + ObserverReadProxyProvider.class.getSimpleName());\n    }\n    long serverStateId \u003d getLastSeenStateId();\n    long clientStateId \u003d header.getStateId();\n    FSNamesystem.LOG.trace(\"Client State ID\u003d {} and Server State ID\u003d {}\",\n        clientStateId, serverStateId);\n\n    if (clientStateId \u003e serverStateId \u0026\u0026\n        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n      FSNamesystem.LOG.warn(\"The client stateId: {} is greater than \"\n          + \"the server stateId: {} This is unexpected. \"\n          + \"Resetting client stateId to server stateId\",\n          clientStateId, serverStateId);\n      return serverStateId;\n    }\n    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n        clientStateId - serverStateId \u003e\n        ESTIMATED_TRANSACTIONS_PER_SECOND\n            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n      throw new RetriableException(\n          \"Observer Node is too far behind: serverStateId \u003d \"\n              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n    }\n    return clientStateId;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "d6d95d2686bfc1d1e5511f60f169195734e2998e": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14494. Move Server logging of StatedId inside receiveRequestState(). Contributed by Shweta Yakkali.\n\nSigned-off-by: Wei-Chiu Chuang \u003cweichiu@apache.org\u003e\n",
+      "commitDate": "10/06/19 10:23 AM",
+      "commitName": "d6d95d2686bfc1d1e5511f60f169195734e2998e",
+      "commitAuthor": "Shweta Yakkali",
+      "commitDateOld": "14/02/19 8:05 AM",
+      "commitNameOld": "080a421911edf59eba388199b81c1b4b05379ab3",
+      "commitAuthorOld": "Shweta Yakkali",
+      "daysBetweenCommits": 116.05,
+      "commitsBetweenForRepo": 814,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,26 @@\n   public long receiveRequestState(RpcRequestHeaderProto header,\n       long clientWaitTime) throws RetriableException {\n-    long serverStateId \u003d\n-        namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n+    long serverStateId \u003d getLastSeenStateId();\n     long clientStateId \u003d header.getStateId();\n+    FSNamesystem.LOG.trace(\"Client State ID\u003d {} and Server State ID\u003d {}\",\n+        clientStateId, serverStateId);\n+\n     if (clientStateId \u003e serverStateId \u0026\u0026\n         HAServiceState.ACTIVE.equals(namesystem.getState())) {\n       FSNamesystem.LOG.warn(\"The client stateId: {} is greater than \"\n           + \"the server stateId: {} This is unexpected. \"\n           + \"Resetting client stateId to server stateId\",\n           clientStateId, serverStateId);\n       return serverStateId;\n     }\n     if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n         clientStateId - serverStateId \u003e\n         ESTIMATED_TRANSACTIONS_PER_SECOND\n             * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n             * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n       throw new RetriableException(\n           \"Observer Node is too far behind: serverStateId \u003d \"\n               + serverStateId + \" clientStateId \u003d \" + clientStateId);\n     }\n     return clientStateId;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public long receiveRequestState(RpcRequestHeaderProto header,\n      long clientWaitTime) throws RetriableException {\n    long serverStateId \u003d getLastSeenStateId();\n    long clientStateId \u003d header.getStateId();\n    FSNamesystem.LOG.trace(\"Client State ID\u003d {} and Server State ID\u003d {}\",\n        clientStateId, serverStateId);\n\n    if (clientStateId \u003e serverStateId \u0026\u0026\n        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n      FSNamesystem.LOG.warn(\"The client stateId: {} is greater than \"\n          + \"the server stateId: {} This is unexpected. \"\n          + \"Resetting client stateId to server stateId\",\n          clientStateId, serverStateId);\n      return serverStateId;\n    }\n    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n        clientStateId - serverStateId \u003e\n        ESTIMATED_TRANSACTIONS_PER_SECOND\n            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n      throw new RetriableException(\n          \"Observer Node is too far behind: serverStateId \u003d \"\n              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n    }\n    return clientStateId;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+      "extendedDetails": {}
+    },
+    "080a421911edf59eba388199b81c1b4b05379ab3": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14262. [SBN read] Make Log.WARN message in GlobalStateIdContext more informative. Contributed by Shweta Yakkali.\n",
+      "commitDate": "14/02/19 8:05 AM",
+      "commitName": "080a421911edf59eba388199b81c1b4b05379ab3",
+      "commitAuthor": "Shweta Yakkali",
+      "commitDateOld": "24/12/18 9:34 AM",
+      "commitNameOld": "fa8550337d082afba025fd2714c6f78721a4e729",
+      "commitAuthorOld": "Chao Sun",
+      "daysBetweenCommits": 51.94,
+      "commitsBetweenForRepo": 320,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,24 @@\n   public long receiveRequestState(RpcRequestHeaderProto header,\n       long clientWaitTime) throws RetriableException {\n     long serverStateId \u003d\n         namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n     long clientStateId \u003d header.getStateId();\n     if (clientStateId \u003e serverStateId \u0026\u0026\n         HAServiceState.ACTIVE.equals(namesystem.getState())) {\n-      FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n-          \", but server state is: \" + serverStateId);\n+      FSNamesystem.LOG.warn(\"The client stateId: {} is greater than \"\n+          + \"the server stateId: {} This is unexpected. \"\n+          + \"Resetting client stateId to server stateId\",\n+          clientStateId, serverStateId);\n       return serverStateId;\n     }\n     if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n         clientStateId - serverStateId \u003e\n         ESTIMATED_TRANSACTIONS_PER_SECOND\n             * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n             * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n       throw new RetriableException(\n           \"Observer Node is too far behind: serverStateId \u003d \"\n               + serverStateId + \" clientStateId \u003d \" + clientStateId);\n     }\n     return clientStateId;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public long receiveRequestState(RpcRequestHeaderProto header,\n      long clientWaitTime) throws RetriableException {\n    long serverStateId \u003d\n        namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n    long clientStateId \u003d header.getStateId();\n    if (clientStateId \u003e serverStateId \u0026\u0026\n        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n      FSNamesystem.LOG.warn(\"The client stateId: {} is greater than \"\n          + \"the server stateId: {} This is unexpected. \"\n          + \"Resetting client stateId to server stateId\",\n          clientStateId, serverStateId);\n      return serverStateId;\n    }\n    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n        clientStateId - serverStateId \u003e\n        ESTIMATED_TRANSACTIONS_PER_SECOND\n            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n      throw new RetriableException(\n          \"Observer Node is too far behind: serverStateId \u003d \"\n              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n    }\n    return clientStateId;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+      "extendedDetails": {}
+    },
+    "b73fb70f97983aef281a67f100bb28ba270a8b1c": {
+      "type": "Ymultichange(Yparameterchange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-13873. [SBN read] ObserverNode should reject read requests when it is too far behind. Contributed by Konstantin Shvachko.\n",
+      "commitDate": "24/12/18 9:34 AM",
+      "commitName": "b73fb70f97983aef281a67f100bb28ba270a8b1c",
+      "commitAuthor": "Erik Krogen",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13873. [SBN read] ObserverNode should reject read requests when it is too far behind. Contributed by Konstantin Shvachko.\n",
+          "commitDate": "24/12/18 9:34 AM",
+          "commitName": "b73fb70f97983aef281a67f100bb28ba270a8b1c",
+          "commitAuthor": "Erik Krogen",
+          "commitDateOld": "24/12/18 9:34 AM",
+          "commitNameOld": "d2e85b0b6d82fef486b08de8a1d04cca1505646f",
+          "commitAuthorOld": "Chen Liang",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 17,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,22 @@\n-  public long receiveRequestState(RpcRequestHeaderProto header) {\n+  public long receiveRequestState(RpcRequestHeaderProto header,\n+      long clientWaitTime) throws RetriableException {\n     long serverStateId \u003d\n         namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n     long clientStateId \u003d header.getStateId();\n     if (clientStateId \u003e serverStateId \u0026\u0026\n-        HAServiceProtocol.HAServiceState.ACTIVE.equals(namesystem.getState())) {\n+        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n       FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n           \", but server state is: \" + serverStateId);\n+      return serverStateId;\n+    }\n+    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n+        clientStateId - serverStateId \u003e\n+        ESTIMATED_TRANSACTIONS_PER_SECOND\n+            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n+            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n+      throw new RetriableException(\n+          \"Observer Node is too far behind: serverStateId \u003d \"\n+              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n     }\n     return clientStateId;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public long receiveRequestState(RpcRequestHeaderProto header,\n      long clientWaitTime) throws RetriableException {\n    long serverStateId \u003d\n        namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n    long clientStateId \u003d header.getStateId();\n    if (clientStateId \u003e serverStateId \u0026\u0026\n        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n      FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n          \", but server state is: \" + serverStateId);\n      return serverStateId;\n    }\n    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n        clientStateId - serverStateId \u003e\n        ESTIMATED_TRANSACTIONS_PER_SECOND\n            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n      throw new RetriableException(\n          \"Observer Node is too far behind: serverStateId \u003d \"\n              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n    }\n    return clientStateId;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+          "extendedDetails": {
+            "oldValue": "[header-RpcRequestHeaderProto]",
+            "newValue": "[header-RpcRequestHeaderProto, clientWaitTime-long]"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-13873. [SBN read] ObserverNode should reject read requests when it is too far behind. Contributed by Konstantin Shvachko.\n",
+          "commitDate": "24/12/18 9:34 AM",
+          "commitName": "b73fb70f97983aef281a67f100bb28ba270a8b1c",
+          "commitAuthor": "Erik Krogen",
+          "commitDateOld": "24/12/18 9:34 AM",
+          "commitNameOld": "d2e85b0b6d82fef486b08de8a1d04cca1505646f",
+          "commitAuthorOld": "Chen Liang",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 17,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,22 @@\n-  public long receiveRequestState(RpcRequestHeaderProto header) {\n+  public long receiveRequestState(RpcRequestHeaderProto header,\n+      long clientWaitTime) throws RetriableException {\n     long serverStateId \u003d\n         namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n     long clientStateId \u003d header.getStateId();\n     if (clientStateId \u003e serverStateId \u0026\u0026\n-        HAServiceProtocol.HAServiceState.ACTIVE.equals(namesystem.getState())) {\n+        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n       FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n           \", but server state is: \" + serverStateId);\n+      return serverStateId;\n+    }\n+    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n+        clientStateId - serverStateId \u003e\n+        ESTIMATED_TRANSACTIONS_PER_SECOND\n+            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n+            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n+      throw new RetriableException(\n+          \"Observer Node is too far behind: serverStateId \u003d \"\n+              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n     }\n     return clientStateId;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public long receiveRequestState(RpcRequestHeaderProto header,\n      long clientWaitTime) throws RetriableException {\n    long serverStateId \u003d\n        namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n    long clientStateId \u003d header.getStateId();\n    if (clientStateId \u003e serverStateId \u0026\u0026\n        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n      FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n          \", but server state is: \" + serverStateId);\n      return serverStateId;\n    }\n    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n        clientStateId - serverStateId \u003e\n        ESTIMATED_TRANSACTIONS_PER_SECOND\n            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n      throw new RetriableException(\n          \"Observer Node is too far behind: serverStateId \u003d \"\n              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n    }\n    return clientStateId;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[RetriableException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13873. [SBN read] ObserverNode should reject read requests when it is too far behind. Contributed by Konstantin Shvachko.\n",
+          "commitDate": "24/12/18 9:34 AM",
+          "commitName": "b73fb70f97983aef281a67f100bb28ba270a8b1c",
+          "commitAuthor": "Erik Krogen",
+          "commitDateOld": "24/12/18 9:34 AM",
+          "commitNameOld": "d2e85b0b6d82fef486b08de8a1d04cca1505646f",
+          "commitAuthorOld": "Chen Liang",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 17,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,22 @@\n-  public long receiveRequestState(RpcRequestHeaderProto header) {\n+  public long receiveRequestState(RpcRequestHeaderProto header,\n+      long clientWaitTime) throws RetriableException {\n     long serverStateId \u003d\n         namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n     long clientStateId \u003d header.getStateId();\n     if (clientStateId \u003e serverStateId \u0026\u0026\n-        HAServiceProtocol.HAServiceState.ACTIVE.equals(namesystem.getState())) {\n+        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n       FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n           \", but server state is: \" + serverStateId);\n+      return serverStateId;\n+    }\n+    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n+        clientStateId - serverStateId \u003e\n+        ESTIMATED_TRANSACTIONS_PER_SECOND\n+            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n+            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n+      throw new RetriableException(\n+          \"Observer Node is too far behind: serverStateId \u003d \"\n+              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n     }\n     return clientStateId;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public long receiveRequestState(RpcRequestHeaderProto header,\n      long clientWaitTime) throws RetriableException {\n    long serverStateId \u003d\n        namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n    long clientStateId \u003d header.getStateId();\n    if (clientStateId \u003e serverStateId \u0026\u0026\n        HAServiceState.ACTIVE.equals(namesystem.getState())) {\n      FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n          \", but server state is: \" + serverStateId);\n      return serverStateId;\n    }\n    if (HAServiceState.OBSERVER.equals(namesystem.getState()) \u0026\u0026\n        clientStateId - serverStateId \u003e\n        ESTIMATED_TRANSACTIONS_PER_SECOND\n            * TimeUnit.MILLISECONDS.toSeconds(clientWaitTime)\n            * ESTIMATED_SERVER_TIME_MULTIPLIER) {\n      throw new RetriableException(\n          \"Observer Node is too far behind: serverStateId \u003d \"\n              + serverStateId + \" clientStateId \u003d \" + clientStateId);\n    }\n    return clientStateId;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "66ec3a67e8563d17521b65cdae8374d28a24c624": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-13767. Add msync server implementation. Contributed by Chen Liang.\n",
+      "commitDate": "24/12/18 9:34 AM",
+      "commitName": "66ec3a67e8563d17521b65cdae8374d28a24c624",
+      "commitAuthor": "Chen Liang",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-13767. Add msync server implementation. Contributed by Chen Liang.\n",
+          "commitDate": "24/12/18 9:34 AM",
+          "commitName": "66ec3a67e8563d17521b65cdae8374d28a24c624",
+          "commitAuthor": "Chen Liang",
+          "commitDateOld": "24/12/18 9:33 AM",
+          "commitNameOld": "9bf0696c7348879678693176da0071628ca42566",
+          "commitAuthorOld": "Erik Krogen",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 13,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,11 @@\n-  public void receiveRequestState(RpcRequestHeaderProto header) {\n-    long serverStateId \u003d namesystem.getLastWrittenTransactionId();\n+  public long receiveRequestState(RpcRequestHeaderProto header) {\n+    long serverStateId \u003d\n+        namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n     long clientStateId \u003d header.getStateId();\n-    if (clientStateId \u003e serverStateId) {\n+    if (clientStateId \u003e serverStateId \u0026\u0026\n+        HAServiceProtocol.HAServiceState.ACTIVE.equals(namesystem.getState())) {\n       FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n           \", but server state is: \" + serverStateId);\n     }\n+    return clientStateId;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public long receiveRequestState(RpcRequestHeaderProto header) {\n    long serverStateId \u003d\n        namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n    long clientStateId \u003d header.getStateId();\n    if (clientStateId \u003e serverStateId \u0026\u0026\n        HAServiceProtocol.HAServiceState.ACTIVE.equals(namesystem.getState())) {\n      FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n          \", but server state is: \" + serverStateId);\n    }\n    return clientStateId;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "long"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13767. Add msync server implementation. Contributed by Chen Liang.\n",
+          "commitDate": "24/12/18 9:34 AM",
+          "commitName": "66ec3a67e8563d17521b65cdae8374d28a24c624",
+          "commitAuthor": "Chen Liang",
+          "commitDateOld": "24/12/18 9:33 AM",
+          "commitNameOld": "9bf0696c7348879678693176da0071628ca42566",
+          "commitAuthorOld": "Erik Krogen",
+          "daysBetweenCommits": 0.0,
+          "commitsBetweenForRepo": 13,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,8 +1,11 @@\n-  public void receiveRequestState(RpcRequestHeaderProto header) {\n-    long serverStateId \u003d namesystem.getLastWrittenTransactionId();\n+  public long receiveRequestState(RpcRequestHeaderProto header) {\n+    long serverStateId \u003d\n+        namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n     long clientStateId \u003d header.getStateId();\n-    if (clientStateId \u003e serverStateId) {\n+    if (clientStateId \u003e serverStateId \u0026\u0026\n+        HAServiceProtocol.HAServiceState.ACTIVE.equals(namesystem.getState())) {\n       FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n           \", but server state is: \" + serverStateId);\n     }\n+    return clientStateId;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public long receiveRequestState(RpcRequestHeaderProto header) {\n    long serverStateId \u003d\n        namesystem.getFSImage().getCorrectLastAppliedOrWrittenTxId();\n    long clientStateId \u003d header.getStateId();\n    if (clientStateId \u003e serverStateId \u0026\u0026\n        HAServiceProtocol.HAServiceState.ACTIVE.equals(namesystem.getState())) {\n      FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n          \", but server state is: \" + serverStateId);\n    }\n    return clientStateId;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "9bf0696c7348879678693176da0071628ca42566": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13331. [SBN read] Add lastSeenStateId to RpcRequestHeader. Contributed by Plamen Jeliazkov.\n",
+      "commitDate": "24/12/18 9:33 AM",
+      "commitName": "9bf0696c7348879678693176da0071628ca42566",
+      "commitAuthor": "Erik Krogen",
+      "diff": "@@ -0,0 +1,8 @@\n+  public void receiveRequestState(RpcRequestHeaderProto header) {\n+    long serverStateId \u003d namesystem.getLastWrittenTransactionId();\n+    long clientStateId \u003d header.getStateId();\n+    if (clientStateId \u003e serverStateId) {\n+      FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n+          \", but server state is: \" + serverStateId);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void receiveRequestState(RpcRequestHeaderProto header) {\n    long serverStateId \u003d namesystem.getLastWrittenTransactionId();\n    long clientStateId \u003d header.getStateId();\n    if (clientStateId \u003e serverStateId) {\n      FSNamesystem.LOG.warn(\"A client sent stateId: \" + clientStateId +\n          \", but server state is: \" + serverStateId);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/GlobalStateIdContext.java"
+    }
+  }
+}

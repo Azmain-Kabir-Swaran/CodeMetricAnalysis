@@ -1,0 +1,139 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3ABlockOutputStream.java",
+  "functionName": "abort",
+  "functionId": "abort",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+  "functionStartLine": 731,
+  "functionEndLine": 744,
+  "numCommitsSeen": 18,
+  "timeTaken": 2649,
+  "changeHistory": [
+    "29b19cd59245c8809b697b3d7d7445813a685aad",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+    "6c348c56918973fd988b110e79231324a8befe12",
+    "c58a59f7081d55dd2108545ebf9ee48cf43ca944",
+    "15b7076ad5f2ae92d231140b2f8cebc392a92c87"
+  ],
+  "changeHistoryShort": {
+    "29b19cd59245c8809b697b3d7d7445813a685aad": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Ybodychange",
+    "6c348c56918973fd988b110e79231324a8befe12": "Ymultichange(Ymovefromfile,Ybodychange)",
+    "c58a59f7081d55dd2108545ebf9ee48cf43ca944": "Ybodychange",
+    "15b7076ad5f2ae92d231140b2f8cebc392a92c87": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "29b19cd59245c8809b697b3d7d7445813a685aad": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16900. Very large files can be truncated when written through the S3A FileSystem.\n\nContributed by Mukund Thakur and Steve Loughran.\n\nThis patch ensures that writes to S3A fail when more than 10,000 blocks are\nwritten. That upper bound still exists. To write massive files, make sure\nthat the value of fs.s3a.multipart.size is set to a size which is large\nenough to upload the files in fewer than 10,000 blocks.\n\nChange-Id: Icec604e2a357ffd38d7ae7bc3f887ff55f2d721a\n",
+      "commitDate": "20/05/20 5:42 AM",
+      "commitName": "29b19cd59245c8809b697b3d7d7445813a685aad",
+      "commitAuthor": "Mukund Thakur",
+      "commitDateOld": "12/11/19 10:17 AM",
+      "commitNameOld": "990063d2af0a37e9474949f33128805e34c3f016",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 189.77,
+      "commitsBetweenForRepo": 658,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,14 @@\n     public void abort() {\n-      int retryCount \u003d 0;\n-      AmazonClientException lastException;\n+      LOG.debug(\"Aborting upload\");\n       fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n+      cancelAllActiveFutures();\n       try {\n         writeOperationHelper.abortMultipartUpload(key, uploadId,\n             (text, e, r, i) -\u003e statistics.exceptionInMultipartAbort());\n       } catch (IOException e) {\n         // this point is only reached if the operation failed more than\n         // the allowed retry count\n         LOG.warn(\"Unable to abort multipart upload,\"\n             + \" you may need to purge uploaded parts\", e);\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void abort() {\n      LOG.debug(\"Aborting upload\");\n      fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n      cancelAllActiveFutures();\n      try {\n        writeOperationHelper.abortMultipartUpload(key, uploadId,\n            (text, e, r, i) -\u003e statistics.exceptionInMultipartAbort());\n      } catch (IOException e) {\n        // this point is only reached if the operation failed more than\n        // the allowed retry count\n        LOG.warn(\"Unable to abort multipart upload,\"\n            + \" you may need to purge uploaded parts\", e);\n      }\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "01/09/17 6:13 AM",
+      "commitNameOld": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 82.09,
+      "commitsBetweenForRepo": 710,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,14 @@\n     public void abort() {\n       int retryCount \u003d 0;\n       AmazonClientException lastException;\n       fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n-      String operation \u003d\n-          String.format(\"Aborting multi-part upload for \u0027%s\u0027, id \u0027%s\",\n-              writeOperationHelper, uploadId);\n-      do {\n-        try {\n-          LOG.debug(operation);\n-          writeOperationHelper.abortMultipartUpload(uploadId);\n-          return;\n-        } catch (AmazonClientException e) {\n-          lastException \u003d e;\n-          statistics.exceptionInMultipartAbort();\n-        }\n-      } while (shouldRetry(operation, lastException, retryCount++));\n-      // this point is only reached if the operation failed more than\n-      // the allowed retry count\n-      LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n-          \"uploaded parts\", lastException);\n+      try {\n+        writeOperationHelper.abortMultipartUpload(key, uploadId,\n+            (text, e, r, i) -\u003e statistics.exceptionInMultipartAbort());\n+      } catch (IOException e) {\n+        // this point is only reached if the operation failed more than\n+        // the allowed retry count\n+        LOG.warn(\"Unable to abort multipart upload,\"\n+            + \" you may need to purge uploaded parts\", e);\n+      }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void abort() {\n      int retryCount \u003d 0;\n      AmazonClientException lastException;\n      fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n      try {\n        writeOperationHelper.abortMultipartUpload(key, uploadId,\n            (text, e, r, i) -\u003e statistics.exceptionInMultipartAbort());\n      } catch (IOException e) {\n        // this point is only reached if the operation failed more than\n        // the allowed retry count\n        LOG.warn(\"Unable to abort multipart upload,\"\n            + \" you may need to purge uploaded parts\", e);\n      }\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+      "extendedDetails": {}
+    },
+    "6c348c56918973fd988b110e79231324a8befe12": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange)",
+      "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+      "commitDate": "18/10/16 1:16 PM",
+      "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+          "commitDate": "18/10/16 1:16 PM",
+          "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "18/10/16 11:06 AM",
+          "commitNameOld": "b733a6f86262522e535cebc972baecbe6a6eab50",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 0.09,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,22 @@\n     public void abort() {\n-      LOG.warn(\"Aborting multi-part upload with id \u0027{}\u0027\", uploadId);\n-      try {\n-        fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n-        client.abortMultipartUpload(new AbortMultipartUploadRequest(bucket,\n-            key, uploadId));\n-      } catch (Exception e2) {\n-        LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n-            \"uploaded parts: {}\", e2, e2);\n-      }\n+      int retryCount \u003d 0;\n+      AmazonClientException lastException;\n+      fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n+      String operation \u003d\n+          String.format(\"Aborting multi-part upload for \u0027%s\u0027, id \u0027%s\",\n+              writeOperationHelper, uploadId);\n+      do {\n+        try {\n+          LOG.debug(operation);\n+          writeOperationHelper.abortMultipartUpload(uploadId);\n+          return;\n+        } catch (AmazonClientException e) {\n+          lastException \u003d e;\n+          statistics.exceptionInMultipartAbort();\n+        }\n+      } while (shouldRetry(operation, lastException, retryCount++));\n+      // this point is only reached if the operation failed more than\n+      // the allowed retry count\n+      LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n+          \"uploaded parts\", lastException);\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public void abort() {\n      int retryCount \u003d 0;\n      AmazonClientException lastException;\n      fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n      String operation \u003d\n          String.format(\"Aborting multi-part upload for \u0027%s\u0027, id \u0027%s\",\n              writeOperationHelper, uploadId);\n      do {\n        try {\n          LOG.debug(operation);\n          writeOperationHelper.abortMultipartUpload(uploadId);\n          return;\n        } catch (AmazonClientException e) {\n          lastException \u003d e;\n          statistics.exceptionInMultipartAbort();\n        }\n      } while (shouldRetry(operation, lastException, retryCount++));\n      // this point is only reached if the operation failed more than\n      // the allowed retry count\n      LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n          \"uploaded parts\", lastException);\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java",
+            "newPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+            "oldMethodName": "abort",
+            "newMethodName": "abort"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+          "commitDate": "18/10/16 1:16 PM",
+          "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "18/10/16 11:06 AM",
+          "commitNameOld": "b733a6f86262522e535cebc972baecbe6a6eab50",
+          "commitAuthorOld": "Xuan",
+          "daysBetweenCommits": 0.09,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,11 +1,22 @@\n     public void abort() {\n-      LOG.warn(\"Aborting multi-part upload with id \u0027{}\u0027\", uploadId);\n-      try {\n-        fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n-        client.abortMultipartUpload(new AbortMultipartUploadRequest(bucket,\n-            key, uploadId));\n-      } catch (Exception e2) {\n-        LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n-            \"uploaded parts: {}\", e2, e2);\n-      }\n+      int retryCount \u003d 0;\n+      AmazonClientException lastException;\n+      fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n+      String operation \u003d\n+          String.format(\"Aborting multi-part upload for \u0027%s\u0027, id \u0027%s\",\n+              writeOperationHelper, uploadId);\n+      do {\n+        try {\n+          LOG.debug(operation);\n+          writeOperationHelper.abortMultipartUpload(uploadId);\n+          return;\n+        } catch (AmazonClientException e) {\n+          lastException \u003d e;\n+          statistics.exceptionInMultipartAbort();\n+        }\n+      } while (shouldRetry(operation, lastException, retryCount++));\n+      // this point is only reached if the operation failed more than\n+      // the allowed retry count\n+      LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n+          \"uploaded parts\", lastException);\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public void abort() {\n      int retryCount \u003d 0;\n      AmazonClientException lastException;\n      fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n      String operation \u003d\n          String.format(\"Aborting multi-part upload for \u0027%s\u0027, id \u0027%s\",\n              writeOperationHelper, uploadId);\n      do {\n        try {\n          LOG.debug(operation);\n          writeOperationHelper.abortMultipartUpload(uploadId);\n          return;\n        } catch (AmazonClientException e) {\n          lastException \u003d e;\n          statistics.exceptionInMultipartAbort();\n        }\n      } while (shouldRetry(operation, lastException, retryCount++));\n      // this point is only reached if the operation failed more than\n      // the allowed retry count\n      LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n          \"uploaded parts\", lastException);\n    }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "c58a59f7081d55dd2108545ebf9ee48cf43ca944": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13171. Add StorageStatistics to S3A; instrument some more operations. Contributed by Steve Loughran.\n",
+      "commitDate": "03/06/16 8:55 AM",
+      "commitName": "c58a59f7081d55dd2108545ebf9ee48cf43ca944",
+      "commitAuthor": "Chris Nauroth",
+      "commitDateOld": "21/05/16 8:39 AM",
+      "commitNameOld": "39ec1515a205952eda7e171408a8b83eceb4abde",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 13.01,
+      "commitsBetweenForRepo": 75,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,10 +1,11 @@\n     public void abort() {\n       LOG.warn(\"Aborting multi-part upload with id \u0027{}\u0027\", uploadId);\n       try {\n+        fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n         client.abortMultipartUpload(new AbortMultipartUploadRequest(bucket,\n             key, uploadId));\n       } catch (Exception e2) {\n         LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n-            \"uploaded parts: \" + e2, e2);\n+            \"uploaded parts: {}\", e2, e2);\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void abort() {\n      LOG.warn(\"Aborting multi-part upload with id \u0027{}\u0027\", uploadId);\n      try {\n        fs.incrementStatistic(OBJECT_MULTIPART_UPLOAD_ABORTED);\n        client.abortMultipartUpload(new AbortMultipartUploadRequest(bucket,\n            key, uploadId));\n      } catch (Exception e2) {\n        LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n            \"uploaded parts: {}\", e2, e2);\n      }\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java",
+      "extendedDetails": {}
+    },
+    "15b7076ad5f2ae92d231140b2f8cebc392a92c87": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-11183. Memory-based S3AOutputstream. (Thomas Demoor via stevel)\n",
+      "commitDate": "03/03/15 4:18 PM",
+      "commitName": "15b7076ad5f2ae92d231140b2f8cebc392a92c87",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,10 @@\n+    public void abort() {\n+      LOG.warn(\"Aborting multi-part upload with id \u0027{}\u0027\", uploadId);\n+      try {\n+        client.abortMultipartUpload(new AbortMultipartUploadRequest(bucket,\n+            key, uploadId));\n+      } catch (Exception e2) {\n+        LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n+            \"uploaded parts: \" + e2, e2);\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void abort() {\n      LOG.warn(\"Aborting multi-part upload with id \u0027{}\u0027\", uploadId);\n      try {\n        client.abortMultipartUpload(new AbortMultipartUploadRequest(bucket,\n            key, uploadId));\n      } catch (Exception e2) {\n        LOG.warn(\"Unable to abort multipart upload, you may need to purge  \" +\n            \"uploaded parts: \" + e2, e2);\n      }\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AFastOutputStream.java"
+    }
+  }
+}

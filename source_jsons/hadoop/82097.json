@@ -1,0 +1,95 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PureJavaCrc32C.java",
+  "functionName": "update",
+  "functionId": "update___b-byte[]__off-int__len-int",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/PureJavaCrc32C.java",
+  "functionStartLine": 57,
+  "functionEndLine": 95,
+  "numCommitsSeen": 5,
+  "timeTaken": 893,
+  "changeHistory": [
+    "224de4f92c222a7b915e9c5d6bdd1a4a3fcbcf31",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+    "d62523b4ad88a31efea09ff10929ea5c6d9aaf35"
+  ],
+  "changeHistoryShort": {
+    "224de4f92c222a7b915e9c5d6bdd1a4a3fcbcf31": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": "Yfilerename",
+    "d62523b4ad88a31efea09ff10929ea5c6d9aaf35": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "224de4f92c222a7b915e9c5d6bdd1a4a3fcbcf31": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-8926. hadoop.util.PureJavaCrc32 cache hit-ratio is low for static data (Gopal V via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1399005 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/10/12 2:52 PM",
+      "commitName": "224de4f92c222a7b915e9c5d6bdd1a4a3fcbcf31",
+      "commitAuthor": "Robert Joseph Evans",
+      "commitDateOld": "24/08/12 6:03 PM",
+      "commitNameOld": "deead78e35b0cb81af875b5a8032cbd06c9a2dae",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 52.87,
+      "commitsBetweenForRepo": 312,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,39 @@\n   public void update(byte[] b, int off, int len) {\n     int localCrc \u003d crc;\n+\n     while(len \u003e 7) {\n-      int c0 \u003d b[off++] ^ localCrc;\n-      int c1 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n-      int c2 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n-      int c3 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n-      localCrc \u003d (T8_7[c0 \u0026 0xff] ^ T8_6[c1 \u0026 0xff])\n-          ^ (T8_5[c2 \u0026 0xff] ^ T8_4[c3 \u0026 0xff]);\n+      final int c0 \u003d(b[off+0] ^ localCrc) \u0026 0xff;\n+      final int c1 \u003d(b[off+1] ^ (localCrc \u003e\u003e\u003e\u003d 8)) \u0026 0xff;\n+      final int c2 \u003d(b[off+2] ^ (localCrc \u003e\u003e\u003e\u003d 8)) \u0026 0xff;\n+      final int c3 \u003d(b[off+3] ^ (localCrc \u003e\u003e\u003e\u003d 8)) \u0026 0xff;\n+      localCrc \u003d (T[T8_7_start + c0] ^ T[T8_6_start + c1])\n+          ^ (T[T8_5_start + c2] ^ T[T8_4_start + c3]);\n \n-      localCrc ^\u003d (T8_3[b[off++] \u0026 0xff] ^ T8_2[b[off++] \u0026 0xff])\n-           ^ (T8_1[b[off++] \u0026 0xff] ^ T8_0[b[off++] \u0026 0xff]);\n+      final int c4 \u003d b[off+4] \u0026 0xff;\n+      final int c5 \u003d b[off+5] \u0026 0xff;\n+      final int c6 \u003d b[off+6] \u0026 0xff;\n+      final int c7 \u003d b[off+7] \u0026 0xff;\n \n+      localCrc ^\u003d (T[T8_3_start + c4] ^ T[T8_2_start + c5])\n+           ^ (T[T8_1_start + c6] ^ T[T8_0_start + c7]);\n+\n+      off +\u003d 8;\n       len -\u003d 8;\n     }\n-    while(len \u003e 0) {\n-      localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T8_0[(localCrc ^ b[off++]) \u0026 0xff];\n-      len--;\n+\n+    /* loop unroll - duff\u0027s device style */\n+    switch(len) {\n+      case 7: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n+      case 6: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n+      case 5: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n+      case 4: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n+      case 3: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n+      case 2: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n+      case 1: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n+      default:\n+        /* nothing */\n     }\n     \n     // Publish crc out to object\n     crc \u003d localCrc;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void update(byte[] b, int off, int len) {\n    int localCrc \u003d crc;\n\n    while(len \u003e 7) {\n      final int c0 \u003d(b[off+0] ^ localCrc) \u0026 0xff;\n      final int c1 \u003d(b[off+1] ^ (localCrc \u003e\u003e\u003e\u003d 8)) \u0026 0xff;\n      final int c2 \u003d(b[off+2] ^ (localCrc \u003e\u003e\u003e\u003d 8)) \u0026 0xff;\n      final int c3 \u003d(b[off+3] ^ (localCrc \u003e\u003e\u003e\u003d 8)) \u0026 0xff;\n      localCrc \u003d (T[T8_7_start + c0] ^ T[T8_6_start + c1])\n          ^ (T[T8_5_start + c2] ^ T[T8_4_start + c3]);\n\n      final int c4 \u003d b[off+4] \u0026 0xff;\n      final int c5 \u003d b[off+5] \u0026 0xff;\n      final int c6 \u003d b[off+6] \u0026 0xff;\n      final int c7 \u003d b[off+7] \u0026 0xff;\n\n      localCrc ^\u003d (T[T8_3_start + c4] ^ T[T8_2_start + c5])\n           ^ (T[T8_1_start + c6] ^ T[T8_0_start + c7]);\n\n      off +\u003d 8;\n      len -\u003d 8;\n    }\n\n    /* loop unroll - duff\u0027s device style */\n    switch(len) {\n      case 7: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n      case 6: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n      case 5: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n      case 4: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n      case 3: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n      case 2: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n      case 1: localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T[T8_0_start + ((localCrc ^ b[off++]) \u0026 0xff)];\n      default:\n        /* nothing */\n    }\n    \n    // Publish crc out to object\n    crc \u003d localCrc;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/PureJavaCrc32C.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void update(byte[] b, int off, int len) {\n    int localCrc \u003d crc;\n    while(len \u003e 7) {\n      int c0 \u003d b[off++] ^ localCrc;\n      int c1 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n      int c2 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n      int c3 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n      localCrc \u003d (T8_7[c0 \u0026 0xff] ^ T8_6[c1 \u0026 0xff])\n          ^ (T8_5[c2 \u0026 0xff] ^ T8_4[c3 \u0026 0xff]);\n\n      localCrc ^\u003d (T8_3[b[off++] \u0026 0xff] ^ T8_2[b[off++] \u0026 0xff])\n           ^ (T8_1[b[off++] \u0026 0xff] ^ T8_0[b[off++] \u0026 0xff]);\n\n      len -\u003d 8;\n    }\n    while(len \u003e 0) {\n      localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T8_0[(localCrc ^ b[off++]) \u0026 0xff];\n      len--;\n    }\n    \n    // Publish crc out to object\n    crc \u003d localCrc;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/PureJavaCrc32C.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-common/src/main/java/org/apache/hadoop/util/PureJavaCrc32C.java",
+        "newPath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/util/PureJavaCrc32C.java"
+      }
+    },
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-6671. Use maven for hadoop common builds. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153184 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/08/11 9:37 AM",
+      "commitName": "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "01/08/11 3:53 PM",
+      "commitNameOld": "9bac807cedbcff34e1a144fb475eff267e5ed86d",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void update(byte[] b, int off, int len) {\n    int localCrc \u003d crc;\n    while(len \u003e 7) {\n      int c0 \u003d b[off++] ^ localCrc;\n      int c1 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n      int c2 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n      int c3 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n      localCrc \u003d (T8_7[c0 \u0026 0xff] ^ T8_6[c1 \u0026 0xff])\n          ^ (T8_5[c2 \u0026 0xff] ^ T8_4[c3 \u0026 0xff]);\n\n      localCrc ^\u003d (T8_3[b[off++] \u0026 0xff] ^ T8_2[b[off++] \u0026 0xff])\n           ^ (T8_1[b[off++] \u0026 0xff] ^ T8_0[b[off++] \u0026 0xff]);\n\n      len -\u003d 8;\n    }\n    while(len \u003e 0) {\n      localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T8_0[(localCrc ^ b[off++]) \u0026 0xff];\n      len--;\n    }\n    \n    // Publish crc out to object\n    crc \u003d localCrc;\n  }",
+      "path": "hadoop-common/src/main/java/org/apache/hadoop/util/PureJavaCrc32C.java",
+      "extendedDetails": {
+        "oldPath": "common/src/java/org/apache/hadoop/util/PureJavaCrc32C.java",
+        "newPath": "hadoop-common/src/main/java/org/apache/hadoop/util/PureJavaCrc32C.java"
+      }
+    },
+    "d62523b4ad88a31efea09ff10929ea5c6d9aaf35": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7443. Add CRC32C as another DataChecksum implementation. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1146300 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "13/07/11 12:41 PM",
+      "commitName": "d62523b4ad88a31efea09ff10929ea5c6d9aaf35",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,23 @@\n+  public void update(byte[] b, int off, int len) {\n+    int localCrc \u003d crc;\n+    while(len \u003e 7) {\n+      int c0 \u003d b[off++] ^ localCrc;\n+      int c1 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n+      int c2 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n+      int c3 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n+      localCrc \u003d (T8_7[c0 \u0026 0xff] ^ T8_6[c1 \u0026 0xff])\n+          ^ (T8_5[c2 \u0026 0xff] ^ T8_4[c3 \u0026 0xff]);\n+\n+      localCrc ^\u003d (T8_3[b[off++] \u0026 0xff] ^ T8_2[b[off++] \u0026 0xff])\n+           ^ (T8_1[b[off++] \u0026 0xff] ^ T8_0[b[off++] \u0026 0xff]);\n+\n+      len -\u003d 8;\n+    }\n+    while(len \u003e 0) {\n+      localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T8_0[(localCrc ^ b[off++]) \u0026 0xff];\n+      len--;\n+    }\n+    \n+    // Publish crc out to object\n+    crc \u003d localCrc;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void update(byte[] b, int off, int len) {\n    int localCrc \u003d crc;\n    while(len \u003e 7) {\n      int c0 \u003d b[off++] ^ localCrc;\n      int c1 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n      int c2 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n      int c3 \u003d b[off++] ^ (localCrc \u003e\u003e\u003e\u003d 8);\n      localCrc \u003d (T8_7[c0 \u0026 0xff] ^ T8_6[c1 \u0026 0xff])\n          ^ (T8_5[c2 \u0026 0xff] ^ T8_4[c3 \u0026 0xff]);\n\n      localCrc ^\u003d (T8_3[b[off++] \u0026 0xff] ^ T8_2[b[off++] \u0026 0xff])\n           ^ (T8_1[b[off++] \u0026 0xff] ^ T8_0[b[off++] \u0026 0xff]);\n\n      len -\u003d 8;\n    }\n    while(len \u003e 0) {\n      localCrc \u003d (localCrc \u003e\u003e\u003e 8) ^ T8_0[(localCrc ^ b[off++]) \u0026 0xff];\n      len--;\n    }\n    \n    // Publish crc out to object\n    crc \u003d localCrc;\n  }",
+      "path": "common/src/java/org/apache/hadoop/util/PureJavaCrc32C.java"
+    }
+  }
+}

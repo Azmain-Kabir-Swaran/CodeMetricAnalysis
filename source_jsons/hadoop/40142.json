@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "CapacitySchedulerConfiguration.java",
+  "functionName": "getQueueOrderingPolicy",
+  "functionId": "getQueueOrderingPolicy___queue-String__parentPolicy-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerConfiguration.java",
+  "functionStartLine": 1579,
+  "functionEndLine": 1607,
+  "numCommitsSeen": 90,
+  "timeTaken": 3376,
+  "changeHistory": [
+    "f8f8598ea5e86330fa5b553963f5632da286409d",
+    "ce832059db077fa95922198b066a737ed4f609fe"
+  ],
+  "changeHistoryShort": {
+    "f8f8598ea5e86330fa5b553963f5632da286409d": "Ybodychange",
+    "ce832059db077fa95922198b066a737ed4f609fe": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f8f8598ea5e86330fa5b553963f5632da286409d": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9824. Fall back to configured queue ordering policy class name\n",
+      "commitDate": "10/09/19 3:19 PM",
+      "commitName": "f8f8598ea5e86330fa5b553963f5632da286409d",
+      "commitAuthor": "Jonathan Hung",
+      "commitDateOld": "15/03/19 4:20 PM",
+      "commitNameOld": "2064ca015d1584263aac0cc20c60b925a3aff612",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 178.96,
+      "commitsBetweenForRepo": 1350,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,26 +1,29 @@\n   public QueueOrderingPolicy getQueueOrderingPolicy(String queue,\n       String parentPolicy) {\n     String defaultPolicy \u003d parentPolicy;\n     if (null \u003d\u003d defaultPolicy) {\n       defaultPolicy \u003d DEFAULT_QUEUE_ORDERING_POLICY;\n     }\n \n     String policyType \u003d get(getQueuePrefix(queue) + ORDERING_POLICY,\n-        defaultPolicy);\n+        defaultPolicy).trim();\n \n     QueueOrderingPolicy qop;\n-    if (policyType.trim().equals(QUEUE_UTILIZATION_ORDERING_POLICY)) {\n+    if (policyType.equals(QUEUE_UTILIZATION_ORDERING_POLICY)) {\n       // Doesn\u0027t respect priority\n       qop \u003d new PriorityUtilizationQueueOrderingPolicy(false);\n-    } else if (policyType.trim().equals(\n+    } else if (policyType.equals(\n         QUEUE_PRIORITY_UTILIZATION_ORDERING_POLICY)) {\n       qop \u003d new PriorityUtilizationQueueOrderingPolicy(true);\n     } else {\n-      String message \u003d\n-          \"Unable to construct queue ordering policy\u003d\" + policyType + \" queue\u003d\"\n-              + queue;\n-      throw new YarnRuntimeException(message);\n+      try {\n+        qop \u003d (QueueOrderingPolicy) Class.forName(policyType).newInstance();\n+      } catch (Exception e) {\n+        String message \u003d \"Unable to construct queue ordering policy\u003d\"\n+            + policyType + \" queue\u003d\" + queue;\n+        throw new YarnRuntimeException(message, e);\n+      }\n     }\n \n     return qop;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public QueueOrderingPolicy getQueueOrderingPolicy(String queue,\n      String parentPolicy) {\n    String defaultPolicy \u003d parentPolicy;\n    if (null \u003d\u003d defaultPolicy) {\n      defaultPolicy \u003d DEFAULT_QUEUE_ORDERING_POLICY;\n    }\n\n    String policyType \u003d get(getQueuePrefix(queue) + ORDERING_POLICY,\n        defaultPolicy).trim();\n\n    QueueOrderingPolicy qop;\n    if (policyType.equals(QUEUE_UTILIZATION_ORDERING_POLICY)) {\n      // Doesn\u0027t respect priority\n      qop \u003d new PriorityUtilizationQueueOrderingPolicy(false);\n    } else if (policyType.equals(\n        QUEUE_PRIORITY_UTILIZATION_ORDERING_POLICY)) {\n      qop \u003d new PriorityUtilizationQueueOrderingPolicy(true);\n    } else {\n      try {\n        qop \u003d (QueueOrderingPolicy) Class.forName(policyType).newInstance();\n      } catch (Exception e) {\n        String message \u003d \"Unable to construct queue ordering policy\u003d\"\n            + policyType + \" queue\u003d\" + queue;\n        throw new YarnRuntimeException(message, e);\n      }\n    }\n\n    return qop;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerConfiguration.java",
+      "extendedDetails": {}
+    },
+    "ce832059db077fa95922198b066a737ed4f609fe": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5864. Capacity Scheduler - Queue Priorities. (wangda)\n",
+      "commitDate": "23/01/17 10:52 AM",
+      "commitName": "ce832059db077fa95922198b066a737ed4f609fe",
+      "commitAuthor": "Wangda Tan",
+      "diff": "@@ -0,0 +1,26 @@\n+  public QueueOrderingPolicy getQueueOrderingPolicy(String queue,\n+      String parentPolicy) {\n+    String defaultPolicy \u003d parentPolicy;\n+    if (null \u003d\u003d defaultPolicy) {\n+      defaultPolicy \u003d DEFAULT_QUEUE_ORDERING_POLICY;\n+    }\n+\n+    String policyType \u003d get(getQueuePrefix(queue) + ORDERING_POLICY,\n+        defaultPolicy);\n+\n+    QueueOrderingPolicy qop;\n+    if (policyType.trim().equals(QUEUE_UTILIZATION_ORDERING_POLICY)) {\n+      // Doesn\u0027t respect priority\n+      qop \u003d new PriorityUtilizationQueueOrderingPolicy(false);\n+    } else if (policyType.trim().equals(\n+        QUEUE_PRIORITY_UTILIZATION_ORDERING_POLICY)) {\n+      qop \u003d new PriorityUtilizationQueueOrderingPolicy(true);\n+    } else {\n+      String message \u003d\n+          \"Unable to construct queue ordering policy\u003d\" + policyType + \" queue\u003d\"\n+              + queue;\n+      throw new YarnRuntimeException(message);\n+    }\n+\n+    return qop;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public QueueOrderingPolicy getQueueOrderingPolicy(String queue,\n      String parentPolicy) {\n    String defaultPolicy \u003d parentPolicy;\n    if (null \u003d\u003d defaultPolicy) {\n      defaultPolicy \u003d DEFAULT_QUEUE_ORDERING_POLICY;\n    }\n\n    String policyType \u003d get(getQueuePrefix(queue) + ORDERING_POLICY,\n        defaultPolicy);\n\n    QueueOrderingPolicy qop;\n    if (policyType.trim().equals(QUEUE_UTILIZATION_ORDERING_POLICY)) {\n      // Doesn\u0027t respect priority\n      qop \u003d new PriorityUtilizationQueueOrderingPolicy(false);\n    } else if (policyType.trim().equals(\n        QUEUE_PRIORITY_UTILIZATION_ORDERING_POLICY)) {\n      qop \u003d new PriorityUtilizationQueueOrderingPolicy(true);\n    } else {\n      String message \u003d\n          \"Unable to construct queue ordering policy\u003d\" + policyType + \" queue\u003d\"\n              + queue;\n      throw new YarnRuntimeException(message);\n    }\n\n    return qop;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacitySchedulerConfiguration.java"
+    }
+  }
+}

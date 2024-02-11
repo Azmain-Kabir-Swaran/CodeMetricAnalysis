@@ -1,0 +1,217 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DFSUtil.java",
+  "functionName": "checkProtectedDescendants",
+  "functionId": "checkProtectedDescendants___fsd-FSDirectory__iip-INodesInPath",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+  "functionStartLine": 1760,
+  "functionEndLine": 1802,
+  "numCommitsSeen": 189,
+  "timeTaken": 6255,
+  "changeHistory": [
+    "0fe49036e557f210a390e07276f5732bc212ae32",
+    "67f2c491fe3cd400605fb6082fd3504bc5e97037",
+    "9d175853b0170683ad5f21d9bcdeaac49fe89e04",
+    "3565c9af17ab05bf9e7f68b71b6c6850df772bb9",
+    "bdbe53c676dd4ff135ea2f64d3b9193fe43d7c8e"
+  ],
+  "changeHistoryShort": {
+    "0fe49036e557f210a390e07276f5732bc212ae32": "Ybodychange",
+    "67f2c491fe3cd400605fb6082fd3504bc5e97037": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange)",
+    "9d175853b0170683ad5f21d9bcdeaac49fe89e04": "Ymultichange(Yexceptionschange,Ybodychange)",
+    "3565c9af17ab05bf9e7f68b71b6c6850df772bb9": "Ymultichange(Yparameterchange,Ybodychange)",
+    "bdbe53c676dd4ff135ea2f64d3b9193fe43d7c8e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "0fe49036e557f210a390e07276f5732bc212ae32": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-15243. Add an option to prevent sub-directories of protected directories from deletion. Contributed by liuyanyu.\n",
+      "commitDate": "12/05/20 12:41 AM",
+      "commitName": "0fe49036e557f210a390e07276f5732bc212ae32",
+      "commitAuthor": "Ayush Saxena",
+      "commitDateOld": "28/03/20 11:31 AM",
+      "commitNameOld": "696a663cd0a1deb818f6b44ddc8ca20571bac980",
+      "commitAuthorOld": "Ayush Saxena",
+      "daysBetweenCommits": 44.55,
+      "commitsBetweenForRepo": 135,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,43 @@\n   public static void checkProtectedDescendants(\n       FSDirectory fsd, INodesInPath iip)\n           throws AccessControlException, UnresolvedLinkException,\n           ParentNotDirectoryException {\n     final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n     if (protectedDirs.isEmpty()) {\n       return;\n     }\n \n     String src \u003d iip.getPath();\n     // Is src protected? Caller has already checked it is non-empty.\n     if (protectedDirs.contains(src)) {\n       throw new AccessControlException(\n           \"Cannot delete/rename non-empty protected directory \" + src);\n     }\n \n     // Are any descendants of src protected?\n     // The subSet call returns only the descendants of src since\n     // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n     // character after \u0027/\u0027.\n     for (String descendant :\n         protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n       INodesInPath subdirIIP \u003d\n           fsd.getINodesInPath(descendant, FSDirectory.DirOp.WRITE);\n       if (fsd.isNonEmptyDirectory(subdirIIP)) {\n         throw new AccessControlException(\n             \"Cannot delete/rename non-empty protected subdirectory \"\n             + descendant);\n       }\n     }\n+\n+    if (fsd.isProtectedSubDirectoriesEnable()) {\n+      while (!src.isEmpty()) {\n+        int index \u003d src.lastIndexOf(Path.SEPARATOR_CHAR);\n+        src \u003d src.substring(0, index);\n+        if (protectedDirs.contains(src)) {\n+          throw new AccessControlException(\n+              \"Cannot delete/rename subdirectory under protected subdirectory \"\n+              + src);\n+        }\n+      }\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void checkProtectedDescendants(\n      FSDirectory fsd, INodesInPath iip)\n          throws AccessControlException, UnresolvedLinkException,\n          ParentNotDirectoryException {\n    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n    if (protectedDirs.isEmpty()) {\n      return;\n    }\n\n    String src \u003d iip.getPath();\n    // Is src protected? Caller has already checked it is non-empty.\n    if (protectedDirs.contains(src)) {\n      throw new AccessControlException(\n          \"Cannot delete/rename non-empty protected directory \" + src);\n    }\n\n    // Are any descendants of src protected?\n    // The subSet call returns only the descendants of src since\n    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n    // character after \u0027/\u0027.\n    for (String descendant :\n        protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n      INodesInPath subdirIIP \u003d\n          fsd.getINodesInPath(descendant, FSDirectory.DirOp.WRITE);\n      if (fsd.isNonEmptyDirectory(subdirIIP)) {\n        throw new AccessControlException(\n            \"Cannot delete/rename non-empty protected subdirectory \"\n            + descendant);\n      }\n    }\n\n    if (fsd.isProtectedSubDirectoriesEnable()) {\n      while (!src.isEmpty()) {\n        int index \u003d src.lastIndexOf(Path.SEPARATOR_CHAR);\n        src \u003d src.substring(0, index);\n        if (protectedDirs.contains(src)) {\n          throw new AccessControlException(\n              \"Cannot delete/rename subdirectory under protected subdirectory \"\n              + src);\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+      "extendedDetails": {}
+    },
+    "67f2c491fe3cd400605fb6082fd3504bc5e97037": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange)",
+      "commitMessage": "HDFS-14802. The feature of protect directories should be used in RenameOp (#1669)\n\n",
+      "commitDate": "15/11/19 12:35 PM",
+      "commitName": "67f2c491fe3cd400605fb6082fd3504bc5e97037",
+      "commitAuthor": "Hui Fei",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-14802. The feature of protect directories should be used in RenameOp (#1669)\n\n",
+          "commitDate": "15/11/19 12:35 PM",
+          "commitName": "67f2c491fe3cd400605fb6082fd3504bc5e97037",
+          "commitAuthor": "Hui Fei",
+          "commitDateOld": "15/11/19 12:16 PM",
+          "commitNameOld": "c892a879ddce3abfd51c8609c81148bf6e4f9daa",
+          "commitAuthorOld": "He Xiaoqiao",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,31 @@\n-  private static void checkProtectedDescendants(\n+  public static void checkProtectedDescendants(\n       FSDirectory fsd, INodesInPath iip)\n           throws AccessControlException, UnresolvedLinkException,\n           ParentNotDirectoryException {\n     final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n     if (protectedDirs.isEmpty()) {\n       return;\n     }\n \n     String src \u003d iip.getPath();\n     // Is src protected? Caller has already checked it is non-empty.\n     if (protectedDirs.contains(src)) {\n       throw new AccessControlException(\n-          \"Cannot delete non-empty protected directory \" + src);\n+          \"Cannot delete/rename non-empty protected directory \" + src);\n     }\n \n     // Are any descendants of src protected?\n     // The subSet call returns only the descendants of src since\n     // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n     // character after \u0027/\u0027.\n     for (String descendant :\n-            protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n-      INodesInPath subdirIIP \u003d fsd.getINodesInPath(descendant, DirOp.WRITE);\n+        protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n+      INodesInPath subdirIIP \u003d\n+          fsd.getINodesInPath(descendant, FSDirectory.DirOp.WRITE);\n       if (fsd.isNonEmptyDirectory(subdirIIP)) {\n         throw new AccessControlException(\n-            \"Cannot delete non-empty protected subdirectory \" + descendant);\n+            \"Cannot delete/rename non-empty protected subdirectory \"\n+            + descendant);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void checkProtectedDescendants(\n      FSDirectory fsd, INodesInPath iip)\n          throws AccessControlException, UnresolvedLinkException,\n          ParentNotDirectoryException {\n    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n    if (protectedDirs.isEmpty()) {\n      return;\n    }\n\n    String src \u003d iip.getPath();\n    // Is src protected? Caller has already checked it is non-empty.\n    if (protectedDirs.contains(src)) {\n      throw new AccessControlException(\n          \"Cannot delete/rename non-empty protected directory \" + src);\n    }\n\n    // Are any descendants of src protected?\n    // The subSet call returns only the descendants of src since\n    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n    // character after \u0027/\u0027.\n    for (String descendant :\n        protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n      INodesInPath subdirIIP \u003d\n          fsd.getINodesInPath(descendant, FSDirectory.DirOp.WRITE);\n      if (fsd.isNonEmptyDirectory(subdirIIP)) {\n        throw new AccessControlException(\n            \"Cannot delete/rename non-empty protected subdirectory \"\n            + descendant);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirDeleteOp.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+            "oldMethodName": "checkProtectedDescendants",
+            "newMethodName": "checkProtectedDescendants"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-14802. The feature of protect directories should be used in RenameOp (#1669)\n\n",
+          "commitDate": "15/11/19 12:35 PM",
+          "commitName": "67f2c491fe3cd400605fb6082fd3504bc5e97037",
+          "commitAuthor": "Hui Fei",
+          "commitDateOld": "15/11/19 12:16 PM",
+          "commitNameOld": "c892a879ddce3abfd51c8609c81148bf6e4f9daa",
+          "commitAuthorOld": "He Xiaoqiao",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,31 @@\n-  private static void checkProtectedDescendants(\n+  public static void checkProtectedDescendants(\n       FSDirectory fsd, INodesInPath iip)\n           throws AccessControlException, UnresolvedLinkException,\n           ParentNotDirectoryException {\n     final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n     if (protectedDirs.isEmpty()) {\n       return;\n     }\n \n     String src \u003d iip.getPath();\n     // Is src protected? Caller has already checked it is non-empty.\n     if (protectedDirs.contains(src)) {\n       throw new AccessControlException(\n-          \"Cannot delete non-empty protected directory \" + src);\n+          \"Cannot delete/rename non-empty protected directory \" + src);\n     }\n \n     // Are any descendants of src protected?\n     // The subSet call returns only the descendants of src since\n     // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n     // character after \u0027/\u0027.\n     for (String descendant :\n-            protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n-      INodesInPath subdirIIP \u003d fsd.getINodesInPath(descendant, DirOp.WRITE);\n+        protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n+      INodesInPath subdirIIP \u003d\n+          fsd.getINodesInPath(descendant, FSDirectory.DirOp.WRITE);\n       if (fsd.isNonEmptyDirectory(subdirIIP)) {\n         throw new AccessControlException(\n-            \"Cannot delete non-empty protected subdirectory \" + descendant);\n+            \"Cannot delete/rename non-empty protected subdirectory \"\n+            + descendant);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void checkProtectedDescendants(\n      FSDirectory fsd, INodesInPath iip)\n          throws AccessControlException, UnresolvedLinkException,\n          ParentNotDirectoryException {\n    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n    if (protectedDirs.isEmpty()) {\n      return;\n    }\n\n    String src \u003d iip.getPath();\n    // Is src protected? Caller has already checked it is non-empty.\n    if (protectedDirs.contains(src)) {\n      throw new AccessControlException(\n          \"Cannot delete/rename non-empty protected directory \" + src);\n    }\n\n    // Are any descendants of src protected?\n    // The subSet call returns only the descendants of src since\n    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n    // character after \u0027/\u0027.\n    for (String descendant :\n        protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n      INodesInPath subdirIIP \u003d\n          fsd.getINodesInPath(descendant, FSDirectory.DirOp.WRITE);\n      if (fsd.isNonEmptyDirectory(subdirIIP)) {\n        throw new AccessControlException(\n            \"Cannot delete/rename non-empty protected subdirectory \"\n            + descendant);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {
+            "oldValue": "[private, static]",
+            "newValue": "[public, static]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-14802. The feature of protect directories should be used in RenameOp (#1669)\n\n",
+          "commitDate": "15/11/19 12:35 PM",
+          "commitName": "67f2c491fe3cd400605fb6082fd3504bc5e97037",
+          "commitAuthor": "Hui Fei",
+          "commitDateOld": "15/11/19 12:16 PM",
+          "commitNameOld": "c892a879ddce3abfd51c8609c81148bf6e4f9daa",
+          "commitAuthorOld": "He Xiaoqiao",
+          "daysBetweenCommits": 0.01,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,31 @@\n-  private static void checkProtectedDescendants(\n+  public static void checkProtectedDescendants(\n       FSDirectory fsd, INodesInPath iip)\n           throws AccessControlException, UnresolvedLinkException,\n           ParentNotDirectoryException {\n     final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n     if (protectedDirs.isEmpty()) {\n       return;\n     }\n \n     String src \u003d iip.getPath();\n     // Is src protected? Caller has already checked it is non-empty.\n     if (protectedDirs.contains(src)) {\n       throw new AccessControlException(\n-          \"Cannot delete non-empty protected directory \" + src);\n+          \"Cannot delete/rename non-empty protected directory \" + src);\n     }\n \n     // Are any descendants of src protected?\n     // The subSet call returns only the descendants of src since\n     // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n     // character after \u0027/\u0027.\n     for (String descendant :\n-            protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n-      INodesInPath subdirIIP \u003d fsd.getINodesInPath(descendant, DirOp.WRITE);\n+        protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n+      INodesInPath subdirIIP \u003d\n+          fsd.getINodesInPath(descendant, FSDirectory.DirOp.WRITE);\n       if (fsd.isNonEmptyDirectory(subdirIIP)) {\n         throw new AccessControlException(\n-            \"Cannot delete non-empty protected subdirectory \" + descendant);\n+            \"Cannot delete/rename non-empty protected subdirectory \"\n+            + descendant);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void checkProtectedDescendants(\n      FSDirectory fsd, INodesInPath iip)\n          throws AccessControlException, UnresolvedLinkException,\n          ParentNotDirectoryException {\n    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n    if (protectedDirs.isEmpty()) {\n      return;\n    }\n\n    String src \u003d iip.getPath();\n    // Is src protected? Caller has already checked it is non-empty.\n    if (protectedDirs.contains(src)) {\n      throw new AccessControlException(\n          \"Cannot delete/rename non-empty protected directory \" + src);\n    }\n\n    // Are any descendants of src protected?\n    // The subSet call returns only the descendants of src since\n    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n    // character after \u0027/\u0027.\n    for (String descendant :\n        protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n      INodesInPath subdirIIP \u003d\n          fsd.getINodesInPath(descendant, FSDirectory.DirOp.WRITE);\n      if (fsd.isNonEmptyDirectory(subdirIIP)) {\n        throw new AccessControlException(\n            \"Cannot delete/rename non-empty protected subdirectory \"\n            + descendant);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/DFSUtil.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "9d175853b0170683ad5f21d9bcdeaac49fe89e04": {
+      "type": "Ymultichange(Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-10997. Reduce number of path resolving methods. Contributed by Daryn Sharp.\n",
+      "commitDate": "24/10/16 3:14 PM",
+      "commitName": "9d175853b0170683ad5f21d9bcdeaac49fe89e04",
+      "commitAuthor": "Kihwal Lee",
+      "subchanges": [
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-10997. Reduce number of path resolving methods. Contributed by Daryn Sharp.\n",
+          "commitDate": "24/10/16 3:14 PM",
+          "commitName": "9d175853b0170683ad5f21d9bcdeaac49fe89e04",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "07/10/16 12:15 PM",
+          "commitNameOld": "3565c9af17ab05bf9e7f68b71b6c6850df772bb9",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 17.12,
+          "commitsBetweenForRepo": 111,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n   private static void checkProtectedDescendants(\n       FSDirectory fsd, INodesInPath iip)\n-          throws AccessControlException, UnresolvedLinkException {\n+          throws AccessControlException, UnresolvedLinkException,\n+          ParentNotDirectoryException {\n     final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n     if (protectedDirs.isEmpty()) {\n       return;\n     }\n \n     String src \u003d iip.getPath();\n     // Is src protected? Caller has already checked it is non-empty.\n     if (protectedDirs.contains(src)) {\n       throw new AccessControlException(\n           \"Cannot delete non-empty protected directory \" + src);\n     }\n \n     // Are any descendants of src protected?\n     // The subSet call returns only the descendants of src since\n     // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n     // character after \u0027/\u0027.\n     for (String descendant :\n             protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n-      if (fsd.isNonEmptyDirectory(fsd.getINodesInPath4Write(\n-              descendant, false))) {\n+      INodesInPath subdirIIP \u003d fsd.getINodesInPath(descendant, DirOp.WRITE);\n+      if (fsd.isNonEmptyDirectory(subdirIIP)) {\n         throw new AccessControlException(\n             \"Cannot delete non-empty protected subdirectory \" + descendant);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static void checkProtectedDescendants(\n      FSDirectory fsd, INodesInPath iip)\n          throws AccessControlException, UnresolvedLinkException,\n          ParentNotDirectoryException {\n    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n    if (protectedDirs.isEmpty()) {\n      return;\n    }\n\n    String src \u003d iip.getPath();\n    // Is src protected? Caller has already checked it is non-empty.\n    if (protectedDirs.contains(src)) {\n      throw new AccessControlException(\n          \"Cannot delete non-empty protected directory \" + src);\n    }\n\n    // Are any descendants of src protected?\n    // The subSet call returns only the descendants of src since\n    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n    // character after \u0027/\u0027.\n    for (String descendant :\n            protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n      INodesInPath subdirIIP \u003d fsd.getINodesInPath(descendant, DirOp.WRITE);\n      if (fsd.isNonEmptyDirectory(subdirIIP)) {\n        throw new AccessControlException(\n            \"Cannot delete non-empty protected subdirectory \" + descendant);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirDeleteOp.java",
+          "extendedDetails": {
+            "oldValue": "[AccessControlException, UnresolvedLinkException]",
+            "newValue": "[AccessControlException, UnresolvedLinkException, ParentNotDirectoryException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10997. Reduce number of path resolving methods. Contributed by Daryn Sharp.\n",
+          "commitDate": "24/10/16 3:14 PM",
+          "commitName": "9d175853b0170683ad5f21d9bcdeaac49fe89e04",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "07/10/16 12:15 PM",
+          "commitNameOld": "3565c9af17ab05bf9e7f68b71b6c6850df772bb9",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 17.12,
+          "commitsBetweenForRepo": 111,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n   private static void checkProtectedDescendants(\n       FSDirectory fsd, INodesInPath iip)\n-          throws AccessControlException, UnresolvedLinkException {\n+          throws AccessControlException, UnresolvedLinkException,\n+          ParentNotDirectoryException {\n     final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n     if (protectedDirs.isEmpty()) {\n       return;\n     }\n \n     String src \u003d iip.getPath();\n     // Is src protected? Caller has already checked it is non-empty.\n     if (protectedDirs.contains(src)) {\n       throw new AccessControlException(\n           \"Cannot delete non-empty protected directory \" + src);\n     }\n \n     // Are any descendants of src protected?\n     // The subSet call returns only the descendants of src since\n     // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n     // character after \u0027/\u0027.\n     for (String descendant :\n             protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n-      if (fsd.isNonEmptyDirectory(fsd.getINodesInPath4Write(\n-              descendant, false))) {\n+      INodesInPath subdirIIP \u003d fsd.getINodesInPath(descendant, DirOp.WRITE);\n+      if (fsd.isNonEmptyDirectory(subdirIIP)) {\n         throw new AccessControlException(\n             \"Cannot delete non-empty protected subdirectory \" + descendant);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static void checkProtectedDescendants(\n      FSDirectory fsd, INodesInPath iip)\n          throws AccessControlException, UnresolvedLinkException,\n          ParentNotDirectoryException {\n    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n    if (protectedDirs.isEmpty()) {\n      return;\n    }\n\n    String src \u003d iip.getPath();\n    // Is src protected? Caller has already checked it is non-empty.\n    if (protectedDirs.contains(src)) {\n      throw new AccessControlException(\n          \"Cannot delete non-empty protected directory \" + src);\n    }\n\n    // Are any descendants of src protected?\n    // The subSet call returns only the descendants of src since\n    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n    // character after \u0027/\u0027.\n    for (String descendant :\n            protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n      INodesInPath subdirIIP \u003d fsd.getINodesInPath(descendant, DirOp.WRITE);\n      if (fsd.isNonEmptyDirectory(subdirIIP)) {\n        throw new AccessControlException(\n            \"Cannot delete non-empty protected subdirectory \" + descendant);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirDeleteOp.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "3565c9af17ab05bf9e7f68b71b6c6850df772bb9": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-10979. Pass IIP for FSDirDeleteOp methods. Contributed by Daryn Sharp.\n",
+      "commitDate": "07/10/16 12:15 PM",
+      "commitName": "3565c9af17ab05bf9e7f68b71b6c6850df772bb9",
+      "commitAuthor": "Kihwal Lee",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10979. Pass IIP for FSDirDeleteOp methods. Contributed by Daryn Sharp.\n",
+          "commitDate": "07/10/16 12:15 PM",
+          "commitName": "3565c9af17ab05bf9e7f68b71b6c6850df772bb9",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "04/10/16 1:05 PM",
+          "commitNameOld": "44f48ee96ee6b2a3909911c37bfddb0c963d5ffc",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 2.97,
+          "commitsBetweenForRepo": 30,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,28 @@\n-  private static void checkProtectedDescendants(FSDirectory fsd, String src)\n-      throws AccessControlException, UnresolvedLinkException {\n+  private static void checkProtectedDescendants(\n+      FSDirectory fsd, INodesInPath iip)\n+          throws AccessControlException, UnresolvedLinkException {\n     final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n+    if (protectedDirs.isEmpty()) {\n+      return;\n+    }\n \n+    String src \u003d iip.getPath();\n     // Is src protected? Caller has already checked it is non-empty.\n     if (protectedDirs.contains(src)) {\n       throw new AccessControlException(\n           \"Cannot delete non-empty protected directory \" + src);\n     }\n \n     // Are any descendants of src protected?\n     // The subSet call returns only the descendants of src since\n     // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n     // character after \u0027/\u0027.\n     for (String descendant :\n             protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n       if (fsd.isNonEmptyDirectory(fsd.getINodesInPath4Write(\n               descendant, false))) {\n         throw new AccessControlException(\n             \"Cannot delete non-empty protected subdirectory \" + descendant);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static void checkProtectedDescendants(\n      FSDirectory fsd, INodesInPath iip)\n          throws AccessControlException, UnresolvedLinkException {\n    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n    if (protectedDirs.isEmpty()) {\n      return;\n    }\n\n    String src \u003d iip.getPath();\n    // Is src protected? Caller has already checked it is non-empty.\n    if (protectedDirs.contains(src)) {\n      throw new AccessControlException(\n          \"Cannot delete non-empty protected directory \" + src);\n    }\n\n    // Are any descendants of src protected?\n    // The subSet call returns only the descendants of src since\n    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n    // character after \u0027/\u0027.\n    for (String descendant :\n            protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n      if (fsd.isNonEmptyDirectory(fsd.getINodesInPath4Write(\n              descendant, false))) {\n        throw new AccessControlException(\n            \"Cannot delete non-empty protected subdirectory \" + descendant);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirDeleteOp.java",
+          "extendedDetails": {
+            "oldValue": "[fsd-FSDirectory, src-String]",
+            "newValue": "[fsd-FSDirectory, iip-INodesInPath]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10979. Pass IIP for FSDirDeleteOp methods. Contributed by Daryn Sharp.\n",
+          "commitDate": "07/10/16 12:15 PM",
+          "commitName": "3565c9af17ab05bf9e7f68b71b6c6850df772bb9",
+          "commitAuthor": "Kihwal Lee",
+          "commitDateOld": "04/10/16 1:05 PM",
+          "commitNameOld": "44f48ee96ee6b2a3909911c37bfddb0c963d5ffc",
+          "commitAuthorOld": "Kihwal Lee",
+          "daysBetweenCommits": 2.97,
+          "commitsBetweenForRepo": 30,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,28 @@\n-  private static void checkProtectedDescendants(FSDirectory fsd, String src)\n-      throws AccessControlException, UnresolvedLinkException {\n+  private static void checkProtectedDescendants(\n+      FSDirectory fsd, INodesInPath iip)\n+          throws AccessControlException, UnresolvedLinkException {\n     final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n+    if (protectedDirs.isEmpty()) {\n+      return;\n+    }\n \n+    String src \u003d iip.getPath();\n     // Is src protected? Caller has already checked it is non-empty.\n     if (protectedDirs.contains(src)) {\n       throw new AccessControlException(\n           \"Cannot delete non-empty protected directory \" + src);\n     }\n \n     // Are any descendants of src protected?\n     // The subSet call returns only the descendants of src since\n     // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n     // character after \u0027/\u0027.\n     for (String descendant :\n             protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n       if (fsd.isNonEmptyDirectory(fsd.getINodesInPath4Write(\n               descendant, false))) {\n         throw new AccessControlException(\n             \"Cannot delete non-empty protected subdirectory \" + descendant);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private static void checkProtectedDescendants(\n      FSDirectory fsd, INodesInPath iip)\n          throws AccessControlException, UnresolvedLinkException {\n    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n    if (protectedDirs.isEmpty()) {\n      return;\n    }\n\n    String src \u003d iip.getPath();\n    // Is src protected? Caller has already checked it is non-empty.\n    if (protectedDirs.contains(src)) {\n      throw new AccessControlException(\n          \"Cannot delete non-empty protected directory \" + src);\n    }\n\n    // Are any descendants of src protected?\n    // The subSet call returns only the descendants of src since\n    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n    // character after \u0027/\u0027.\n    for (String descendant :\n            protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n      if (fsd.isNonEmptyDirectory(fsd.getINodesInPath4Write(\n              descendant, false))) {\n        throw new AccessControlException(\n            \"Cannot delete non-empty protected subdirectory \" + descendant);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirDeleteOp.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "bdbe53c676dd4ff135ea2f64d3b9193fe43d7c8e": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-8983. NameNode support for protected directories. (Contributed by Arpit Agarwal)\n",
+      "commitDate": "29/08/15 9:52 AM",
+      "commitName": "bdbe53c676dd4ff135ea2f64d3b9193fe43d7c8e",
+      "commitAuthor": "Arpit Agarwal",
+      "diff": "@@ -0,0 +1,23 @@\n+  private static void checkProtectedDescendants(FSDirectory fsd, String src)\n+      throws AccessControlException, UnresolvedLinkException {\n+    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n+\n+    // Is src protected? Caller has already checked it is non-empty.\n+    if (protectedDirs.contains(src)) {\n+      throw new AccessControlException(\n+          \"Cannot delete non-empty protected directory \" + src);\n+    }\n+\n+    // Are any descendants of src protected?\n+    // The subSet call returns only the descendants of src since\n+    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n+    // character after \u0027/\u0027.\n+    for (String descendant :\n+            protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n+      if (fsd.isNonEmptyDirectory(fsd.getINodesInPath4Write(\n+              descendant, false))) {\n+        throw new AccessControlException(\n+            \"Cannot delete non-empty protected subdirectory \" + descendant);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static void checkProtectedDescendants(FSDirectory fsd, String src)\n      throws AccessControlException, UnresolvedLinkException {\n    final SortedSet\u003cString\u003e protectedDirs \u003d fsd.getProtectedDirectories();\n\n    // Is src protected? Caller has already checked it is non-empty.\n    if (protectedDirs.contains(src)) {\n      throw new AccessControlException(\n          \"Cannot delete non-empty protected directory \" + src);\n    }\n\n    // Are any descendants of src protected?\n    // The subSet call returns only the descendants of src since\n    // {@link Path#SEPARATOR} is \"/\" and \u00270\u0027 is the next ASCII\n    // character after \u0027/\u0027.\n    for (String descendant :\n            protectedDirs.subSet(src + Path.SEPARATOR, src + \"0\")) {\n      if (fsd.isNonEmptyDirectory(fsd.getINodesInPath4Write(\n              descendant, false))) {\n        throw new AccessControlException(\n            \"Cannot delete non-empty protected subdirectory \" + descendant);\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirDeleteOp.java"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ChangeDetectionPolicy.java",
+  "functionName": "onChangeDetected",
+  "functionId": "onChangeDetected___revisionId-String__newRevisionId-String__uri-String__position-long__operation-String__timesAlreadyDetected-long",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/ChangeDetectionPolicy.java",
+  "functionStartLine": 285,
+  "functionEndLine": 322,
+  "numCommitsSeen": 3,
+  "timeTaken": 1246,
+  "changeHistory": [
+    "a36274d69947648dbe82721220cc5240ec5d396d",
+    "6fa229891e06eea62cb9634efde755f40247e816"
+  ],
+  "changeHistoryShort": {
+    "a36274d69947648dbe82721220cc5240ec5d396d": "Ybodychange",
+    "6fa229891e06eea62cb9634efde755f40247e816": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a36274d69947648dbe82721220cc5240ec5d396d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16085. S3Guard: use object version or etags to protect against inconsistent read after replace/overwrite.\n\nContributed by Ben Roling.\n\nS3Guard will now track the etag of uploaded files and, if an S3\nbucket is versioned, the object version.\n\nYou can then control how to react to a mismatch between the data\nin the DynamoDB table and that in the store: warn, fail, or, when\nusing versions, return the original value.\n\nThis adds two new columns to the table: etag and version.\nThis is transparent to older S3A clients -but when such clients\nadd/update data to the S3Guard table, they will not add these values.\nAs a result, the etag/version checks will not work with files uploaded by older clients.\n\nFor a consistent experience, upgrade all clients to use the latest hadoop version.\n",
+      "commitDate": "19/05/19 2:29 PM",
+      "commitName": "a36274d69947648dbe82721220cc5240ec5d396d",
+      "commitAuthor": "Ben Roling",
+      "commitDateOld": "13/03/19 1:37 PM",
+      "commitNameOld": "6fa229891e06eea62cb9634efde755f40247e816",
+      "commitAuthorOld": "Ben Roling",
+      "daysBetweenCommits": 67.04,
+      "commitsBetweenForRepo": 400,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,35 +1,38 @@\n   public ImmutablePair\u003cBoolean, RemoteFileChangedException\u003e onChangeDetected(\n       String revisionId,\n       String newRevisionId,\n       String uri,\n       long position,\n       String operation,\n       long timesAlreadyDetected) {\n+    String positionText \u003d position \u003e\u003d 0 ? (\" at \" + position) : \"\";\n     switch (mode) {\n     case None:\n       // something changed; we don\u0027t care.\n       return new ImmutablePair\u003c\u003e(false, null);\n     case Warn:\n       if (timesAlreadyDetected \u003d\u003d 0) {\n         // only warn on the first detection to avoid a noisy log\n         LOG.warn(\n-            String.format(\"%s change detected on %s %s at %d. Expected %s got %s\",\n-                getSource(), operation, uri, position, revisionId,\n+            String.format(\n+                \"%s change detected on %s %s%s. Expected %s got %s\",\n+                getSource(), operation, uri, positionText, revisionId,\n                 newRevisionId));\n         return new ImmutablePair\u003c\u003e(true, null);\n       }\n       return new ImmutablePair\u003c\u003e(false, null);\n     case Client:\n     case Server:\n     default:\n-      // mode \u003d\u003d Client (or Server, but really won\u0027t be called for Server)\n+      // mode \u003d\u003d Client or Server; will trigger on version failures\n+      // of getObjectMetadata even on server.\n       return new ImmutablePair\u003c\u003e(true,\n           new RemoteFileChangedException(uri,\n               operation,\n               String.format(\"%s \"\n                       + CHANGE_DETECTED\n-                      + \" while reading at position %s.\"\n+                      + \" during %s%s.\"\n                     + \" Expected %s got %s\",\n-              getSource(), position, revisionId, newRevisionId)));\n+              getSource(), operation, positionText, revisionId, newRevisionId)));\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ImmutablePair\u003cBoolean, RemoteFileChangedException\u003e onChangeDetected(\n      String revisionId,\n      String newRevisionId,\n      String uri,\n      long position,\n      String operation,\n      long timesAlreadyDetected) {\n    String positionText \u003d position \u003e\u003d 0 ? (\" at \" + position) : \"\";\n    switch (mode) {\n    case None:\n      // something changed; we don\u0027t care.\n      return new ImmutablePair\u003c\u003e(false, null);\n    case Warn:\n      if (timesAlreadyDetected \u003d\u003d 0) {\n        // only warn on the first detection to avoid a noisy log\n        LOG.warn(\n            String.format(\n                \"%s change detected on %s %s%s. Expected %s got %s\",\n                getSource(), operation, uri, positionText, revisionId,\n                newRevisionId));\n        return new ImmutablePair\u003c\u003e(true, null);\n      }\n      return new ImmutablePair\u003c\u003e(false, null);\n    case Client:\n    case Server:\n    default:\n      // mode \u003d\u003d Client or Server; will trigger on version failures\n      // of getObjectMetadata even on server.\n      return new ImmutablePair\u003c\u003e(true,\n          new RemoteFileChangedException(uri,\n              operation,\n              String.format(\"%s \"\n                      + CHANGE_DETECTED\n                      + \" during %s%s.\"\n                    + \" Expected %s got %s\",\n              getSource(), operation, positionText, revisionId, newRevisionId)));\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/ChangeDetectionPolicy.java",
+      "extendedDetails": {}
+    },
+    "6fa229891e06eea62cb9634efde755f40247e816": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15625. S3A input stream to use etags/version number to detect changed source files.\n\nAuthor: Ben Roling \u003cben.roling@gmail.com\u003e\n\nInitial patch from Brahma Reddy Battula.\n",
+      "commitDate": "13/03/19 1:37 PM",
+      "commitName": "6fa229891e06eea62cb9634efde755f40247e816",
+      "commitAuthor": "Ben Roling",
+      "diff": "@@ -0,0 +1,35 @@\n+  public ImmutablePair\u003cBoolean, RemoteFileChangedException\u003e onChangeDetected(\n+      String revisionId,\n+      String newRevisionId,\n+      String uri,\n+      long position,\n+      String operation,\n+      long timesAlreadyDetected) {\n+    switch (mode) {\n+    case None:\n+      // something changed; we don\u0027t care.\n+      return new ImmutablePair\u003c\u003e(false, null);\n+    case Warn:\n+      if (timesAlreadyDetected \u003d\u003d 0) {\n+        // only warn on the first detection to avoid a noisy log\n+        LOG.warn(\n+            String.format(\"%s change detected on %s %s at %d. Expected %s got %s\",\n+                getSource(), operation, uri, position, revisionId,\n+                newRevisionId));\n+        return new ImmutablePair\u003c\u003e(true, null);\n+      }\n+      return new ImmutablePair\u003c\u003e(false, null);\n+    case Client:\n+    case Server:\n+    default:\n+      // mode \u003d\u003d Client (or Server, but really won\u0027t be called for Server)\n+      return new ImmutablePair\u003c\u003e(true,\n+          new RemoteFileChangedException(uri,\n+              operation,\n+              String.format(\"%s \"\n+                      + CHANGE_DETECTED\n+                      + \" while reading at position %s.\"\n+                    + \" Expected %s got %s\",\n+              getSource(), position, revisionId, newRevisionId)));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public ImmutablePair\u003cBoolean, RemoteFileChangedException\u003e onChangeDetected(\n      String revisionId,\n      String newRevisionId,\n      String uri,\n      long position,\n      String operation,\n      long timesAlreadyDetected) {\n    switch (mode) {\n    case None:\n      // something changed; we don\u0027t care.\n      return new ImmutablePair\u003c\u003e(false, null);\n    case Warn:\n      if (timesAlreadyDetected \u003d\u003d 0) {\n        // only warn on the first detection to avoid a noisy log\n        LOG.warn(\n            String.format(\"%s change detected on %s %s at %d. Expected %s got %s\",\n                getSource(), operation, uri, position, revisionId,\n                newRevisionId));\n        return new ImmutablePair\u003c\u003e(true, null);\n      }\n      return new ImmutablePair\u003c\u003e(false, null);\n    case Client:\n    case Server:\n    default:\n      // mode \u003d\u003d Client (or Server, but really won\u0027t be called for Server)\n      return new ImmutablePair\u003c\u003e(true,\n          new RemoteFileChangedException(uri,\n              operation,\n              String.format(\"%s \"\n                      + CHANGE_DETECTED\n                      + \" while reading at position %s.\"\n                    + \" Expected %s got %s\",\n              getSource(), position, revisionId, newRevisionId)));\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/ChangeDetectionPolicy.java"
+    }
+  }
+}

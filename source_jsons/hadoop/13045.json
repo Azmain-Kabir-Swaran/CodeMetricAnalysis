@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockReportLeaseManager.java",
+  "functionName": "requestLease",
+  "functionId": "requestLease___dn-DatanodeDescriptor",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockReportLeaseManager.java",
+  "functionStartLine": 223,
+  "functionEndLine": 266,
+  "numCommitsSeen": 5,
+  "timeTaken": 1746,
+  "changeHistory": [
+    "12b5b06c063d93e6c683c9b6fac9a96912f59e59"
+  ],
+  "changeHistoryShort": {
+    "12b5b06c063d93e6c683c9b6fac9a96912f59e59": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "12b5b06c063d93e6c683c9b6fac9a96912f59e59": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7923. The DataNodes should rate-limit their full block reports by asking the NN on heartbeat messages (cmccabe)\n",
+      "commitDate": "12/06/15 11:17 AM",
+      "commitName": "12b5b06c063d93e6c683c9b6fac9a96912f59e59",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "diff": "@@ -0,0 +1,44 @@\n+  public synchronized long requestLease(DatanodeDescriptor dn) {\n+    NodeData node \u003d nodes.get(dn.getDatanodeUuid());\n+    if (node \u003d\u003d null) {\n+      LOG.warn(\"DN {} ({}) requested a lease even though it wasn\u0027t yet \" +\n+          \"registered.  Registering now.\", dn.getDatanodeUuid(),\n+          dn.getXferAddr());\n+      node \u003d registerNode(dn);\n+    }\n+    if (node.leaseId !\u003d 0) {\n+      // The DataNode wants a new lease, even though it already has one.\n+      // This can happen if the DataNode is restarted in between requesting\n+      // a lease and using it.\n+      LOG.debug(\"Removing existing BR lease 0x{} for DN {} in order to \" +\n+               \"issue a new one.\", Long.toHexString(node.leaseId),\n+               dn.getDatanodeUuid());\n+    }\n+    remove(node);\n+    long monotonicNowMs \u003d Time.monotonicNow();\n+    pruneExpiredPending(monotonicNowMs);\n+    if (numPending \u003e\u003d maxPending) {\n+      if (LOG.isDebugEnabled()) {\n+        StringBuilder allLeases \u003d new StringBuilder();\n+        String prefix \u003d \"\";\n+        for (NodeData cur \u003d pendingHead.next; cur !\u003d pendingHead;\n+             cur \u003d cur.next) {\n+          allLeases.append(prefix).append(cur.datanodeUuid);\n+          prefix \u003d \", \";\n+        }\n+        LOG.debug(\"Can\u0027t create a new BR lease for DN {}, because \" +\n+              \"numPending equals maxPending at {}.  Current leases: {}\",\n+              dn.getDatanodeUuid(), numPending, allLeases.toString());\n+      }\n+      return 0;\n+    }\n+    numPending++;\n+    node.leaseId \u003d getNextId();\n+    node.leaseTimeMs \u003d monotonicNowMs;\n+    pendingHead.addToEnd(node);\n+    if (LOG.isDebugEnabled()) {\n+      LOG.debug(\"Created a new BR lease 0x{} for DN {}.  numPending \u003d {}\",\n+          Long.toHexString(node.leaseId), dn.getDatanodeUuid(), numPending);\n+    }\n+    return node.leaseId;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized long requestLease(DatanodeDescriptor dn) {\n    NodeData node \u003d nodes.get(dn.getDatanodeUuid());\n    if (node \u003d\u003d null) {\n      LOG.warn(\"DN {} ({}) requested a lease even though it wasn\u0027t yet \" +\n          \"registered.  Registering now.\", dn.getDatanodeUuid(),\n          dn.getXferAddr());\n      node \u003d registerNode(dn);\n    }\n    if (node.leaseId !\u003d 0) {\n      // The DataNode wants a new lease, even though it already has one.\n      // This can happen if the DataNode is restarted in between requesting\n      // a lease and using it.\n      LOG.debug(\"Removing existing BR lease 0x{} for DN {} in order to \" +\n               \"issue a new one.\", Long.toHexString(node.leaseId),\n               dn.getDatanodeUuid());\n    }\n    remove(node);\n    long monotonicNowMs \u003d Time.monotonicNow();\n    pruneExpiredPending(monotonicNowMs);\n    if (numPending \u003e\u003d maxPending) {\n      if (LOG.isDebugEnabled()) {\n        StringBuilder allLeases \u003d new StringBuilder();\n        String prefix \u003d \"\";\n        for (NodeData cur \u003d pendingHead.next; cur !\u003d pendingHead;\n             cur \u003d cur.next) {\n          allLeases.append(prefix).append(cur.datanodeUuid);\n          prefix \u003d \", \";\n        }\n        LOG.debug(\"Can\u0027t create a new BR lease for DN {}, because \" +\n              \"numPending equals maxPending at {}.  Current leases: {}\",\n              dn.getDatanodeUuid(), numPending, allLeases.toString());\n      }\n      return 0;\n    }\n    numPending++;\n    node.leaseId \u003d getNextId();\n    node.leaseTimeMs \u003d monotonicNowMs;\n    pendingHead.addToEnd(node);\n    if (LOG.isDebugEnabled()) {\n      LOG.debug(\"Created a new BR lease 0x{} for DN {}.  numPending \u003d {}\",\n          Long.toHexString(node.leaseId), dn.getDatanodeUuid(), numPending);\n    }\n    return node.leaseId;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/blockmanagement/BlockReportLeaseManager.java"
+    }
+  }
+}

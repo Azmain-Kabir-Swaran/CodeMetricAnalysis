@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockChecksumHelper.java",
+  "functionName": "reassembleNonStripedCompositeCrc",
+  "functionId": "reassembleNonStripedCompositeCrc___checksumLen-long",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockChecksumHelper.java",
+  "functionStartLine": 529,
+  "functionEndLine": 578,
+  "numCommitsSeen": 8,
+  "timeTaken": 1968,
+  "changeHistory": [
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf"
+  ],
+  "changeHistoryShort": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13056. Expose file-level composite CRCs in HDFS which are comparable across different instances/layouts. Contributed by Dennis Huo.\n",
+      "commitDate": "10/04/18 9:31 PM",
+      "commitName": "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+      "commitAuthor": "Xiao Chen",
+      "diff": "@@ -0,0 +1,50 @@\n+    private byte[] reassembleNonStripedCompositeCrc(long checksumLen)\n+        throws IOException {\n+      int numDataUnits \u003d ecPolicy.getNumDataUnits();\n+      CrcComposer crcComposer \u003d CrcComposer.newCrcComposer(\n+          getCrcType(), ecPolicy.getCellSize());\n+\n+      // This should hold all the cell-granularity checksums of blk0\n+      // followed by all cell checksums of blk1, etc. We must unstripe the\n+      // cell checksums in order of logical file bytes. Also, note that the\n+      // length of this array may not equal the the number of actually valid\n+      // bytes in the buffer (blockChecksumBuf.getLength()).\n+      byte[] flatBlockChecksumData \u003d blockChecksumBuf.getData();\n+\n+      // Initialize byte-level cursors to where each block\u0027s checksum begins\n+      // inside the combined flattened buffer.\n+      int[] blockChecksumCursors \u003d new int[numDataUnits];\n+      for (int idx \u003d 0; idx \u003c numDataUnits; ++idx) {\n+        blockChecksumCursors[idx] \u003d blockChecksumPositions[idx];\n+      }\n+\n+      // Reassemble cell-level CRCs in the right order.\n+      long numFullCells \u003d checksumLen / ecPolicy.getCellSize();\n+      for (long cellIndex \u003d 0; cellIndex \u003c numFullCells; ++cellIndex) {\n+        int blockIndex \u003d (int) (cellIndex % numDataUnits);\n+        int checksumCursor \u003d blockChecksumCursors[blockIndex];\n+        int cellCrc \u003d CrcUtil.readInt(\n+            flatBlockChecksumData, checksumCursor);\n+        blockChecksumCursors[blockIndex] +\u003d 4;\n+        crcComposer.update(cellCrc, ecPolicy.getCellSize());\n+      }\n+      if (checksumLen % ecPolicy.getCellSize() !\u003d 0) {\n+        // Final partial cell.\n+        int blockIndex \u003d (int) (numFullCells % numDataUnits);\n+        int checksumCursor \u003d blockChecksumCursors[blockIndex];\n+        int cellCrc \u003d CrcUtil.readInt(\n+            flatBlockChecksumData, checksumCursor);\n+        blockChecksumCursors[blockIndex] +\u003d 4;\n+        crcComposer.update(cellCrc, checksumLen % ecPolicy.getCellSize());\n+      }\n+      byte[] digest \u003d crcComposer.digest();\n+      if (LOG.isDebugEnabled()) {\n+        LOG.debug(\"flatBlockChecksumData.length\u003d{}, numDataUnits\u003d{}, \"\n+            + \"checksumLen\u003d{}, digest\u003d{}\",\n+            flatBlockChecksumData.length,\n+            numDataUnits,\n+            checksumLen,\n+            CrcUtil.toSingleCrcString(digest));\n+      }\n+      return digest;\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private byte[] reassembleNonStripedCompositeCrc(long checksumLen)\n        throws IOException {\n      int numDataUnits \u003d ecPolicy.getNumDataUnits();\n      CrcComposer crcComposer \u003d CrcComposer.newCrcComposer(\n          getCrcType(), ecPolicy.getCellSize());\n\n      // This should hold all the cell-granularity checksums of blk0\n      // followed by all cell checksums of blk1, etc. We must unstripe the\n      // cell checksums in order of logical file bytes. Also, note that the\n      // length of this array may not equal the the number of actually valid\n      // bytes in the buffer (blockChecksumBuf.getLength()).\n      byte[] flatBlockChecksumData \u003d blockChecksumBuf.getData();\n\n      // Initialize byte-level cursors to where each block\u0027s checksum begins\n      // inside the combined flattened buffer.\n      int[] blockChecksumCursors \u003d new int[numDataUnits];\n      for (int idx \u003d 0; idx \u003c numDataUnits; ++idx) {\n        blockChecksumCursors[idx] \u003d blockChecksumPositions[idx];\n      }\n\n      // Reassemble cell-level CRCs in the right order.\n      long numFullCells \u003d checksumLen / ecPolicy.getCellSize();\n      for (long cellIndex \u003d 0; cellIndex \u003c numFullCells; ++cellIndex) {\n        int blockIndex \u003d (int) (cellIndex % numDataUnits);\n        int checksumCursor \u003d blockChecksumCursors[blockIndex];\n        int cellCrc \u003d CrcUtil.readInt(\n            flatBlockChecksumData, checksumCursor);\n        blockChecksumCursors[blockIndex] +\u003d 4;\n        crcComposer.update(cellCrc, ecPolicy.getCellSize());\n      }\n      if (checksumLen % ecPolicy.getCellSize() !\u003d 0) {\n        // Final partial cell.\n        int blockIndex \u003d (int) (numFullCells % numDataUnits);\n        int checksumCursor \u003d blockChecksumCursors[blockIndex];\n        int cellCrc \u003d CrcUtil.readInt(\n            flatBlockChecksumData, checksumCursor);\n        blockChecksumCursors[blockIndex] +\u003d 4;\n        crcComposer.update(cellCrc, checksumLen % ecPolicy.getCellSize());\n      }\n      byte[] digest \u003d crcComposer.digest();\n      if (LOG.isDebugEnabled()) {\n        LOG.debug(\"flatBlockChecksumData.length\u003d{}, numDataUnits\u003d{}, \"\n            + \"checksumLen\u003d{}, digest\u003d{}\",\n            flatBlockChecksumData.length,\n            numDataUnits,\n            checksumLen,\n            CrcUtil.toSingleCrcString(digest));\n      }\n      return digest;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockChecksumHelper.java"
+    }
+  }
+}

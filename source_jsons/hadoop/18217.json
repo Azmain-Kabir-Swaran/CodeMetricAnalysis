@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RouterAdmin.java",
+  "functionName": "updateStorageTypeQuota",
+  "functionId": "updateStorageTypeQuota___mount-String__typeQuota-long[]",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/tools/federation/RouterAdmin.java",
+  "functionStartLine": 1047,
+  "functionEndLine": 1095,
+  "numCommitsSeen": 27,
+  "timeTaken": 788,
+  "changeHistory": [
+    "8730a7bf6025a3b2b7d6e6686533283b854af192"
+  ],
+  "changeHistoryShort": {
+    "8730a7bf6025a3b2b7d6e6686533283b854af192": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8730a7bf6025a3b2b7d6e6686533283b854af192": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-15003. RBF: Make Router support storage type quota. Contributed by Jinglun.\n",
+      "commitDate": "26/12/19 7:52 PM",
+      "commitName": "8730a7bf6025a3b2b7d6e6686533283b854af192",
+      "commitAuthor": "Ayush Saxena",
+      "diff": "@@ -0,0 +1,49 @@\n+  private boolean updateStorageTypeQuota(String mount, long[] typeQuota)\n+      throws IOException {\n+    // Get existing entry\n+    MountTableManager mountTable \u003d client.getMountTableManager();\n+    GetMountTableEntriesRequest getRequest \u003d GetMountTableEntriesRequest\n+        .newInstance(mount);\n+    GetMountTableEntriesResponse getResponse \u003d mountTable\n+        .getMountTableEntries(getRequest);\n+    List\u003cMountTable\u003e results \u003d getResponse.getEntries();\n+    MountTable existingEntry \u003d null;\n+    for (MountTable result : results) {\n+      if (mount.equals(result.getSourcePath())) {\n+        existingEntry \u003d result;\n+        break;\n+      }\n+    }\n+\n+    if (existingEntry \u003d\u003d null) {\n+      throw new IOException(mount + \" doesn\u0027t exist in mount table.\");\n+    } else {\n+      final RouterQuotaUsage quotaUsage \u003d existingEntry.getQuota();\n+      long[] typeCount \u003d new long[StorageType.values().length];\n+      eachByStorageType(\n+          t -\u003e typeCount[t.ordinal()] \u003d quotaUsage.getTypeQuota(t));\n+      // If all storage type quota were reset, clear the storage type quota.\n+      if (andByStorageType(\n+          t -\u003e typeQuota[t.ordinal()] \u003d\u003d HdfsConstants.QUOTA_RESET)) {\n+        eachByStorageType(t -\u003e typeCount[t.ordinal()] \u003d\n+            RouterQuotaUsage.QUOTA_USAGE_COUNT_DEFAULT);\n+      } else {\n+        // If nsQuota or ssQuota was unset, use the value in mount table.\n+        eachByStorageType(t -\u003e {\n+          if (typeQuota[t.ordinal()] \u003d\u003d HdfsConstants.QUOTA_DONT_SET) {\n+            typeQuota[t.ordinal()] \u003d quotaUsage.getTypeQuota(t);\n+          }\n+        });\n+      }\n+\n+      RouterQuotaUsage updatedQuota \u003d new RouterQuotaUsage.Builder()\n+          .typeQuota(typeQuota).typeConsumed(typeCount).build();\n+      existingEntry.setQuota(updatedQuota);\n+    }\n+\n+    UpdateMountTableEntryRequest updateRequest \u003d\n+        UpdateMountTableEntryRequest.newInstance(existingEntry);\n+    UpdateMountTableEntryResponse updateResponse \u003d mountTable\n+        .updateMountTableEntry(updateRequest);\n+    return updateResponse.getStatus();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean updateStorageTypeQuota(String mount, long[] typeQuota)\n      throws IOException {\n    // Get existing entry\n    MountTableManager mountTable \u003d client.getMountTableManager();\n    GetMountTableEntriesRequest getRequest \u003d GetMountTableEntriesRequest\n        .newInstance(mount);\n    GetMountTableEntriesResponse getResponse \u003d mountTable\n        .getMountTableEntries(getRequest);\n    List\u003cMountTable\u003e results \u003d getResponse.getEntries();\n    MountTable existingEntry \u003d null;\n    for (MountTable result : results) {\n      if (mount.equals(result.getSourcePath())) {\n        existingEntry \u003d result;\n        break;\n      }\n    }\n\n    if (existingEntry \u003d\u003d null) {\n      throw new IOException(mount + \" doesn\u0027t exist in mount table.\");\n    } else {\n      final RouterQuotaUsage quotaUsage \u003d existingEntry.getQuota();\n      long[] typeCount \u003d new long[StorageType.values().length];\n      eachByStorageType(\n          t -\u003e typeCount[t.ordinal()] \u003d quotaUsage.getTypeQuota(t));\n      // If all storage type quota were reset, clear the storage type quota.\n      if (andByStorageType(\n          t -\u003e typeQuota[t.ordinal()] \u003d\u003d HdfsConstants.QUOTA_RESET)) {\n        eachByStorageType(t -\u003e typeCount[t.ordinal()] \u003d\n            RouterQuotaUsage.QUOTA_USAGE_COUNT_DEFAULT);\n      } else {\n        // If nsQuota or ssQuota was unset, use the value in mount table.\n        eachByStorageType(t -\u003e {\n          if (typeQuota[t.ordinal()] \u003d\u003d HdfsConstants.QUOTA_DONT_SET) {\n            typeQuota[t.ordinal()] \u003d quotaUsage.getTypeQuota(t);\n          }\n        });\n      }\n\n      RouterQuotaUsage updatedQuota \u003d new RouterQuotaUsage.Builder()\n          .typeQuota(typeQuota).typeConsumed(typeCount).build();\n      existingEntry.setQuota(updatedQuota);\n    }\n\n    UpdateMountTableEntryRequest updateRequest \u003d\n        UpdateMountTableEntryRequest.newInstance(existingEntry);\n    UpdateMountTableEntryResponse updateResponse \u003d mountTable\n        .updateMountTableEntry(updateRequest);\n    return updateResponse.getStatus();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/tools/federation/RouterAdmin.java"
+    }
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BootstrapStandby.java",
+  "functionName": "downloadImage",
+  "functionId": "downloadImage___storage-NNStorage__proxy-NamenodeProtocol__proxyInfo-RemoteNameNodeInfo",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/BootstrapStandby.java",
+  "functionStartLine": 336,
+  "functionEndLine": 370,
+  "numCommitsSeen": 60,
+  "timeTaken": 3688,
+  "changeHistory": [
+    "5cb1e0118b173a95c1f7bdfae1e58d7833d61c26",
+    "ab3c4cff4af338caaa23be0ec383fc1fe473714f",
+    "49dfad942970459297f72632ed8dfd353e0c86de",
+    "e5e492a9631ff78302fccedcb64d7b64b9407991",
+    "fddd55279d0bdd08b3b40aba6fe2ded1d2e0d846"
+  ],
+  "changeHistoryShort": {
+    "5cb1e0118b173a95c1f7bdfae1e58d7833d61c26": "Ybodychange",
+    "ab3c4cff4af338caaa23be0ec383fc1fe473714f": "Ybodychange",
+    "49dfad942970459297f72632ed8dfd353e0c86de": "Ymultichange(Yparameterchange,Ybodychange)",
+    "e5e492a9631ff78302fccedcb64d7b64b9407991": "Ybodychange",
+    "fddd55279d0bdd08b3b40aba6fe2ded1d2e0d846": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "5cb1e0118b173a95c1f7bdfae1e58d7833d61c26": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9533. seen_txid in the shared edits directory is modified during bootstrapping. Contributed by Kihwal Lee.\n",
+      "commitDate": "17/12/15 3:11 PM",
+      "commitName": "5cb1e0118b173a95c1f7bdfae1e58d7833d61c26",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "23/10/15 2:01 PM",
+      "commitNameOld": "ab3c4cff4af338caaa23be0ec383fc1fe473714f",
+      "commitAuthorOld": "Zhe Zhang",
+      "daysBetweenCommits": 55.09,
+      "commitsBetweenForRepo": 398,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,35 @@\n   private int downloadImage(NNStorage storage, NamenodeProtocol proxy, RemoteNameNodeInfo proxyInfo)\n       throws IOException {\n     // Load the newly formatted image, using all of the directories\n     // (including shared edits)\n     final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n     final long curTxId \u003d proxy.getTransactionID();\n     FSImage image \u003d new FSImage(conf);\n     try {\n       image.getStorage().setStorageInfo(storage);\n       image.initEditLog(StartupOption.REGULAR);\n       assert image.getEditLog().isOpenForRead() :\n           \"Expected edit log to be open for read\";\n \n       // Ensure that we have enough edits already in the shared directory to\n       // start up from the last checkpoint on the active.\n       if (!skipSharedEditsCheck \u0026\u0026\n           !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n         return ERR_CODE_LOGS_UNAVAILABLE;\n       }\n \n-      image.getStorage().writeTransactionIdFileToStorage(curTxId);\n-\n       // Download that checkpoint into our storage directories.\n       MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n         proxyInfo.getHttpAddress(), imageTxId, storage, true, true);\n       image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n           hash);\n+\n+      // Write seen_txid to the formatted image directories.\n+      storage.writeTransactionIdFileToStorage(imageTxId, NameNodeDirType.IMAGE);\n     } catch (IOException ioe) {\n       throw ioe;\n     } finally {\n       image.close();\n     }\n     return 0;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private int downloadImage(NNStorage storage, NamenodeProtocol proxy, RemoteNameNodeInfo proxyInfo)\n      throws IOException {\n    // Load the newly formatted image, using all of the directories\n    // (including shared edits)\n    final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n    final long curTxId \u003d proxy.getTransactionID();\n    FSImage image \u003d new FSImage(conf);\n    try {\n      image.getStorage().setStorageInfo(storage);\n      image.initEditLog(StartupOption.REGULAR);\n      assert image.getEditLog().isOpenForRead() :\n          \"Expected edit log to be open for read\";\n\n      // Ensure that we have enough edits already in the shared directory to\n      // start up from the last checkpoint on the active.\n      if (!skipSharedEditsCheck \u0026\u0026\n          !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n        return ERR_CODE_LOGS_UNAVAILABLE;\n      }\n\n      // Download that checkpoint into our storage directories.\n      MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n        proxyInfo.getHttpAddress(), imageTxId, storage, true, true);\n      image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n          hash);\n\n      // Write seen_txid to the formatted image directories.\n      storage.writeTransactionIdFileToStorage(imageTxId, NameNodeDirType.IMAGE);\n    } catch (IOException ioe) {\n      throw ioe;\n    } finally {\n      image.close();\n    }\n    return 0;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/BootstrapStandby.java",
+      "extendedDetails": {}
+    },
+    "ab3c4cff4af338caaa23be0ec383fc1fe473714f": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8808. dfs.image.transfer.bandwidthPerSec should not apply to -bootstrapStandby. Contributed by Zhe Zhang.\n",
+      "commitDate": "23/10/15 2:01 PM",
+      "commitName": "ab3c4cff4af338caaa23be0ec383fc1fe473714f",
+      "commitAuthor": "Zhe Zhang",
+      "commitDateOld": "21/09/15 8:54 PM",
+      "commitNameOld": "dfd807afab0fae3839c9cc5d552aa0304444f956",
+      "commitAuthorOld": "Tsuyoshi Ozawa",
+      "daysBetweenCommits": 31.71,
+      "commitsBetweenForRepo": 256,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,34 @@\n   private int downloadImage(NNStorage storage, NamenodeProtocol proxy, RemoteNameNodeInfo proxyInfo)\n       throws IOException {\n     // Load the newly formatted image, using all of the directories\n     // (including shared edits)\n     final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n     final long curTxId \u003d proxy.getTransactionID();\n     FSImage image \u003d new FSImage(conf);\n     try {\n       image.getStorage().setStorageInfo(storage);\n       image.initEditLog(StartupOption.REGULAR);\n       assert image.getEditLog().isOpenForRead() :\n           \"Expected edit log to be open for read\";\n \n       // Ensure that we have enough edits already in the shared directory to\n       // start up from the last checkpoint on the active.\n       if (!skipSharedEditsCheck \u0026\u0026\n           !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n         return ERR_CODE_LOGS_UNAVAILABLE;\n       }\n \n       image.getStorage().writeTransactionIdFileToStorage(curTxId);\n \n       // Download that checkpoint into our storage directories.\n       MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n-        proxyInfo.getHttpAddress(), imageTxId, storage, true);\n+        proxyInfo.getHttpAddress(), imageTxId, storage, true, true);\n       image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n           hash);\n     } catch (IOException ioe) {\n       throw ioe;\n     } finally {\n       image.close();\n     }\n     return 0;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private int downloadImage(NNStorage storage, NamenodeProtocol proxy, RemoteNameNodeInfo proxyInfo)\n      throws IOException {\n    // Load the newly formatted image, using all of the directories\n    // (including shared edits)\n    final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n    final long curTxId \u003d proxy.getTransactionID();\n    FSImage image \u003d new FSImage(conf);\n    try {\n      image.getStorage().setStorageInfo(storage);\n      image.initEditLog(StartupOption.REGULAR);\n      assert image.getEditLog().isOpenForRead() :\n          \"Expected edit log to be open for read\";\n\n      // Ensure that we have enough edits already in the shared directory to\n      // start up from the last checkpoint on the active.\n      if (!skipSharedEditsCheck \u0026\u0026\n          !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n        return ERR_CODE_LOGS_UNAVAILABLE;\n      }\n\n      image.getStorage().writeTransactionIdFileToStorage(curTxId);\n\n      // Download that checkpoint into our storage directories.\n      MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n        proxyInfo.getHttpAddress(), imageTxId, storage, true, true);\n      image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n          hash);\n    } catch (IOException ioe) {\n      throw ioe;\n    } finally {\n      image.close();\n    }\n    return 0;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/BootstrapStandby.java",
+      "extendedDetails": {}
+    },
+    "49dfad942970459297f72632ed8dfd353e0c86de": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-6440. Support more than 2 NameNodes. Contributed by Jesse Yates.\n",
+      "commitDate": "23/06/15 5:26 PM",
+      "commitName": "49dfad942970459297f72632ed8dfd353e0c86de",
+      "commitAuthor": "Aaron T. Myers",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-6440. Support more than 2 NameNodes. Contributed by Jesse Yates.\n",
+          "commitDate": "23/06/15 5:26 PM",
+          "commitName": "49dfad942970459297f72632ed8dfd353e0c86de",
+          "commitAuthor": "Aaron T. Myers",
+          "commitDateOld": "07/05/15 10:55 PM",
+          "commitNameOld": "e5e492a9631ff78302fccedcb64d7b64b9407991",
+          "commitAuthorOld": "Vinayakumar B",
+          "daysBetweenCommits": 46.77,
+          "commitsBetweenForRepo": 402,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,34 +1,34 @@\n-  private int downloadImage(NNStorage storage, NamenodeProtocol proxy)\n+  private int downloadImage(NNStorage storage, NamenodeProtocol proxy, RemoteNameNodeInfo proxyInfo)\n       throws IOException {\n     // Load the newly formatted image, using all of the directories\n     // (including shared edits)\n     final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n     final long curTxId \u003d proxy.getTransactionID();\n     FSImage image \u003d new FSImage(conf);\n     try {\n       image.getStorage().setStorageInfo(storage);\n       image.initEditLog(StartupOption.REGULAR);\n       assert image.getEditLog().isOpenForRead() :\n           \"Expected edit log to be open for read\";\n \n       // Ensure that we have enough edits already in the shared directory to\n       // start up from the last checkpoint on the active.\n       if (!skipSharedEditsCheck \u0026\u0026\n           !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n         return ERR_CODE_LOGS_UNAVAILABLE;\n       }\n \n       image.getStorage().writeTransactionIdFileToStorage(curTxId);\n \n       // Download that checkpoint into our storage directories.\n       MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n-          otherHttpAddr, imageTxId, storage, true);\n+        proxyInfo.getHttpAddress(), imageTxId, storage, true);\n       image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n           hash);\n     } catch (IOException ioe) {\n       throw ioe;\n     } finally {\n       image.close();\n     }\n     return 0;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private int downloadImage(NNStorage storage, NamenodeProtocol proxy, RemoteNameNodeInfo proxyInfo)\n      throws IOException {\n    // Load the newly formatted image, using all of the directories\n    // (including shared edits)\n    final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n    final long curTxId \u003d proxy.getTransactionID();\n    FSImage image \u003d new FSImage(conf);\n    try {\n      image.getStorage().setStorageInfo(storage);\n      image.initEditLog(StartupOption.REGULAR);\n      assert image.getEditLog().isOpenForRead() :\n          \"Expected edit log to be open for read\";\n\n      // Ensure that we have enough edits already in the shared directory to\n      // start up from the last checkpoint on the active.\n      if (!skipSharedEditsCheck \u0026\u0026\n          !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n        return ERR_CODE_LOGS_UNAVAILABLE;\n      }\n\n      image.getStorage().writeTransactionIdFileToStorage(curTxId);\n\n      // Download that checkpoint into our storage directories.\n      MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n        proxyInfo.getHttpAddress(), imageTxId, storage, true);\n      image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n          hash);\n    } catch (IOException ioe) {\n      throw ioe;\n    } finally {\n      image.close();\n    }\n    return 0;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/BootstrapStandby.java",
+          "extendedDetails": {
+            "oldValue": "[storage-NNStorage, proxy-NamenodeProtocol]",
+            "newValue": "[storage-NNStorage, proxy-NamenodeProtocol, proxyInfo-RemoteNameNodeInfo]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-6440. Support more than 2 NameNodes. Contributed by Jesse Yates.\n",
+          "commitDate": "23/06/15 5:26 PM",
+          "commitName": "49dfad942970459297f72632ed8dfd353e0c86de",
+          "commitAuthor": "Aaron T. Myers",
+          "commitDateOld": "07/05/15 10:55 PM",
+          "commitNameOld": "e5e492a9631ff78302fccedcb64d7b64b9407991",
+          "commitAuthorOld": "Vinayakumar B",
+          "daysBetweenCommits": 46.77,
+          "commitsBetweenForRepo": 402,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,34 +1,34 @@\n-  private int downloadImage(NNStorage storage, NamenodeProtocol proxy)\n+  private int downloadImage(NNStorage storage, NamenodeProtocol proxy, RemoteNameNodeInfo proxyInfo)\n       throws IOException {\n     // Load the newly formatted image, using all of the directories\n     // (including shared edits)\n     final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n     final long curTxId \u003d proxy.getTransactionID();\n     FSImage image \u003d new FSImage(conf);\n     try {\n       image.getStorage().setStorageInfo(storage);\n       image.initEditLog(StartupOption.REGULAR);\n       assert image.getEditLog().isOpenForRead() :\n           \"Expected edit log to be open for read\";\n \n       // Ensure that we have enough edits already in the shared directory to\n       // start up from the last checkpoint on the active.\n       if (!skipSharedEditsCheck \u0026\u0026\n           !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n         return ERR_CODE_LOGS_UNAVAILABLE;\n       }\n \n       image.getStorage().writeTransactionIdFileToStorage(curTxId);\n \n       // Download that checkpoint into our storage directories.\n       MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n-          otherHttpAddr, imageTxId, storage, true);\n+        proxyInfo.getHttpAddress(), imageTxId, storage, true);\n       image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n           hash);\n     } catch (IOException ioe) {\n       throw ioe;\n     } finally {\n       image.close();\n     }\n     return 0;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private int downloadImage(NNStorage storage, NamenodeProtocol proxy, RemoteNameNodeInfo proxyInfo)\n      throws IOException {\n    // Load the newly formatted image, using all of the directories\n    // (including shared edits)\n    final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n    final long curTxId \u003d proxy.getTransactionID();\n    FSImage image \u003d new FSImage(conf);\n    try {\n      image.getStorage().setStorageInfo(storage);\n      image.initEditLog(StartupOption.REGULAR);\n      assert image.getEditLog().isOpenForRead() :\n          \"Expected edit log to be open for read\";\n\n      // Ensure that we have enough edits already in the shared directory to\n      // start up from the last checkpoint on the active.\n      if (!skipSharedEditsCheck \u0026\u0026\n          !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n        return ERR_CODE_LOGS_UNAVAILABLE;\n      }\n\n      image.getStorage().writeTransactionIdFileToStorage(curTxId);\n\n      // Download that checkpoint into our storage directories.\n      MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n        proxyInfo.getHttpAddress(), imageTxId, storage, true);\n      image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n          hash);\n    } catch (IOException ioe) {\n      throw ioe;\n    } finally {\n      image.close();\n    }\n    return 0;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/BootstrapStandby.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e5e492a9631ff78302fccedcb64d7b64b9407991": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6291. FSImage may be left unclosed in BootstrapStandby#doRun() ( Contributed by Sanghyun Yun)\n",
+      "commitDate": "07/05/15 10:55 PM",
+      "commitName": "e5e492a9631ff78302fccedcb64d7b64b9407991",
+      "commitAuthor": "Vinayakumar B",
+      "commitDateOld": "02/05/15 10:03 AM",
+      "commitNameOld": "6ae2a0d048e133b43249c248a75a4d77d9abb80d",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 5.54,
+      "commitsBetweenForRepo": 64,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,33 +1,34 @@\n   private int downloadImage(NNStorage storage, NamenodeProtocol proxy)\n       throws IOException {\n     // Load the newly formatted image, using all of the directories\n     // (including shared edits)\n     final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n     final long curTxId \u003d proxy.getTransactionID();\n     FSImage image \u003d new FSImage(conf);\n     try {\n       image.getStorage().setStorageInfo(storage);\n       image.initEditLog(StartupOption.REGULAR);\n       assert image.getEditLog().isOpenForRead() :\n           \"Expected edit log to be open for read\";\n \n       // Ensure that we have enough edits already in the shared directory to\n       // start up from the last checkpoint on the active.\n       if (!skipSharedEditsCheck \u0026\u0026\n           !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n         return ERR_CODE_LOGS_UNAVAILABLE;\n       }\n \n       image.getStorage().writeTransactionIdFileToStorage(curTxId);\n \n       // Download that checkpoint into our storage directories.\n       MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n           otherHttpAddr, imageTxId, storage, true);\n       image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n           hash);\n     } catch (IOException ioe) {\n-      image.close();\n       throw ioe;\n+    } finally {\n+      image.close();\n     }\n     return 0;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private int downloadImage(NNStorage storage, NamenodeProtocol proxy)\n      throws IOException {\n    // Load the newly formatted image, using all of the directories\n    // (including shared edits)\n    final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n    final long curTxId \u003d proxy.getTransactionID();\n    FSImage image \u003d new FSImage(conf);\n    try {\n      image.getStorage().setStorageInfo(storage);\n      image.initEditLog(StartupOption.REGULAR);\n      assert image.getEditLog().isOpenForRead() :\n          \"Expected edit log to be open for read\";\n\n      // Ensure that we have enough edits already in the shared directory to\n      // start up from the last checkpoint on the active.\n      if (!skipSharedEditsCheck \u0026\u0026\n          !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n        return ERR_CODE_LOGS_UNAVAILABLE;\n      }\n\n      image.getStorage().writeTransactionIdFileToStorage(curTxId);\n\n      // Download that checkpoint into our storage directories.\n      MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n          otherHttpAddr, imageTxId, storage, true);\n      image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n          hash);\n    } catch (IOException ioe) {\n      throw ioe;\n    } finally {\n      image.close();\n    }\n    return 0;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/BootstrapStandby.java",
+      "extendedDetails": {}
+    },
+    "fddd55279d0bdd08b3b40aba6fe2ded1d2e0d846": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-8127. NameNode Failover during HA upgrade can cause DataNode to finalize upgrade. Contributed by Jing Zhao.\n",
+      "commitDate": "14/04/15 3:05 PM",
+      "commitName": "fddd55279d0bdd08b3b40aba6fe2ded1d2e0d846",
+      "commitAuthor": "Jing Zhao",
+      "diff": "@@ -0,0 +1,33 @@\n+  private int downloadImage(NNStorage storage, NamenodeProtocol proxy)\n+      throws IOException {\n+    // Load the newly formatted image, using all of the directories\n+    // (including shared edits)\n+    final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n+    final long curTxId \u003d proxy.getTransactionID();\n+    FSImage image \u003d new FSImage(conf);\n+    try {\n+      image.getStorage().setStorageInfo(storage);\n+      image.initEditLog(StartupOption.REGULAR);\n+      assert image.getEditLog().isOpenForRead() :\n+          \"Expected edit log to be open for read\";\n+\n+      // Ensure that we have enough edits already in the shared directory to\n+      // start up from the last checkpoint on the active.\n+      if (!skipSharedEditsCheck \u0026\u0026\n+          !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n+        return ERR_CODE_LOGS_UNAVAILABLE;\n+      }\n+\n+      image.getStorage().writeTransactionIdFileToStorage(curTxId);\n+\n+      // Download that checkpoint into our storage directories.\n+      MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n+          otherHttpAddr, imageTxId, storage, true);\n+      image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n+          hash);\n+    } catch (IOException ioe) {\n+      image.close();\n+      throw ioe;\n+    }\n+    return 0;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private int downloadImage(NNStorage storage, NamenodeProtocol proxy)\n      throws IOException {\n    // Load the newly formatted image, using all of the directories\n    // (including shared edits)\n    final long imageTxId \u003d proxy.getMostRecentCheckpointTxId();\n    final long curTxId \u003d proxy.getTransactionID();\n    FSImage image \u003d new FSImage(conf);\n    try {\n      image.getStorage().setStorageInfo(storage);\n      image.initEditLog(StartupOption.REGULAR);\n      assert image.getEditLog().isOpenForRead() :\n          \"Expected edit log to be open for read\";\n\n      // Ensure that we have enough edits already in the shared directory to\n      // start up from the last checkpoint on the active.\n      if (!skipSharedEditsCheck \u0026\u0026\n          !checkLogsAvailableForRead(image, imageTxId, curTxId)) {\n        return ERR_CODE_LOGS_UNAVAILABLE;\n      }\n\n      image.getStorage().writeTransactionIdFileToStorage(curTxId);\n\n      // Download that checkpoint into our storage directories.\n      MD5Hash hash \u003d TransferFsImage.downloadImageToStorage(\n          otherHttpAddr, imageTxId, storage, true);\n      image.saveDigestAndRenameCheckpointImage(NameNodeFile.IMAGE, imageTxId,\n          hash);\n    } catch (IOException ioe) {\n      image.close();\n      throw ioe;\n    }\n    return 0;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/BootstrapStandby.java"
+    }
+  }
+}

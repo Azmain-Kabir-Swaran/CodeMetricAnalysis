@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMWebServices.java",
+  "functionName": "moveApp",
+  "functionId": "moveApp___app-RMApp__callerUGI-UserGroupInformation__targetQueue-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/webapp/RMWebServices.java",
+  "functionStartLine": 1641,
+  "functionEndLine": 1686,
+  "numCommitsSeen": 106,
+  "timeTaken": 3105,
+  "changeHistory": [
+    "60103fca04dc713183e4ec9e12f961642e7d1001"
+  ],
+  "changeHistoryShort": {
+    "60103fca04dc713183e4ec9e12f961642e7d1001": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "60103fca04dc713183e4ec9e12f961642e7d1001": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2427. Added the API of moving apps between queues in RM web services. Contributed by Varun Vasudev.\n",
+      "commitDate": "06/01/15 2:37 PM",
+      "commitName": "60103fca04dc713183e4ec9e12f961642e7d1001",
+      "commitAuthor": "Zhijie Shen",
+      "diff": "@@ -0,0 +1,49 @@\n+  protected Response moveApp(RMApp app, UserGroupInformation callerUGI,\n+      String targetQueue) throws IOException, InterruptedException {\n+\n+    if (app \u003d\u003d null) {\n+      throw new IllegalArgumentException(\"app cannot be null\");\n+    }\n+    String userName \u003d callerUGI.getUserName();\n+    final ApplicationId appid \u003d app.getApplicationId();\n+    final String reqTargetQueue \u003d targetQueue;\n+    try {\n+      callerUGI\n+        .doAs(new PrivilegedExceptionAction\u003cVoid\u003e() {\n+          @Override\n+          public Void run() throws IOException,\n+              YarnException {\n+            MoveApplicationAcrossQueuesRequest req \u003d\n+                MoveApplicationAcrossQueuesRequest.newInstance(appid,\n+                  reqTargetQueue);\n+            rm.getClientRMService().moveApplicationAcrossQueues(req);\n+            return null;\n+          }\n+        });\n+    } catch (UndeclaredThrowableException ue) {\n+      // if the root cause is a permissions issue\n+      // bubble that up to the user\n+      if (ue.getCause() instanceof YarnException) {\n+        YarnException ye \u003d (YarnException) ue.getCause();\n+        if (ye.getCause() instanceof AccessControlException) {\n+          String appId \u003d app.getApplicationId().toString();\n+          String msg \u003d\n+              \"Unauthorized attempt to move appid \" + appId\n+                  + \" by remote user \" + userName;\n+          return Response.status(Status.FORBIDDEN).entity(msg).build();\n+        } else if (ye.getMessage().startsWith(\"App in\")\n+            \u0026\u0026 ye.getMessage().endsWith(\"state cannot be moved.\")) {\n+          return Response.status(Status.BAD_REQUEST).entity(ye.getMessage())\n+            .build();\n+        } else {\n+          throw ue;\n+        }\n+      } else {\n+        throw ue;\n+      }\n+    }\n+\n+    AppQueue ret \u003d new AppQueue();\n+    ret.setQueue(app.getQueue());\n+    return Response.status(Status.OK).entity(ret).build();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected Response moveApp(RMApp app, UserGroupInformation callerUGI,\n      String targetQueue) throws IOException, InterruptedException {\n\n    if (app \u003d\u003d null) {\n      throw new IllegalArgumentException(\"app cannot be null\");\n    }\n    String userName \u003d callerUGI.getUserName();\n    final ApplicationId appid \u003d app.getApplicationId();\n    final String reqTargetQueue \u003d targetQueue;\n    try {\n      callerUGI\n        .doAs(new PrivilegedExceptionAction\u003cVoid\u003e() {\n          @Override\n          public Void run() throws IOException,\n              YarnException {\n            MoveApplicationAcrossQueuesRequest req \u003d\n                MoveApplicationAcrossQueuesRequest.newInstance(appid,\n                  reqTargetQueue);\n            rm.getClientRMService().moveApplicationAcrossQueues(req);\n            return null;\n          }\n        });\n    } catch (UndeclaredThrowableException ue) {\n      // if the root cause is a permissions issue\n      // bubble that up to the user\n      if (ue.getCause() instanceof YarnException) {\n        YarnException ye \u003d (YarnException) ue.getCause();\n        if (ye.getCause() instanceof AccessControlException) {\n          String appId \u003d app.getApplicationId().toString();\n          String msg \u003d\n              \"Unauthorized attempt to move appid \" + appId\n                  + \" by remote user \" + userName;\n          return Response.status(Status.FORBIDDEN).entity(msg).build();\n        } else if (ye.getMessage().startsWith(\"App in\")\n            \u0026\u0026 ye.getMessage().endsWith(\"state cannot be moved.\")) {\n          return Response.status(Status.BAD_REQUEST).entity(ye.getMessage())\n            .build();\n        } else {\n          throw ue;\n        }\n      } else {\n        throw ue;\n      }\n    }\n\n    AppQueue ret \u003d new AppQueue();\n    ret.setQueue(app.getQueue());\n    return Response.status(Status.OK).entity(ret).build();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/webapp/RMWebServices.java"
+    }
+  }
+}

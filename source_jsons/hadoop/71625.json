@@ -1,0 +1,111 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RegistryDNS.java",
+  "functionName": "nioTCPClient",
+  "functionId": "nioTCPClient___ch-SocketChannel",
+  "sourceFilePath": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+  "functionStartLine": 765,
+  "functionEndLine": 816,
+  "numCommitsSeen": 15,
+  "timeTaken": 2210,
+  "changeHistory": [
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae",
+    "9ab3f9708923b3429209006a12695f4826a045b9",
+    "8ec9e72cc37957d8cf9af5a7b78086441ae64b00",
+    "d2775fbccaa187729d86459542210434ce4c3b8b",
+    "f934f62fc71b4776e88f86d4254de0ea12147511"
+  ],
+  "changeHistoryShort": {
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae": "Yfilerename",
+    "9ab3f9708923b3429209006a12695f4826a045b9": "Ybodychange",
+    "8ec9e72cc37957d8cf9af5a7b78086441ae64b00": "Ybodychange",
+    "d2775fbccaa187729d86459542210434ce4c3b8b": "Ybodychange",
+    "f934f62fc71b4776e88f86d4254de0ea12147511": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-15821. Move YARN Registry to Hadoop Registry.\n              Contributed by Íñigo Goiri\n",
+      "commitDate": "19/10/18 4:46 PM",
+      "commitName": "e2a9fa8448e2aac34c318260e425786a6c8ca2ae",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "19/10/18 1:57 PM",
+      "commitNameOld": "00254d7b8c714ae2000d0934d260b23458033529",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.12,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void nioTCPClient(SocketChannel ch) throws IOException {\n    try {\n      // query sizes are small, so the following two lines should work\n      // in all instances\n      ByteBuffer buf \u003d ByteBuffer.allocate(1024);\n      ch.read(buf);\n      buf.flip();\n      int messageLength \u003d getMessgeLength(buf);\n\n      byte[] in \u003d new byte[messageLength];\n\n      buf.get(in, 0, messageLength);\n\n      Message query;\n      byte[] response;\n      try {\n        query \u003d new Message(in);\n        LOG.info(\"received TCP query {}\", query.getQuestion());\n        response \u003d generateReply(query, ch.socket());\n        if (response \u003d\u003d null) {\n          return;\n        }\n      } catch (IOException e) {\n        response \u003d formErrorMessage(in);\n      }\n\n      ByteBuffer out \u003d ByteBuffer.allocate(response.length + 2);\n      out.clear();\n      byte[] data \u003d new byte[2];\n\n      data[1] \u003d (byte)(response.length \u0026 0xFF);\n      data[0] \u003d (byte)((response.length \u003e\u003e 8) \u0026 0xFF);\n      out.put(data);\n      out.put(response);\n      out.flip();\n\n      while(out.hasRemaining()) {\n        ch.write(out);\n      }\n\n    } catch (IOException e) {\n      throw NetUtils.wrapException(ch.socket().getInetAddress().getHostName(),\n          ch.socket().getPort(),\n          ch.socket().getLocalAddress().getHostName(),\n          ch.socket().getLocalPort(), e);\n    } catch (BufferUnderflowException e) {\n      // Ignore system monitor ping packets\n    } finally {\n      IOUtils.closeStream(ch);\n    }\n\n  }",
+      "path": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+        "newPath": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java"
+      }
+    },
+    "9ab3f9708923b3429209006a12695f4826a045b9": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8211. Yarn registry dns log finds BufferUnderflowException on port ping. Contributed by Eric Yang\n",
+      "commitDate": "27/04/18 7:58 AM",
+      "commitName": "9ab3f9708923b3429209006a12695f4826a045b9",
+      "commitAuthor": "Billie Rinaldi",
+      "commitDateOld": "12/01/18 9:21 AM",
+      "commitNameOld": "4fb1f45f21916ca1b1fc6652a2ad562ac996b7b8",
+      "commitAuthorOld": "Billie Rinaldi",
+      "daysBetweenCommits": 104.9,
+      "commitsBetweenForRepo": 1327,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,50 +1,52 @@\n   public void nioTCPClient(SocketChannel ch) throws IOException {\n     try {\n       // query sizes are small, so the following two lines should work\n       // in all instances\n       ByteBuffer buf \u003d ByteBuffer.allocate(1024);\n       ch.read(buf);\n       buf.flip();\n       int messageLength \u003d getMessgeLength(buf);\n \n       byte[] in \u003d new byte[messageLength];\n \n       buf.get(in, 0, messageLength);\n \n       Message query;\n       byte[] response;\n       try {\n         query \u003d new Message(in);\n         LOG.info(\"received TCP query {}\", query.getQuestion());\n         response \u003d generateReply(query, ch.socket());\n         if (response \u003d\u003d null) {\n           return;\n         }\n       } catch (IOException e) {\n         response \u003d formErrorMessage(in);\n       }\n \n       ByteBuffer out \u003d ByteBuffer.allocate(response.length + 2);\n       out.clear();\n       byte[] data \u003d new byte[2];\n \n       data[1] \u003d (byte)(response.length \u0026 0xFF);\n       data[0] \u003d (byte)((response.length \u003e\u003e 8) \u0026 0xFF);\n       out.put(data);\n       out.put(response);\n       out.flip();\n \n       while(out.hasRemaining()) {\n         ch.write(out);\n       }\n \n     } catch (IOException e) {\n       throw NetUtils.wrapException(ch.socket().getInetAddress().getHostName(),\n           ch.socket().getPort(),\n           ch.socket().getLocalAddress().getHostName(),\n           ch.socket().getLocalPort(), e);\n+    } catch (BufferUnderflowException e) {\n+      // Ignore system monitor ping packets\n     } finally {\n       IOUtils.closeStream(ch);\n     }\n \n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void nioTCPClient(SocketChannel ch) throws IOException {\n    try {\n      // query sizes are small, so the following two lines should work\n      // in all instances\n      ByteBuffer buf \u003d ByteBuffer.allocate(1024);\n      ch.read(buf);\n      buf.flip();\n      int messageLength \u003d getMessgeLength(buf);\n\n      byte[] in \u003d new byte[messageLength];\n\n      buf.get(in, 0, messageLength);\n\n      Message query;\n      byte[] response;\n      try {\n        query \u003d new Message(in);\n        LOG.info(\"received TCP query {}\", query.getQuestion());\n        response \u003d generateReply(query, ch.socket());\n        if (response \u003d\u003d null) {\n          return;\n        }\n      } catch (IOException e) {\n        response \u003d formErrorMessage(in);\n      }\n\n      ByteBuffer out \u003d ByteBuffer.allocate(response.length + 2);\n      out.clear();\n      byte[] data \u003d new byte[2];\n\n      data[1] \u003d (byte)(response.length \u0026 0xFF);\n      data[0] \u003d (byte)((response.length \u003e\u003e 8) \u0026 0xFF);\n      out.put(data);\n      out.put(response);\n      out.flip();\n\n      while(out.hasRemaining()) {\n        ch.write(out);\n      }\n\n    } catch (IOException e) {\n      throw NetUtils.wrapException(ch.socket().getInetAddress().getHostName(),\n          ch.socket().getPort(),\n          ch.socket().getLocalAddress().getHostName(),\n          ch.socket().getLocalPort(), e);\n    } catch (BufferUnderflowException e) {\n      // Ignore system monitor ping packets\n    } finally {\n      IOUtils.closeStream(ch);\n    }\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+      "extendedDetails": {}
+    },
+    "8ec9e72cc37957d8cf9af5a7b78086441ae64b00": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7393. RegistryDNS doesn\u0027t work in tcp channel. Contributed by Eric Yang\n",
+      "commitDate": "06/11/17 1:30 PM",
+      "commitName": "8ec9e72cc37957d8cf9af5a7b78086441ae64b00",
+      "commitAuthor": "Billie Rinaldi",
+      "commitDateOld": "06/11/17 1:30 PM",
+      "commitNameOld": "d2775fbccaa187729d86459542210434ce4c3b8b",
+      "commitAuthorOld": "Billie Rinaldi",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,41 +1,50 @@\n   public void nioTCPClient(SocketChannel ch) throws IOException {\n     try {\n       // query sizes are small, so the following two lines should work\n       // in all instances\n       ByteBuffer buf \u003d ByteBuffer.allocate(1024);\n       ch.read(buf);\n       buf.flip();\n       int messageLength \u003d getMessgeLength(buf);\n \n       byte[] in \u003d new byte[messageLength];\n \n       buf.get(in, 0, messageLength);\n \n       Message query;\n-      byte[] response \u003d null;\n+      byte[] response;\n       try {\n         query \u003d new Message(in);\n         LOG.info(\"received TCP query {}\", query.getQuestion());\n         response \u003d generateReply(query, ch.socket());\n         if (response \u003d\u003d null) {\n           return;\n         }\n       } catch (IOException e) {\n         response \u003d formErrorMessage(in);\n       }\n \n       ByteBuffer out \u003d ByteBuffer.allocate(response.length + 2);\n-      out.putShort(0, (short) (response.length \u0026 0xffff));\n-      out.put(response);\n+      out.clear();\n+      byte[] data \u003d new byte[2];\n \n-      ch.write(out);\n+      data[1] \u003d (byte)(response.length \u0026 0xFF);\n+      data[0] \u003d (byte)((response.length \u003e\u003e 8) \u0026 0xFF);\n+      out.put(data);\n+      out.put(response);\n+      out.flip();\n+\n+      while(out.hasRemaining()) {\n+        ch.write(out);\n+      }\n+\n     } catch (IOException e) {\n       throw NetUtils.wrapException(ch.socket().getInetAddress().getHostName(),\n           ch.socket().getPort(),\n           ch.socket().getLocalAddress().getHostName(),\n           ch.socket().getLocalPort(), e);\n     } finally {\n       IOUtils.closeStream(ch);\n     }\n \n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void nioTCPClient(SocketChannel ch) throws IOException {\n    try {\n      // query sizes are small, so the following two lines should work\n      // in all instances\n      ByteBuffer buf \u003d ByteBuffer.allocate(1024);\n      ch.read(buf);\n      buf.flip();\n      int messageLength \u003d getMessgeLength(buf);\n\n      byte[] in \u003d new byte[messageLength];\n\n      buf.get(in, 0, messageLength);\n\n      Message query;\n      byte[] response;\n      try {\n        query \u003d new Message(in);\n        LOG.info(\"received TCP query {}\", query.getQuestion());\n        response \u003d generateReply(query, ch.socket());\n        if (response \u003d\u003d null) {\n          return;\n        }\n      } catch (IOException e) {\n        response \u003d formErrorMessage(in);\n      }\n\n      ByteBuffer out \u003d ByteBuffer.allocate(response.length + 2);\n      out.clear();\n      byte[] data \u003d new byte[2];\n\n      data[1] \u003d (byte)(response.length \u0026 0xFF);\n      data[0] \u003d (byte)((response.length \u003e\u003e 8) \u0026 0xFF);\n      out.put(data);\n      out.put(response);\n      out.flip();\n\n      while(out.hasRemaining()) {\n        ch.write(out);\n      }\n\n    } catch (IOException e) {\n      throw NetUtils.wrapException(ch.socket().getInetAddress().getHostName(),\n          ch.socket().getPort(),\n          ch.socket().getLocalAddress().getHostName(),\n          ch.socket().getLocalPort(), e);\n    } finally {\n      IOUtils.closeStream(ch);\n    }\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+      "extendedDetails": {}
+    },
+    "d2775fbccaa187729d86459542210434ce4c3b8b": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7351. Fix high CPU usage issue in RegistryDNS. Contributed by Jian He\n",
+      "commitDate": "06/11/17 1:30 PM",
+      "commitName": "d2775fbccaa187729d86459542210434ce4c3b8b",
+      "commitAuthor": "Billie Rinaldi",
+      "commitDateOld": "06/11/17 1:30 PM",
+      "commitNameOld": "501be9b4be7d549b23cc501b26fdfdce0a7aa911",
+      "commitAuthorOld": "Billie Rinaldi",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,40 +1,41 @@\n   public void nioTCPClient(SocketChannel ch) throws IOException {\n     try {\n       // query sizes are small, so the following two lines should work\n       // in all instances\n       ByteBuffer buf \u003d ByteBuffer.allocate(1024);\n       ch.read(buf);\n       buf.flip();\n       int messageLength \u003d getMessgeLength(buf);\n \n       byte[] in \u003d new byte[messageLength];\n \n       buf.get(in, 0, messageLength);\n \n       Message query;\n       byte[] response \u003d null;\n       try {\n         query \u003d new Message(in);\n+        LOG.info(\"received TCP query {}\", query.getQuestion());\n         response \u003d generateReply(query, ch.socket());\n         if (response \u003d\u003d null) {\n           return;\n         }\n       } catch (IOException e) {\n         response \u003d formErrorMessage(in);\n       }\n \n       ByteBuffer out \u003d ByteBuffer.allocate(response.length + 2);\n       out.putShort(0, (short) (response.length \u0026 0xffff));\n       out.put(response);\n \n       ch.write(out);\n     } catch (IOException e) {\n       throw NetUtils.wrapException(ch.socket().getInetAddress().getHostName(),\n           ch.socket().getPort(),\n           ch.socket().getLocalAddress().getHostName(),\n           ch.socket().getLocalPort(), e);\n     } finally {\n       IOUtils.closeStream(ch);\n     }\n \n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void nioTCPClient(SocketChannel ch) throws IOException {\n    try {\n      // query sizes are small, so the following two lines should work\n      // in all instances\n      ByteBuffer buf \u003d ByteBuffer.allocate(1024);\n      ch.read(buf);\n      buf.flip();\n      int messageLength \u003d getMessgeLength(buf);\n\n      byte[] in \u003d new byte[messageLength];\n\n      buf.get(in, 0, messageLength);\n\n      Message query;\n      byte[] response \u003d null;\n      try {\n        query \u003d new Message(in);\n        LOG.info(\"received TCP query {}\", query.getQuestion());\n        response \u003d generateReply(query, ch.socket());\n        if (response \u003d\u003d null) {\n          return;\n        }\n      } catch (IOException e) {\n        response \u003d formErrorMessage(in);\n      }\n\n      ByteBuffer out \u003d ByteBuffer.allocate(response.length + 2);\n      out.putShort(0, (short) (response.length \u0026 0xffff));\n      out.put(response);\n\n      ch.write(out);\n    } catch (IOException e) {\n      throw NetUtils.wrapException(ch.socket().getInetAddress().getHostName(),\n          ch.socket().getPort(),\n          ch.socket().getLocalAddress().getHostName(),\n          ch.socket().getLocalPort(), e);\n    } finally {\n      IOUtils.closeStream(ch);\n    }\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+      "extendedDetails": {}
+    },
+    "f934f62fc71b4776e88f86d4254de0ea12147511": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5218. Initial core change for DNS for YARN. Contributed by Jonathan Maron\n",
+      "commitDate": "06/11/17 1:28 PM",
+      "commitName": "f934f62fc71b4776e88f86d4254de0ea12147511",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,40 @@\n+  public void nioTCPClient(SocketChannel ch) throws IOException {\n+    try {\n+      // query sizes are small, so the following two lines should work\n+      // in all instances\n+      ByteBuffer buf \u003d ByteBuffer.allocate(1024);\n+      ch.read(buf);\n+      buf.flip();\n+      int messageLength \u003d getMessgeLength(buf);\n+\n+      byte[] in \u003d new byte[messageLength];\n+\n+      buf.get(in, 0, messageLength);\n+\n+      Message query;\n+      byte[] response \u003d null;\n+      try {\n+        query \u003d new Message(in);\n+        response \u003d generateReply(query, ch.socket());\n+        if (response \u003d\u003d null) {\n+          return;\n+        }\n+      } catch (IOException e) {\n+        response \u003d formErrorMessage(in);\n+      }\n+\n+      ByteBuffer out \u003d ByteBuffer.allocate(response.length + 2);\n+      out.putShort(0, (short) (response.length \u0026 0xffff));\n+      out.put(response);\n+\n+      ch.write(out);\n+    } catch (IOException e) {\n+      throw NetUtils.wrapException(ch.socket().getInetAddress().getHostName(),\n+          ch.socket().getPort(),\n+          ch.socket().getLocalAddress().getHostName(),\n+          ch.socket().getLocalPort(), e);\n+    } finally {\n+      IOUtils.closeStream(ch);\n+    }\n+\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void nioTCPClient(SocketChannel ch) throws IOException {\n    try {\n      // query sizes are small, so the following two lines should work\n      // in all instances\n      ByteBuffer buf \u003d ByteBuffer.allocate(1024);\n      ch.read(buf);\n      buf.flip();\n      int messageLength \u003d getMessgeLength(buf);\n\n      byte[] in \u003d new byte[messageLength];\n\n      buf.get(in, 0, messageLength);\n\n      Message query;\n      byte[] response \u003d null;\n      try {\n        query \u003d new Message(in);\n        response \u003d generateReply(query, ch.socket());\n        if (response \u003d\u003d null) {\n          return;\n        }\n      } catch (IOException e) {\n        response \u003d formErrorMessage(in);\n      }\n\n      ByteBuffer out \u003d ByteBuffer.allocate(response.length + 2);\n      out.putShort(0, (short) (response.length \u0026 0xffff));\n      out.put(response);\n\n      ch.write(out);\n    } catch (IOException e) {\n      throw NetUtils.wrapException(ch.socket().getInetAddress().getHostName(),\n          ch.socket().getPort(),\n          ch.socket().getLocalAddress().getHostName(),\n          ch.socket().getLocalPort(), e);\n    } finally {\n      IOUtils.closeStream(ch);\n    }\n\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java"
+    }
+  }
+}

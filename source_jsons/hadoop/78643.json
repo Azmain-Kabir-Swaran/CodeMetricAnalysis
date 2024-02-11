@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NflyFSystem.java",
+  "functionName": "open",
+  "functionId": "open___f-Path__bufferSize-int",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/NflyFSystem.java",
+  "functionStartLine": 580,
+  "functionEndLine": 621,
+  "numCommitsSeen": 3,
+  "timeTaken": 760,
+  "changeHistory": [
+    "1f3bc63e6772be81bc9a6a7d93ed81d2a9e066c0"
+  ],
+  "changeHistoryShort": {
+    "1f3bc63e6772be81bc9a6a7d93ed81d2a9e066c0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1f3bc63e6772be81bc9a6a7d93ed81d2a9e066c0": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-12077. Provide a multi-URI replication Inode for ViewFs. Contributed by Gera Shegalov\n",
+      "commitDate": "05/09/17 11:51 PM",
+      "commitName": "1f3bc63e6772be81bc9a6a7d93ed81d2a9e066c0",
+      "commitAuthor": "Chris Douglas",
+      "diff": "@@ -0,0 +1,42 @@\n+  public FSDataInputStream open(Path f, int bufferSize) throws IOException {\n+    // TODO proxy stream for reads\n+    final List\u003cIOException\u003e ioExceptions \u003d\n+        new ArrayList\u003cIOException\u003e(nodes.length);\n+    int numNotFounds \u003d 0;\n+    final MRNflyNode[] mrNodes \u003d workSet();\n+\n+    // naively iterate until one can be opened\n+    //\n+    for (final MRNflyNode nflyNode : mrNodes) {\n+      try {\n+        if (nflyFlags.contains(NflyKey.repairOnRead)\n+            || nflyFlags.contains(NflyKey.readMostRecent)) {\n+          // calling file status to avoid pulling bytes prematurely\n+          nflyNode.updateFileStatus(f);\n+        } else {\n+          return nflyNode.getFs().open(f, bufferSize);\n+        }\n+      } catch (FileNotFoundException fnfe) {\n+        nflyNode.status \u003d notFoundStatus(f);\n+        numNotFounds++;\n+        processThrowable(nflyNode, \"open\", fnfe, ioExceptions, f);\n+      } catch (Throwable t) {\n+        processThrowable(nflyNode, \"open\", t, ioExceptions, f);\n+      }\n+    }\n+\n+    if (nflyFlags.contains(NflyKey.readMostRecent)) {\n+      // sort from most recent to least recent\n+      Arrays.sort(mrNodes);\n+    }\n+\n+    final FSDataInputStream fsdisAfterRepair \u003d repairAndOpen(mrNodes, f,\n+        bufferSize);\n+\n+    if (fsdisAfterRepair !\u003d null) {\n+      return fsdisAfterRepair;\n+    }\n+\n+    mayThrowFileNotFound(ioExceptions, numNotFounds);\n+    throw MultipleIOException.createIOException(ioExceptions);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public FSDataInputStream open(Path f, int bufferSize) throws IOException {\n    // TODO proxy stream for reads\n    final List\u003cIOException\u003e ioExceptions \u003d\n        new ArrayList\u003cIOException\u003e(nodes.length);\n    int numNotFounds \u003d 0;\n    final MRNflyNode[] mrNodes \u003d workSet();\n\n    // naively iterate until one can be opened\n    //\n    for (final MRNflyNode nflyNode : mrNodes) {\n      try {\n        if (nflyFlags.contains(NflyKey.repairOnRead)\n            || nflyFlags.contains(NflyKey.readMostRecent)) {\n          // calling file status to avoid pulling bytes prematurely\n          nflyNode.updateFileStatus(f);\n        } else {\n          return nflyNode.getFs().open(f, bufferSize);\n        }\n      } catch (FileNotFoundException fnfe) {\n        nflyNode.status \u003d notFoundStatus(f);\n        numNotFounds++;\n        processThrowable(nflyNode, \"open\", fnfe, ioExceptions, f);\n      } catch (Throwable t) {\n        processThrowable(nflyNode, \"open\", t, ioExceptions, f);\n      }\n    }\n\n    if (nflyFlags.contains(NflyKey.readMostRecent)) {\n      // sort from most recent to least recent\n      Arrays.sort(mrNodes);\n    }\n\n    final FSDataInputStream fsdisAfterRepair \u003d repairAndOpen(mrNodes, f,\n        bufferSize);\n\n    if (fsdisAfterRepair !\u003d null) {\n      return fsdisAfterRepair;\n    }\n\n    mayThrowFileNotFound(ioExceptions, numNotFounds);\n    throw MultipleIOException.createIOException(ioExceptions);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/NflyFSystem.java"
+    }
+  }
+}

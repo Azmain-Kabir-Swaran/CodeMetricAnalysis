@@ -1,0 +1,147 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LocalMetadataStore.java",
+  "functionName": "expired",
+  "functionId": "expired___pruneMode-PruneMode__metadata-PathMetadata__cutoff-long__keyPrefix-String",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+  "functionStartLine": 439,
+  "functionEndLine": 476,
+  "numCommitsSeen": 35,
+  "timeTaken": 4437,
+  "changeHistory": [
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+    "8981674bbcff0663af820f3e87a3eaea5789968a",
+    "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c": "Ymultichange(Yparameterchange,Ybodychange)",
+    "8981674bbcff0663af820f3e87a3eaea5789968a": "Ybodychange",
+    "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a": "Ymultichange(Yparameterchange,Ybodychange)",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+      "commitDate": "16/06/19 9:05 AM",
+      "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+      "commitAuthor": "Gabor Bota",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+          "commitDate": "16/06/19 9:05 AM",
+          "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "19/05/19 2:29 PM",
+          "commitNameOld": "a36274d69947648dbe82721220cc5240ec5d396d",
+          "commitAuthorOld": "Ben Roling",
+          "daysBetweenCommits": 27.77,
+          "commitsBetweenForRepo": 198,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,38 @@\n-  private boolean expired(FileStatus status, long expiry, String keyPrefix) {\n+  private boolean expired(PruneMode pruneMode, PathMetadata metadata,\n+      long cutoff, String keyPrefix) {\n+    final S3AFileStatus status \u003d metadata.getFileStatus();\n+    final URI statusUri \u003d status.getPath().toUri();\n+\n     // remove the protocol from path string to be able to compare\n-    String bucket \u003d status.getPath().toUri().getHost();\n+    String bucket \u003d statusUri.getHost();\n     String statusTranslatedPath \u003d \"\";\n     if(bucket !\u003d null \u0026\u0026 !bucket.isEmpty()){\n       // if there\u0027s a bucket, (well defined host in Uri) the pathToParentKey\n       // can be used to get the path from the status\n       statusTranslatedPath \u003d\n           PathMetadataDynamoDBTranslation.pathToParentKey(status.getPath());\n     } else {\n       // if there\u0027s no bucket in the path the pathToParentKey will fail, so\n       // this is the fallback to get the path from status\n-      statusTranslatedPath \u003d status.getPath().toUri().getPath();\n+      statusTranslatedPath \u003d statusUri.getPath();\n     }\n \n-    // Note: S3 doesn\u0027t track modification time on directories, so for\n-    // consistency with the DynamoDB implementation we ignore that here\n-    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory()\n-      \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n+    boolean expired;\n+    switch (pruneMode) {\n+    case ALL_BY_MODTIME:\n+      // Note: S3 doesn\u0027t track modification time on directories, so for\n+      // consistency with the DynamoDB implementation we ignore that here\n+      expired \u003d status.getModificationTime() \u003c cutoff \u0026\u0026 !status.isDirectory()\n+          \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n+      break;\n+    case TOMBSTONES_BY_LASTUPDATED:\n+      expired \u003d metadata.getLastUpdated() \u003c cutoff \u0026\u0026 metadata.isDeleted()\n+          \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n+      break;\n+    default:\n+      throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n+          + pruneMode);\n+    }\n+\n+    return expired;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean expired(PruneMode pruneMode, PathMetadata metadata,\n      long cutoff, String keyPrefix) {\n    final S3AFileStatus status \u003d metadata.getFileStatus();\n    final URI statusUri \u003d status.getPath().toUri();\n\n    // remove the protocol from path string to be able to compare\n    String bucket \u003d statusUri.getHost();\n    String statusTranslatedPath \u003d \"\";\n    if(bucket !\u003d null \u0026\u0026 !bucket.isEmpty()){\n      // if there\u0027s a bucket, (well defined host in Uri) the pathToParentKey\n      // can be used to get the path from the status\n      statusTranslatedPath \u003d\n          PathMetadataDynamoDBTranslation.pathToParentKey(status.getPath());\n    } else {\n      // if there\u0027s no bucket in the path the pathToParentKey will fail, so\n      // this is the fallback to get the path from status\n      statusTranslatedPath \u003d statusUri.getPath();\n    }\n\n    boolean expired;\n    switch (pruneMode) {\n    case ALL_BY_MODTIME:\n      // Note: S3 doesn\u0027t track modification time on directories, so for\n      // consistency with the DynamoDB implementation we ignore that here\n      expired \u003d status.getModificationTime() \u003c cutoff \u0026\u0026 !status.isDirectory()\n          \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n      break;\n    case TOMBSTONES_BY_LASTUPDATED:\n      expired \u003d metadata.getLastUpdated() \u003c cutoff \u0026\u0026 metadata.isDeleted()\n          \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n      break;\n    default:\n      throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n          + pruneMode);\n    }\n\n    return expired;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[status-FileStatus, expiry-long, keyPrefix-String]",
+            "newValue": "[pruneMode-PruneMode, metadata-PathMetadata, cutoff-long, keyPrefix-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+          "commitDate": "16/06/19 9:05 AM",
+          "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "19/05/19 2:29 PM",
+          "commitNameOld": "a36274d69947648dbe82721220cc5240ec5d396d",
+          "commitAuthorOld": "Ben Roling",
+          "daysBetweenCommits": 27.77,
+          "commitsBetweenForRepo": 198,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,38 @@\n-  private boolean expired(FileStatus status, long expiry, String keyPrefix) {\n+  private boolean expired(PruneMode pruneMode, PathMetadata metadata,\n+      long cutoff, String keyPrefix) {\n+    final S3AFileStatus status \u003d metadata.getFileStatus();\n+    final URI statusUri \u003d status.getPath().toUri();\n+\n     // remove the protocol from path string to be able to compare\n-    String bucket \u003d status.getPath().toUri().getHost();\n+    String bucket \u003d statusUri.getHost();\n     String statusTranslatedPath \u003d \"\";\n     if(bucket !\u003d null \u0026\u0026 !bucket.isEmpty()){\n       // if there\u0027s a bucket, (well defined host in Uri) the pathToParentKey\n       // can be used to get the path from the status\n       statusTranslatedPath \u003d\n           PathMetadataDynamoDBTranslation.pathToParentKey(status.getPath());\n     } else {\n       // if there\u0027s no bucket in the path the pathToParentKey will fail, so\n       // this is the fallback to get the path from status\n-      statusTranslatedPath \u003d status.getPath().toUri().getPath();\n+      statusTranslatedPath \u003d statusUri.getPath();\n     }\n \n-    // Note: S3 doesn\u0027t track modification time on directories, so for\n-    // consistency with the DynamoDB implementation we ignore that here\n-    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory()\n-      \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n+    boolean expired;\n+    switch (pruneMode) {\n+    case ALL_BY_MODTIME:\n+      // Note: S3 doesn\u0027t track modification time on directories, so for\n+      // consistency with the DynamoDB implementation we ignore that here\n+      expired \u003d status.getModificationTime() \u003c cutoff \u0026\u0026 !status.isDirectory()\n+          \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n+      break;\n+    case TOMBSTONES_BY_LASTUPDATED:\n+      expired \u003d metadata.getLastUpdated() \u003c cutoff \u0026\u0026 metadata.isDeleted()\n+          \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n+      break;\n+    default:\n+      throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n+          + pruneMode);\n+    }\n+\n+    return expired;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean expired(PruneMode pruneMode, PathMetadata metadata,\n      long cutoff, String keyPrefix) {\n    final S3AFileStatus status \u003d metadata.getFileStatus();\n    final URI statusUri \u003d status.getPath().toUri();\n\n    // remove the protocol from path string to be able to compare\n    String bucket \u003d statusUri.getHost();\n    String statusTranslatedPath \u003d \"\";\n    if(bucket !\u003d null \u0026\u0026 !bucket.isEmpty()){\n      // if there\u0027s a bucket, (well defined host in Uri) the pathToParentKey\n      // can be used to get the path from the status\n      statusTranslatedPath \u003d\n          PathMetadataDynamoDBTranslation.pathToParentKey(status.getPath());\n    } else {\n      // if there\u0027s no bucket in the path the pathToParentKey will fail, so\n      // this is the fallback to get the path from status\n      statusTranslatedPath \u003d statusUri.getPath();\n    }\n\n    boolean expired;\n    switch (pruneMode) {\n    case ALL_BY_MODTIME:\n      // Note: S3 doesn\u0027t track modification time on directories, so for\n      // consistency with the DynamoDB implementation we ignore that here\n      expired \u003d status.getModificationTime() \u003c cutoff \u0026\u0026 !status.isDirectory()\n          \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n      break;\n    case TOMBSTONES_BY_LASTUPDATED:\n      expired \u003d metadata.getLastUpdated() \u003c cutoff \u0026\u0026 metadata.isDeleted()\n          \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n      break;\n    default:\n      throw new UnsupportedOperationException(\"Unsupported prune mode: \"\n          + pruneMode);\n    }\n\n    return expired;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "8981674bbcff0663af820f3e87a3eaea5789968a": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15420 s3guard ITestS3GuardToolLocal failures in diff tests (Gabor Bota)\n",
+      "commitDate": "08/05/18 6:58 PM",
+      "commitName": "8981674bbcff0663af820f3e87a3eaea5789968a",
+      "commitAuthor": "Aaron Fabbri",
+      "commitDateOld": "08/05/18 3:29 PM",
+      "commitNameOld": "69aac696d9d4e32a55ba9b6992f41a9ad13424f1",
+      "commitAuthorOld": "Aaron Fabbri",
+      "daysBetweenCommits": 0.14,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,6 +1,20 @@\n   private boolean expired(FileStatus status, long expiry, String keyPrefix) {\n+    // remove the protocol from path string to be able to compare\n+    String bucket \u003d status.getPath().toUri().getHost();\n+    String statusTranslatedPath \u003d \"\";\n+    if(bucket !\u003d null \u0026\u0026 !bucket.isEmpty()){\n+      // if there\u0027s a bucket, (well defined host in Uri) the pathToParentKey\n+      // can be used to get the path from the status\n+      statusTranslatedPath \u003d\n+          PathMetadataDynamoDBTranslation.pathToParentKey(status.getPath());\n+    } else {\n+      // if there\u0027s no bucket in the path the pathToParentKey will fail, so\n+      // this is the fallback to get the path from status\n+      statusTranslatedPath \u003d status.getPath().toUri().getPath();\n+    }\n+\n     // Note: S3 doesn\u0027t track modification time on directories, so for\n     // consistency with the DynamoDB implementation we ignore that here\n     return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory()\n-      \u0026\u0026 status.getPath().toString().startsWith(keyPrefix);\n+      \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean expired(FileStatus status, long expiry, String keyPrefix) {\n    // remove the protocol from path string to be able to compare\n    String bucket \u003d status.getPath().toUri().getHost();\n    String statusTranslatedPath \u003d \"\";\n    if(bucket !\u003d null \u0026\u0026 !bucket.isEmpty()){\n      // if there\u0027s a bucket, (well defined host in Uri) the pathToParentKey\n      // can be used to get the path from the status\n      statusTranslatedPath \u003d\n          PathMetadataDynamoDBTranslation.pathToParentKey(status.getPath());\n    } else {\n      // if there\u0027s no bucket in the path the pathToParentKey will fail, so\n      // this is the fallback to get the path from status\n      statusTranslatedPath \u003d status.getPath().toUri().getPath();\n    }\n\n    // Note: S3 doesn\u0027t track modification time on directories, so for\n    // consistency with the DynamoDB implementation we ignore that here\n    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory()\n      \u0026\u0026 statusTranslatedPath.startsWith(keyPrefix);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-14759 S3GuardTool prune to prune specific bucket entries. Contributed by Gabor Bota.\n",
+      "commitDate": "05/04/18 8:23 PM",
+      "commitName": "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a",
+      "commitAuthor": "Aaron Fabbri",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-14759 S3GuardTool prune to prune specific bucket entries. Contributed by Gabor Bota.\n",
+          "commitDate": "05/04/18 8:23 PM",
+          "commitName": "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "25/09/17 3:59 PM",
+          "commitNameOld": "47011d7dd300b0c74bb6cfe25b918c479d718f4f",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 192.18,
+          "commitsBetweenForRepo": 1418,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,5 +1,6 @@\n-  private boolean expired(FileStatus status, long expiry) {\n+  private boolean expired(FileStatus status, long expiry, String keyPrefix) {\n     // Note: S3 doesn\u0027t track modification time on directories, so for\n     // consistency with the DynamoDB implementation we ignore that here\n-    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory();\n+    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory()\n+      \u0026\u0026 status.getPath().toString().startsWith(keyPrefix);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean expired(FileStatus status, long expiry, String keyPrefix) {\n    // Note: S3 doesn\u0027t track modification time on directories, so for\n    // consistency with the DynamoDB implementation we ignore that here\n    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory()\n      \u0026\u0026 status.getPath().toString().startsWith(keyPrefix);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[status-FileStatus, expiry-long]",
+            "newValue": "[status-FileStatus, expiry-long, keyPrefix-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14759 S3GuardTool prune to prune specific bucket entries. Contributed by Gabor Bota.\n",
+          "commitDate": "05/04/18 8:23 PM",
+          "commitName": "ea3849f0ccd32b2f8acbc6107de3b9e91803ed4a",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "25/09/17 3:59 PM",
+          "commitNameOld": "47011d7dd300b0c74bb6cfe25b918c479d718f4f",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 192.18,
+          "commitsBetweenForRepo": 1418,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,5 +1,6 @@\n-  private boolean expired(FileStatus status, long expiry) {\n+  private boolean expired(FileStatus status, long expiry, String keyPrefix) {\n     // Note: S3 doesn\u0027t track modification time on directories, so for\n     // consistency with the DynamoDB implementation we ignore that here\n-    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory();\n+    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory()\n+      \u0026\u0026 status.getPath().toString().startsWith(keyPrefix);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private boolean expired(FileStatus status, long expiry, String keyPrefix) {\n    // Note: S3 doesn\u0027t track modification time on directories, so for\n    // consistency with the DynamoDB implementation we ignore that here\n    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory()\n      \u0026\u0026 status.getPath().toString().startsWith(keyPrefix);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,5 @@\n+  private boolean expired(FileStatus status, long expiry) {\n+    // Note: S3 doesn\u0027t track modification time on directories, so for\n+    // consistency with the DynamoDB implementation we ignore that here\n+    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean expired(FileStatus status, long expiry) {\n    // Note: S3 doesn\u0027t track modification time on directories, so for\n    // consistency with the DynamoDB implementation we ignore that here\n    return status.getModificationTime() \u003c expiry \u0026\u0026 !status.isDirectory();\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/LocalMetadataStore.java"
+    }
+  }
+}

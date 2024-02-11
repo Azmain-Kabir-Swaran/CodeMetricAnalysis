@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileUtil.java",
+  "functionName": "unZip",
+  "functionId": "unZip___inputStream-InputStream__toDir-File",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+  "functionStartLine": 625,
+  "functionEndLine": 658,
+  "numCommitsSeen": 52,
+  "timeTaken": 1823,
+  "changeHistory": [
+    "7a3188d054481b9bd563e337901e93476303ce7f",
+    "745f203e577bacb35b042206db94615141fa5e6f",
+    "7288b08330001102f944124d18e02bf0585d3e96"
+  ],
+  "changeHistoryShort": {
+    "7a3188d054481b9bd563e337901e93476303ce7f": "Ybodychange",
+    "745f203e577bacb35b042206db94615141fa5e6f": "Ybodychange",
+    "7288b08330001102f944124d18e02bf0585d3e96": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7a3188d054481b9bd563e337901e93476303ce7f": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16282. Avoid FileStream to improve performance. Contributed by Ayush Saxena.\n",
+      "commitDate": "02/05/19 12:58 PM",
+      "commitName": "7a3188d054481b9bd563e337901e93476303ce7f",
+      "commitAuthor": "Giovanni Matteo Fumarola",
+      "commitDateOld": "11/01/19 10:54 AM",
+      "commitNameOld": "fb8932a727f757b2e9c1c61a18145878d0eb77bd",
+      "commitAuthorOld": "Giovanni Matteo Fumarola",
+      "daysBetweenCommits": 111.04,
+      "commitsBetweenForRepo": 826,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,34 @@\n   public static void unZip(InputStream inputStream, File toDir)\n       throws IOException {\n     try (ZipInputStream zip \u003d new ZipInputStream(inputStream)) {\n       int numOfFailedLastModifiedSet \u003d 0;\n       String targetDirPath \u003d toDir.getCanonicalPath() + File.separator;\n       for(ZipEntry entry \u003d zip.getNextEntry();\n           entry !\u003d null;\n           entry \u003d zip.getNextEntry()) {\n         if (!entry.isDirectory()) {\n           File file \u003d new File(toDir, entry.getName());\n           if (!file.getCanonicalPath().startsWith(targetDirPath)) {\n             throw new IOException(\"expanding \" + entry.getName()\n                 + \" would create file outside of \" + toDir);\n           }\n           File parent \u003d file.getParentFile();\n           if (!parent.mkdirs() \u0026\u0026\n               !parent.isDirectory()) {\n             throw new IOException(\"Mkdirs failed to create \" +\n                 parent.getAbsolutePath());\n           }\n-          try (OutputStream out \u003d new FileOutputStream(file)) {\n+          try (OutputStream out \u003d Files.newOutputStream(file.toPath())) {\n             IOUtils.copyBytes(zip, out, BUFFER_SIZE);\n           }\n           if (!file.setLastModified(entry.getTime())) {\n             numOfFailedLastModifiedSet++;\n           }\n         }\n       }\n       if (numOfFailedLastModifiedSet \u003e 0) {\n         LOG.warn(\"Could not set last modfied time for {} file(s)\",\n             numOfFailedLastModifiedSet);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void unZip(InputStream inputStream, File toDir)\n      throws IOException {\n    try (ZipInputStream zip \u003d new ZipInputStream(inputStream)) {\n      int numOfFailedLastModifiedSet \u003d 0;\n      String targetDirPath \u003d toDir.getCanonicalPath() + File.separator;\n      for(ZipEntry entry \u003d zip.getNextEntry();\n          entry !\u003d null;\n          entry \u003d zip.getNextEntry()) {\n        if (!entry.isDirectory()) {\n          File file \u003d new File(toDir, entry.getName());\n          if (!file.getCanonicalPath().startsWith(targetDirPath)) {\n            throw new IOException(\"expanding \" + entry.getName()\n                + \" would create file outside of \" + toDir);\n          }\n          File parent \u003d file.getParentFile();\n          if (!parent.mkdirs() \u0026\u0026\n              !parent.isDirectory()) {\n            throw new IOException(\"Mkdirs failed to create \" +\n                parent.getAbsolutePath());\n          }\n          try (OutputStream out \u003d Files.newOutputStream(file.toPath())) {\n            IOUtils.copyBytes(zip, out, BUFFER_SIZE);\n          }\n          if (!file.setLastModified(entry.getTime())) {\n            numOfFailedLastModifiedSet++;\n          }\n        }\n      }\n      if (numOfFailedLastModifiedSet \u003e 0) {\n        LOG.warn(\"Could not set last modfied time for {} file(s)\",\n            numOfFailedLastModifiedSet);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+      "extendedDetails": {}
+    },
+    "745f203e577bacb35b042206db94615141fa5e6f": {
+      "type": "Ybodychange",
+      "commitMessage": "Additional check when unpacking archives. Contributed by Jason Lowe and Akira Ajisaka.\n",
+      "commitDate": "23/05/18 1:16 AM",
+      "commitName": "745f203e577bacb35b042206db94615141fa5e6f",
+      "commitAuthor": "Akira Ajisaka",
+      "commitDateOld": "02/02/18 9:33 AM",
+      "commitNameOld": "460d77bd646d03d3eb7670f9017aeeb5410c4a95",
+      "commitAuthorOld": "Jason Lowe",
+      "daysBetweenCommits": 109.61,
+      "commitsBetweenForRepo": 1371,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,34 @@\n   public static void unZip(InputStream inputStream, File toDir)\n       throws IOException {\n     try (ZipInputStream zip \u003d new ZipInputStream(inputStream)) {\n       int numOfFailedLastModifiedSet \u003d 0;\n+      String targetDirPath \u003d toDir.getCanonicalPath() + File.separator;\n       for(ZipEntry entry \u003d zip.getNextEntry();\n           entry !\u003d null;\n           entry \u003d zip.getNextEntry()) {\n         if (!entry.isDirectory()) {\n           File file \u003d new File(toDir, entry.getName());\n+          if (!file.getCanonicalPath().startsWith(targetDirPath)) {\n+            throw new IOException(\"expanding \" + entry.getName()\n+                + \" would create file outside of \" + toDir);\n+          }\n           File parent \u003d file.getParentFile();\n           if (!parent.mkdirs() \u0026\u0026\n               !parent.isDirectory()) {\n             throw new IOException(\"Mkdirs failed to create \" +\n                 parent.getAbsolutePath());\n           }\n           try (OutputStream out \u003d new FileOutputStream(file)) {\n             IOUtils.copyBytes(zip, out, BUFFER_SIZE);\n           }\n           if (!file.setLastModified(entry.getTime())) {\n             numOfFailedLastModifiedSet++;\n           }\n         }\n       }\n       if (numOfFailedLastModifiedSet \u003e 0) {\n         LOG.warn(\"Could not set last modfied time for {} file(s)\",\n             numOfFailedLastModifiedSet);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void unZip(InputStream inputStream, File toDir)\n      throws IOException {\n    try (ZipInputStream zip \u003d new ZipInputStream(inputStream)) {\n      int numOfFailedLastModifiedSet \u003d 0;\n      String targetDirPath \u003d toDir.getCanonicalPath() + File.separator;\n      for(ZipEntry entry \u003d zip.getNextEntry();\n          entry !\u003d null;\n          entry \u003d zip.getNextEntry()) {\n        if (!entry.isDirectory()) {\n          File file \u003d new File(toDir, entry.getName());\n          if (!file.getCanonicalPath().startsWith(targetDirPath)) {\n            throw new IOException(\"expanding \" + entry.getName()\n                + \" would create file outside of \" + toDir);\n          }\n          File parent \u003d file.getParentFile();\n          if (!parent.mkdirs() \u0026\u0026\n              !parent.isDirectory()) {\n            throw new IOException(\"Mkdirs failed to create \" +\n                parent.getAbsolutePath());\n          }\n          try (OutputStream out \u003d new FileOutputStream(file)) {\n            IOUtils.copyBytes(zip, out, BUFFER_SIZE);\n          }\n          if (!file.setLastModified(entry.getTime())) {\n            numOfFailedLastModifiedSet++;\n          }\n        }\n      }\n      if (numOfFailedLastModifiedSet \u003e 0) {\n        LOG.warn(\"Could not set last modfied time for {} file(s)\",\n            numOfFailedLastModifiedSet);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java",
+      "extendedDetails": {}
+    },
+    "7288b08330001102f944124d18e02bf0585d3e96": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2185. Use pipes when localizing archives. Contributed by Miklos Szegedi\n",
+      "commitDate": "31/01/18 7:39 AM",
+      "commitName": "7288b08330001102f944124d18e02bf0585d3e96",
+      "commitAuthor": "Jason Lowe",
+      "diff": "@@ -0,0 +1,29 @@\n+  public static void unZip(InputStream inputStream, File toDir)\n+      throws IOException {\n+    try (ZipInputStream zip \u003d new ZipInputStream(inputStream)) {\n+      int numOfFailedLastModifiedSet \u003d 0;\n+      for(ZipEntry entry \u003d zip.getNextEntry();\n+          entry !\u003d null;\n+          entry \u003d zip.getNextEntry()) {\n+        if (!entry.isDirectory()) {\n+          File file \u003d new File(toDir, entry.getName());\n+          File parent \u003d file.getParentFile();\n+          if (!parent.mkdirs() \u0026\u0026\n+              !parent.isDirectory()) {\n+            throw new IOException(\"Mkdirs failed to create \" +\n+                parent.getAbsolutePath());\n+          }\n+          try (OutputStream out \u003d new FileOutputStream(file)) {\n+            IOUtils.copyBytes(zip, out, BUFFER_SIZE);\n+          }\n+          if (!file.setLastModified(entry.getTime())) {\n+            numOfFailedLastModifiedSet++;\n+          }\n+        }\n+      }\n+      if (numOfFailedLastModifiedSet \u003e 0) {\n+        LOG.warn(\"Could not set last modfied time for {} file(s)\",\n+            numOfFailedLastModifiedSet);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void unZip(InputStream inputStream, File toDir)\n      throws IOException {\n    try (ZipInputStream zip \u003d new ZipInputStream(inputStream)) {\n      int numOfFailedLastModifiedSet \u003d 0;\n      for(ZipEntry entry \u003d zip.getNextEntry();\n          entry !\u003d null;\n          entry \u003d zip.getNextEntry()) {\n        if (!entry.isDirectory()) {\n          File file \u003d new File(toDir, entry.getName());\n          File parent \u003d file.getParentFile();\n          if (!parent.mkdirs() \u0026\u0026\n              !parent.isDirectory()) {\n            throw new IOException(\"Mkdirs failed to create \" +\n                parent.getAbsolutePath());\n          }\n          try (OutputStream out \u003d new FileOutputStream(file)) {\n            IOUtils.copyBytes(zip, out, BUFFER_SIZE);\n          }\n          if (!file.setLastModified(entry.getTime())) {\n            numOfFailedLastModifiedSet++;\n          }\n        }\n      }\n      if (numOfFailedLastModifiedSet \u003e 0) {\n        LOG.warn(\"Could not set last modfied time for {} file(s)\",\n            numOfFailedLastModifiedSet);\n      }\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/FileUtil.java"
+    }
+  }
+}

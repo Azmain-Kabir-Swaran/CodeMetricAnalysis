@@ -1,0 +1,117 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "HadoopArchives.java",
+  "functionName": "getSplits",
+  "functionId": "getSplits___jconf-JobConf__numSplits-int",
+  "sourceFilePath": "hadoop-tools/hadoop-archives/src/main/java/org/apache/hadoop/tools/HadoopArchives.java",
+  "functionStartLine": 231,
+  "functionEndLine": 278,
+  "numCommitsSeen": 18,
+  "timeTaken": 4876,
+  "changeHistory": [
+    "c89977f89cb4520164c1747fe1abbaad215c42a0",
+    "0201be46c298e94176ec6297e9d9cdba3afc2bbd",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "c89977f89cb4520164c1747fe1abbaad215c42a0": "Ybodychange",
+    "0201be46c298e94176ec6297e9d9cdba3afc2bbd": "Yfilerename",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c89977f89cb4520164c1747fe1abbaad215c42a0": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11529. Fix findbugs warnings in hadoop-archives. Contributed by Masatake Iwasaki.\n",
+      "commitDate": "03/02/15 10:53 AM",
+      "commitName": "c89977f89cb4520164c1747fe1abbaad215c42a0",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "18/11/14 5:05 PM",
+      "commitNameOld": "79301e80d7510f055c01a06970bb409607a4197c",
+      "commitAuthorOld": "cnauroth",
+      "daysBetweenCommits": 76.74,
+      "commitsBetweenForRepo": 464,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,53 +1,48 @@\n     public InputSplit[] getSplits(JobConf jconf, int numSplits)\n     throws IOException {\n       String srcfilelist \u003d jconf.get(SRC_LIST_LABEL, \"\");\n       if (\"\".equals(srcfilelist)) {\n           throw new IOException(\"Unable to get the \" +\n               \"src file for archive generation.\");\n       }\n       long totalSize \u003d jconf.getLong(TOTAL_SIZE_LABEL, -1);\n       if (totalSize \u003d\u003d -1) {\n         throw new IOException(\"Invalid size of files to archive\");\n       }\n       //we should be safe since this is set by our own code\n       Path src \u003d new Path(srcfilelist);\n       FileSystem fs \u003d src.getFileSystem(jconf);\n       FileStatus fstatus \u003d fs.getFileStatus(src);\n       ArrayList\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e(numSplits);\n       LongWritable key \u003d new LongWritable();\n       final HarEntry value \u003d new HarEntry();\n-      SequenceFile.Reader reader \u003d null;\n       // the remaining bytes in the file split\n       long remaining \u003d fstatus.getLen();\n       // the count of sizes calculated till now\n       long currentCount \u003d 0L;\n       // the endposition of the split\n       long lastPos \u003d 0L;\n       // the start position of the split\n       long startPos \u003d 0L;\n       long targetSize \u003d totalSize/numSplits;\n       // create splits of size target size so that all the maps \n       // have equals sized data to read and write to.\n-      try {\n-        reader \u003d new SequenceFile.Reader(fs, src, jconf);\n+      try (SequenceFile.Reader reader \u003d new SequenceFile.Reader(fs, src, jconf)) {\n         while(reader.next(key, value)) {\n           if (currentCount + key.get() \u003e targetSize \u0026\u0026 currentCount !\u003d 0){\n             long size \u003d lastPos - startPos;\n             splits.add(new FileSplit(src, startPos, size, (String[]) null));\n             remaining \u003d remaining - size;\n             startPos \u003d lastPos;\n             currentCount \u003d 0L;\n           }\n           currentCount +\u003d key.get();\n           lastPos \u003d reader.getPosition();\n         }\n         // the remaining not equal to the target size.\n         if (remaining !\u003d 0) {\n           splits.add(new FileSplit(src, startPos, remaining, (String[])null));\n         }\n       }\n-      finally { \n-        reader.close();\n-      }\n       return splits.toArray(new FileSplit[splits.size()]);\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public InputSplit[] getSplits(JobConf jconf, int numSplits)\n    throws IOException {\n      String srcfilelist \u003d jconf.get(SRC_LIST_LABEL, \"\");\n      if (\"\".equals(srcfilelist)) {\n          throw new IOException(\"Unable to get the \" +\n              \"src file for archive generation.\");\n      }\n      long totalSize \u003d jconf.getLong(TOTAL_SIZE_LABEL, -1);\n      if (totalSize \u003d\u003d -1) {\n        throw new IOException(\"Invalid size of files to archive\");\n      }\n      //we should be safe since this is set by our own code\n      Path src \u003d new Path(srcfilelist);\n      FileSystem fs \u003d src.getFileSystem(jconf);\n      FileStatus fstatus \u003d fs.getFileStatus(src);\n      ArrayList\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e(numSplits);\n      LongWritable key \u003d new LongWritable();\n      final HarEntry value \u003d new HarEntry();\n      // the remaining bytes in the file split\n      long remaining \u003d fstatus.getLen();\n      // the count of sizes calculated till now\n      long currentCount \u003d 0L;\n      // the endposition of the split\n      long lastPos \u003d 0L;\n      // the start position of the split\n      long startPos \u003d 0L;\n      long targetSize \u003d totalSize/numSplits;\n      // create splits of size target size so that all the maps \n      // have equals sized data to read and write to.\n      try (SequenceFile.Reader reader \u003d new SequenceFile.Reader(fs, src, jconf)) {\n        while(reader.next(key, value)) {\n          if (currentCount + key.get() \u003e targetSize \u0026\u0026 currentCount !\u003d 0){\n            long size \u003d lastPos - startPos;\n            splits.add(new FileSplit(src, startPos, size, (String[]) null));\n            remaining \u003d remaining - size;\n            startPos \u003d lastPos;\n            currentCount \u003d 0L;\n          }\n          currentCount +\u003d key.get();\n          lastPos \u003d reader.getPosition();\n        }\n        // the remaining not equal to the target size.\n        if (remaining !\u003d 0) {\n          splits.add(new FileSplit(src, startPos, remaining, (String[])null));\n        }\n      }\n      return splits.toArray(new FileSplit[splits.size()]);\n    }",
+      "path": "hadoop-tools/hadoop-archives/src/main/java/org/apache/hadoop/tools/HadoopArchives.java",
+      "extendedDetails": {}
+    },
+    "0201be46c298e94176ec6297e9d9cdba3afc2bbd": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7810. move hadoop archive to core from tools. (tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1213907 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "13/12/11 12:17 PM",
+      "commitName": "0201be46c298e94176ec6297e9d9cdba3afc2bbd",
+      "commitAuthor": "Alejandro Abdelnur",
+      "commitDateOld": "13/12/11 10:07 AM",
+      "commitNameOld": "f2f4e9341387199e04679ebc8de5e05c0fdbd437",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 0.09,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    public InputSplit[] getSplits(JobConf jconf, int numSplits)\n    throws IOException {\n      String srcfilelist \u003d jconf.get(SRC_LIST_LABEL, \"\");\n      if (\"\".equals(srcfilelist)) {\n          throw new IOException(\"Unable to get the \" +\n              \"src file for archive generation.\");\n      }\n      long totalSize \u003d jconf.getLong(TOTAL_SIZE_LABEL, -1);\n      if (totalSize \u003d\u003d -1) {\n        throw new IOException(\"Invalid size of files to archive\");\n      }\n      //we should be safe since this is set by our own code\n      Path src \u003d new Path(srcfilelist);\n      FileSystem fs \u003d src.getFileSystem(jconf);\n      FileStatus fstatus \u003d fs.getFileStatus(src);\n      ArrayList\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e(numSplits);\n      LongWritable key \u003d new LongWritable();\n      final HarEntry value \u003d new HarEntry();\n      SequenceFile.Reader reader \u003d null;\n      // the remaining bytes in the file split\n      long remaining \u003d fstatus.getLen();\n      // the count of sizes calculated till now\n      long currentCount \u003d 0L;\n      // the endposition of the split\n      long lastPos \u003d 0L;\n      // the start position of the split\n      long startPos \u003d 0L;\n      long targetSize \u003d totalSize/numSplits;\n      // create splits of size target size so that all the maps \n      // have equals sized data to read and write to.\n      try {\n        reader \u003d new SequenceFile.Reader(fs, src, jconf);\n        while(reader.next(key, value)) {\n          if (currentCount + key.get() \u003e targetSize \u0026\u0026 currentCount !\u003d 0){\n            long size \u003d lastPos - startPos;\n            splits.add(new FileSplit(src, startPos, size, (String[]) null));\n            remaining \u003d remaining - size;\n            startPos \u003d lastPos;\n            currentCount \u003d 0L;\n          }\n          currentCount +\u003d key.get();\n          lastPos \u003d reader.getPosition();\n        }\n        // the remaining not equal to the target size.\n        if (remaining !\u003d 0) {\n          splits.add(new FileSplit(src, startPos, remaining, (String[])null));\n        }\n      }\n      finally { \n        reader.close();\n      }\n      return splits.toArray(new FileSplit[splits.size()]);\n    }",
+      "path": "hadoop-tools/hadoop-archives/src/main/java/org/apache/hadoop/tools/HadoopArchives.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce-project/src/tools/org/apache/hadoop/tools/HadoopArchives.java",
+        "newPath": "hadoop-tools/hadoop-archives/src/main/java/org/apache/hadoop/tools/HadoopArchives.java"
+      }
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    public InputSplit[] getSplits(JobConf jconf, int numSplits)\n    throws IOException {\n      String srcfilelist \u003d jconf.get(SRC_LIST_LABEL, \"\");\n      if (\"\".equals(srcfilelist)) {\n          throw new IOException(\"Unable to get the \" +\n              \"src file for archive generation.\");\n      }\n      long totalSize \u003d jconf.getLong(TOTAL_SIZE_LABEL, -1);\n      if (totalSize \u003d\u003d -1) {\n        throw new IOException(\"Invalid size of files to archive\");\n      }\n      //we should be safe since this is set by our own code\n      Path src \u003d new Path(srcfilelist);\n      FileSystem fs \u003d src.getFileSystem(jconf);\n      FileStatus fstatus \u003d fs.getFileStatus(src);\n      ArrayList\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e(numSplits);\n      LongWritable key \u003d new LongWritable();\n      final HarEntry value \u003d new HarEntry();\n      SequenceFile.Reader reader \u003d null;\n      // the remaining bytes in the file split\n      long remaining \u003d fstatus.getLen();\n      // the count of sizes calculated till now\n      long currentCount \u003d 0L;\n      // the endposition of the split\n      long lastPos \u003d 0L;\n      // the start position of the split\n      long startPos \u003d 0L;\n      long targetSize \u003d totalSize/numSplits;\n      // create splits of size target size so that all the maps \n      // have equals sized data to read and write to.\n      try {\n        reader \u003d new SequenceFile.Reader(fs, src, jconf);\n        while(reader.next(key, value)) {\n          if (currentCount + key.get() \u003e targetSize \u0026\u0026 currentCount !\u003d 0){\n            long size \u003d lastPos - startPos;\n            splits.add(new FileSplit(src, startPos, size, (String[]) null));\n            remaining \u003d remaining - size;\n            startPos \u003d lastPos;\n            currentCount \u003d 0L;\n          }\n          currentCount +\u003d key.get();\n          lastPos \u003d reader.getPosition();\n        }\n        // the remaining not equal to the target size.\n        if (remaining !\u003d 0) {\n          splits.add(new FileSplit(src, startPos, remaining, (String[])null));\n        }\n      }\n      finally { \n        reader.close();\n      }\n      return splits.toArray(new FileSplit[splits.size()]);\n    }",
+      "path": "hadoop-mapreduce-project/src/tools/org/apache/hadoop/tools/HadoopArchives.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/src/tools/org/apache/hadoop/tools/HadoopArchives.java",
+        "newPath": "hadoop-mapreduce-project/src/tools/org/apache/hadoop/tools/HadoopArchives.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yfilerename",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "17/08/11 8:02 PM",
+      "commitNameOld": "dd86860633d2ed64705b669a75bf318442ed6225",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 0.34,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    public InputSplit[] getSplits(JobConf jconf, int numSplits)\n    throws IOException {\n      String srcfilelist \u003d jconf.get(SRC_LIST_LABEL, \"\");\n      if (\"\".equals(srcfilelist)) {\n          throw new IOException(\"Unable to get the \" +\n              \"src file for archive generation.\");\n      }\n      long totalSize \u003d jconf.getLong(TOTAL_SIZE_LABEL, -1);\n      if (totalSize \u003d\u003d -1) {\n        throw new IOException(\"Invalid size of files to archive\");\n      }\n      //we should be safe since this is set by our own code\n      Path src \u003d new Path(srcfilelist);\n      FileSystem fs \u003d src.getFileSystem(jconf);\n      FileStatus fstatus \u003d fs.getFileStatus(src);\n      ArrayList\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e(numSplits);\n      LongWritable key \u003d new LongWritable();\n      final HarEntry value \u003d new HarEntry();\n      SequenceFile.Reader reader \u003d null;\n      // the remaining bytes in the file split\n      long remaining \u003d fstatus.getLen();\n      // the count of sizes calculated till now\n      long currentCount \u003d 0L;\n      // the endposition of the split\n      long lastPos \u003d 0L;\n      // the start position of the split\n      long startPos \u003d 0L;\n      long targetSize \u003d totalSize/numSplits;\n      // create splits of size target size so that all the maps \n      // have equals sized data to read and write to.\n      try {\n        reader \u003d new SequenceFile.Reader(fs, src, jconf);\n        while(reader.next(key, value)) {\n          if (currentCount + key.get() \u003e targetSize \u0026\u0026 currentCount !\u003d 0){\n            long size \u003d lastPos - startPos;\n            splits.add(new FileSplit(src, startPos, size, (String[]) null));\n            remaining \u003d remaining - size;\n            startPos \u003d lastPos;\n            currentCount \u003d 0L;\n          }\n          currentCount +\u003d key.get();\n          lastPos \u003d reader.getPosition();\n        }\n        // the remaining not equal to the target size.\n        if (remaining !\u003d 0) {\n          splits.add(new FileSplit(src, startPos, remaining, (String[])null));\n        }\n      }\n      finally { \n        reader.close();\n      }\n      return splits.toArray(new FileSplit[splits.size()]);\n    }",
+      "path": "hadoop-mapreduce/src/tools/org/apache/hadoop/tools/HadoopArchives.java",
+      "extendedDetails": {
+        "oldPath": "mapreduce/src/tools/org/apache/hadoop/tools/HadoopArchives.java",
+        "newPath": "hadoop-mapreduce/src/tools/org/apache/hadoop/tools/HadoopArchives.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,53 @@\n+    public InputSplit[] getSplits(JobConf jconf, int numSplits)\n+    throws IOException {\n+      String srcfilelist \u003d jconf.get(SRC_LIST_LABEL, \"\");\n+      if (\"\".equals(srcfilelist)) {\n+          throw new IOException(\"Unable to get the \" +\n+              \"src file for archive generation.\");\n+      }\n+      long totalSize \u003d jconf.getLong(TOTAL_SIZE_LABEL, -1);\n+      if (totalSize \u003d\u003d -1) {\n+        throw new IOException(\"Invalid size of files to archive\");\n+      }\n+      //we should be safe since this is set by our own code\n+      Path src \u003d new Path(srcfilelist);\n+      FileSystem fs \u003d src.getFileSystem(jconf);\n+      FileStatus fstatus \u003d fs.getFileStatus(src);\n+      ArrayList\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e(numSplits);\n+      LongWritable key \u003d new LongWritable();\n+      final HarEntry value \u003d new HarEntry();\n+      SequenceFile.Reader reader \u003d null;\n+      // the remaining bytes in the file split\n+      long remaining \u003d fstatus.getLen();\n+      // the count of sizes calculated till now\n+      long currentCount \u003d 0L;\n+      // the endposition of the split\n+      long lastPos \u003d 0L;\n+      // the start position of the split\n+      long startPos \u003d 0L;\n+      long targetSize \u003d totalSize/numSplits;\n+      // create splits of size target size so that all the maps \n+      // have equals sized data to read and write to.\n+      try {\n+        reader \u003d new SequenceFile.Reader(fs, src, jconf);\n+        while(reader.next(key, value)) {\n+          if (currentCount + key.get() \u003e targetSize \u0026\u0026 currentCount !\u003d 0){\n+            long size \u003d lastPos - startPos;\n+            splits.add(new FileSplit(src, startPos, size, (String[]) null));\n+            remaining \u003d remaining - size;\n+            startPos \u003d lastPos;\n+            currentCount \u003d 0L;\n+          }\n+          currentCount +\u003d key.get();\n+          lastPos \u003d reader.getPosition();\n+        }\n+        // the remaining not equal to the target size.\n+        if (remaining !\u003d 0) {\n+          splits.add(new FileSplit(src, startPos, remaining, (String[])null));\n+        }\n+      }\n+      finally { \n+        reader.close();\n+      }\n+      return splits.toArray(new FileSplit[splits.size()]);\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public InputSplit[] getSplits(JobConf jconf, int numSplits)\n    throws IOException {\n      String srcfilelist \u003d jconf.get(SRC_LIST_LABEL, \"\");\n      if (\"\".equals(srcfilelist)) {\n          throw new IOException(\"Unable to get the \" +\n              \"src file for archive generation.\");\n      }\n      long totalSize \u003d jconf.getLong(TOTAL_SIZE_LABEL, -1);\n      if (totalSize \u003d\u003d -1) {\n        throw new IOException(\"Invalid size of files to archive\");\n      }\n      //we should be safe since this is set by our own code\n      Path src \u003d new Path(srcfilelist);\n      FileSystem fs \u003d src.getFileSystem(jconf);\n      FileStatus fstatus \u003d fs.getFileStatus(src);\n      ArrayList\u003cFileSplit\u003e splits \u003d new ArrayList\u003cFileSplit\u003e(numSplits);\n      LongWritable key \u003d new LongWritable();\n      final HarEntry value \u003d new HarEntry();\n      SequenceFile.Reader reader \u003d null;\n      // the remaining bytes in the file split\n      long remaining \u003d fstatus.getLen();\n      // the count of sizes calculated till now\n      long currentCount \u003d 0L;\n      // the endposition of the split\n      long lastPos \u003d 0L;\n      // the start position of the split\n      long startPos \u003d 0L;\n      long targetSize \u003d totalSize/numSplits;\n      // create splits of size target size so that all the maps \n      // have equals sized data to read and write to.\n      try {\n        reader \u003d new SequenceFile.Reader(fs, src, jconf);\n        while(reader.next(key, value)) {\n          if (currentCount + key.get() \u003e targetSize \u0026\u0026 currentCount !\u003d 0){\n            long size \u003d lastPos - startPos;\n            splits.add(new FileSplit(src, startPos, size, (String[]) null));\n            remaining \u003d remaining - size;\n            startPos \u003d lastPos;\n            currentCount \u003d 0L;\n          }\n          currentCount +\u003d key.get();\n          lastPos \u003d reader.getPosition();\n        }\n        // the remaining not equal to the target size.\n        if (remaining !\u003d 0) {\n          splits.add(new FileSplit(src, startPos, remaining, (String[])null));\n        }\n      }\n      finally { \n        reader.close();\n      }\n      return splits.toArray(new FileSplit[splits.size()]);\n    }",
+      "path": "mapreduce/src/tools/org/apache/hadoop/tools/HadoopArchives.java"
+    }
+  }
+}

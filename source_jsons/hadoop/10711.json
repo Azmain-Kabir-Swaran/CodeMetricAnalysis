@@ -1,0 +1,118 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DatasetVolumeChecker.java",
+  "functionName": "checkVolume",
+  "functionId": "checkVolume___volume-FsVolumeSpi(modifiers-final)__callback-Callback",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/DatasetVolumeChecker.java",
+  "functionStartLine": 287,
+  "functionEndLine": 317,
+  "numCommitsSeen": 11,
+  "timeTaken": 2471,
+  "changeHistory": [
+    "9efb4b7db00d79aded52997ec89a1be94ecdd268",
+    "603f3ef1386048111940b66f3a0750ab84d0588f",
+    "f678080dbd25a218e0406463a3c3a1fc03680702",
+    "eaaa32950cbae42a74e28e3db3f0cdb1ff158119"
+  ],
+  "changeHistoryShort": {
+    "9efb4b7db00d79aded52997ec89a1be94ecdd268": "Ybodychange",
+    "603f3ef1386048111940b66f3a0750ab84d0588f": "Ybodychange",
+    "f678080dbd25a218e0406463a3c3a1fc03680702": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "eaaa32950cbae42a74e28e3db3f0cdb1ff158119": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9efb4b7db00d79aded52997ec89a1be94ecdd268": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13339. Volume reference can\u0027t be released and may lead to deadlock when DataXceiver does a check volume. Contributed by liaoyuxiangqin and Zsolt Venczel.\n",
+      "commitDate": "03/06/18 10:33 PM",
+      "commitName": "9efb4b7db00d79aded52997ec89a1be94ecdd268",
+      "commitAuthor": "Xiao Chen",
+      "commitDateOld": "15/03/17 6:01 PM",
+      "commitNameOld": "d69a82c89c1e857a2a86ff614ae11fb5df993614",
+      "commitAuthorOld": "Hanisha Koneru",
+      "daysBetweenCommits": 445.19,
+      "commitsBetweenForRepo": 3636,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,31 @@\n   public boolean checkVolume(\n       final FsVolumeSpi volume,\n       Callback callback) {\n     if (volume \u003d\u003d null) {\n       LOG.debug(\"Cannot schedule check on null volume\");\n       return false;\n     }\n \n     FsVolumeReference volumeReference;\n     try {\n       volumeReference \u003d volume.obtainReference();\n     } catch (ClosedChannelException e) {\n       // The volume has already been closed.\n       return false;\n     }\n \n     Optional\u003cListenableFuture\u003cVolumeCheckResult\u003e\u003e olf \u003d\n         delegateChecker.schedule(volume, IGNORED_CONTEXT);\n     if (olf.isPresent()) {\n       numVolumeChecks.incrementAndGet();\n       Futures.addCallback(olf.get(),\n           new ResultHandler(volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n-          new AtomicLong(1), callback));\n+              new AtomicLong(1), callback),\n+          checkVolumeResultHandlerExecutorService\n+      );\n       return true;\n     } else {\n       IOUtils.cleanup(null, volumeReference);\n     }\n     return false;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public boolean checkVolume(\n      final FsVolumeSpi volume,\n      Callback callback) {\n    if (volume \u003d\u003d null) {\n      LOG.debug(\"Cannot schedule check on null volume\");\n      return false;\n    }\n\n    FsVolumeReference volumeReference;\n    try {\n      volumeReference \u003d volume.obtainReference();\n    } catch (ClosedChannelException e) {\n      // The volume has already been closed.\n      return false;\n    }\n\n    Optional\u003cListenableFuture\u003cVolumeCheckResult\u003e\u003e olf \u003d\n        delegateChecker.schedule(volume, IGNORED_CONTEXT);\n    if (olf.isPresent()) {\n      numVolumeChecks.incrementAndGet();\n      Futures.addCallback(olf.get(),\n          new ResultHandler(volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n              new AtomicLong(1), callback),\n          checkVolumeResultHandlerExecutorService\n      );\n      return true;\n    } else {\n      IOUtils.cleanup(null, volumeReference);\n    }\n    return false;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/DatasetVolumeChecker.java",
+      "extendedDetails": {}
+    },
+    "603f3ef1386048111940b66f3a0750ab84d0588f": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-11274. Datanode should only check the failed volume upon IO errors. Contributed by Xiaoyu Yao.\n",
+      "commitDate": "28/12/16 10:08 PM",
+      "commitName": "603f3ef1386048111940b66f3a0750ab84d0588f",
+      "commitAuthor": "Xiaoyu Yao",
+      "commitDateOld": "20/12/16 1:53 PM",
+      "commitNameOld": "f678080dbd25a218e0406463a3c3a1fc03680702",
+      "commitAuthorOld": "Xiaoyu Yao",
+      "daysBetweenCommits": 8.34,
+      "commitsBetweenForRepo": 33,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,29 @@\n   public boolean checkVolume(\n       final FsVolumeSpi volume,\n       Callback callback) {\n+    if (volume \u003d\u003d null) {\n+      LOG.debug(\"Cannot schedule check on null volume\");\n+      return false;\n+    }\n+\n     FsVolumeReference volumeReference;\n     try {\n       volumeReference \u003d volume.obtainReference();\n     } catch (ClosedChannelException e) {\n       // The volume has already been closed.\n-      callback.call(new HashSet\u003c\u003e(), new HashSet\u003c\u003e());\n       return false;\n     }\n-    ListenableFuture\u003cVolumeCheckResult\u003e future \u003d\n+\n+    Optional\u003cListenableFuture\u003cVolumeCheckResult\u003e\u003e olf \u003d\n         delegateChecker.schedule(volume, IGNORED_CONTEXT);\n-    numVolumeChecks.incrementAndGet();\n-    Futures.addCallback(future, new ResultHandler(\n-        volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n-        new AtomicLong(1), callback));\n-    return true;\n+    if (olf.isPresent()) {\n+      numVolumeChecks.incrementAndGet();\n+      Futures.addCallback(olf.get(),\n+          new ResultHandler(volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n+          new AtomicLong(1), callback));\n+      return true;\n+    } else {\n+      IOUtils.cleanup(null, volumeReference);\n+    }\n+    return false;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public boolean checkVolume(\n      final FsVolumeSpi volume,\n      Callback callback) {\n    if (volume \u003d\u003d null) {\n      LOG.debug(\"Cannot schedule check on null volume\");\n      return false;\n    }\n\n    FsVolumeReference volumeReference;\n    try {\n      volumeReference \u003d volume.obtainReference();\n    } catch (ClosedChannelException e) {\n      // The volume has already been closed.\n      return false;\n    }\n\n    Optional\u003cListenableFuture\u003cVolumeCheckResult\u003e\u003e olf \u003d\n        delegateChecker.schedule(volume, IGNORED_CONTEXT);\n    if (olf.isPresent()) {\n      numVolumeChecks.incrementAndGet();\n      Futures.addCallback(olf.get(),\n          new ResultHandler(volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n          new AtomicLong(1), callback));\n      return true;\n    } else {\n      IOUtils.cleanup(null, volumeReference);\n    }\n    return false;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/DatasetVolumeChecker.java",
+      "extendedDetails": {}
+    },
+    "f678080dbd25a218e0406463a3c3a1fc03680702": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-11182. Update DataNode to use DatasetVolumeChecker. Contributed by Arpit Agarwal.\n",
+      "commitDate": "20/12/16 1:53 PM",
+      "commitName": "f678080dbd25a218e0406463a3c3a1fc03680702",
+      "commitAuthor": "Xiaoyu Yao",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-11182. Update DataNode to use DatasetVolumeChecker. Contributed by Arpit Agarwal.\n",
+          "commitDate": "20/12/16 1:53 PM",
+          "commitName": "f678080dbd25a218e0406463a3c3a1fc03680702",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "29/11/16 8:31 PM",
+          "commitNameOld": "eaaa32950cbae42a74e28e3db3f0cdb1ff158119",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 20.72,
+          "commitsBetweenForRepo": 121,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,19 @@\n-  public void checkVolume(\n+  public boolean checkVolume(\n       final FsVolumeSpi volume,\n       Callback callback) {\n     FsVolumeReference volumeReference;\n     try {\n       volumeReference \u003d volume.obtainReference();\n     } catch (ClosedChannelException e) {\n       // The volume has already been closed.\n       callback.call(new HashSet\u003c\u003e(), new HashSet\u003c\u003e());\n-      return;\n+      return false;\n     }\n     ListenableFuture\u003cVolumeCheckResult\u003e future \u003d\n         delegateChecker.schedule(volume, IGNORED_CONTEXT);\n     numVolumeChecks.incrementAndGet();\n     Futures.addCallback(future, new ResultHandler(\n         volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n-        new CountDownLatch(1), callback));\n+        new AtomicLong(1), callback));\n+    return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean checkVolume(\n      final FsVolumeSpi volume,\n      Callback callback) {\n    FsVolumeReference volumeReference;\n    try {\n      volumeReference \u003d volume.obtainReference();\n    } catch (ClosedChannelException e) {\n      // The volume has already been closed.\n      callback.call(new HashSet\u003c\u003e(), new HashSet\u003c\u003e());\n      return false;\n    }\n    ListenableFuture\u003cVolumeCheckResult\u003e future \u003d\n        delegateChecker.schedule(volume, IGNORED_CONTEXT);\n    numVolumeChecks.incrementAndGet();\n    Futures.addCallback(future, new ResultHandler(\n        volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n        new AtomicLong(1), callback));\n    return true;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/DatasetVolumeChecker.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "boolean"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-11182. Update DataNode to use DatasetVolumeChecker. Contributed by Arpit Agarwal.\n",
+          "commitDate": "20/12/16 1:53 PM",
+          "commitName": "f678080dbd25a218e0406463a3c3a1fc03680702",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "29/11/16 8:31 PM",
+          "commitNameOld": "eaaa32950cbae42a74e28e3db3f0cdb1ff158119",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 20.72,
+          "commitsBetweenForRepo": 121,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,19 @@\n-  public void checkVolume(\n+  public boolean checkVolume(\n       final FsVolumeSpi volume,\n       Callback callback) {\n     FsVolumeReference volumeReference;\n     try {\n       volumeReference \u003d volume.obtainReference();\n     } catch (ClosedChannelException e) {\n       // The volume has already been closed.\n       callback.call(new HashSet\u003c\u003e(), new HashSet\u003c\u003e());\n-      return;\n+      return false;\n     }\n     ListenableFuture\u003cVolumeCheckResult\u003e future \u003d\n         delegateChecker.schedule(volume, IGNORED_CONTEXT);\n     numVolumeChecks.incrementAndGet();\n     Futures.addCallback(future, new ResultHandler(\n         volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n-        new CountDownLatch(1), callback));\n+        new AtomicLong(1), callback));\n+    return true;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public boolean checkVolume(\n      final FsVolumeSpi volume,\n      Callback callback) {\n    FsVolumeReference volumeReference;\n    try {\n      volumeReference \u003d volume.obtainReference();\n    } catch (ClosedChannelException e) {\n      // The volume has already been closed.\n      callback.call(new HashSet\u003c\u003e(), new HashSet\u003c\u003e());\n      return false;\n    }\n    ListenableFuture\u003cVolumeCheckResult\u003e future \u003d\n        delegateChecker.schedule(volume, IGNORED_CONTEXT);\n    numVolumeChecks.incrementAndGet();\n    Futures.addCallback(future, new ResultHandler(\n        volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n        new AtomicLong(1), callback));\n    return true;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/DatasetVolumeChecker.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "eaaa32950cbae42a74e28e3db3f0cdb1ff158119": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-11149. Support for parallel checking of FsVolumes.\n",
+      "commitDate": "29/11/16 8:31 PM",
+      "commitName": "eaaa32950cbae42a74e28e3db3f0cdb1ff158119",
+      "commitAuthor": "Arpit Agarwal",
+      "diff": "@@ -0,0 +1,18 @@\n+  public void checkVolume(\n+      final FsVolumeSpi volume,\n+      Callback callback) {\n+    FsVolumeReference volumeReference;\n+    try {\n+      volumeReference \u003d volume.obtainReference();\n+    } catch (ClosedChannelException e) {\n+      // The volume has already been closed.\n+      callback.call(new HashSet\u003c\u003e(), new HashSet\u003c\u003e());\n+      return;\n+    }\n+    ListenableFuture\u003cVolumeCheckResult\u003e future \u003d\n+        delegateChecker.schedule(volume, IGNORED_CONTEXT);\n+    numVolumeChecks.incrementAndGet();\n+    Futures.addCallback(future, new ResultHandler(\n+        volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n+        new CountDownLatch(1), callback));\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void checkVolume(\n      final FsVolumeSpi volume,\n      Callback callback) {\n    FsVolumeReference volumeReference;\n    try {\n      volumeReference \u003d volume.obtainReference();\n    } catch (ClosedChannelException e) {\n      // The volume has already been closed.\n      callback.call(new HashSet\u003c\u003e(), new HashSet\u003c\u003e());\n      return;\n    }\n    ListenableFuture\u003cVolumeCheckResult\u003e future \u003d\n        delegateChecker.schedule(volume, IGNORED_CONTEXT);\n    numVolumeChecks.incrementAndGet();\n    Futures.addCallback(future, new ResultHandler(\n        volumeReference, new HashSet\u003c\u003e(), new HashSet\u003c\u003e(),\n        new CountDownLatch(1), callback));\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/checker/DatasetVolumeChecker.java"
+    }
+  }
+}

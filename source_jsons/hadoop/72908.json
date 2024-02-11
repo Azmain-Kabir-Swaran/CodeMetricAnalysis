@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "JavaKeyStoreProvider.java",
+  "functionName": "getMetadata",
+  "functionId": "getMetadata___name-String",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/key/JavaKeyStoreProvider.java",
+  "functionStartLine": 401,
+  "functionEndLine": 431,
+  "numCommitsSeen": 26,
+  "timeTaken": 1167,
+  "changeHistory": [
+    "a5a033c7ca130528f8c509b035fc090ad4eb981a",
+    "98a98ea0c57d01b875b820f53d43dbf885d07711",
+    "77306291643838ed7b57b99d6497553314a525f2"
+  ],
+  "changeHistoryShort": {
+    "a5a033c7ca130528f8c509b035fc090ad4eb981a": "Ybodychange",
+    "98a98ea0c57d01b875b820f53d43dbf885d07711": "Ybodychange",
+    "77306291643838ed7b57b99d6497553314a525f2": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a5a033c7ca130528f8c509b035fc090ad4eb981a": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7067. ClassCastException while using a key created by keytool to create encryption zone. (Charles Lamb via Colin P. McCabe)\n",
+      "commitDate": "14/01/15 5:42 PM",
+      "commitName": "a5a033c7ca130528f8c509b035fc090ad4eb981a",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "commitDateOld": "10/12/14 12:44 PM",
+      "commitNameOld": "bbd6a3277678a60d472e76a207f25a916220946c",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 35.21,
+      "commitsBetweenForRepo": 186,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,31 @@\n   public Metadata getMetadata(String name) throws IOException {\n     readLock.lock();\n     try {\n       if (cache.containsKey(name)) {\n         return cache.get(name);\n       }\n       try {\n         if (!keyStore.containsAlias(name)) {\n           return null;\n         }\n         Metadata meta \u003d ((KeyMetadata) keyStore.getKey(name, password)).metadata;\n         cache.put(name, meta);\n         return meta;\n+      } catch (ClassCastException e) {\n+        throw new IOException(\"Can\u0027t cast key for \" + name + \" in keystore \" +\n+            path + \" to a KeyMetadata. Key may have been added using \" +\n+            \" keytool or some other non-Hadoop method.\", e);\n       } catch (KeyStoreException e) {\n         throw new IOException(\"Can\u0027t get metadata for \" + name +\n             \" from keystore \" + path, e);\n       } catch (NoSuchAlgorithmException e) {\n         throw new IOException(\"Can\u0027t get algorithm for \" + name +\n             \" from keystore \" + path, e);\n       } catch (UnrecoverableKeyException e) {\n         throw new IOException(\"Can\u0027t recover key for \" + name +\n             \" from keystore \" + path, e);\n       }\n     } finally {\n       readLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Metadata getMetadata(String name) throws IOException {\n    readLock.lock();\n    try {\n      if (cache.containsKey(name)) {\n        return cache.get(name);\n      }\n      try {\n        if (!keyStore.containsAlias(name)) {\n          return null;\n        }\n        Metadata meta \u003d ((KeyMetadata) keyStore.getKey(name, password)).metadata;\n        cache.put(name, meta);\n        return meta;\n      } catch (ClassCastException e) {\n        throw new IOException(\"Can\u0027t cast key for \" + name + \" in keystore \" +\n            path + \" to a KeyMetadata. Key may have been added using \" +\n            \" keytool or some other non-Hadoop method.\", e);\n      } catch (KeyStoreException e) {\n        throw new IOException(\"Can\u0027t get metadata for \" + name +\n            \" from keystore \" + path, e);\n      } catch (NoSuchAlgorithmException e) {\n        throw new IOException(\"Can\u0027t get algorithm for \" + name +\n            \" from keystore \" + path, e);\n      } catch (UnrecoverableKeyException e) {\n        throw new IOException(\"Can\u0027t recover key for \" + name +\n            \" from keystore \" + path, e);\n      }\n    } finally {\n      readLock.unlock();\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/key/JavaKeyStoreProvider.java",
+      "extendedDetails": {}
+    },
+    "98a98ea0c57d01b875b820f53d43dbf885d07711": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-10427. KeyProvider implementations should be thread safe. (tucu)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1586103 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "09/04/14 12:43 PM",
+      "commitName": "98a98ea0c57d01b875b820f53d43dbf885d07711",
+      "commitAuthor": "Alejandro Abdelnur",
+      "commitDateOld": "28/03/14 8:57 AM",
+      "commitNameOld": "92b9c6ff60bcfb270fc4d8631dcba2a3762212c2",
+      "commitAuthorOld": "Owen O\u0027Malley",
+      "daysBetweenCommits": 12.16,
+      "commitsBetweenForRepo": 67,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,22 +1,27 @@\n   public Metadata getMetadata(String name) throws IOException {\n-    if (cache.containsKey(name)) {\n-      return cache.get(name);\n-    }\n+    readLock.lock();\n     try {\n-      if (!keyStore.containsAlias(name)) {\n-        return null;\n+      if (cache.containsKey(name)) {\n+        return cache.get(name);\n       }\n-      Metadata meta \u003d ((KeyMetadata) keyStore.getKey(name, password)).metadata;\n-      cache.put(name, meta);\n-      return meta;\n-    } catch (KeyStoreException e) {\n-      throw new IOException(\"Can\u0027t get metadata for \" + name +\n-          \" from keystore \" + path, e);\n-    } catch (NoSuchAlgorithmException e) {\n-      throw new IOException(\"Can\u0027t get algorithm for \" + name +\n-          \" from keystore \" + path, e);\n-    } catch (UnrecoverableKeyException e) {\n-      throw new IOException(\"Can\u0027t recover key for \" + name +\n-          \" from keystore \" + path, e);\n+      try {\n+        if (!keyStore.containsAlias(name)) {\n+          return null;\n+        }\n+        Metadata meta \u003d ((KeyMetadata) keyStore.getKey(name, password)).metadata;\n+        cache.put(name, meta);\n+        return meta;\n+      } catch (KeyStoreException e) {\n+        throw new IOException(\"Can\u0027t get metadata for \" + name +\n+            \" from keystore \" + path, e);\n+      } catch (NoSuchAlgorithmException e) {\n+        throw new IOException(\"Can\u0027t get algorithm for \" + name +\n+            \" from keystore \" + path, e);\n+      } catch (UnrecoverableKeyException e) {\n+        throw new IOException(\"Can\u0027t recover key for \" + name +\n+            \" from keystore \" + path, e);\n+      }\n+    } finally {\n+      readLock.unlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Metadata getMetadata(String name) throws IOException {\n    readLock.lock();\n    try {\n      if (cache.containsKey(name)) {\n        return cache.get(name);\n      }\n      try {\n        if (!keyStore.containsAlias(name)) {\n          return null;\n        }\n        Metadata meta \u003d ((KeyMetadata) keyStore.getKey(name, password)).metadata;\n        cache.put(name, meta);\n        return meta;\n      } catch (KeyStoreException e) {\n        throw new IOException(\"Can\u0027t get metadata for \" + name +\n            \" from keystore \" + path, e);\n      } catch (NoSuchAlgorithmException e) {\n        throw new IOException(\"Can\u0027t get algorithm for \" + name +\n            \" from keystore \" + path, e);\n      } catch (UnrecoverableKeyException e) {\n        throw new IOException(\"Can\u0027t recover key for \" + name +\n            \" from keystore \" + path, e);\n      }\n    } finally {\n      readLock.unlock();\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/key/JavaKeyStoreProvider.java",
+      "extendedDetails": {}
+    },
+    "77306291643838ed7b57b99d6497553314a525f2": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-10141. Create KeyProvider API to separate encryption key storage\nfrom the applications. (omalley)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1552462 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "19/12/13 4:25 PM",
+      "commitName": "77306291643838ed7b57b99d6497553314a525f2",
+      "commitAuthor": "Owen O\u0027Malley",
+      "diff": "@@ -0,0 +1,22 @@\n+  public Metadata getMetadata(String name) throws IOException {\n+    if (cache.containsKey(name)) {\n+      return cache.get(name);\n+    }\n+    try {\n+      if (!keyStore.containsAlias(name)) {\n+        return null;\n+      }\n+      Metadata meta \u003d ((KeyMetadata) keyStore.getKey(name, password)).metadata;\n+      cache.put(name, meta);\n+      return meta;\n+    } catch (KeyStoreException e) {\n+      throw new IOException(\"Can\u0027t get metadata for \" + name +\n+          \" from keystore \" + path, e);\n+    } catch (NoSuchAlgorithmException e) {\n+      throw new IOException(\"Can\u0027t get algorithm for \" + name +\n+          \" from keystore \" + path, e);\n+    } catch (UnrecoverableKeyException e) {\n+      throw new IOException(\"Can\u0027t recover key for \" + name +\n+          \" from keystore \" + path, e);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public Metadata getMetadata(String name) throws IOException {\n    if (cache.containsKey(name)) {\n      return cache.get(name);\n    }\n    try {\n      if (!keyStore.containsAlias(name)) {\n        return null;\n      }\n      Metadata meta \u003d ((KeyMetadata) keyStore.getKey(name, password)).metadata;\n      cache.put(name, meta);\n      return meta;\n    } catch (KeyStoreException e) {\n      throw new IOException(\"Can\u0027t get metadata for \" + name +\n          \" from keystore \" + path, e);\n    } catch (NoSuchAlgorithmException e) {\n      throw new IOException(\"Can\u0027t get algorithm for \" + name +\n          \" from keystore \" + path, e);\n    } catch (UnrecoverableKeyException e) {\n      throw new IOException(\"Can\u0027t recover key for \" + name +\n          \" from keystore \" + path, e);\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/crypto/key/JavaKeyStoreProvider.java"
+    }
+  }
+}

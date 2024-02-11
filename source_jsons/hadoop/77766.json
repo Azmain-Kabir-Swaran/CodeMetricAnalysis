@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SFTPFileSystem.java",
+  "functionName": "open",
+  "functionId": "open___f-Path__bufferSize-int",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/sftp/SFTPFileSystem.java",
+  "functionStartLine": 505,
+  "functionEndLine": 535,
+  "numCommitsSeen": 7,
+  "timeTaken": 1122,
+  "changeHistory": [
+    "6934a654024b8b696a68c50f2b90c8c1e1051486",
+    "559425dcb9302861c3c28b759492a68f8d597092"
+  ],
+  "changeHistoryShort": {
+    "6934a654024b8b696a68c50f2b90c8c1e1051486": "Ybodychange",
+    "559425dcb9302861c3c28b759492a68f8d597092": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6934a654024b8b696a68c50f2b90c8c1e1051486": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15358. SFTPConnectionPool connections leakage. Contributed by Mikhail Pryakhin.\n",
+      "commitDate": "23/11/18 12:48 AM",
+      "commitName": "6934a654024b8b696a68c50f2b90c8c1e1051486",
+      "commitAuthor": "Márton Elek",
+      "commitDateOld": "21/08/17 11:48 AM",
+      "commitNameOld": "736ceab2f58fb9ab5907c5b5110bd44384038e6b",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 458.58,
+      "commitsBetweenForRepo": 4148,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,31 @@\n   public FSDataInputStream open(Path f, int bufferSize) throws IOException {\n     ChannelSftp channel \u003d connect();\n     Path workDir;\n     try {\n       workDir \u003d new Path(channel.pwd());\n     } catch (SftpException e) {\n       throw new IOException(e);\n     }\n     Path absolute \u003d makeAbsolute(workDir, f);\n     FileStatus fileStat \u003d getFileStatus(channel, absolute);\n     if (fileStat.isDirectory()) {\n       disconnect(channel);\n       throw new IOException(String.format(E_PATH_DIR, f));\n     }\n     InputStream is;\n     try {\n       // the path could be a symbolic link, so get the real path\n       absolute \u003d new Path(\"/\", channel.realpath(absolute.toUri().getPath()));\n \n       is \u003d channel.get(absolute.toUri().getPath());\n     } catch (SftpException e) {\n       throw new IOException(e);\n     }\n-\n-    FSDataInputStream fis \u003d\n-        new FSDataInputStream(new SFTPInputStream(is, channel, statistics));\n-    return fis;\n+    return new FSDataInputStream(new SFTPInputStream(is, statistics)){\n+      @Override\n+      public void close() throws IOException {\n+        super.close();\n+        disconnect(channel);\n+      }\n+    };\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public FSDataInputStream open(Path f, int bufferSize) throws IOException {\n    ChannelSftp channel \u003d connect();\n    Path workDir;\n    try {\n      workDir \u003d new Path(channel.pwd());\n    } catch (SftpException e) {\n      throw new IOException(e);\n    }\n    Path absolute \u003d makeAbsolute(workDir, f);\n    FileStatus fileStat \u003d getFileStatus(channel, absolute);\n    if (fileStat.isDirectory()) {\n      disconnect(channel);\n      throw new IOException(String.format(E_PATH_DIR, f));\n    }\n    InputStream is;\n    try {\n      // the path could be a symbolic link, so get the real path\n      absolute \u003d new Path(\"/\", channel.realpath(absolute.toUri().getPath()));\n\n      is \u003d channel.get(absolute.toUri().getPath());\n    } catch (SftpException e) {\n      throw new IOException(e);\n    }\n    return new FSDataInputStream(new SFTPInputStream(is, statistics)){\n      @Override\n      public void close() throws IOException {\n        super.close();\n        disconnect(channel);\n      }\n    };\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/sftp/SFTPFileSystem.java",
+      "extendedDetails": {}
+    },
+    "559425dcb9302861c3c28b759492a68f8d597092": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-5732. Add SFTPFileSystem. Contributed by Ramtin Boustani and Inigo Goiri\n",
+      "commitDate": "07/07/15 10:08 AM",
+      "commitName": "559425dcb9302861c3c28b759492a68f8d597092",
+      "commitAuthor": "Chris Douglas",
+      "diff": "@@ -0,0 +1,28 @@\n+  public FSDataInputStream open(Path f, int bufferSize) throws IOException {\n+    ChannelSftp channel \u003d connect();\n+    Path workDir;\n+    try {\n+      workDir \u003d new Path(channel.pwd());\n+    } catch (SftpException e) {\n+      throw new IOException(e);\n+    }\n+    Path absolute \u003d makeAbsolute(workDir, f);\n+    FileStatus fileStat \u003d getFileStatus(channel, absolute);\n+    if (fileStat.isDirectory()) {\n+      disconnect(channel);\n+      throw new IOException(String.format(E_PATH_DIR, f));\n+    }\n+    InputStream is;\n+    try {\n+      // the path could be a symbolic link, so get the real path\n+      absolute \u003d new Path(\"/\", channel.realpath(absolute.toUri().getPath()));\n+\n+      is \u003d channel.get(absolute.toUri().getPath());\n+    } catch (SftpException e) {\n+      throw new IOException(e);\n+    }\n+\n+    FSDataInputStream fis \u003d\n+        new FSDataInputStream(new SFTPInputStream(is, channel, statistics));\n+    return fis;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public FSDataInputStream open(Path f, int bufferSize) throws IOException {\n    ChannelSftp channel \u003d connect();\n    Path workDir;\n    try {\n      workDir \u003d new Path(channel.pwd());\n    } catch (SftpException e) {\n      throw new IOException(e);\n    }\n    Path absolute \u003d makeAbsolute(workDir, f);\n    FileStatus fileStat \u003d getFileStatus(channel, absolute);\n    if (fileStat.isDirectory()) {\n      disconnect(channel);\n      throw new IOException(String.format(E_PATH_DIR, f));\n    }\n    InputStream is;\n    try {\n      // the path could be a symbolic link, so get the real path\n      absolute \u003d new Path(\"/\", channel.realpath(absolute.toUri().getPath()));\n\n      is \u003d channel.get(absolute.toUri().getPath());\n    } catch (SftpException e) {\n      throw new IOException(e);\n    }\n\n    FSDataInputStream fis \u003d\n        new FSDataInputStream(new SFTPInputStream(is, channel, statistics));\n    return fis;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/sftp/SFTPFileSystem.java"
+    }
+  }
+}

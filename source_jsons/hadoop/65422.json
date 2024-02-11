@@ -1,0 +1,147 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3Guard.java",
+  "functionName": "getWithTtl",
+  "functionId": "getWithTtl___ms-MetadataStore__path-Path__timeProvider-ITtlTimeProvider(annotations-@Nullable)__needEmptyDirectoryFlag-boolean(modifiers-final)__allowAuthoritative-boolean(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3Guard.java",
+  "functionStartLine": 899,
+  "functionEndLine": 937,
+  "numCommitsSeen": 59,
+  "timeTaken": 4340,
+  "changeHistory": [
+    "ea25f4de236611d388e14a710ebe5d6872c421b6",
+    "4317d332321778269a583e2223d433107fab82eb",
+    "e02eb24e0a9139418120027b694492e0738df20a",
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c"
+  ],
+  "changeHistoryShort": {
+    "ea25f4de236611d388e14a710ebe5d6872c421b6": "Ymultichange(Yparameterchange,Ybodychange)",
+    "4317d332321778269a583e2223d433107fab82eb": "Ymultichange(Yparameterchange,Ybodychange)",
+    "e02eb24e0a9139418120027b694492e0738df20a": "Ybodychange",
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ea25f4de236611d388e14a710ebe5d6872c421b6": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16709. S3Guard: Make authoritative mode exclusive for metadata - don\u0027t check for expiry for authoritative paths (#1721). Contributed by Gabor Bota.\n\n",
+      "commitDate": "26/11/19 7:36 AM",
+      "commitName": "ea25f4de236611d388e14a710ebe5d6872c421b6",
+      "commitAuthor": "Gabor Bota",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16709. S3Guard: Make authoritative mode exclusive for metadata - don\u0027t check for expiry for authoritative paths (#1721). Contributed by Gabor Bota.\n\n",
+          "commitDate": "26/11/19 7:36 AM",
+          "commitName": "ea25f4de236611d388e14a710ebe5d6872c421b6",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "04/11/19 3:55 AM",
+          "commitNameOld": "dca19fc3aa509949daf29bc902b2f74760407fc4",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 22.15,
+          "commitsBetweenForRepo": 93,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,39 @@\n   public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n       @Nullable ITtlTimeProvider timeProvider,\n-      final boolean needEmptyDirectoryFlag) throws IOException {\n+      final boolean needEmptyDirectoryFlag,\n+      final boolean allowAuthoritative) throws IOException {\n     final PathMetadata pathMetadata \u003d ms.get(path, needEmptyDirectoryFlag);\n     // if timeProvider is null let\u0027s return with what the ms has\n     if (timeProvider \u003d\u003d null) {\n       LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n       return pathMetadata;\n     }\n \n+    // authoritative mode is enabled for this directory, return what the ms has\n+    if (allowAuthoritative) {\n+      LOG.debug(\"allowAuthoritative is true, returning pathMetadata as is\");\n+      return pathMetadata;\n+    }\n+\n     long ttl \u003d timeProvider.getMetadataTtl();\n \n     if (pathMetadata !\u003d null) {\n       // Special case: the path metadata\u0027s last updated is 0. This can happen\n       // eg. with an old db using this implementation\n       if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n         LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n             + \"not expired.\", path);\n         return pathMetadata;\n       }\n \n       if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n         return pathMetadata;\n       } else {\n         LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n             path);\n         return null;\n       }\n     }\n \n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n      @Nullable ITtlTimeProvider timeProvider,\n      final boolean needEmptyDirectoryFlag,\n      final boolean allowAuthoritative) throws IOException {\n    final PathMetadata pathMetadata \u003d ms.get(path, needEmptyDirectoryFlag);\n    // if timeProvider is null let\u0027s return with what the ms has\n    if (timeProvider \u003d\u003d null) {\n      LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n      return pathMetadata;\n    }\n\n    // authoritative mode is enabled for this directory, return what the ms has\n    if (allowAuthoritative) {\n      LOG.debug(\"allowAuthoritative is true, returning pathMetadata as is\");\n      return pathMetadata;\n    }\n\n    long ttl \u003d timeProvider.getMetadataTtl();\n\n    if (pathMetadata !\u003d null) {\n      // Special case: the path metadata\u0027s last updated is 0. This can happen\n      // eg. with an old db using this implementation\n      if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n        LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n            + \"not expired.\", path);\n        return pathMetadata;\n      }\n\n      if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n        return pathMetadata;\n      } else {\n        LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n            path);\n        return null;\n      }\n    }\n\n    return null;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3Guard.java",
+          "extendedDetails": {
+            "oldValue": "[ms-MetadataStore, path-Path, timeProvider-ITtlTimeProvider(annotations-@Nullable), needEmptyDirectoryFlag-boolean(modifiers-final)]",
+            "newValue": "[ms-MetadataStore, path-Path, timeProvider-ITtlTimeProvider(annotations-@Nullable), needEmptyDirectoryFlag-boolean(modifiers-final), allowAuthoritative-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16709. S3Guard: Make authoritative mode exclusive for metadata - don\u0027t check for expiry for authoritative paths (#1721). Contributed by Gabor Bota.\n\n",
+          "commitDate": "26/11/19 7:36 AM",
+          "commitName": "ea25f4de236611d388e14a710ebe5d6872c421b6",
+          "commitAuthor": "Gabor Bota",
+          "commitDateOld": "04/11/19 3:55 AM",
+          "commitNameOld": "dca19fc3aa509949daf29bc902b2f74760407fc4",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 22.15,
+          "commitsBetweenForRepo": 93,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,32 +1,39 @@\n   public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n       @Nullable ITtlTimeProvider timeProvider,\n-      final boolean needEmptyDirectoryFlag) throws IOException {\n+      final boolean needEmptyDirectoryFlag,\n+      final boolean allowAuthoritative) throws IOException {\n     final PathMetadata pathMetadata \u003d ms.get(path, needEmptyDirectoryFlag);\n     // if timeProvider is null let\u0027s return with what the ms has\n     if (timeProvider \u003d\u003d null) {\n       LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n       return pathMetadata;\n     }\n \n+    // authoritative mode is enabled for this directory, return what the ms has\n+    if (allowAuthoritative) {\n+      LOG.debug(\"allowAuthoritative is true, returning pathMetadata as is\");\n+      return pathMetadata;\n+    }\n+\n     long ttl \u003d timeProvider.getMetadataTtl();\n \n     if (pathMetadata !\u003d null) {\n       // Special case: the path metadata\u0027s last updated is 0. This can happen\n       // eg. with an old db using this implementation\n       if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n         LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n             + \"not expired.\", path);\n         return pathMetadata;\n       }\n \n       if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n         return pathMetadata;\n       } else {\n         LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n             path);\n         return null;\n       }\n     }\n \n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n      @Nullable ITtlTimeProvider timeProvider,\n      final boolean needEmptyDirectoryFlag,\n      final boolean allowAuthoritative) throws IOException {\n    final PathMetadata pathMetadata \u003d ms.get(path, needEmptyDirectoryFlag);\n    // if timeProvider is null let\u0027s return with what the ms has\n    if (timeProvider \u003d\u003d null) {\n      LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n      return pathMetadata;\n    }\n\n    // authoritative mode is enabled for this directory, return what the ms has\n    if (allowAuthoritative) {\n      LOG.debug(\"allowAuthoritative is true, returning pathMetadata as is\");\n      return pathMetadata;\n    }\n\n    long ttl \u003d timeProvider.getMetadataTtl();\n\n    if (pathMetadata !\u003d null) {\n      // Special case: the path metadata\u0027s last updated is 0. This can happen\n      // eg. with an old db using this implementation\n      if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n        LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n            + \"not expired.\", path);\n        return pathMetadata;\n      }\n\n      if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n        return pathMetadata;\n      } else {\n        LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n            path);\n        return null;\n      }\n    }\n\n    return null;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3Guard.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "4317d332321778269a583e2223d433107fab82eb": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16380. S3Guard to determine empty directory status for all non-root directories.\n\nContributed by Steve Loughran and Gabor Bota.\n\nThis\n* Asks S3Guard to determine the empty directory status.\n* Has S3A\u0027s root directory rm(\"/\") command to always return false (as abfs does)\n* Documents that object stores MAY do this\n* Overloads ContractTestUtils.assertDeleted to let assertions declare that the source directory does not need to exist. This stops inconsistencies in directory listings failing a root test.\n\nIt avoids a recent regression (HADOOP-16279) where if there was a tombstone above the first element found in a directory listing, the directory would be considered empty, when in fact there were child entries. That could downgrade an rm(path, recursive) to a no-op, while also confusing rename(src, dest), as dest could be mistaken for an empty directory and so permit the copy above it, rather than reject it \"destination path exists and is not empty\".\n\nChange-Id: I136a3d1a5a48a67e6155d790a40ff558d0d2c108\n",
+      "commitDate": "23/07/19 6:52 AM",
+      "commitName": "4317d332321778269a583e2223d433107fab82eb",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16380. S3Guard to determine empty directory status for all non-root directories.\n\nContributed by Steve Loughran and Gabor Bota.\n\nThis\n* Asks S3Guard to determine the empty directory status.\n* Has S3A\u0027s root directory rm(\"/\") command to always return false (as abfs does)\n* Documents that object stores MAY do this\n* Overloads ContractTestUtils.assertDeleted to let assertions declare that the source directory does not need to exist. This stops inconsistencies in directory listings failing a root test.\n\nIt avoids a recent regression (HADOOP-16279) where if there was a tombstone above the first element found in a directory listing, the directory would be considered empty, when in fact there were child entries. That could downgrade an rm(path, recursive) to a no-op, while also confusing rename(src, dest), as dest could be mistaken for an empty directory and so permit the copy above it, rather than reject it \"destination path exists and is not empty\".\n\nChange-Id: I136a3d1a5a48a67e6155d790a40ff558d0d2c108\n",
+          "commitDate": "23/07/19 6:52 AM",
+          "commitName": "4317d332321778269a583e2223d433107fab82eb",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "17/07/19 7:24 AM",
+          "commitNameOld": "c58e11bf521d746842ce16724211a2a0339d7b61",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 5.98,
+          "commitsBetweenForRepo": 41,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,32 @@\n   public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n-      @Nullable ITtlTimeProvider timeProvider) throws IOException {\n-    final PathMetadata pathMetadata \u003d ms.get(path);\n+      @Nullable ITtlTimeProvider timeProvider,\n+      final boolean needEmptyDirectoryFlag) throws IOException {\n+    final PathMetadata pathMetadata \u003d ms.get(path, needEmptyDirectoryFlag);\n     // if timeProvider is null let\u0027s return with what the ms has\n     if (timeProvider \u003d\u003d null) {\n       LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n       return pathMetadata;\n     }\n \n     long ttl \u003d timeProvider.getMetadataTtl();\n \n     if (pathMetadata !\u003d null) {\n       // Special case: the path metadata\u0027s last updated is 0. This can happen\n       // eg. with an old db using this implementation\n       if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n         LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n             + \"not expired.\", path);\n         return pathMetadata;\n       }\n \n       if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n         return pathMetadata;\n       } else {\n         LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n             path);\n         return null;\n       }\n     }\n \n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n      @Nullable ITtlTimeProvider timeProvider,\n      final boolean needEmptyDirectoryFlag) throws IOException {\n    final PathMetadata pathMetadata \u003d ms.get(path, needEmptyDirectoryFlag);\n    // if timeProvider is null let\u0027s return with what the ms has\n    if (timeProvider \u003d\u003d null) {\n      LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n      return pathMetadata;\n    }\n\n    long ttl \u003d timeProvider.getMetadataTtl();\n\n    if (pathMetadata !\u003d null) {\n      // Special case: the path metadata\u0027s last updated is 0. This can happen\n      // eg. with an old db using this implementation\n      if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n        LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n            + \"not expired.\", path);\n        return pathMetadata;\n      }\n\n      if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n        return pathMetadata;\n      } else {\n        LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n            path);\n        return null;\n      }\n    }\n\n    return null;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3Guard.java",
+          "extendedDetails": {
+            "oldValue": "[ms-MetadataStore, path-Path, timeProvider-ITtlTimeProvider(annotations-@Nullable)]",
+            "newValue": "[ms-MetadataStore, path-Path, timeProvider-ITtlTimeProvider(annotations-@Nullable), needEmptyDirectoryFlag-boolean(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16380. S3Guard to determine empty directory status for all non-root directories.\n\nContributed by Steve Loughran and Gabor Bota.\n\nThis\n* Asks S3Guard to determine the empty directory status.\n* Has S3A\u0027s root directory rm(\"/\") command to always return false (as abfs does)\n* Documents that object stores MAY do this\n* Overloads ContractTestUtils.assertDeleted to let assertions declare that the source directory does not need to exist. This stops inconsistencies in directory listings failing a root test.\n\nIt avoids a recent regression (HADOOP-16279) where if there was a tombstone above the first element found in a directory listing, the directory would be considered empty, when in fact there were child entries. That could downgrade an rm(path, recursive) to a no-op, while also confusing rename(src, dest), as dest could be mistaken for an empty directory and so permit the copy above it, rather than reject it \"destination path exists and is not empty\".\n\nChange-Id: I136a3d1a5a48a67e6155d790a40ff558d0d2c108\n",
+          "commitDate": "23/07/19 6:52 AM",
+          "commitName": "4317d332321778269a583e2223d433107fab82eb",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "17/07/19 7:24 AM",
+          "commitNameOld": "c58e11bf521d746842ce16724211a2a0339d7b61",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 5.98,
+          "commitsBetweenForRepo": 41,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,32 @@\n   public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n-      @Nullable ITtlTimeProvider timeProvider) throws IOException {\n-    final PathMetadata pathMetadata \u003d ms.get(path);\n+      @Nullable ITtlTimeProvider timeProvider,\n+      final boolean needEmptyDirectoryFlag) throws IOException {\n+    final PathMetadata pathMetadata \u003d ms.get(path, needEmptyDirectoryFlag);\n     // if timeProvider is null let\u0027s return with what the ms has\n     if (timeProvider \u003d\u003d null) {\n       LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n       return pathMetadata;\n     }\n \n     long ttl \u003d timeProvider.getMetadataTtl();\n \n     if (pathMetadata !\u003d null) {\n       // Special case: the path metadata\u0027s last updated is 0. This can happen\n       // eg. with an old db using this implementation\n       if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n         LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n             + \"not expired.\", path);\n         return pathMetadata;\n       }\n \n       if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n         return pathMetadata;\n       } else {\n         LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n             path);\n         return null;\n       }\n     }\n \n     return null;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n      @Nullable ITtlTimeProvider timeProvider,\n      final boolean needEmptyDirectoryFlag) throws IOException {\n    final PathMetadata pathMetadata \u003d ms.get(path, needEmptyDirectoryFlag);\n    // if timeProvider is null let\u0027s return with what the ms has\n    if (timeProvider \u003d\u003d null) {\n      LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n      return pathMetadata;\n    }\n\n    long ttl \u003d timeProvider.getMetadataTtl();\n\n    if (pathMetadata !\u003d null) {\n      // Special case: the path metadata\u0027s last updated is 0. This can happen\n      // eg. with an old db using this implementation\n      if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n        LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n            + \"not expired.\", path);\n        return pathMetadata;\n      }\n\n      if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n        return pathMetadata;\n      } else {\n        LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n            path);\n        return null;\n      }\n    }\n\n    return null;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3Guard.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "e02eb24e0a9139418120027b694492e0738df20a": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+      "commitDate": "20/06/19 1:56 AM",
+      "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "16/06/19 9:05 AM",
+      "commitNameOld": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+      "commitAuthorOld": "Gabor Bota",
+      "daysBetweenCommits": 3.7,
+      "commitsBetweenForRepo": 44,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,31 @@\n   public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n       @Nullable ITtlTimeProvider timeProvider) throws IOException {\n     final PathMetadata pathMetadata \u003d ms.get(path);\n     // if timeProvider is null let\u0027s return with what the ms has\n     if (timeProvider \u003d\u003d null) {\n       LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n       return pathMetadata;\n     }\n \n     long ttl \u003d timeProvider.getMetadataTtl();\n \n     if (pathMetadata !\u003d null) {\n-      // Special case: the pathmetadata\u0027s last updated is 0. This can happen\n+      // Special case: the path metadata\u0027s last updated is 0. This can happen\n       // eg. with an old db using this implementation\n       if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n         LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n-            + \"not expired.\");\n+            + \"not expired.\", path);\n         return pathMetadata;\n       }\n \n       if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n         return pathMetadata;\n       } else {\n         LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n             path);\n         return null;\n       }\n     }\n \n     return null;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n      @Nullable ITtlTimeProvider timeProvider) throws IOException {\n    final PathMetadata pathMetadata \u003d ms.get(path);\n    // if timeProvider is null let\u0027s return with what the ms has\n    if (timeProvider \u003d\u003d null) {\n      LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n      return pathMetadata;\n    }\n\n    long ttl \u003d timeProvider.getMetadataTtl();\n\n    if (pathMetadata !\u003d null) {\n      // Special case: the path metadata\u0027s last updated is 0. This can happen\n      // eg. with an old db using this implementation\n      if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n        LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n            + \"not expired.\", path);\n        return pathMetadata;\n      }\n\n      if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n        return pathMetadata;\n      } else {\n        LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n            path);\n        return null;\n      }\n    }\n\n    return null;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3Guard.java",
+      "extendedDetails": {}
+    },
+    "f9cc9e162175444efe9d5b07ecb9a795f750ca3c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-16279. S3Guard: Implement time-based (TTL) expiry for entries (and tombstones).\n\nContributed by Gabor Bota.\n\nChange-Id: I73a2d2861901dedfe7a0e783b310fbb95e7c1af9\n",
+      "commitDate": "16/06/19 9:05 AM",
+      "commitName": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+      "commitAuthor": "Gabor Bota",
+      "diff": "@@ -0,0 +1,31 @@\n+  public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n+      @Nullable ITtlTimeProvider timeProvider) throws IOException {\n+    final PathMetadata pathMetadata \u003d ms.get(path);\n+    // if timeProvider is null let\u0027s return with what the ms has\n+    if (timeProvider \u003d\u003d null) {\n+      LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n+      return pathMetadata;\n+    }\n+\n+    long ttl \u003d timeProvider.getMetadataTtl();\n+\n+    if (pathMetadata !\u003d null) {\n+      // Special case: the pathmetadata\u0027s last updated is 0. This can happen\n+      // eg. with an old db using this implementation\n+      if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n+        LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n+            + \"not expired.\");\n+        return pathMetadata;\n+      }\n+\n+      if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n+        return pathMetadata;\n+      } else {\n+        LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n+            path);\n+        return null;\n+      }\n+    }\n+\n+    return null;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static PathMetadata getWithTtl(MetadataStore ms, Path path,\n      @Nullable ITtlTimeProvider timeProvider) throws IOException {\n    final PathMetadata pathMetadata \u003d ms.get(path);\n    // if timeProvider is null let\u0027s return with what the ms has\n    if (timeProvider \u003d\u003d null) {\n      LOG.debug(\"timeProvider is null, returning pathMetadata as is\");\n      return pathMetadata;\n    }\n\n    long ttl \u003d timeProvider.getMetadataTtl();\n\n    if (pathMetadata !\u003d null) {\n      // Special case: the pathmetadata\u0027s last updated is 0. This can happen\n      // eg. with an old db using this implementation\n      if (pathMetadata.getLastUpdated() \u003d\u003d 0) {\n        LOG.debug(\"PathMetadata TTL for {} is 0, so it will be returned as \"\n            + \"not expired.\");\n        return pathMetadata;\n      }\n\n      if (!pathMetadata.isExpired(ttl, timeProvider.getNow())) {\n        return pathMetadata;\n      } else {\n        LOG.debug(\"PathMetadata TTl for {} is expired in metadata store.\",\n            path);\n        return null;\n      }\n    }\n\n    return null;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/S3Guard.java"
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DelegationTokenSecretManager.java",
+  "functionName": "logUpdateMasterKey",
+  "functionId": "logUpdateMasterKey___key-DelegationKey",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java",
+  "functionStartLine": 366,
+  "functionEndLine": 392,
+  "numCommitsSeen": 25,
+  "timeTaken": 5294,
+  "changeHistory": [
+    "47473952e56b0380147d42f4110ad03c2276c961",
+    "e918b91e23985fa1bb353c54a2e733f8ba6dbe49",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "d86f3183d93714ba078416af4f609d26376eadb0",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "47473952e56b0380147d42f4110ad03c2276c961": "Ybodychange",
+    "e918b91e23985fa1bb353c54a2e733f8ba6dbe49": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "d86f3183d93714ba078416af4f609d26376eadb0": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "47473952e56b0380147d42f4110ad03c2276c961": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13112. Token expiration edits may cause log corruption or deadlock. Contributed by Daryn Sharp.\n",
+      "commitDate": "15/02/18 1:32 PM",
+      "commitName": "47473952e56b0380147d42f4110ad03c2276c961",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "11/05/15 5:27 AM",
+      "commitNameOld": "7e543c27fa2881aa65967be384a6203bd5b2304f",
+      "commitAuthorOld": "Junping Du",
+      "daysBetweenCommits": 1011.38,
+      "commitsBetweenForRepo": 6960,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,27 @@\n   protected void logUpdateMasterKey(DelegationKey key)\n       throws IOException {\n-    synchronized (noInterruptsLock) {\n+    try {\n       // The edit logging code will fail catastrophically if it\n       // is interrupted during a logSync, since the interrupt\n       // closes the edit log files. Doing this inside the\n-      // above lock and then checking interruption status\n-      // prevents this bug.\n-      if (Thread.interrupted()) {\n-        throw new InterruptedIOException(\n-            \"Interrupted before updating master key\");\n+      // fsn lock will prevent being interrupted when stopping\n+      // the secret manager.\n+      namesystem.readLockInterruptibly();\n+      try {\n+        // this monitor isn\u0027t necessary if stopped while holding write lock\n+        // but for safety, guard against a stop with read lock.\n+        synchronized (noInterruptsLock) {\n+          if (Thread.currentThread().isInterrupted()) {\n+            return; // leave flag set so secret monitor exits.\n+          }\n+          namesystem.logUpdateMasterKey(key);\n+        }\n+      } finally {\n+        namesystem.readUnlock();\n       }\n-      namesystem.logUpdateMasterKey(key);\n+    } catch (InterruptedException ie) {\n+      // AbstractDelegationTokenManager may crash if an exception is thrown.\n+      // The interrupt flag will be detected when it attempts to sleep.\n+      Thread.currentThread().interrupt();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void logUpdateMasterKey(DelegationKey key)\n      throws IOException {\n    try {\n      // The edit logging code will fail catastrophically if it\n      // is interrupted during a logSync, since the interrupt\n      // closes the edit log files. Doing this inside the\n      // fsn lock will prevent being interrupted when stopping\n      // the secret manager.\n      namesystem.readLockInterruptibly();\n      try {\n        // this monitor isn\u0027t necessary if stopped while holding write lock\n        // but for safety, guard against a stop with read lock.\n        synchronized (noInterruptsLock) {\n          if (Thread.currentThread().isInterrupted()) {\n            return; // leave flag set so secret monitor exits.\n          }\n          namesystem.logUpdateMasterKey(key);\n        }\n      } finally {\n        namesystem.readUnlock();\n      }\n    } catch (InterruptedException ie) {\n      // AbstractDelegationTokenManager may crash if an exception is thrown.\n      // The interrupt flag will be detected when it attempts to sleep.\n      Thread.currentThread().interrupt();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java",
+      "extendedDetails": {}
+    },
+    "e918b91e23985fa1bb353c54a2e733f8ba6dbe49": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-2579. Starting delegation token manager during safemode fails. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-1623@1242225 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "08/02/12 10:12 PM",
+      "commitName": "e918b91e23985fa1bb353c54a2e733f8ba6dbe49",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "16/09/11 8:02 AM",
+      "commitNameOld": "78e3821b819b441d1faf4bc66c659cdeddc6006c",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 145.63,
+      "commitsBetweenForRepo": 959,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,4 +1,15 @@\n   protected void logUpdateMasterKey(DelegationKey key)\n       throws IOException {\n-    namesystem.logUpdateMasterKey(key);\n+    synchronized (noInterruptsLock) {\n+      // The edit logging code will fail catastrophically if it\n+      // is interrupted during a logSync, since the interrupt\n+      // closes the edit log files. Doing this inside the\n+      // above lock and then checking interruption status\n+      // prevents this bug.\n+      if (Thread.interrupted()) {\n+        throw new InterruptedIOException(\n+            \"Interrupted before updating master key\");\n+      }\n+      namesystem.logUpdateMasterKey(key);\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void logUpdateMasterKey(DelegationKey key)\n      throws IOException {\n    synchronized (noInterruptsLock) {\n      // The edit logging code will fail catastrophically if it\n      // is interrupted during a logSync, since the interrupt\n      // closes the edit log files. Doing this inside the\n      // above lock and then checking interruption status\n      // prevents this bug.\n      if (Thread.interrupted()) {\n        throw new InterruptedIOException(\n            \"Interrupted before updating master key\");\n      }\n      namesystem.logUpdateMasterKey(key);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  protected void logUpdateMasterKey(DelegationKey key)\n      throws IOException {\n    namesystem.logUpdateMasterKey(key);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java"
+      }
+    },
+    "d86f3183d93714ba078416af4f609d26376eadb0": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-2096. Mavenization of hadoop-hdfs. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159702 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "19/08/11 10:36 AM",
+      "commitName": "d86f3183d93714ba078416af4f609d26376eadb0",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "19/08/11 10:26 AM",
+      "commitNameOld": "6ee5a73e0e91a2ef27753a32c576835e951d8119",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  protected void logUpdateMasterKey(DelegationKey key)\n      throws IOException {\n    namesystem.logUpdateMasterKey(key);\n  }",
+      "path": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java",
+      "extendedDetails": {
+        "oldPath": "hdfs/src/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java",
+        "newPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,4 @@\n+  protected void logUpdateMasterKey(DelegationKey key)\n+      throws IOException {\n+    namesystem.logUpdateMasterKey(key);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void logUpdateMasterKey(DelegationKey key)\n      throws IOException {\n    namesystem.logUpdateMasterKey(key);\n  }",
+      "path": "hdfs/src/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java"
+    }
+  }
+}

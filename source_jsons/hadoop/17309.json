@@ -1,0 +1,184 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AvailableSpaceResolver.java",
+  "functionName": "getSubclusterInfo",
+  "functionId": "getSubclusterInfo___membershipStore-MembershipStore",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/AvailableSpaceResolver.java",
+  "functionStartLine": 89,
+  "functionEndLine": 113,
+  "numCommitsSeen": 4,
+  "timeTaken": 3942,
+  "changeHistory": [
+    "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+    "e71bc00a471422ddb26dd54e706f09f0fe09925c"
+  ],
+  "changeHistoryShort": {
+    "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e": "Ymultichange(Ymovefromfile,Yreturntypechange,Ymodifierchange,Ybodychange,Yrename,Yparameterchange)",
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": "Yfilerename",
+    "e71bc00a471422ddb26dd54e706f09f0fe09925c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e": {
+      "type": "Ymultichange(Ymovefromfile,Yreturntypechange,Ymodifierchange,Ybodychange,Yrename,Yparameterchange)",
+      "commitMessage": "HDFS-13291. RBF: Implement available space based OrderResolver. Contributed by Yiqun Lin.\n",
+      "commitDate": "26/03/18 3:33 AM",
+      "commitName": "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+      "commitAuthor": "Yiqun Lin",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-13291. RBF: Implement available space based OrderResolver. Contributed by Yiqun Lin.\n",
+          "commitDate": "26/03/18 3:33 AM",
+          "commitName": "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+          "commitAuthor": "Yiqun Lin",
+          "commitDateOld": "23/03/18 9:17 PM",
+          "commitNameOld": "28790b81ecb719ac26a01ad0c400ee5f1c29ccf8",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 2.26,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,25 @@\n-  synchronized Map\u003cString, String\u003e getSubclusterMappings() {\n-    if (nodeSubcluster \u003d\u003d null ||\n-        (monotonicNow() - lastUpdated) \u003e minUpdateTime) {\n-      // Fetch the mapping asynchronously\n-      Thread updater \u003d new Thread(new Runnable() {\n-        @Override\n-        public void run() {\n-          Map\u003cString, String\u003e mapping \u003d new HashMap\u003c\u003e();\n-\n-          Map\u003cString, String\u003e dnSubcluster \u003d getDatanodesSubcluster();\n-          if (dnSubcluster !\u003d null) {\n-            mapping.putAll(dnSubcluster);\n-          }\n-\n-          Map\u003cString, String\u003e nnSubcluster \u003d getNamenodesSubcluster();\n-          if (nnSubcluster !\u003d null) {\n-            mapping.putAll(nnSubcluster);\n-          }\n-          nodeSubcluster \u003d mapping;\n-          lastUpdated \u003d monotonicNow();\n-        }\n-      });\n-      updater.start();\n-\n-      // Wait until initialized\n-      if (nodeSubcluster \u003d\u003d null) {\n+  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n+      MembershipStore membershipStore) {\n+    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n+    try {\n+      // Get the Namenode\u0027s available space info from the subclusters\n+      // from the Membership store.\n+      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n+          .newInstance();\n+      GetNamenodeRegistrationsResponse response \u003d membershipStore\n+          .getNamenodeRegistrations(request);\n+      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n+      for (MembershipState nn : nns) {\n         try {\n-          LOG.debug(\"Wait to get the mapping for the first time\");\n-          updater.join();\n-        } catch (InterruptedException e) {\n-          LOG.error(\"Cannot wait for the updater to finish\");\n+          String nsId \u003d nn.getNameserviceId();\n+          long availableSpace \u003d nn.getStats().getAvailableSpace();\n+          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n+        } catch (Exception e) {\n+          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n         }\n       }\n+    } catch (IOException ioe) {\n+      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n     }\n-    return nodeSubcluster;\n+    return mapping;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n      MembershipStore membershipStore) {\n    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n    try {\n      // Get the Namenode\u0027s available space info from the subclusters\n      // from the Membership store.\n      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n          .newInstance();\n      GetNamenodeRegistrationsResponse response \u003d membershipStore\n          .getNamenodeRegistrations(request);\n      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n      for (MembershipState nn : nns) {\n        try {\n          String nsId \u003d nn.getNameserviceId();\n          long availableSpace \u003d nn.getStats().getAvailableSpace();\n          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n        } catch (Exception e) {\n          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n        }\n      }\n    } catch (IOException ioe) {\n      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n    }\n    return mapping;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/AvailableSpaceResolver.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/LocalResolver.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/AvailableSpaceResolver.java",
+            "oldMethodName": "getSubclusterMappings",
+            "newMethodName": "getSubclusterInfo"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-13291. RBF: Implement available space based OrderResolver. Contributed by Yiqun Lin.\n",
+          "commitDate": "26/03/18 3:33 AM",
+          "commitName": "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+          "commitAuthor": "Yiqun Lin",
+          "commitDateOld": "23/03/18 9:17 PM",
+          "commitNameOld": "28790b81ecb719ac26a01ad0c400ee5f1c29ccf8",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 2.26,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,25 @@\n-  synchronized Map\u003cString, String\u003e getSubclusterMappings() {\n-    if (nodeSubcluster \u003d\u003d null ||\n-        (monotonicNow() - lastUpdated) \u003e minUpdateTime) {\n-      // Fetch the mapping asynchronously\n-      Thread updater \u003d new Thread(new Runnable() {\n-        @Override\n-        public void run() {\n-          Map\u003cString, String\u003e mapping \u003d new HashMap\u003c\u003e();\n-\n-          Map\u003cString, String\u003e dnSubcluster \u003d getDatanodesSubcluster();\n-          if (dnSubcluster !\u003d null) {\n-            mapping.putAll(dnSubcluster);\n-          }\n-\n-          Map\u003cString, String\u003e nnSubcluster \u003d getNamenodesSubcluster();\n-          if (nnSubcluster !\u003d null) {\n-            mapping.putAll(nnSubcluster);\n-          }\n-          nodeSubcluster \u003d mapping;\n-          lastUpdated \u003d monotonicNow();\n-        }\n-      });\n-      updater.start();\n-\n-      // Wait until initialized\n-      if (nodeSubcluster \u003d\u003d null) {\n+  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n+      MembershipStore membershipStore) {\n+    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n+    try {\n+      // Get the Namenode\u0027s available space info from the subclusters\n+      // from the Membership store.\n+      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n+          .newInstance();\n+      GetNamenodeRegistrationsResponse response \u003d membershipStore\n+          .getNamenodeRegistrations(request);\n+      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n+      for (MembershipState nn : nns) {\n         try {\n-          LOG.debug(\"Wait to get the mapping for the first time\");\n-          updater.join();\n-        } catch (InterruptedException e) {\n-          LOG.error(\"Cannot wait for the updater to finish\");\n+          String nsId \u003d nn.getNameserviceId();\n+          long availableSpace \u003d nn.getStats().getAvailableSpace();\n+          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n+        } catch (Exception e) {\n+          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n         }\n       }\n+    } catch (IOException ioe) {\n+      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n     }\n-    return nodeSubcluster;\n+    return mapping;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n      MembershipStore membershipStore) {\n    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n    try {\n      // Get the Namenode\u0027s available space info from the subclusters\n      // from the Membership store.\n      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n          .newInstance();\n      GetNamenodeRegistrationsResponse response \u003d membershipStore\n          .getNamenodeRegistrations(request);\n      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n      for (MembershipState nn : nns) {\n        try {\n          String nsId \u003d nn.getNameserviceId();\n          long availableSpace \u003d nn.getStats().getAvailableSpace();\n          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n        } catch (Exception e) {\n          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n        }\n      }\n    } catch (IOException ioe) {\n      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n    }\n    return mapping;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/AvailableSpaceResolver.java",
+          "extendedDetails": {
+            "oldValue": "Map\u003cString,String\u003e",
+            "newValue": "Map\u003cString,SubclusterAvailableSpace\u003e"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-13291. RBF: Implement available space based OrderResolver. Contributed by Yiqun Lin.\n",
+          "commitDate": "26/03/18 3:33 AM",
+          "commitName": "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+          "commitAuthor": "Yiqun Lin",
+          "commitDateOld": "23/03/18 9:17 PM",
+          "commitNameOld": "28790b81ecb719ac26a01ad0c400ee5f1c29ccf8",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 2.26,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,25 @@\n-  synchronized Map\u003cString, String\u003e getSubclusterMappings() {\n-    if (nodeSubcluster \u003d\u003d null ||\n-        (monotonicNow() - lastUpdated) \u003e minUpdateTime) {\n-      // Fetch the mapping asynchronously\n-      Thread updater \u003d new Thread(new Runnable() {\n-        @Override\n-        public void run() {\n-          Map\u003cString, String\u003e mapping \u003d new HashMap\u003c\u003e();\n-\n-          Map\u003cString, String\u003e dnSubcluster \u003d getDatanodesSubcluster();\n-          if (dnSubcluster !\u003d null) {\n-            mapping.putAll(dnSubcluster);\n-          }\n-\n-          Map\u003cString, String\u003e nnSubcluster \u003d getNamenodesSubcluster();\n-          if (nnSubcluster !\u003d null) {\n-            mapping.putAll(nnSubcluster);\n-          }\n-          nodeSubcluster \u003d mapping;\n-          lastUpdated \u003d monotonicNow();\n-        }\n-      });\n-      updater.start();\n-\n-      // Wait until initialized\n-      if (nodeSubcluster \u003d\u003d null) {\n+  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n+      MembershipStore membershipStore) {\n+    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n+    try {\n+      // Get the Namenode\u0027s available space info from the subclusters\n+      // from the Membership store.\n+      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n+          .newInstance();\n+      GetNamenodeRegistrationsResponse response \u003d membershipStore\n+          .getNamenodeRegistrations(request);\n+      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n+      for (MembershipState nn : nns) {\n         try {\n-          LOG.debug(\"Wait to get the mapping for the first time\");\n-          updater.join();\n-        } catch (InterruptedException e) {\n-          LOG.error(\"Cannot wait for the updater to finish\");\n+          String nsId \u003d nn.getNameserviceId();\n+          long availableSpace \u003d nn.getStats().getAvailableSpace();\n+          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n+        } catch (Exception e) {\n+          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n         }\n       }\n+    } catch (IOException ioe) {\n+      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n     }\n-    return nodeSubcluster;\n+    return mapping;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n      MembershipStore membershipStore) {\n    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n    try {\n      // Get the Namenode\u0027s available space info from the subclusters\n      // from the Membership store.\n      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n          .newInstance();\n      GetNamenodeRegistrationsResponse response \u003d membershipStore\n          .getNamenodeRegistrations(request);\n      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n      for (MembershipState nn : nns) {\n        try {\n          String nsId \u003d nn.getNameserviceId();\n          long availableSpace \u003d nn.getStats().getAvailableSpace();\n          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n        } catch (Exception e) {\n          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n        }\n      }\n    } catch (IOException ioe) {\n      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n    }\n    return mapping;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/AvailableSpaceResolver.java",
+          "extendedDetails": {
+            "oldValue": "[synchronized]",
+            "newValue": "[protected]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13291. RBF: Implement available space based OrderResolver. Contributed by Yiqun Lin.\n",
+          "commitDate": "26/03/18 3:33 AM",
+          "commitName": "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+          "commitAuthor": "Yiqun Lin",
+          "commitDateOld": "23/03/18 9:17 PM",
+          "commitNameOld": "28790b81ecb719ac26a01ad0c400ee5f1c29ccf8",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 2.26,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,25 @@\n-  synchronized Map\u003cString, String\u003e getSubclusterMappings() {\n-    if (nodeSubcluster \u003d\u003d null ||\n-        (monotonicNow() - lastUpdated) \u003e minUpdateTime) {\n-      // Fetch the mapping asynchronously\n-      Thread updater \u003d new Thread(new Runnable() {\n-        @Override\n-        public void run() {\n-          Map\u003cString, String\u003e mapping \u003d new HashMap\u003c\u003e();\n-\n-          Map\u003cString, String\u003e dnSubcluster \u003d getDatanodesSubcluster();\n-          if (dnSubcluster !\u003d null) {\n-            mapping.putAll(dnSubcluster);\n-          }\n-\n-          Map\u003cString, String\u003e nnSubcluster \u003d getNamenodesSubcluster();\n-          if (nnSubcluster !\u003d null) {\n-            mapping.putAll(nnSubcluster);\n-          }\n-          nodeSubcluster \u003d mapping;\n-          lastUpdated \u003d monotonicNow();\n-        }\n-      });\n-      updater.start();\n-\n-      // Wait until initialized\n-      if (nodeSubcluster \u003d\u003d null) {\n+  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n+      MembershipStore membershipStore) {\n+    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n+    try {\n+      // Get the Namenode\u0027s available space info from the subclusters\n+      // from the Membership store.\n+      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n+          .newInstance();\n+      GetNamenodeRegistrationsResponse response \u003d membershipStore\n+          .getNamenodeRegistrations(request);\n+      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n+      for (MembershipState nn : nns) {\n         try {\n-          LOG.debug(\"Wait to get the mapping for the first time\");\n-          updater.join();\n-        } catch (InterruptedException e) {\n-          LOG.error(\"Cannot wait for the updater to finish\");\n+          String nsId \u003d nn.getNameserviceId();\n+          long availableSpace \u003d nn.getStats().getAvailableSpace();\n+          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n+        } catch (Exception e) {\n+          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n         }\n       }\n+    } catch (IOException ioe) {\n+      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n     }\n-    return nodeSubcluster;\n+    return mapping;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n      MembershipStore membershipStore) {\n    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n    try {\n      // Get the Namenode\u0027s available space info from the subclusters\n      // from the Membership store.\n      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n          .newInstance();\n      GetNamenodeRegistrationsResponse response \u003d membershipStore\n          .getNamenodeRegistrations(request);\n      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n      for (MembershipState nn : nns) {\n        try {\n          String nsId \u003d nn.getNameserviceId();\n          long availableSpace \u003d nn.getStats().getAvailableSpace();\n          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n        } catch (Exception e) {\n          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n        }\n      }\n    } catch (IOException ioe) {\n      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n    }\n    return mapping;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/AvailableSpaceResolver.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-13291. RBF: Implement available space based OrderResolver. Contributed by Yiqun Lin.\n",
+          "commitDate": "26/03/18 3:33 AM",
+          "commitName": "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+          "commitAuthor": "Yiqun Lin",
+          "commitDateOld": "23/03/18 9:17 PM",
+          "commitNameOld": "28790b81ecb719ac26a01ad0c400ee5f1c29ccf8",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 2.26,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,25 @@\n-  synchronized Map\u003cString, String\u003e getSubclusterMappings() {\n-    if (nodeSubcluster \u003d\u003d null ||\n-        (monotonicNow() - lastUpdated) \u003e minUpdateTime) {\n-      // Fetch the mapping asynchronously\n-      Thread updater \u003d new Thread(new Runnable() {\n-        @Override\n-        public void run() {\n-          Map\u003cString, String\u003e mapping \u003d new HashMap\u003c\u003e();\n-\n-          Map\u003cString, String\u003e dnSubcluster \u003d getDatanodesSubcluster();\n-          if (dnSubcluster !\u003d null) {\n-            mapping.putAll(dnSubcluster);\n-          }\n-\n-          Map\u003cString, String\u003e nnSubcluster \u003d getNamenodesSubcluster();\n-          if (nnSubcluster !\u003d null) {\n-            mapping.putAll(nnSubcluster);\n-          }\n-          nodeSubcluster \u003d mapping;\n-          lastUpdated \u003d monotonicNow();\n-        }\n-      });\n-      updater.start();\n-\n-      // Wait until initialized\n-      if (nodeSubcluster \u003d\u003d null) {\n+  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n+      MembershipStore membershipStore) {\n+    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n+    try {\n+      // Get the Namenode\u0027s available space info from the subclusters\n+      // from the Membership store.\n+      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n+          .newInstance();\n+      GetNamenodeRegistrationsResponse response \u003d membershipStore\n+          .getNamenodeRegistrations(request);\n+      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n+      for (MembershipState nn : nns) {\n         try {\n-          LOG.debug(\"Wait to get the mapping for the first time\");\n-          updater.join();\n-        } catch (InterruptedException e) {\n-          LOG.error(\"Cannot wait for the updater to finish\");\n+          String nsId \u003d nn.getNameserviceId();\n+          long availableSpace \u003d nn.getStats().getAvailableSpace();\n+          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n+        } catch (Exception e) {\n+          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n         }\n       }\n+    } catch (IOException ioe) {\n+      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n     }\n-    return nodeSubcluster;\n+    return mapping;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n      MembershipStore membershipStore) {\n    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n    try {\n      // Get the Namenode\u0027s available space info from the subclusters\n      // from the Membership store.\n      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n          .newInstance();\n      GetNamenodeRegistrationsResponse response \u003d membershipStore\n          .getNamenodeRegistrations(request);\n      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n      for (MembershipState nn : nns) {\n        try {\n          String nsId \u003d nn.getNameserviceId();\n          long availableSpace \u003d nn.getStats().getAvailableSpace();\n          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n        } catch (Exception e) {\n          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n        }\n      }\n    } catch (IOException ioe) {\n      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n    }\n    return mapping;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/AvailableSpaceResolver.java",
+          "extendedDetails": {
+            "oldValue": "getSubclusterMappings",
+            "newValue": "getSubclusterInfo"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13291. RBF: Implement available space based OrderResolver. Contributed by Yiqun Lin.\n",
+          "commitDate": "26/03/18 3:33 AM",
+          "commitName": "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+          "commitAuthor": "Yiqun Lin",
+          "commitDateOld": "23/03/18 9:17 PM",
+          "commitNameOld": "28790b81ecb719ac26a01ad0c400ee5f1c29ccf8",
+          "commitAuthorOld": "Anu Engineer",
+          "daysBetweenCommits": 2.26,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,36 +1,25 @@\n-  synchronized Map\u003cString, String\u003e getSubclusterMappings() {\n-    if (nodeSubcluster \u003d\u003d null ||\n-        (monotonicNow() - lastUpdated) \u003e minUpdateTime) {\n-      // Fetch the mapping asynchronously\n-      Thread updater \u003d new Thread(new Runnable() {\n-        @Override\n-        public void run() {\n-          Map\u003cString, String\u003e mapping \u003d new HashMap\u003c\u003e();\n-\n-          Map\u003cString, String\u003e dnSubcluster \u003d getDatanodesSubcluster();\n-          if (dnSubcluster !\u003d null) {\n-            mapping.putAll(dnSubcluster);\n-          }\n-\n-          Map\u003cString, String\u003e nnSubcluster \u003d getNamenodesSubcluster();\n-          if (nnSubcluster !\u003d null) {\n-            mapping.putAll(nnSubcluster);\n-          }\n-          nodeSubcluster \u003d mapping;\n-          lastUpdated \u003d monotonicNow();\n-        }\n-      });\n-      updater.start();\n-\n-      // Wait until initialized\n-      if (nodeSubcluster \u003d\u003d null) {\n+  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n+      MembershipStore membershipStore) {\n+    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n+    try {\n+      // Get the Namenode\u0027s available space info from the subclusters\n+      // from the Membership store.\n+      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n+          .newInstance();\n+      GetNamenodeRegistrationsResponse response \u003d membershipStore\n+          .getNamenodeRegistrations(request);\n+      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n+      for (MembershipState nn : nns) {\n         try {\n-          LOG.debug(\"Wait to get the mapping for the first time\");\n-          updater.join();\n-        } catch (InterruptedException e) {\n-          LOG.error(\"Cannot wait for the updater to finish\");\n+          String nsId \u003d nn.getNameserviceId();\n+          long availableSpace \u003d nn.getStats().getAvailableSpace();\n+          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n+        } catch (Exception e) {\n+          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n         }\n       }\n+    } catch (IOException ioe) {\n+      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n     }\n-    return nodeSubcluster;\n+    return mapping;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected Map\u003cString, SubclusterAvailableSpace\u003e getSubclusterInfo(\n      MembershipStore membershipStore) {\n    Map\u003cString, SubclusterAvailableSpace\u003e mapping \u003d new HashMap\u003c\u003e();\n    try {\n      // Get the Namenode\u0027s available space info from the subclusters\n      // from the Membership store.\n      GetNamenodeRegistrationsRequest request \u003d GetNamenodeRegistrationsRequest\n          .newInstance();\n      GetNamenodeRegistrationsResponse response \u003d membershipStore\n          .getNamenodeRegistrations(request);\n      final List\u003cMembershipState\u003e nns \u003d response.getNamenodeMemberships();\n      for (MembershipState nn : nns) {\n        try {\n          String nsId \u003d nn.getNameserviceId();\n          long availableSpace \u003d nn.getStats().getAvailableSpace();\n          mapping.put(nsId, new SubclusterAvailableSpace(nsId, availableSpace));\n        } catch (Exception e) {\n          LOG.error(\"Cannot get stats info for {}: {}.\", nn, e.getMessage());\n        }\n      }\n    } catch (IOException ioe) {\n      LOG.error(\"Cannot get Namenodes from the State Store.\", ioe);\n    }\n    return mapping;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/AvailableSpaceResolver.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[membershipStore-MembershipStore]"
+          }
+        }
+      ]
+    },
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-13215. RBF: Move Router to its own module. Contributed by Wei Yan\n",
+      "commitDate": "19/03/18 10:13 PM",
+      "commitName": "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+      "commitAuthor": "weiy",
+      "commitDateOld": "19/03/18 5:19 PM",
+      "commitNameOld": "e65ff1c8be48ef4f04ed96f96ac4caef4974944d",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.2,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  synchronized Map\u003cString, String\u003e getSubclusterMappings() {\n    if (nodeSubcluster \u003d\u003d null ||\n        (monotonicNow() - lastUpdated) \u003e minUpdateTime) {\n      // Fetch the mapping asynchronously\n      Thread updater \u003d new Thread(new Runnable() {\n        @Override\n        public void run() {\n          Map\u003cString, String\u003e mapping \u003d new HashMap\u003c\u003e();\n\n          Map\u003cString, String\u003e dnSubcluster \u003d getDatanodesSubcluster();\n          if (dnSubcluster !\u003d null) {\n            mapping.putAll(dnSubcluster);\n          }\n\n          Map\u003cString, String\u003e nnSubcluster \u003d getNamenodesSubcluster();\n          if (nnSubcluster !\u003d null) {\n            mapping.putAll(nnSubcluster);\n          }\n          nodeSubcluster \u003d mapping;\n          lastUpdated \u003d monotonicNow();\n        }\n      });\n      updater.start();\n\n      // Wait until initialized\n      if (nodeSubcluster \u003d\u003d null) {\n        try {\n          LOG.debug(\"Wait to get the mapping for the first time\");\n          updater.join();\n        } catch (InterruptedException e) {\n          LOG.error(\"Cannot wait for the updater to finish\");\n        }\n      }\n    }\n    return nodeSubcluster;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/LocalResolver.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/LocalResolver.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/LocalResolver.java"
+      }
+    },
+    "e71bc00a471422ddb26dd54e706f09f0fe09925c": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13224. RBF: Resolvers to support mount points across multiple subclusters. Contributed by Inigo Goiri.\n",
+      "commitDate": "15/03/18 10:32 AM",
+      "commitName": "e71bc00a471422ddb26dd54e706f09f0fe09925c",
+      "commitAuthor": "Inigo Goiri",
+      "diff": "@@ -0,0 +1,36 @@\n+  synchronized Map\u003cString, String\u003e getSubclusterMappings() {\n+    if (nodeSubcluster \u003d\u003d null ||\n+        (monotonicNow() - lastUpdated) \u003e minUpdateTime) {\n+      // Fetch the mapping asynchronously\n+      Thread updater \u003d new Thread(new Runnable() {\n+        @Override\n+        public void run() {\n+          Map\u003cString, String\u003e mapping \u003d new HashMap\u003c\u003e();\n+\n+          Map\u003cString, String\u003e dnSubcluster \u003d getDatanodesSubcluster();\n+          if (dnSubcluster !\u003d null) {\n+            mapping.putAll(dnSubcluster);\n+          }\n+\n+          Map\u003cString, String\u003e nnSubcluster \u003d getNamenodesSubcluster();\n+          if (nnSubcluster !\u003d null) {\n+            mapping.putAll(nnSubcluster);\n+          }\n+          nodeSubcluster \u003d mapping;\n+          lastUpdated \u003d monotonicNow();\n+        }\n+      });\n+      updater.start();\n+\n+      // Wait until initialized\n+      if (nodeSubcluster \u003d\u003d null) {\n+        try {\n+          LOG.debug(\"Wait to get the mapping for the first time\");\n+          updater.join();\n+        } catch (InterruptedException e) {\n+          LOG.error(\"Cannot wait for the updater to finish\");\n+        }\n+      }\n+    }\n+    return nodeSubcluster;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  synchronized Map\u003cString, String\u003e getSubclusterMappings() {\n    if (nodeSubcluster \u003d\u003d null ||\n        (monotonicNow() - lastUpdated) \u003e minUpdateTime) {\n      // Fetch the mapping asynchronously\n      Thread updater \u003d new Thread(new Runnable() {\n        @Override\n        public void run() {\n          Map\u003cString, String\u003e mapping \u003d new HashMap\u003c\u003e();\n\n          Map\u003cString, String\u003e dnSubcluster \u003d getDatanodesSubcluster();\n          if (dnSubcluster !\u003d null) {\n            mapping.putAll(dnSubcluster);\n          }\n\n          Map\u003cString, String\u003e nnSubcluster \u003d getNamenodesSubcluster();\n          if (nnSubcluster !\u003d null) {\n            mapping.putAll(nnSubcluster);\n          }\n          nodeSubcluster \u003d mapping;\n          lastUpdated \u003d monotonicNow();\n        }\n      });\n      updater.start();\n\n      // Wait until initialized\n      if (nodeSubcluster \u003d\u003d null) {\n        try {\n          LOG.debug(\"Wait to get the mapping for the first time\");\n          updater.join();\n        } catch (InterruptedException e) {\n          LOG.error(\"Cannot wait for the updater to finish\");\n        }\n      }\n    }\n    return nodeSubcluster;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/resolver/order/LocalResolver.java"
+    }
+  }
+}

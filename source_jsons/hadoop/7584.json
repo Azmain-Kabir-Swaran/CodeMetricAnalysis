@@ -1,0 +1,146 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NameNode.java",
+  "functionName": "getServiceStatus",
+  "functionId": "getServiceStatus",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+  "functionStartLine": 1896,
+  "functionEndLine": 1919,
+  "numCommitsSeen": 256,
+  "timeTaken": 5087,
+  "changeHistory": [
+    "a2a8c486998b81d2c73804a07cc74f5269bfd904",
+    "a49cc74b4c72195dee1dfb6f9548e5e411dff553",
+    "b795c65f4929330972c07ec2d5d7ce987c5c2316"
+  ],
+  "changeHistoryShort": {
+    "a2a8c486998b81d2c73804a07cc74f5269bfd904": "Ybodychange",
+    "a49cc74b4c72195dee1dfb6f9548e5e411dff553": "Ybodychange",
+    "b795c65f4929330972c07ec2d5d7ce987c5c2316": "Ymultichange(Yrename,Yreturntypechange,Yexceptionschange,Ybodychange)"
+  },
+  "changeHistoryDetails": {
+    "a2a8c486998b81d2c73804a07cc74f5269bfd904": {
+      "type": "Ybodychange",
+      "commitMessage": "Remove super user privilege requirement for NameNode.getServiceStatus. Contributed by Chao Sun.",
+      "commitDate": "10/08/18 3:59 PM",
+      "commitName": "a2a8c486998b81d2c73804a07cc74f5269bfd904",
+      "commitAuthor": "Chao Sun",
+      "commitDateOld": "23/04/18 10:08 AM",
+      "commitNameOld": "c533c770476254c27309daeb2b41c73dc70bf3f4",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 109.24,
+      "commitsBetweenForRepo": 1285,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,24 @@\n   synchronized HAServiceStatus getServiceStatus()\n       throws ServiceFailedException, AccessControlException {\n-    namesystem.checkSuperuserPrivilege();\n     if (!haEnabled) {\n       throw new ServiceFailedException(\"HA for namenode is not enabled\");\n     }\n     if (state \u003d\u003d null) {\n       return new HAServiceStatus(HAServiceState.INITIALIZING);\n     }\n     HAServiceState retState \u003d state.getServiceState();\n     HAServiceStatus ret \u003d new HAServiceStatus(retState);\n     if (retState \u003d\u003d HAServiceState.STANDBY) {\n       if (namesystem.isInSafeMode()) {\n         ret.setNotReadyToBecomeActive(\"The NameNode is in safemode. \" +\n             namesystem.getSafeModeTip());\n       } else {\n         ret.setReadyToBecomeActive();\n       }\n     } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n       ret.setReadyToBecomeActive();\n     } else {\n       ret.setNotReadyToBecomeActive(\"State is \" + state);\n     }\n     return ret;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  synchronized HAServiceStatus getServiceStatus()\n      throws ServiceFailedException, AccessControlException {\n    if (!haEnabled) {\n      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n    }\n    if (state \u003d\u003d null) {\n      return new HAServiceStatus(HAServiceState.INITIALIZING);\n    }\n    HAServiceState retState \u003d state.getServiceState();\n    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n    if (retState \u003d\u003d HAServiceState.STANDBY) {\n      if (namesystem.isInSafeMode()) {\n        ret.setNotReadyToBecomeActive(\"The NameNode is in safemode. \" +\n            namesystem.getSafeModeTip());\n      } else {\n        ret.setReadyToBecomeActive();\n      }\n    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n      ret.setReadyToBecomeActive();\n    } else {\n      ret.setNotReadyToBecomeActive(\"State is \" + state);\n    }\n    return ret;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+      "extendedDetails": {}
+    },
+    "a49cc74b4c72195dee1dfb6f9548e5e411dff553": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-9129. Move the safemode block count into BlockManager. Contributed by Mingliang Liu.\n",
+      "commitDate": "01/12/15 4:09 PM",
+      "commitName": "a49cc74b4c72195dee1dfb6f9548e5e411dff553",
+      "commitAuthor": "Jing Zhao",
+      "commitDateOld": "09/11/15 2:04 PM",
+      "commitNameOld": "2741a2109b98d0febb463cb318018ecbd3995102",
+      "commitAuthorOld": "Yongjun Zhang",
+      "daysBetweenCommits": 22.09,
+      "commitsBetweenForRepo": 147,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,25 @@\n   synchronized HAServiceStatus getServiceStatus()\n       throws ServiceFailedException, AccessControlException {\n     namesystem.checkSuperuserPrivilege();\n     if (!haEnabled) {\n       throw new ServiceFailedException(\"HA for namenode is not enabled\");\n     }\n     if (state \u003d\u003d null) {\n       return new HAServiceStatus(HAServiceState.INITIALIZING);\n     }\n     HAServiceState retState \u003d state.getServiceState();\n     HAServiceStatus ret \u003d new HAServiceStatus(retState);\n     if (retState \u003d\u003d HAServiceState.STANDBY) {\n-      String safemodeTip \u003d namesystem.getSafeModeTip();\n-      if (!safemodeTip.isEmpty()) {\n-        ret.setNotReadyToBecomeActive(\n-            \"The NameNode is in safemode. \" +\n-            safemodeTip);\n+      if (namesystem.isInSafeMode()) {\n+        ret.setNotReadyToBecomeActive(\"The NameNode is in safemode. \" +\n+            namesystem.getSafeModeTip());\n       } else {\n         ret.setReadyToBecomeActive();\n       }\n     } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n       ret.setReadyToBecomeActive();\n     } else {\n       ret.setNotReadyToBecomeActive(\"State is \" + state);\n     }\n     return ret;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  synchronized HAServiceStatus getServiceStatus()\n      throws ServiceFailedException, AccessControlException {\n    namesystem.checkSuperuserPrivilege();\n    if (!haEnabled) {\n      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n    }\n    if (state \u003d\u003d null) {\n      return new HAServiceStatus(HAServiceState.INITIALIZING);\n    }\n    HAServiceState retState \u003d state.getServiceState();\n    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n    if (retState \u003d\u003d HAServiceState.STANDBY) {\n      if (namesystem.isInSafeMode()) {\n        ret.setNotReadyToBecomeActive(\"The NameNode is in safemode. \" +\n            namesystem.getSafeModeTip());\n      } else {\n        ret.setReadyToBecomeActive();\n      }\n    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n      ret.setReadyToBecomeActive();\n    } else {\n      ret.setNotReadyToBecomeActive(\"State is \" + state);\n    }\n    return ret;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+      "extendedDetails": {}
+    },
+    "b795c65f4929330972c07ec2d5d7ce987c5c2316": {
+      "type": "Ymultichange(Yrename,Yreturntypechange,Yexceptionschange,Ybodychange)",
+      "commitMessage": "HDFS-3071. haadmin failover command does not provide enough detail when target NN is not ready to be active. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1304203 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "22/03/12 11:29 PM",
+      "commitName": "b795c65f4929330972c07ec2d5d7ce987c5c2316",
+      "commitAuthor": "Todd Lipcon",
+      "subchanges": [
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-3071. haadmin failover command does not provide enough detail when target NN is not ready to be active. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1304203 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "22/03/12 11:29 PM",
+          "commitName": "b795c65f4929330972c07ec2d5d7ce987c5c2316",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "14/03/12 10:36 PM",
+          "commitNameOld": "59eb544744f87aaa8966e30568dff9e8e183f342",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 8.04,
+          "commitsBetweenForRepo": 53,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,27 @@\n-  synchronized HAServiceState getServiceState() throws AccessControlException {\n+  synchronized HAServiceStatus getServiceStatus()\n+      throws ServiceFailedException, AccessControlException {\n     namesystem.checkSuperuserPrivilege();\n-    if (state \u003d\u003d null) {\n-      return HAServiceState.INITIALIZING;\n+    if (!haEnabled) {\n+      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n     }\n-    return state.getServiceState();\n+    if (state \u003d\u003d null) {\n+      return new HAServiceStatus(HAServiceState.INITIALIZING);\n+    }\n+    HAServiceState retState \u003d state.getServiceState();\n+    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n+    if (retState \u003d\u003d HAServiceState.STANDBY) {\n+      String safemodeTip \u003d namesystem.getSafeModeTip();\n+      if (!safemodeTip.isEmpty()) {\n+        ret.setNotReadyToBecomeActive(\n+            \"The NameNode is in safemode. \" +\n+            safemodeTip);\n+      } else {\n+        ret.setReadyToBecomeActive();\n+      }\n+    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n+      ret.setReadyToBecomeActive();\n+    } else {\n+      ret.setNotReadyToBecomeActive(\"State is \" + state);\n+    }\n+    return ret;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized HAServiceStatus getServiceStatus()\n      throws ServiceFailedException, AccessControlException {\n    namesystem.checkSuperuserPrivilege();\n    if (!haEnabled) {\n      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n    }\n    if (state \u003d\u003d null) {\n      return new HAServiceStatus(HAServiceState.INITIALIZING);\n    }\n    HAServiceState retState \u003d state.getServiceState();\n    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n    if (retState \u003d\u003d HAServiceState.STANDBY) {\n      String safemodeTip \u003d namesystem.getSafeModeTip();\n      if (!safemodeTip.isEmpty()) {\n        ret.setNotReadyToBecomeActive(\n            \"The NameNode is in safemode. \" +\n            safemodeTip);\n      } else {\n        ret.setReadyToBecomeActive();\n      }\n    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n      ret.setReadyToBecomeActive();\n    } else {\n      ret.setNotReadyToBecomeActive(\"State is \" + state);\n    }\n    return ret;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+          "extendedDetails": {
+            "oldValue": "getServiceState",
+            "newValue": "getServiceStatus"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-3071. haadmin failover command does not provide enough detail when target NN is not ready to be active. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1304203 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "22/03/12 11:29 PM",
+          "commitName": "b795c65f4929330972c07ec2d5d7ce987c5c2316",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "14/03/12 10:36 PM",
+          "commitNameOld": "59eb544744f87aaa8966e30568dff9e8e183f342",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 8.04,
+          "commitsBetweenForRepo": 53,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,27 @@\n-  synchronized HAServiceState getServiceState() throws AccessControlException {\n+  synchronized HAServiceStatus getServiceStatus()\n+      throws ServiceFailedException, AccessControlException {\n     namesystem.checkSuperuserPrivilege();\n-    if (state \u003d\u003d null) {\n-      return HAServiceState.INITIALIZING;\n+    if (!haEnabled) {\n+      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n     }\n-    return state.getServiceState();\n+    if (state \u003d\u003d null) {\n+      return new HAServiceStatus(HAServiceState.INITIALIZING);\n+    }\n+    HAServiceState retState \u003d state.getServiceState();\n+    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n+    if (retState \u003d\u003d HAServiceState.STANDBY) {\n+      String safemodeTip \u003d namesystem.getSafeModeTip();\n+      if (!safemodeTip.isEmpty()) {\n+        ret.setNotReadyToBecomeActive(\n+            \"The NameNode is in safemode. \" +\n+            safemodeTip);\n+      } else {\n+        ret.setReadyToBecomeActive();\n+      }\n+    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n+      ret.setReadyToBecomeActive();\n+    } else {\n+      ret.setNotReadyToBecomeActive(\"State is \" + state);\n+    }\n+    return ret;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized HAServiceStatus getServiceStatus()\n      throws ServiceFailedException, AccessControlException {\n    namesystem.checkSuperuserPrivilege();\n    if (!haEnabled) {\n      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n    }\n    if (state \u003d\u003d null) {\n      return new HAServiceStatus(HAServiceState.INITIALIZING);\n    }\n    HAServiceState retState \u003d state.getServiceState();\n    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n    if (retState \u003d\u003d HAServiceState.STANDBY) {\n      String safemodeTip \u003d namesystem.getSafeModeTip();\n      if (!safemodeTip.isEmpty()) {\n        ret.setNotReadyToBecomeActive(\n            \"The NameNode is in safemode. \" +\n            safemodeTip);\n      } else {\n        ret.setReadyToBecomeActive();\n      }\n    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n      ret.setReadyToBecomeActive();\n    } else {\n      ret.setNotReadyToBecomeActive(\"State is \" + state);\n    }\n    return ret;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+          "extendedDetails": {
+            "oldValue": "HAServiceState",
+            "newValue": "HAServiceStatus"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HDFS-3071. haadmin failover command does not provide enough detail when target NN is not ready to be active. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1304203 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "22/03/12 11:29 PM",
+          "commitName": "b795c65f4929330972c07ec2d5d7ce987c5c2316",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "14/03/12 10:36 PM",
+          "commitNameOld": "59eb544744f87aaa8966e30568dff9e8e183f342",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 8.04,
+          "commitsBetweenForRepo": 53,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,27 @@\n-  synchronized HAServiceState getServiceState() throws AccessControlException {\n+  synchronized HAServiceStatus getServiceStatus()\n+      throws ServiceFailedException, AccessControlException {\n     namesystem.checkSuperuserPrivilege();\n-    if (state \u003d\u003d null) {\n-      return HAServiceState.INITIALIZING;\n+    if (!haEnabled) {\n+      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n     }\n-    return state.getServiceState();\n+    if (state \u003d\u003d null) {\n+      return new HAServiceStatus(HAServiceState.INITIALIZING);\n+    }\n+    HAServiceState retState \u003d state.getServiceState();\n+    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n+    if (retState \u003d\u003d HAServiceState.STANDBY) {\n+      String safemodeTip \u003d namesystem.getSafeModeTip();\n+      if (!safemodeTip.isEmpty()) {\n+        ret.setNotReadyToBecomeActive(\n+            \"The NameNode is in safemode. \" +\n+            safemodeTip);\n+      } else {\n+        ret.setReadyToBecomeActive();\n+      }\n+    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n+      ret.setReadyToBecomeActive();\n+    } else {\n+      ret.setNotReadyToBecomeActive(\"State is \" + state);\n+    }\n+    return ret;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized HAServiceStatus getServiceStatus()\n      throws ServiceFailedException, AccessControlException {\n    namesystem.checkSuperuserPrivilege();\n    if (!haEnabled) {\n      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n    }\n    if (state \u003d\u003d null) {\n      return new HAServiceStatus(HAServiceState.INITIALIZING);\n    }\n    HAServiceState retState \u003d state.getServiceState();\n    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n    if (retState \u003d\u003d HAServiceState.STANDBY) {\n      String safemodeTip \u003d namesystem.getSafeModeTip();\n      if (!safemodeTip.isEmpty()) {\n        ret.setNotReadyToBecomeActive(\n            \"The NameNode is in safemode. \" +\n            safemodeTip);\n      } else {\n        ret.setReadyToBecomeActive();\n      }\n    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n      ret.setReadyToBecomeActive();\n    } else {\n      ret.setNotReadyToBecomeActive(\"State is \" + state);\n    }\n    return ret;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+          "extendedDetails": {
+            "oldValue": "[AccessControlException]",
+            "newValue": "[ServiceFailedException, AccessControlException]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3071. haadmin failover command does not provide enough detail when target NN is not ready to be active. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1304203 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "22/03/12 11:29 PM",
+          "commitName": "b795c65f4929330972c07ec2d5d7ce987c5c2316",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "14/03/12 10:36 PM",
+          "commitNameOld": "59eb544744f87aaa8966e30568dff9e8e183f342",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 8.04,
+          "commitsBetweenForRepo": 53,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,27 @@\n-  synchronized HAServiceState getServiceState() throws AccessControlException {\n+  synchronized HAServiceStatus getServiceStatus()\n+      throws ServiceFailedException, AccessControlException {\n     namesystem.checkSuperuserPrivilege();\n-    if (state \u003d\u003d null) {\n-      return HAServiceState.INITIALIZING;\n+    if (!haEnabled) {\n+      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n     }\n-    return state.getServiceState();\n+    if (state \u003d\u003d null) {\n+      return new HAServiceStatus(HAServiceState.INITIALIZING);\n+    }\n+    HAServiceState retState \u003d state.getServiceState();\n+    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n+    if (retState \u003d\u003d HAServiceState.STANDBY) {\n+      String safemodeTip \u003d namesystem.getSafeModeTip();\n+      if (!safemodeTip.isEmpty()) {\n+        ret.setNotReadyToBecomeActive(\n+            \"The NameNode is in safemode. \" +\n+            safemodeTip);\n+      } else {\n+        ret.setReadyToBecomeActive();\n+      }\n+    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n+      ret.setReadyToBecomeActive();\n+    } else {\n+      ret.setNotReadyToBecomeActive(\"State is \" + state);\n+    }\n+    return ret;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  synchronized HAServiceStatus getServiceStatus()\n      throws ServiceFailedException, AccessControlException {\n    namesystem.checkSuperuserPrivilege();\n    if (!haEnabled) {\n      throw new ServiceFailedException(\"HA for namenode is not enabled\");\n    }\n    if (state \u003d\u003d null) {\n      return new HAServiceStatus(HAServiceState.INITIALIZING);\n    }\n    HAServiceState retState \u003d state.getServiceState();\n    HAServiceStatus ret \u003d new HAServiceStatus(retState);\n    if (retState \u003d\u003d HAServiceState.STANDBY) {\n      String safemodeTip \u003d namesystem.getSafeModeTip();\n      if (!safemodeTip.isEmpty()) {\n        ret.setNotReadyToBecomeActive(\n            \"The NameNode is in safemode. \" +\n            safemodeTip);\n      } else {\n        ret.setReadyToBecomeActive();\n      }\n    } else if (retState \u003d\u003d HAServiceState.ACTIVE) {\n      ret.setReadyToBecomeActive();\n    } else {\n      ret.setNotReadyToBecomeActive(\"State is \" + state);\n    }\n    return ret;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/NameNode.java",
+          "extendedDetails": {}
+        }
+      ]
+    }
+  }
+}

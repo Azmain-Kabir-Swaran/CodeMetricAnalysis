@@ -1,0 +1,137 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbfsClient.java",
+  "functionName": "renamePath",
+  "functionId": "renamePath___source-String__destination-String(modifiers-final)__continuation-String(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+  "functionStartLine": 301,
+  "functionEndLine": 335,
+  "numCommitsSeen": 42,
+  "timeTaken": 3871,
+  "changeHistory": [
+    "8f78aeb2500011e568929b585ed5b0987355f88d",
+    "791270a2e5e31546ff5c1ef4fa8bad6852b906dc",
+    "97f06b3fc70ad509e601076c015bc244daa1243f",
+    "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+    "f044deedbbfee0812316d587139cb828f27172e9"
+  ],
+  "changeHistoryShort": {
+    "8f78aeb2500011e568929b585ed5b0987355f88d": "Ybodychange",
+    "791270a2e5e31546ff5c1ef4fa8bad6852b906dc": "Ymultichange(Ybodychange,Yparametermetachange)",
+    "97f06b3fc70ad509e601076c015bc244daa1243f": "Ybodychange",
+    "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be": "Ybodychange",
+    "f044deedbbfee0812316d587139cb828f27172e9": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8f78aeb2500011e568929b585ed5b0987355f88d": {
+      "type": "Ybodychange",
+      "commitMessage": "Hadoop-17015. ABFS: Handling Rename and Delete idempotency \n\nContributed by Sneha Vijayarajan.",
+      "commitDate": "19/05/20 12:30 PM",
+      "commitName": "8f78aeb2500011e568929b585ed5b0987355f88d",
+      "commitAuthor": "Sneha Vijayarajan",
+      "commitDateOld": "12/05/20 11:35 AM",
+      "commitNameOld": "b214bbd2d92a0c02b71d352dba85f3b87317933c",
+      "commitAuthorOld": "Thomas Marquardt",
+      "daysBetweenCommits": 7.04,
+      "commitsBetweenForRepo": 31,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,35 @@\n   public AbfsRestOperation renamePath(String source, final String destination, final String continuation)\n           throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n     if (authType \u003d\u003d AuthType.SAS) {\n       final AbfsUriQueryBuilder srcQueryBuilder \u003d new AbfsUriQueryBuilder();\n       appendSASTokenToQuery(source, SASTokenProvider.RENAME_SOURCE_OPERATION, srcQueryBuilder);\n       encodedRenameSource +\u003d srcQueryBuilder.toString();\n     }\n \n     LOG.trace(\"Rename source queryparam added {}\", encodedRenameSource);\n     requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n     requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n     abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n     appendSASTokenToQuery(destination, SASTokenProvider.RENAME_DESTINATION_OPERATION, abfsUriQueryBuilder);\n \n     final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n             AbfsRestOperationType.RenamePath,\n             this,\n             HTTP_METHOD_PUT,\n             url,\n             requestHeaders);\n+    Instant renameRequestStartTime \u003d Instant.now();\n     op.execute();\n+\n+    if (op.getResult().getStatusCode() !\u003d HttpURLConnection.HTTP_OK) {\n+      return renameIdempotencyCheckOp(renameRequestStartTime, op, destination);\n+    }\n+\n     return op;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public AbfsRestOperation renamePath(String source, final String destination, final String continuation)\n          throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n    if (authType \u003d\u003d AuthType.SAS) {\n      final AbfsUriQueryBuilder srcQueryBuilder \u003d new AbfsUriQueryBuilder();\n      appendSASTokenToQuery(source, SASTokenProvider.RENAME_SOURCE_OPERATION, srcQueryBuilder);\n      encodedRenameSource +\u003d srcQueryBuilder.toString();\n    }\n\n    LOG.trace(\"Rename source queryparam added {}\", encodedRenameSource);\n    requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n    requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n    appendSASTokenToQuery(destination, SASTokenProvider.RENAME_DESTINATION_OPERATION, abfsUriQueryBuilder);\n\n    final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.RenamePath,\n            this,\n            HTTP_METHOD_PUT,\n            url,\n            requestHeaders);\n    Instant renameRequestStartTime \u003d Instant.now();\n    op.execute();\n\n    if (op.getResult().getStatusCode() !\u003d HttpURLConnection.HTTP_OK) {\n      return renameIdempotencyCheckOp(renameRequestStartTime, op, destination);\n    }\n\n    return op;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+      "extendedDetails": {}
+    },
+    "791270a2e5e31546ff5c1ef4fa8bad6852b906dc": {
+      "type": "Ymultichange(Ybodychange,Yparametermetachange)",
+      "commitMessage": "HADOOP-16730: ABFS: Support for Shared Access Signatures (SAS). Contributed by Sneha Vijayarajan.\n",
+      "commitDate": "27/02/20 10:27 AM",
+      "commitName": "791270a2e5e31546ff5c1ef4fa8bad6852b906dc",
+      "commitAuthor": "Sneha Vijayarajan",
+      "subchanges": [
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16730: ABFS: Support for Shared Access Signatures (SAS). Contributed by Sneha Vijayarajan.\n",
+          "commitDate": "27/02/20 10:27 AM",
+          "commitName": "791270a2e5e31546ff5c1ef4fa8bad6852b906dc",
+          "commitAuthor": "Sneha Vijayarajan",
+          "commitDateOld": "07/01/20 10:05 AM",
+          "commitNameOld": "d1f5976c004292f35b0fc5efbc86273becc4a304",
+          "commitAuthorOld": "Sneha Vijayarajan",
+          "daysBetweenCommits": 51.01,
+          "commitsBetweenForRepo": 184,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,29 @@\n-  public AbfsRestOperation renamePath(final String source, final String destination, final String continuation)\n+  public AbfsRestOperation renamePath(String source, final String destination, final String continuation)\n           throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n-    final String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n+    String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n+    if (authType \u003d\u003d AuthType.SAS) {\n+      final AbfsUriQueryBuilder srcQueryBuilder \u003d new AbfsUriQueryBuilder();\n+      appendSASTokenToQuery(source, SASTokenProvider.RENAME_SOURCE_OPERATION, srcQueryBuilder);\n+      encodedRenameSource +\u003d srcQueryBuilder.toString();\n+    }\n+\n+    LOG.trace(\"Rename source queryparam added {}\", encodedRenameSource);\n     requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n     requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n     abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n+    appendSASTokenToQuery(destination, SASTokenProvider.RENAME_DESTINATION_OPERATION, abfsUriQueryBuilder);\n \n     final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n             AbfsRestOperationType.RenamePath,\n             this,\n             HTTP_METHOD_PUT,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AbfsRestOperation renamePath(String source, final String destination, final String continuation)\n          throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n    if (authType \u003d\u003d AuthType.SAS) {\n      final AbfsUriQueryBuilder srcQueryBuilder \u003d new AbfsUriQueryBuilder();\n      appendSASTokenToQuery(source, SASTokenProvider.RENAME_SOURCE_OPERATION, srcQueryBuilder);\n      encodedRenameSource +\u003d srcQueryBuilder.toString();\n    }\n\n    LOG.trace(\"Rename source queryparam added {}\", encodedRenameSource);\n    requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n    requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n    appendSASTokenToQuery(destination, SASTokenProvider.RENAME_DESTINATION_OPERATION, abfsUriQueryBuilder);\n\n    final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.RenamePath,\n            this,\n            HTTP_METHOD_PUT,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HADOOP-16730: ABFS: Support for Shared Access Signatures (SAS). Contributed by Sneha Vijayarajan.\n",
+          "commitDate": "27/02/20 10:27 AM",
+          "commitName": "791270a2e5e31546ff5c1ef4fa8bad6852b906dc",
+          "commitAuthor": "Sneha Vijayarajan",
+          "commitDateOld": "07/01/20 10:05 AM",
+          "commitNameOld": "d1f5976c004292f35b0fc5efbc86273becc4a304",
+          "commitAuthorOld": "Sneha Vijayarajan",
+          "daysBetweenCommits": 51.01,
+          "commitsBetweenForRepo": 184,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,29 @@\n-  public AbfsRestOperation renamePath(final String source, final String destination, final String continuation)\n+  public AbfsRestOperation renamePath(String source, final String destination, final String continuation)\n           throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n-    final String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n+    String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n+    if (authType \u003d\u003d AuthType.SAS) {\n+      final AbfsUriQueryBuilder srcQueryBuilder \u003d new AbfsUriQueryBuilder();\n+      appendSASTokenToQuery(source, SASTokenProvider.RENAME_SOURCE_OPERATION, srcQueryBuilder);\n+      encodedRenameSource +\u003d srcQueryBuilder.toString();\n+    }\n+\n+    LOG.trace(\"Rename source queryparam added {}\", encodedRenameSource);\n     requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n     requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n     abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n+    appendSASTokenToQuery(destination, SASTokenProvider.RENAME_DESTINATION_OPERATION, abfsUriQueryBuilder);\n \n     final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n             AbfsRestOperationType.RenamePath,\n             this,\n             HTTP_METHOD_PUT,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public AbfsRestOperation renamePath(String source, final String destination, final String continuation)\n          throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n    if (authType \u003d\u003d AuthType.SAS) {\n      final AbfsUriQueryBuilder srcQueryBuilder \u003d new AbfsUriQueryBuilder();\n      appendSASTokenToQuery(source, SASTokenProvider.RENAME_SOURCE_OPERATION, srcQueryBuilder);\n      encodedRenameSource +\u003d srcQueryBuilder.toString();\n    }\n\n    LOG.trace(\"Rename source queryparam added {}\", encodedRenameSource);\n    requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n    requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n    appendSASTokenToQuery(destination, SASTokenProvider.RENAME_DESTINATION_OPERATION, abfsUriQueryBuilder);\n\n    final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.RenamePath,\n            this,\n            HTTP_METHOD_PUT,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+          "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+          "extendedDetails": {
+            "oldValue": "[source-String(modifiers-final), destination-String(modifiers-final), continuation-String(modifiers-final)]",
+            "newValue": "[source-String, destination-String(modifiers-final), continuation-String(modifiers-final)]"
+          }
+        }
+      ]
+    },
+    "97f06b3fc70ad509e601076c015bc244daa1243f": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15703. ABFS - Implement client-side throttling.\nContributed by Sneha Varma and Thomas Marquardt.\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "97f06b3fc70ad509e601076c015bc244daa1243f",
+      "commitAuthor": "Thomas Marquardt",
+      "commitDateOld": "17/09/18 12:54 PM",
+      "commitNameOld": "9c1e4e81399913f180131f4faa95604087c6d962",
+      "commitAuthorOld": "Thomas Marquardt",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 6,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,21 @@\n   public AbfsRestOperation renamePath(final String source, final String destination, final String continuation)\n           throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n     final String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n     requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n     requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n     abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n \n     final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n+            AbfsRestOperationType.RenamePath,\n             this,\n             HTTP_METHOD_PUT,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public AbfsRestOperation renamePath(final String source, final String destination, final String continuation)\n          throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n    requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n    requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n\n    final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            AbfsRestOperationType.RenamePath,\n            this,\n            HTTP_METHOD_PUT,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+      "extendedDetails": {}
+    },
+    "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15446. ABFS: tune imports \u0026 javadocs; stabilise tests.\nContributed by Steve Loughran and Da Zhou.\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "ce03a93f78c4d97ccb48a3906fcd77ad0ac756be",
+      "commitAuthor": "Thomas Marquardt",
+      "commitDateOld": "17/09/18 12:54 PM",
+      "commitNameOld": "a271fd0eca75cef8b8ba940cdac8ad4fd21b4462",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,20 @@\n   public AbfsRestOperation renamePath(final String source, final String destination, final String continuation)\n           throws AzureBlobFileSystemException {\n     final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n \n-    final String encodedRenameSource \u003d urlEncode(AbfsHttpConstants.FORWARD_SLASH + this.getFileSystem() + source);\n-    requestHeaders.add(new AbfsHttpHeader(HttpHeaderConfigurations.X_MS_RENAME_SOURCE, encodedRenameSource));\n-    requestHeaders.add(new AbfsHttpHeader(HttpHeaderConfigurations.IF_NONE_MATCH, AbfsHttpConstants.STAR));\n+    final String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n+    requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n+    requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n \n     final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n-    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_CONTINUATION, continuation);\n+    abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n \n     final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n     final AbfsRestOperation op \u003d new AbfsRestOperation(\n             this,\n-            AbfsHttpConstants.HTTP_METHOD_PUT,\n+            HTTP_METHOD_PUT,\n             url,\n             requestHeaders);\n     op.execute();\n     return op;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public AbfsRestOperation renamePath(final String source, final String destination, final String continuation)\n          throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final String encodedRenameSource \u003d urlEncode(FORWARD_SLASH + this.getFileSystem() + source);\n    requestHeaders.add(new AbfsHttpHeader(X_MS_RENAME_SOURCE, encodedRenameSource));\n    requestHeaders.add(new AbfsHttpHeader(IF_NONE_MATCH, STAR));\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(QUERY_PARAM_CONTINUATION, continuation);\n\n    final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            this,\n            HTTP_METHOD_PUT,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java",
+      "extendedDetails": {}
+    },
+    "f044deedbbfee0812316d587139cb828f27172e9": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15407. HADOOP-15540. Support Windows Azure Storage - Blob file system \"ABFS\" in Hadoop: Core Commit.\n\nContributed by Shane Mainali, Thomas Marquardt, Zichen Sun, Georgi Chalakov, Esfandiar Manii, Amit Singh, Dana Kaban, Da Zhou, Junhua Gu, Saher Ahwal, Saurabh Pant, James Baker, Shaoyu Zhang, Lawrence Chen, Kevin Chen and Steve Loughran\n",
+      "commitDate": "17/09/18 12:54 PM",
+      "commitName": "f044deedbbfee0812316d587139cb828f27172e9",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,20 @@\n+  public AbfsRestOperation renamePath(final String source, final String destination, final String continuation)\n+          throws AzureBlobFileSystemException {\n+    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n+\n+    final String encodedRenameSource \u003d urlEncode(AbfsHttpConstants.FORWARD_SLASH + this.getFileSystem() + source);\n+    requestHeaders.add(new AbfsHttpHeader(HttpHeaderConfigurations.X_MS_RENAME_SOURCE, encodedRenameSource));\n+    requestHeaders.add(new AbfsHttpHeader(HttpHeaderConfigurations.IF_NONE_MATCH, AbfsHttpConstants.STAR));\n+\n+    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n+    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_CONTINUATION, continuation);\n+\n+    final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n+    final AbfsRestOperation op \u003d new AbfsRestOperation(\n+            this,\n+            AbfsHttpConstants.HTTP_METHOD_PUT,\n+            url,\n+            requestHeaders);\n+    op.execute();\n+    return op;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public AbfsRestOperation renamePath(final String source, final String destination, final String continuation)\n          throws AzureBlobFileSystemException {\n    final List\u003cAbfsHttpHeader\u003e requestHeaders \u003d createDefaultHeaders();\n\n    final String encodedRenameSource \u003d urlEncode(AbfsHttpConstants.FORWARD_SLASH + this.getFileSystem() + source);\n    requestHeaders.add(new AbfsHttpHeader(HttpHeaderConfigurations.X_MS_RENAME_SOURCE, encodedRenameSource));\n    requestHeaders.add(new AbfsHttpHeader(HttpHeaderConfigurations.IF_NONE_MATCH, AbfsHttpConstants.STAR));\n\n    final AbfsUriQueryBuilder abfsUriQueryBuilder \u003d createDefaultUriQueryBuilder();\n    abfsUriQueryBuilder.addQuery(HttpQueryParams.QUERY_PARAM_CONTINUATION, continuation);\n\n    final URL url \u003d createRequestUrl(destination, abfsUriQueryBuilder.toString());\n    final AbfsRestOperation op \u003d new AbfsRestOperation(\n            this,\n            AbfsHttpConstants.HTTP_METHOD_PUT,\n            url,\n            requestHeaders);\n    op.execute();\n    return op;\n  }",
+      "path": "hadoop-tools/hadoop-azure/src/main/java/org/apache/hadoop/fs/azurebfs/services/AbfsClient.java"
+    }
+  }
+}

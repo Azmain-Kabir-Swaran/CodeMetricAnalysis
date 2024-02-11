@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FileJournalManager.java",
+  "functionName": "renameSelf",
+  "functionId": "renameSelf___newSuffix-String",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FileJournalManager.java",
+  "functionStartLine": 636,
+  "functionEndLine": 652,
+  "numCommitsSeen": 52,
+  "timeTaken": 2049,
+  "changeHistory": [
+    "d18af7edd494ca6de1849da6ee30997c035eb35b",
+    "79bd50f91b90b265d8b782169e8d4e7fd8181818",
+    "74dfa8f1f22d58df64a78c660af111e17ab7053e"
+  ],
+  "changeHistoryShort": {
+    "d18af7edd494ca6de1849da6ee30997c035eb35b": "Ybodychange",
+    "79bd50f91b90b265d8b782169e8d4e7fd8181818": "Ybodychange",
+    "74dfa8f1f22d58df64a78c660af111e17ab7053e": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d18af7edd494ca6de1849da6ee30997c035eb35b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6499. Use NativeIO#renameTo instead of File#renameTo in FileJournalManager. Contributed by Yongjun Zhang.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1602542 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "13/06/14 7:14 PM",
+      "commitName": "d18af7edd494ca6de1849da6ee30997c035eb35b",
+      "commitAuthor": "Aaron Myers",
+      "commitDateOld": "23/04/14 1:13 PM",
+      "commitNameOld": "876fd8ab7913a259ff9f69c16cc2d9af46ad3f9b",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 51.25,
+      "commitsBetweenForRepo": 292,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,17 @@\n     private void renameSelf(String newSuffix) throws IOException {\n       File src \u003d file;\n       File dst \u003d new File(src.getParent(), src.getName() + newSuffix);\n       // renameTo fails on Windows if the destination file already exists.\n-      if (!src.renameTo(dst)) {\n-        if (!dst.delete() || !src.renameTo(dst)) {\n-          throw new IOException(\n-            \"Couldn\u0027t rename log \" + src + \" to \" + dst);\n+      try {\n+        if (dst.exists()) {\n+          if (!dst.delete()) {\n+            throw new IOException(\"Couldn\u0027t delete \" + dst);\n+          }\n         }\n+        NativeIO.renameTo(src, dst);\n+      } catch (IOException e) {\n+        throw new IOException(\n+            \"Couldn\u0027t rename log \" + src + \" to \" + dst, e);\n       }\n       file \u003d dst;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private void renameSelf(String newSuffix) throws IOException {\n      File src \u003d file;\n      File dst \u003d new File(src.getParent(), src.getName() + newSuffix);\n      // renameTo fails on Windows if the destination file already exists.\n      try {\n        if (dst.exists()) {\n          if (!dst.delete()) {\n            throw new IOException(\"Couldn\u0027t delete \" + dst);\n          }\n        }\n        NativeIO.renameTo(src, dst);\n      } catch (IOException e) {\n        throw new IOException(\n            \"Couldn\u0027t rename log \" + src + \" to \" + dst, e);\n      }\n      file \u003d dst;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FileJournalManager.java",
+      "extendedDetails": {}
+    },
+    "79bd50f91b90b265d8b782169e8d4e7fd8181818": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6197. Rolling upgrade rollback on Windows can fail attempting to rename edit log segment files to a destination that already exists. Contributed by Chris Nauroth.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1585586 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/04/14 2:21 PM",
+      "commitName": "79bd50f91b90b265d8b782169e8d4e7fd8181818",
+      "commitAuthor": "Chris Nauroth",
+      "commitDateOld": "26/03/14 2:27 PM",
+      "commitNameOld": "14556cc5d8fee8f8a846e4f65572828553be386c",
+      "commitAuthorOld": "Suresh Srinivas",
+      "daysBetweenCommits": 12.0,
+      "commitsBetweenForRepo": 56,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,10 +1,12 @@\n     private void renameSelf(String newSuffix) throws IOException {\n       File src \u003d file;\n       File dst \u003d new File(src.getParent(), src.getName() + newSuffix);\n-      boolean success \u003d src.renameTo(dst);\n-      if (!success) {\n-        throw new IOException(\n-          \"Couldn\u0027t rename log \" + src + \" to \" + dst);\n+      // renameTo fails on Windows if the destination file already exists.\n+      if (!src.renameTo(dst)) {\n+        if (!dst.delete() || !src.renameTo(dst)) {\n+          throw new IOException(\n+            \"Couldn\u0027t rename log \" + src + \" to \" + dst);\n+        }\n       }\n       file \u003d dst;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private void renameSelf(String newSuffix) throws IOException {\n      File src \u003d file;\n      File dst \u003d new File(src.getParent(), src.getName() + newSuffix);\n      // renameTo fails on Windows if the destination file already exists.\n      if (!src.renameTo(dst)) {\n        if (!dst.delete() || !src.renameTo(dst)) {\n          throw new IOException(\n            \"Couldn\u0027t rename log \" + src + \" to \" + dst);\n        }\n      }\n      file \u003d dst;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FileJournalManager.java",
+      "extendedDetails": {}
+    },
+    "74dfa8f1f22d58df64a78c660af111e17ab7053e": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-2982. Startup performance suffers when there are many edit log segments. Contributed by Colin Patrick McCabe.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1342042 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "23/05/12 1:42 PM",
+      "commitName": "74dfa8f1f22d58df64a78c660af111e17ab7053e",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,10 @@\n+    private void renameSelf(String newSuffix) throws IOException {\n+      File src \u003d file;\n+      File dst \u003d new File(src.getParent(), src.getName() + newSuffix);\n+      boolean success \u003d src.renameTo(dst);\n+      if (!success) {\n+        throw new IOException(\n+          \"Couldn\u0027t rename log \" + src + \" to \" + dst);\n+      }\n+      file \u003d dst;\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private void renameSelf(String newSuffix) throws IOException {\n      File src \u003d file;\n      File dst \u003d new File(src.getParent(), src.getName() + newSuffix);\n      boolean success \u003d src.renameTo(dst);\n      if (!success) {\n        throw new IOException(\n          \"Couldn\u0027t rename log \" + src + \" to \" + dst);\n      }\n      file \u003d dst;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FileJournalManager.java"
+    }
+  }
+}

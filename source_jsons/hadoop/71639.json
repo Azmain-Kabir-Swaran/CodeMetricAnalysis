@@ -1,0 +1,169 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RegistryDNS.java",
+  "functionName": "remoteLookup",
+  "functionId": "remoteLookup___response-Message__name-Name__type-int__iterations-int",
+  "sourceFilePath": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+  "functionStartLine": 1131,
+  "functionEndLine": 1174,
+  "numCommitsSeen": 35,
+  "timeTaken": 2963,
+  "changeHistory": [
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae",
+    "9591765040b85927ac69179ab46383eef9560a28",
+    "5cf37418bdc6ff09c0c1ae3ac8ac4b0867de0de4",
+    "4fb1f45f21916ca1b1fc6652a2ad562ac996b7b8",
+    "501be9b4be7d549b23cc501b26fdfdce0a7aa911"
+  ],
+  "changeHistoryShort": {
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae": "Yfilerename",
+    "9591765040b85927ac69179ab46383eef9560a28": "Ybodychange",
+    "5cf37418bdc6ff09c0c1ae3ac8ac4b0867de0de4": "Ymultichange(Yparameterchange,Ybodychange)",
+    "4fb1f45f21916ca1b1fc6652a2ad562ac996b7b8": "Ymultichange(Yparameterchange,Ybodychange)",
+    "501be9b4be7d549b23cc501b26fdfdce0a7aa911": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-15821. Move YARN Registry to Hadoop Registry.\n              Contributed by Íñigo Goiri\n",
+      "commitDate": "19/10/18 4:46 PM",
+      "commitName": "e2a9fa8448e2aac34c318260e425786a6c8ca2ae",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "19/10/18 1:57 PM",
+      "commitNameOld": "00254d7b8c714ae2000d0934d260b23458033529",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.12,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private byte remoteLookup(Message response, Name name, int type,\n      int iterations) {\n    // If retrieving the root zone, query for NS record type\n    if (name.toString().equals(\".\")) {\n      type \u003d Type.NS;\n    }\n\n    // Always add any CNAMEs to the response first\n    if (type !\u003d Type.CNAME) {\n      Record[] cnameAnswers \u003d getRecords(name, Type.CNAME);\n      if (cnameAnswers !\u003d null) {\n        for (Record cnameR : cnameAnswers) {\n          if (!response.findRecord(cnameR)) {\n            response.addRecord(cnameR, Section.ANSWER);\n          }\n        }\n      }\n    }\n\n    // Forward lookup to primary DNS servers\n    Record[] answers \u003d getRecords(name, type);\n    try {\n      for (Record r : answers) {\n        if (!response.findRecord(r)) {\n          if (r.getType() \u003d\u003d Type.SOA) {\n            response.addRecord(r, Section.AUTHORITY);\n          } else {\n            response.addRecord(r, Section.ANSWER);\n          }\n        }\n        if (r.getType() \u003d\u003d Type.CNAME) {\n          Name cname \u003d ((CNAMERecord) r).getAlias();\n          if (iterations \u003c 6) {\n            remoteLookup(response, cname, type, iterations + 1);\n          }\n        }\n      }\n    } catch (NullPointerException e) {\n      return Rcode.NXDOMAIN;\n    } catch (Throwable e) {\n      return Rcode.SERVFAIL;\n    }\n    return Rcode.NOERROR;\n  }",
+      "path": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+        "newPath": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java"
+      }
+    },
+    "9591765040b85927ac69179ab46383eef9560a28": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8410.  Fixed a bug in A record lookup by CNAME record.\n            Contributed by Shane Kumpf\n",
+      "commitDate": "14/06/18 12:54 PM",
+      "commitName": "9591765040b85927ac69179ab46383eef9560a28",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "04/06/18 4:06 PM",
+      "commitNameOld": "5cf37418bdc6ff09c0c1ae3ac8ac4b0867de0de4",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 9.87,
+      "commitsBetweenForRepo": 76,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,44 @@\n   private byte remoteLookup(Message response, Name name, int type,\n       int iterations) {\n+    // If retrieving the root zone, query for NS record type\n+    if (name.toString().equals(\".\")) {\n+      type \u003d Type.NS;\n+    }\n+\n+    // Always add any CNAMEs to the response first\n+    if (type !\u003d Type.CNAME) {\n+      Record[] cnameAnswers \u003d getRecords(name, Type.CNAME);\n+      if (cnameAnswers !\u003d null) {\n+        for (Record cnameR : cnameAnswers) {\n+          if (!response.findRecord(cnameR)) {\n+            response.addRecord(cnameR, Section.ANSWER);\n+          }\n+        }\n+      }\n+    }\n+\n     // Forward lookup to primary DNS servers\n     Record[] answers \u003d getRecords(name, type);\n     try {\n       for (Record r : answers) {\n-        if (r.getType() \u003d\u003d Type.SOA) {\n-          response.addRecord(r, Section.AUTHORITY);\n-        } else {\n-          response.addRecord(r, Section.ANSWER);\n+        if (!response.findRecord(r)) {\n+          if (r.getType() \u003d\u003d Type.SOA) {\n+            response.addRecord(r, Section.AUTHORITY);\n+          } else {\n+            response.addRecord(r, Section.ANSWER);\n+          }\n         }\n         if (r.getType() \u003d\u003d Type.CNAME) {\n           Name cname \u003d ((CNAMERecord) r).getAlias();\n           if (iterations \u003c 6) {\n-            remoteLookup(response, cname, Type.CNAME, iterations + 1);\n+            remoteLookup(response, cname, type, iterations + 1);\n           }\n         }\n       }\n     } catch (NullPointerException e) {\n       return Rcode.NXDOMAIN;\n     } catch (Throwable e) {\n       return Rcode.SERVFAIL;\n     }\n     return Rcode.NOERROR;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private byte remoteLookup(Message response, Name name, int type,\n      int iterations) {\n    // If retrieving the root zone, query for NS record type\n    if (name.toString().equals(\".\")) {\n      type \u003d Type.NS;\n    }\n\n    // Always add any CNAMEs to the response first\n    if (type !\u003d Type.CNAME) {\n      Record[] cnameAnswers \u003d getRecords(name, Type.CNAME);\n      if (cnameAnswers !\u003d null) {\n        for (Record cnameR : cnameAnswers) {\n          if (!response.findRecord(cnameR)) {\n            response.addRecord(cnameR, Section.ANSWER);\n          }\n        }\n      }\n    }\n\n    // Forward lookup to primary DNS servers\n    Record[] answers \u003d getRecords(name, type);\n    try {\n      for (Record r : answers) {\n        if (!response.findRecord(r)) {\n          if (r.getType() \u003d\u003d Type.SOA) {\n            response.addRecord(r, Section.AUTHORITY);\n          } else {\n            response.addRecord(r, Section.ANSWER);\n          }\n        }\n        if (r.getType() \u003d\u003d Type.CNAME) {\n          Name cname \u003d ((CNAMERecord) r).getAlias();\n          if (iterations \u003c 6) {\n            remoteLookup(response, cname, type, iterations + 1);\n          }\n        }\n      }\n    } catch (NullPointerException e) {\n      return Rcode.NXDOMAIN;\n    } catch (Throwable e) {\n      return Rcode.SERVFAIL;\n    }\n    return Rcode.NOERROR;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+      "extendedDetails": {}
+    },
+    "5cf37418bdc6ff09c0c1ae3ac8ac4b0867de0de4": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-8365.  Set DNS query type according to client request.\n            Contributed by Shane Kumpf\n",
+      "commitDate": "04/06/18 4:06 PM",
+      "commitName": "5cf37418bdc6ff09c0c1ae3ac8ac4b0867de0de4",
+      "commitAuthor": "Eric Yang",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-8365.  Set DNS query type according to client request.\n            Contributed by Shane Kumpf\n",
+          "commitDate": "04/06/18 4:06 PM",
+          "commitName": "5cf37418bdc6ff09c0c1ae3ac8ac4b0867de0de4",
+          "commitAuthor": "Eric Yang",
+          "commitDateOld": "27/04/18 7:58 AM",
+          "commitNameOld": "9ab3f9708923b3429209006a12695f4826a045b9",
+          "commitAuthorOld": "Billie Rinaldi",
+          "daysBetweenCommits": 38.34,
+          "commitsBetweenForRepo": 305,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,25 @@\n-  private byte remoteLookup(Message response, Name name, int iterations) {\n+  private byte remoteLookup(Message response, Name name, int type,\n+      int iterations) {\n     // Forward lookup to primary DNS servers\n-    Record[] answers \u003d getRecords(name, Type.ANY);\n+    Record[] answers \u003d getRecords(name, type);\n     try {\n       for (Record r : answers) {\n         if (r.getType() \u003d\u003d Type.SOA) {\n           response.addRecord(r, Section.AUTHORITY);\n         } else {\n           response.addRecord(r, Section.ANSWER);\n         }\n         if (r.getType() \u003d\u003d Type.CNAME) {\n           Name cname \u003d ((CNAMERecord) r).getAlias();\n           if (iterations \u003c 6) {\n-            remoteLookup(response, cname, iterations + 1);\n+            remoteLookup(response, cname, Type.CNAME, iterations + 1);\n           }\n         }\n       }\n     } catch (NullPointerException e) {\n       return Rcode.NXDOMAIN;\n     } catch (Throwable e) {\n       return Rcode.SERVFAIL;\n     }\n     return Rcode.NOERROR;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private byte remoteLookup(Message response, Name name, int type,\n      int iterations) {\n    // Forward lookup to primary DNS servers\n    Record[] answers \u003d getRecords(name, type);\n    try {\n      for (Record r : answers) {\n        if (r.getType() \u003d\u003d Type.SOA) {\n          response.addRecord(r, Section.AUTHORITY);\n        } else {\n          response.addRecord(r, Section.ANSWER);\n        }\n        if (r.getType() \u003d\u003d Type.CNAME) {\n          Name cname \u003d ((CNAMERecord) r).getAlias();\n          if (iterations \u003c 6) {\n            remoteLookup(response, cname, Type.CNAME, iterations + 1);\n          }\n        }\n      }\n    } catch (NullPointerException e) {\n      return Rcode.NXDOMAIN;\n    } catch (Throwable e) {\n      return Rcode.SERVFAIL;\n    }\n    return Rcode.NOERROR;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+          "extendedDetails": {
+            "oldValue": "[response-Message, name-Name, iterations-int]",
+            "newValue": "[response-Message, name-Name, type-int, iterations-int]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-8365.  Set DNS query type according to client request.\n            Contributed by Shane Kumpf\n",
+          "commitDate": "04/06/18 4:06 PM",
+          "commitName": "5cf37418bdc6ff09c0c1ae3ac8ac4b0867de0de4",
+          "commitAuthor": "Eric Yang",
+          "commitDateOld": "27/04/18 7:58 AM",
+          "commitNameOld": "9ab3f9708923b3429209006a12695f4826a045b9",
+          "commitAuthorOld": "Billie Rinaldi",
+          "daysBetweenCommits": 38.34,
+          "commitsBetweenForRepo": 305,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,25 @@\n-  private byte remoteLookup(Message response, Name name, int iterations) {\n+  private byte remoteLookup(Message response, Name name, int type,\n+      int iterations) {\n     // Forward lookup to primary DNS servers\n-    Record[] answers \u003d getRecords(name, Type.ANY);\n+    Record[] answers \u003d getRecords(name, type);\n     try {\n       for (Record r : answers) {\n         if (r.getType() \u003d\u003d Type.SOA) {\n           response.addRecord(r, Section.AUTHORITY);\n         } else {\n           response.addRecord(r, Section.ANSWER);\n         }\n         if (r.getType() \u003d\u003d Type.CNAME) {\n           Name cname \u003d ((CNAMERecord) r).getAlias();\n           if (iterations \u003c 6) {\n-            remoteLookup(response, cname, iterations + 1);\n+            remoteLookup(response, cname, Type.CNAME, iterations + 1);\n           }\n         }\n       }\n     } catch (NullPointerException e) {\n       return Rcode.NXDOMAIN;\n     } catch (Throwable e) {\n       return Rcode.SERVFAIL;\n     }\n     return Rcode.NOERROR;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private byte remoteLookup(Message response, Name name, int type,\n      int iterations) {\n    // Forward lookup to primary DNS servers\n    Record[] answers \u003d getRecords(name, type);\n    try {\n      for (Record r : answers) {\n        if (r.getType() \u003d\u003d Type.SOA) {\n          response.addRecord(r, Section.AUTHORITY);\n        } else {\n          response.addRecord(r, Section.ANSWER);\n        }\n        if (r.getType() \u003d\u003d Type.CNAME) {\n          Name cname \u003d ((CNAMERecord) r).getAlias();\n          if (iterations \u003c 6) {\n            remoteLookup(response, cname, Type.CNAME, iterations + 1);\n          }\n        }\n      }\n    } catch (NullPointerException e) {\n      return Rcode.NXDOMAIN;\n    } catch (Throwable e) {\n      return Rcode.SERVFAIL;\n    }\n    return Rcode.NOERROR;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "4fb1f45f21916ca1b1fc6652a2ad562ac996b7b8": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-7731. RegistryDNS should handle upstream DNS returning CNAME. Contributed by Eric Yang\n",
+      "commitDate": "12/01/18 9:21 AM",
+      "commitName": "4fb1f45f21916ca1b1fc6652a2ad562ac996b7b8",
+      "commitAuthor": "Billie Rinaldi",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-7731. RegistryDNS should handle upstream DNS returning CNAME. Contributed by Eric Yang\n",
+          "commitDate": "12/01/18 9:21 AM",
+          "commitName": "4fb1f45f21916ca1b1fc6652a2ad562ac996b7b8",
+          "commitAuthor": "Billie Rinaldi",
+          "commitDateOld": "04/12/17 12:11 PM",
+          "commitNameOld": "d30d57828fddaa8667de49af879cde999907c7f6",
+          "commitAuthorOld": "Eric Yang",
+          "daysBetweenCommits": 38.88,
+          "commitsBetweenForRepo": 222,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,24 @@\n-  private byte remoteLookup(Message response, Name name) {\n+  private byte remoteLookup(Message response, Name name, int iterations) {\n     // Forward lookup to primary DNS servers\n     Record[] answers \u003d getRecords(name, Type.ANY);\n     try {\n       for (Record r : answers) {\n         if (r.getType() \u003d\u003d Type.SOA) {\n           response.addRecord(r, Section.AUTHORITY);\n         } else {\n           response.addRecord(r, Section.ANSWER);\n         }\n+        if (r.getType() \u003d\u003d Type.CNAME) {\n+          Name cname \u003d ((CNAMERecord) r).getAlias();\n+          if (iterations \u003c 6) {\n+            remoteLookup(response, cname, iterations + 1);\n+          }\n+        }\n       }\n     } catch (NullPointerException e) {\n       return Rcode.NXDOMAIN;\n     } catch (Throwable e) {\n       return Rcode.SERVFAIL;\n     }\n     return Rcode.NOERROR;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private byte remoteLookup(Message response, Name name, int iterations) {\n    // Forward lookup to primary DNS servers\n    Record[] answers \u003d getRecords(name, Type.ANY);\n    try {\n      for (Record r : answers) {\n        if (r.getType() \u003d\u003d Type.SOA) {\n          response.addRecord(r, Section.AUTHORITY);\n        } else {\n          response.addRecord(r, Section.ANSWER);\n        }\n        if (r.getType() \u003d\u003d Type.CNAME) {\n          Name cname \u003d ((CNAMERecord) r).getAlias();\n          if (iterations \u003c 6) {\n            remoteLookup(response, cname, iterations + 1);\n          }\n        }\n      }\n    } catch (NullPointerException e) {\n      return Rcode.NXDOMAIN;\n    } catch (Throwable e) {\n      return Rcode.SERVFAIL;\n    }\n    return Rcode.NOERROR;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+          "extendedDetails": {
+            "oldValue": "[response-Message, name-Name]",
+            "newValue": "[response-Message, name-Name, iterations-int]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-7731. RegistryDNS should handle upstream DNS returning CNAME. Contributed by Eric Yang\n",
+          "commitDate": "12/01/18 9:21 AM",
+          "commitName": "4fb1f45f21916ca1b1fc6652a2ad562ac996b7b8",
+          "commitAuthor": "Billie Rinaldi",
+          "commitDateOld": "04/12/17 12:11 PM",
+          "commitNameOld": "d30d57828fddaa8667de49af879cde999907c7f6",
+          "commitAuthorOld": "Eric Yang",
+          "daysBetweenCommits": 38.88,
+          "commitsBetweenForRepo": 222,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,18 +1,24 @@\n-  private byte remoteLookup(Message response, Name name) {\n+  private byte remoteLookup(Message response, Name name, int iterations) {\n     // Forward lookup to primary DNS servers\n     Record[] answers \u003d getRecords(name, Type.ANY);\n     try {\n       for (Record r : answers) {\n         if (r.getType() \u003d\u003d Type.SOA) {\n           response.addRecord(r, Section.AUTHORITY);\n         } else {\n           response.addRecord(r, Section.ANSWER);\n         }\n+        if (r.getType() \u003d\u003d Type.CNAME) {\n+          Name cname \u003d ((CNAMERecord) r).getAlias();\n+          if (iterations \u003c 6) {\n+            remoteLookup(response, cname, iterations + 1);\n+          }\n+        }\n       }\n     } catch (NullPointerException e) {\n       return Rcode.NXDOMAIN;\n     } catch (Throwable e) {\n       return Rcode.SERVFAIL;\n     }\n     return Rcode.NOERROR;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private byte remoteLookup(Message response, Name name, int iterations) {\n    // Forward lookup to primary DNS servers\n    Record[] answers \u003d getRecords(name, Type.ANY);\n    try {\n      for (Record r : answers) {\n        if (r.getType() \u003d\u003d Type.SOA) {\n          response.addRecord(r, Section.AUTHORITY);\n        } else {\n          response.addRecord(r, Section.ANSWER);\n        }\n        if (r.getType() \u003d\u003d Type.CNAME) {\n          Name cname \u003d ((CNAMERecord) r).getAlias();\n          if (iterations \u003c 6) {\n            remoteLookup(response, cname, iterations + 1);\n          }\n        }\n      }\n    } catch (NullPointerException e) {\n      return Rcode.NXDOMAIN;\n    } catch (Throwable e) {\n      return Rcode.SERVFAIL;\n    }\n    return Rcode.NOERROR;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "501be9b4be7d549b23cc501b26fdfdce0a7aa911": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-7326. Add recursion support and configure RegistryDNS to lookup upstream. Contributed by Eric Yang\n",
+      "commitDate": "06/11/17 1:30 PM",
+      "commitName": "501be9b4be7d549b23cc501b26fdfdce0a7aa911",
+      "commitAuthor": "Billie Rinaldi",
+      "diff": "@@ -0,0 +1,18 @@\n+  private byte remoteLookup(Message response, Name name) {\n+    // Forward lookup to primary DNS servers\n+    Record[] answers \u003d getRecords(name, Type.ANY);\n+    try {\n+      for (Record r : answers) {\n+        if (r.getType() \u003d\u003d Type.SOA) {\n+          response.addRecord(r, Section.AUTHORITY);\n+        } else {\n+          response.addRecord(r, Section.ANSWER);\n+        }\n+      }\n+    } catch (NullPointerException e) {\n+      return Rcode.NXDOMAIN;\n+    } catch (Throwable e) {\n+      return Rcode.SERVFAIL;\n+    }\n+    return Rcode.NOERROR;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private byte remoteLookup(Message response, Name name) {\n    // Forward lookup to primary DNS servers\n    Record[] answers \u003d getRecords(name, Type.ANY);\n    try {\n      for (Record r : answers) {\n        if (r.getType() \u003d\u003d Type.SOA) {\n          response.addRecord(r, Section.AUTHORITY);\n        } else {\n          response.addRecord(r, Section.ANSWER);\n        }\n      }\n    } catch (NullPointerException e) {\n      return Rcode.NXDOMAIN;\n    } catch (Throwable e) {\n      return Rcode.SERVFAIL;\n    }\n    return Rcode.NOERROR;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNS.java"
+    }
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StagingCommitter.java",
+  "functionName": "abortJobInternal",
+  "functionId": "abortJobInternal___context-JobContext__suppressExceptions-boolean",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/StagingCommitter.java",
+  "functionStartLine": 556,
+  "functionEndLine": 573,
+  "numCommitsSeen": 9,
+  "timeTaken": 1754,
+  "changeHistory": [
+    "6574f27fa348542411bff888b184cd7ce34e5d9e",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c"
+  ],
+  "changeHistoryShort": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6574f27fa348542411bff888b184cd7ce34e5d9e": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16570. S3A committers encounter scale issues.\n\nContributed by Steve Loughran.\n\nThis addresses two scale issues which has surfaced in large scale benchmarks\nof the S3A Committers.\n\n* Thread pools are not cleaned up.\n  This now happens, with tests.\n\n* OOM on job commit for jobs with many thousands of tasks,\n  each generating tens of (very large) files.\n\nInstead of loading all pending commits into memory as a single list, the list\nof files to load is the sole list which is passed around; .pendingset files are\nloaded and processed in isolation -and reloaded if necessary for any\nabort/rollback operation.\n\nThe parallel commit/abort/revert operations now work at the .pendingset level,\nrather than that of individual pending commit files. The existing parallelized\nTasks API is still used to commit those files, but with a null thread pool, so\nas to serialize the operations.\n\nChange-Id: I5c8240cd31800eaa83d112358770ca0eb2bca797\n",
+      "commitDate": "04/10/19 10:54 AM",
+      "commitName": "6574f27fa348542411bff888b184cd7ce34e5d9e",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "04/10/19 6:12 AM",
+      "commitNameOld": "f44abc3e11676579bdea94fce045d081ae38e6c3",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 0.2,
+      "commitsBetweenForRepo": 6,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,18 +1,18 @@\n   protected void abortJobInternal(JobContext context,\n       boolean suppressExceptions) throws IOException {\n     String r \u003d getRole();\n     boolean failed \u003d false;\n     try (DurationInfo d \u003d new DurationInfo(LOG,\n         \"%s: aborting job in state %s \", r, jobIdString(context))) {\n-      List\u003cSinglePendingCommit\u003e pending \u003d listPendingUploadsToAbort(context);\n-      abortPendingUploads(context, pending, suppressExceptions);\n+      ActiveCommit pending \u003d listPendingUploadsToAbort(context);\n+      abortPendingUploads(context, pending, suppressExceptions, true);\n     } catch (FileNotFoundException e) {\n       // nothing to list\n       LOG.debug(\"No job directory to read uploads from\");\n     } catch (IOException e) {\n       failed \u003d true;\n       maybeIgnore(suppressExceptions, \"aborting job\", e);\n     } finally {\n       super.abortJobInternal(context, failed || suppressExceptions);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void abortJobInternal(JobContext context,\n      boolean suppressExceptions) throws IOException {\n    String r \u003d getRole();\n    boolean failed \u003d false;\n    try (DurationInfo d \u003d new DurationInfo(LOG,\n        \"%s: aborting job in state %s \", r, jobIdString(context))) {\n      ActiveCommit pending \u003d listPendingUploadsToAbort(context);\n      abortPendingUploads(context, pending, suppressExceptions, true);\n    } catch (FileNotFoundException e) {\n      // nothing to list\n      LOG.debug(\"No job directory to read uploads from\");\n    } catch (IOException e) {\n      failed \u003d true;\n      maybeIgnore(suppressExceptions, \"aborting job\", e);\n    } finally {\n      super.abortJobInternal(context, failed || suppressExceptions);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/StagingCommitter.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,18 @@\n+  protected void abortJobInternal(JobContext context,\n+      boolean suppressExceptions) throws IOException {\n+    String r \u003d getRole();\n+    boolean failed \u003d false;\n+    try (DurationInfo d \u003d new DurationInfo(LOG,\n+        \"%s: aborting job in state %s \", r, jobIdString(context))) {\n+      List\u003cSinglePendingCommit\u003e pending \u003d listPendingUploadsToAbort(context);\n+      abortPendingUploads(context, pending, suppressExceptions);\n+    } catch (FileNotFoundException e) {\n+      // nothing to list\n+      LOG.debug(\"No job directory to read uploads from\");\n+    } catch (IOException e) {\n+      failed \u003d true;\n+      maybeIgnore(suppressExceptions, \"aborting job\", e);\n+    } finally {\n+      super.abortJobInternal(context, failed || suppressExceptions);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void abortJobInternal(JobContext context,\n      boolean suppressExceptions) throws IOException {\n    String r \u003d getRole();\n    boolean failed \u003d false;\n    try (DurationInfo d \u003d new DurationInfo(LOG,\n        \"%s: aborting job in state %s \", r, jobIdString(context))) {\n      List\u003cSinglePendingCommit\u003e pending \u003d listPendingUploadsToAbort(context);\n      abortPendingUploads(context, pending, suppressExceptions);\n    } catch (FileNotFoundException e) {\n      // nothing to list\n      LOG.debug(\"No job directory to read uploads from\");\n    } catch (IOException e) {\n      failed \u003d true;\n      maybeIgnore(suppressExceptions, \"aborting job\", e);\n    } finally {\n      super.abortJobInternal(context, failed || suppressExceptions);\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/commit/staging/StagingCommitter.java"
+    }
+  }
+}

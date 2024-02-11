@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "PowerShellFencer.java",
+  "functionName": "tryFence",
+  "functionId": "tryFence___target-HAServiceTarget__argsStr-String",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/PowerShellFencer.java",
+  "functionStartLine": 54,
+  "functionEndLine": 101,
+  "numCommitsSeen": 2,
+  "timeTaken": 492,
+  "changeHistory": [
+    "31cf480d6520e259f2a7f29de64ef4c5b5a50142"
+  ],
+  "changeHistoryShort": {
+    "31cf480d6520e259f2a7f29de64ef4c5b5a50142": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "31cf480d6520e259f2a7f29de64ef4c5b5a50142": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14309. Add PowerShell NodeFencer. Contributed by Inigo Goiri\n",
+      "commitDate": "27/04/17 4:09 PM",
+      "commitName": "31cf480d6520e259f2a7f29de64ef4c5b5a50142",
+      "commitAuthor": "Chris Douglas",
+      "diff": "@@ -0,0 +1,48 @@\n+  public boolean tryFence(HAServiceTarget target, String argsStr)\n+      throws BadFencingConfigurationException {\n+\n+    String processName \u003d argsStr;\n+    InetSocketAddress serviceAddr \u003d target.getAddress();\n+    String hostname \u003d serviceAddr.getHostName();\n+\n+    // Use PowerShell to kill a remote process\n+    String ps1script \u003d buildPSScript(processName, hostname);\n+    if (ps1script \u003d\u003d null) {\n+      LOG.error(\"Cannot build PowerShell script\");\n+      return false;\n+    }\n+\n+    // Execute PowerShell script\n+    LOG.info(\"Executing \" + ps1script);\n+    ProcessBuilder builder \u003d new ProcessBuilder(\"powershell.exe\", ps1script);\n+    Process p \u003d null;\n+    try {\n+      p \u003d builder.start();\n+      p.getOutputStream().close();\n+    } catch (IOException e) {\n+      LOG.warn(\"Unable to execute \" + ps1script, e);\n+      return false;\n+    }\n+\n+    // Pump logs to stderr\n+    StreamPumper errPumper \u003d new StreamPumper(\n+        LOG, \"fencer\", p.getErrorStream(), StreamPumper.StreamType.STDERR);\n+    errPumper.start();\n+\n+    StreamPumper outPumper \u003d new StreamPumper(\n+        LOG, \"fencer\", p.getInputStream(), StreamPumper.StreamType.STDOUT);\n+    outPumper.start();\n+\n+    // Waiting for the process to finish\n+    int rc \u003d 0;\n+    try {\n+      rc \u003d p.waitFor();\n+      errPumper.join();\n+      outPumper.join();\n+    } catch (InterruptedException ie) {\n+      LOG.warn(\"Interrupted while waiting for fencing command: \" + ps1script);\n+      return false;\n+    }\n+\n+    return rc \u003d\u003d 0;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public boolean tryFence(HAServiceTarget target, String argsStr)\n      throws BadFencingConfigurationException {\n\n    String processName \u003d argsStr;\n    InetSocketAddress serviceAddr \u003d target.getAddress();\n    String hostname \u003d serviceAddr.getHostName();\n\n    // Use PowerShell to kill a remote process\n    String ps1script \u003d buildPSScript(processName, hostname);\n    if (ps1script \u003d\u003d null) {\n      LOG.error(\"Cannot build PowerShell script\");\n      return false;\n    }\n\n    // Execute PowerShell script\n    LOG.info(\"Executing \" + ps1script);\n    ProcessBuilder builder \u003d new ProcessBuilder(\"powershell.exe\", ps1script);\n    Process p \u003d null;\n    try {\n      p \u003d builder.start();\n      p.getOutputStream().close();\n    } catch (IOException e) {\n      LOG.warn(\"Unable to execute \" + ps1script, e);\n      return false;\n    }\n\n    // Pump logs to stderr\n    StreamPumper errPumper \u003d new StreamPumper(\n        LOG, \"fencer\", p.getErrorStream(), StreamPumper.StreamType.STDERR);\n    errPumper.start();\n\n    StreamPumper outPumper \u003d new StreamPumper(\n        LOG, \"fencer\", p.getInputStream(), StreamPumper.StreamType.STDOUT);\n    outPumper.start();\n\n    // Waiting for the process to finish\n    int rc \u003d 0;\n    try {\n      rc \u003d p.waitFor();\n      errPumper.join();\n      outPumper.join();\n    } catch (InterruptedException ie) {\n      LOG.warn(\"Interrupted while waiting for fencing command: \" + ps1script);\n      return false;\n    }\n\n    return rc \u003d\u003d 0;\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/PowerShellFencer.java"
+    }
+  }
+}

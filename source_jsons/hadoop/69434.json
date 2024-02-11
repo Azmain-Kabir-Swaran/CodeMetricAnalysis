@@ -1,0 +1,117 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RoundRobinUserResolver.java",
+  "functionName": "parseUserList",
+  "functionId": "parseUserList___userUri-URI__conf-Configuration",
+  "sourceFilePath": "hadoop-tools/hadoop-gridmix/src/main/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java",
+  "functionStartLine": 54,
+  "functionEndLine": 101,
+  "numCommitsSeen": 6,
+  "timeTaken": 4442,
+  "changeHistory": [
+    "8bbacfaa31b5ab3a739e420979692220ec1ceccf",
+    "dcf84707ab50662add112bd6b01c0bfd63374853",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "8bbacfaa31b5ab3a739e420979692220ec1ceccf": "Ybodychange",
+    "dcf84707ab50662add112bd6b01c0bfd63374853": "Yfilerename",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "8bbacfaa31b5ab3a739e420979692220ec1ceccf": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-4297. Usersmap file in gridmix should not fail on empty lines (Ravi Prakash via bobby)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1344763 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "31/05/12 8:16 AM",
+      "commitName": "8bbacfaa31b5ab3a739e420979692220ec1ceccf",
+      "commitAuthor": "Robert Joseph Evans",
+      "commitDateOld": "17/05/12 8:06 AM",
+      "commitNameOld": "dcf84707ab50662add112bd6b01c0bfd63374853",
+      "commitAuthorOld": "Thomas Graves",
+      "daysBetweenCommits": 14.01,
+      "commitsBetweenForRepo": 58,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,45 +1,48 @@\n   private List\u003cUserGroupInformation\u003e parseUserList(URI userUri, \n                                                    Configuration conf) \n   throws IOException {\n     if (null \u003d\u003d userUri) {\n       return Collections.emptyList();\n     }\n     \n     final Path userloc \u003d new Path(userUri.toString());\n     final Text rawUgi \u003d new Text();\n     final FileSystem fs \u003d userloc.getFileSystem(conf);\n     final ArrayList\u003cUserGroupInformation\u003e ugiList \u003d\n         new ArrayList\u003cUserGroupInformation\u003e();\n \n     LineReader in \u003d null;\n     try {\n       in \u003d new LineReader(fs.open(userloc));\n       while (in.readLine(rawUgi) \u003e 0) {//line is of the form username[,group]*\n+        if(rawUgi.toString().trim().equals(\"\")) {\n+          continue; //Continue on empty line\n+        }\n         // e is end position of user name in this line\n         int e \u003d rawUgi.find(\",\");\n-        if (rawUgi.getLength() \u003d\u003d 0 || e \u003d\u003d 0) {\n+        if (e \u003d\u003d 0) {\n           throw new IOException(\"Missing username: \" + rawUgi);\n         }\n         if (e \u003d\u003d -1) {\n           e \u003d rawUgi.getLength();\n         }\n-        final String username \u003d Text.decode(rawUgi.getBytes(), 0, e);\n+        final String username \u003d Text.decode(rawUgi.getBytes(), 0, e).trim();\n         UserGroupInformation ugi \u003d null;\n         try {\n           ugi \u003d UserGroupInformation.createProxyUser(username,\n                     UserGroupInformation.getLoginUser());\n         } catch (IOException ioe) {\n           LOG.error(\"Error while creating a proxy user \" ,ioe);\n         }\n         if (ugi !\u003d null) {\n           ugiList.add(ugi);\n         }\n         // No need to parse groups, even if they exist. Go to next line\n       }\n     } finally {\n       if (in !\u003d null) {\n         in.close();\n       }\n     }\n     return ugiList;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private List\u003cUserGroupInformation\u003e parseUserList(URI userUri, \n                                                   Configuration conf) \n  throws IOException {\n    if (null \u003d\u003d userUri) {\n      return Collections.emptyList();\n    }\n    \n    final Path userloc \u003d new Path(userUri.toString());\n    final Text rawUgi \u003d new Text();\n    final FileSystem fs \u003d userloc.getFileSystem(conf);\n    final ArrayList\u003cUserGroupInformation\u003e ugiList \u003d\n        new ArrayList\u003cUserGroupInformation\u003e();\n\n    LineReader in \u003d null;\n    try {\n      in \u003d new LineReader(fs.open(userloc));\n      while (in.readLine(rawUgi) \u003e 0) {//line is of the form username[,group]*\n        if(rawUgi.toString().trim().equals(\"\")) {\n          continue; //Continue on empty line\n        }\n        // e is end position of user name in this line\n        int e \u003d rawUgi.find(\",\");\n        if (e \u003d\u003d 0) {\n          throw new IOException(\"Missing username: \" + rawUgi);\n        }\n        if (e \u003d\u003d -1) {\n          e \u003d rawUgi.getLength();\n        }\n        final String username \u003d Text.decode(rawUgi.getBytes(), 0, e).trim();\n        UserGroupInformation ugi \u003d null;\n        try {\n          ugi \u003d UserGroupInformation.createProxyUser(username,\n                    UserGroupInformation.getLoginUser());\n        } catch (IOException ioe) {\n          LOG.error(\"Error while creating a proxy user \" ,ioe);\n        }\n        if (ugi !\u003d null) {\n          ugiList.add(ugi);\n        }\n        // No need to parse groups, even if they exist. Go to next line\n      }\n    } finally {\n      if (in !\u003d null) {\n        in.close();\n      }\n    }\n    return ugiList;\n  }",
+      "path": "hadoop-tools/hadoop-gridmix/src/main/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java",
+      "extendedDetails": {}
+    },
+    "dcf84707ab50662add112bd6b01c0bfd63374853": {
+      "type": "Yfilerename",
+      "commitMessage": "MAPREDUCE-3543. Mavenize Gridmix. (tgraves)\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1339629 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/05/12 8:06 AM",
+      "commitName": "dcf84707ab50662add112bd6b01c0bfd63374853",
+      "commitAuthor": "Thomas Graves",
+      "commitDateOld": "17/05/12 7:20 AM",
+      "commitNameOld": "e1f09365ca0bee093f849fcf2e546dd6e2c0a965",
+      "commitAuthorOld": "Harsh J",
+      "daysBetweenCommits": 0.03,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private List\u003cUserGroupInformation\u003e parseUserList(URI userUri, \n                                                   Configuration conf) \n  throws IOException {\n    if (null \u003d\u003d userUri) {\n      return Collections.emptyList();\n    }\n    \n    final Path userloc \u003d new Path(userUri.toString());\n    final Text rawUgi \u003d new Text();\n    final FileSystem fs \u003d userloc.getFileSystem(conf);\n    final ArrayList\u003cUserGroupInformation\u003e ugiList \u003d\n        new ArrayList\u003cUserGroupInformation\u003e();\n\n    LineReader in \u003d null;\n    try {\n      in \u003d new LineReader(fs.open(userloc));\n      while (in.readLine(rawUgi) \u003e 0) {//line is of the form username[,group]*\n        // e is end position of user name in this line\n        int e \u003d rawUgi.find(\",\");\n        if (rawUgi.getLength() \u003d\u003d 0 || e \u003d\u003d 0) {\n          throw new IOException(\"Missing username: \" + rawUgi);\n        }\n        if (e \u003d\u003d -1) {\n          e \u003d rawUgi.getLength();\n        }\n        final String username \u003d Text.decode(rawUgi.getBytes(), 0, e);\n        UserGroupInformation ugi \u003d null;\n        try {\n          ugi \u003d UserGroupInformation.createProxyUser(username,\n                    UserGroupInformation.getLoginUser());\n        } catch (IOException ioe) {\n          LOG.error(\"Error while creating a proxy user \" ,ioe);\n        }\n        if (ugi !\u003d null) {\n          ugiList.add(ugi);\n        }\n        // No need to parse groups, even if they exist. Go to next line\n      }\n    } finally {\n      if (in !\u003d null) {\n        in.close();\n      }\n    }\n    return ugiList;\n  }",
+      "path": "hadoop-tools/hadoop-gridmix/src/main/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce-project/src/contrib/gridmix/src/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java",
+        "newPath": "hadoop-tools/hadoop-gridmix/src/main/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java"
+      }
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private List\u003cUserGroupInformation\u003e parseUserList(URI userUri, \n                                                   Configuration conf) \n  throws IOException {\n    if (null \u003d\u003d userUri) {\n      return Collections.emptyList();\n    }\n    \n    final Path userloc \u003d new Path(userUri.toString());\n    final Text rawUgi \u003d new Text();\n    final FileSystem fs \u003d userloc.getFileSystem(conf);\n    final ArrayList\u003cUserGroupInformation\u003e ugiList \u003d\n        new ArrayList\u003cUserGroupInformation\u003e();\n\n    LineReader in \u003d null;\n    try {\n      in \u003d new LineReader(fs.open(userloc));\n      while (in.readLine(rawUgi) \u003e 0) {//line is of the form username[,group]*\n        // e is end position of user name in this line\n        int e \u003d rawUgi.find(\",\");\n        if (rawUgi.getLength() \u003d\u003d 0 || e \u003d\u003d 0) {\n          throw new IOException(\"Missing username: \" + rawUgi);\n        }\n        if (e \u003d\u003d -1) {\n          e \u003d rawUgi.getLength();\n        }\n        final String username \u003d Text.decode(rawUgi.getBytes(), 0, e);\n        UserGroupInformation ugi \u003d null;\n        try {\n          ugi \u003d UserGroupInformation.createProxyUser(username,\n                    UserGroupInformation.getLoginUser());\n        } catch (IOException ioe) {\n          LOG.error(\"Error while creating a proxy user \" ,ioe);\n        }\n        if (ugi !\u003d null) {\n          ugiList.add(ugi);\n        }\n        // No need to parse groups, even if they exist. Go to next line\n      }\n    } finally {\n      if (in !\u003d null) {\n        in.close();\n      }\n    }\n    return ugiList;\n  }",
+      "path": "hadoop-mapreduce-project/src/contrib/gridmix/src/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/src/contrib/gridmix/src/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java",
+        "newPath": "hadoop-mapreduce-project/src/contrib/gridmix/src/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yfilerename",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "commitDateOld": "17/08/11 8:02 PM",
+      "commitNameOld": "dd86860633d2ed64705b669a75bf318442ed6225",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 0.34,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private List\u003cUserGroupInformation\u003e parseUserList(URI userUri, \n                                                   Configuration conf) \n  throws IOException {\n    if (null \u003d\u003d userUri) {\n      return Collections.emptyList();\n    }\n    \n    final Path userloc \u003d new Path(userUri.toString());\n    final Text rawUgi \u003d new Text();\n    final FileSystem fs \u003d userloc.getFileSystem(conf);\n    final ArrayList\u003cUserGroupInformation\u003e ugiList \u003d\n        new ArrayList\u003cUserGroupInformation\u003e();\n\n    LineReader in \u003d null;\n    try {\n      in \u003d new LineReader(fs.open(userloc));\n      while (in.readLine(rawUgi) \u003e 0) {//line is of the form username[,group]*\n        // e is end position of user name in this line\n        int e \u003d rawUgi.find(\",\");\n        if (rawUgi.getLength() \u003d\u003d 0 || e \u003d\u003d 0) {\n          throw new IOException(\"Missing username: \" + rawUgi);\n        }\n        if (e \u003d\u003d -1) {\n          e \u003d rawUgi.getLength();\n        }\n        final String username \u003d Text.decode(rawUgi.getBytes(), 0, e);\n        UserGroupInformation ugi \u003d null;\n        try {\n          ugi \u003d UserGroupInformation.createProxyUser(username,\n                    UserGroupInformation.getLoginUser());\n        } catch (IOException ioe) {\n          LOG.error(\"Error while creating a proxy user \" ,ioe);\n        }\n        if (ugi !\u003d null) {\n          ugiList.add(ugi);\n        }\n        // No need to parse groups, even if they exist. Go to next line\n      }\n    } finally {\n      if (in !\u003d null) {\n        in.close();\n      }\n    }\n    return ugiList;\n  }",
+      "path": "hadoop-mapreduce/src/contrib/gridmix/src/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java",
+      "extendedDetails": {
+        "oldPath": "mapreduce/src/contrib/gridmix/src/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java",
+        "newPath": "hadoop-mapreduce/src/contrib/gridmix/src/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,45 @@\n+  private List\u003cUserGroupInformation\u003e parseUserList(URI userUri, \n+                                                   Configuration conf) \n+  throws IOException {\n+    if (null \u003d\u003d userUri) {\n+      return Collections.emptyList();\n+    }\n+    \n+    final Path userloc \u003d new Path(userUri.toString());\n+    final Text rawUgi \u003d new Text();\n+    final FileSystem fs \u003d userloc.getFileSystem(conf);\n+    final ArrayList\u003cUserGroupInformation\u003e ugiList \u003d\n+        new ArrayList\u003cUserGroupInformation\u003e();\n+\n+    LineReader in \u003d null;\n+    try {\n+      in \u003d new LineReader(fs.open(userloc));\n+      while (in.readLine(rawUgi) \u003e 0) {//line is of the form username[,group]*\n+        // e is end position of user name in this line\n+        int e \u003d rawUgi.find(\",\");\n+        if (rawUgi.getLength() \u003d\u003d 0 || e \u003d\u003d 0) {\n+          throw new IOException(\"Missing username: \" + rawUgi);\n+        }\n+        if (e \u003d\u003d -1) {\n+          e \u003d rawUgi.getLength();\n+        }\n+        final String username \u003d Text.decode(rawUgi.getBytes(), 0, e);\n+        UserGroupInformation ugi \u003d null;\n+        try {\n+          ugi \u003d UserGroupInformation.createProxyUser(username,\n+                    UserGroupInformation.getLoginUser());\n+        } catch (IOException ioe) {\n+          LOG.error(\"Error while creating a proxy user \" ,ioe);\n+        }\n+        if (ugi !\u003d null) {\n+          ugiList.add(ugi);\n+        }\n+        // No need to parse groups, even if they exist. Go to next line\n+      }\n+    } finally {\n+      if (in !\u003d null) {\n+        in.close();\n+      }\n+    }\n+    return ugiList;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private List\u003cUserGroupInformation\u003e parseUserList(URI userUri, \n                                                   Configuration conf) \n  throws IOException {\n    if (null \u003d\u003d userUri) {\n      return Collections.emptyList();\n    }\n    \n    final Path userloc \u003d new Path(userUri.toString());\n    final Text rawUgi \u003d new Text();\n    final FileSystem fs \u003d userloc.getFileSystem(conf);\n    final ArrayList\u003cUserGroupInformation\u003e ugiList \u003d\n        new ArrayList\u003cUserGroupInformation\u003e();\n\n    LineReader in \u003d null;\n    try {\n      in \u003d new LineReader(fs.open(userloc));\n      while (in.readLine(rawUgi) \u003e 0) {//line is of the form username[,group]*\n        // e is end position of user name in this line\n        int e \u003d rawUgi.find(\",\");\n        if (rawUgi.getLength() \u003d\u003d 0 || e \u003d\u003d 0) {\n          throw new IOException(\"Missing username: \" + rawUgi);\n        }\n        if (e \u003d\u003d -1) {\n          e \u003d rawUgi.getLength();\n        }\n        final String username \u003d Text.decode(rawUgi.getBytes(), 0, e);\n        UserGroupInformation ugi \u003d null;\n        try {\n          ugi \u003d UserGroupInformation.createProxyUser(username,\n                    UserGroupInformation.getLoginUser());\n        } catch (IOException ioe) {\n          LOG.error(\"Error while creating a proxy user \" ,ioe);\n        }\n        if (ugi !\u003d null) {\n          ugiList.add(ugi);\n        }\n        // No need to parse groups, even if they exist. Go to next line\n      }\n    } finally {\n      if (in !\u003d null) {\n        in.close();\n      }\n    }\n    return ugiList;\n  }",
+      "path": "mapreduce/src/contrib/gridmix/src/java/org/apache/hadoop/mapred/gridmix/RoundRobinUserResolver.java"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockChecksumHelper.java",
+  "functionName": "computeCompositeCrc",
+  "functionId": "computeCompositeCrc___stripeLength-long",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockChecksumHelper.java",
+  "functionStartLine": 358,
+  "functionEndLine": 406,
+  "numCommitsSeen": 8,
+  "timeTaken": 1892,
+  "changeHistory": [
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf"
+  ],
+  "changeHistoryShort": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7c9cdad6d04c98db5a83e2108219bf6e6c903daf": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13056. Expose file-level composite CRCs in HDFS which are comparable across different instances/layouts. Contributed by Dennis Huo.\n",
+      "commitDate": "10/04/18 9:31 PM",
+      "commitName": "7c9cdad6d04c98db5a83e2108219bf6e6c903daf",
+      "commitAuthor": "Xiao Chen",
+      "diff": "@@ -0,0 +1,49 @@\n+    private void computeCompositeCrc(long stripeLength) throws IOException {\n+      long checksumDataLength \u003d\n+          Math.min(getVisibleLength(), getRequestLength());\n+      if (stripeLength \u003c\u003d 0 || stripeLength \u003e checksumDataLength) {\n+        stripeLength \u003d checksumDataLength;\n+      }\n+\n+      CrcComposer crcComposer \u003d CrcComposer.newStripedCrcComposer(\n+          getCrcType(), getBytesPerCRC(), stripeLength);\n+      DataInputStream checksumIn \u003d getChecksumIn();\n+\n+      // Whether getting the checksum for the entire block (which itself may\n+      // not be a full block size and may have a final chunk smaller than\n+      // getBytesPerCRC()), we begin with a number of full chunks, all of size\n+      // getBytesPerCRC().\n+      long numFullChunks \u003d checksumDataLength / getBytesPerCRC();\n+      crcComposer.update(checksumIn, numFullChunks, getBytesPerCRC());\n+\n+      // There may be a final partial chunk that is not full-sized. Unlike the\n+      // MD5 case, we still consider this a \"partial chunk\" even if\n+      // getRequestLength() \u003d\u003d getVisibleLength(), since the CRC composition\n+      // depends on the byte size of that final chunk, even if it already has a\n+      // precomputed CRC stored in metadata. So there are two cases:\n+      //   1. Reading only part of a block via getRequestLength(); we get the\n+      //      crcPartialBlock() explicitly.\n+      //   2. Reading full visible length; the partial chunk already has a CRC\n+      //      stored in block metadata, so we just continue reading checksumIn.\n+      long partialChunkSize \u003d checksumDataLength % getBytesPerCRC();\n+      if (partialChunkSize \u003e 0) {\n+        if (isPartialBlk()) {\n+          byte[] partialChunkCrcBytes \u003d crcPartialBlock();\n+          crcComposer.update(\n+              partialChunkCrcBytes, 0, partialChunkCrcBytes.length,\n+              partialChunkSize);\n+        } else {\n+          int partialChunkCrc \u003d checksumIn.readInt();\n+          crcComposer.update(partialChunkCrc, partialChunkSize);\n+        }\n+      }\n+\n+      byte[] composedCrcs \u003d crcComposer.digest();\n+      setOutBytes(composedCrcs);\n+      if (LOG.isDebugEnabled()) {\n+        LOG.debug(\n+            \"block\u003d{}, getBytesPerCRC\u003d{}, crcPerBlock\u003d{}, compositeCrc\u003d{}\",\n+            getBlock(), getBytesPerCRC(), getCrcPerBlock(),\n+            CrcUtil.toMultiCrcString(composedCrcs));\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private void computeCompositeCrc(long stripeLength) throws IOException {\n      long checksumDataLength \u003d\n          Math.min(getVisibleLength(), getRequestLength());\n      if (stripeLength \u003c\u003d 0 || stripeLength \u003e checksumDataLength) {\n        stripeLength \u003d checksumDataLength;\n      }\n\n      CrcComposer crcComposer \u003d CrcComposer.newStripedCrcComposer(\n          getCrcType(), getBytesPerCRC(), stripeLength);\n      DataInputStream checksumIn \u003d getChecksumIn();\n\n      // Whether getting the checksum for the entire block (which itself may\n      // not be a full block size and may have a final chunk smaller than\n      // getBytesPerCRC()), we begin with a number of full chunks, all of size\n      // getBytesPerCRC().\n      long numFullChunks \u003d checksumDataLength / getBytesPerCRC();\n      crcComposer.update(checksumIn, numFullChunks, getBytesPerCRC());\n\n      // There may be a final partial chunk that is not full-sized. Unlike the\n      // MD5 case, we still consider this a \"partial chunk\" even if\n      // getRequestLength() \u003d\u003d getVisibleLength(), since the CRC composition\n      // depends on the byte size of that final chunk, even if it already has a\n      // precomputed CRC stored in metadata. So there are two cases:\n      //   1. Reading only part of a block via getRequestLength(); we get the\n      //      crcPartialBlock() explicitly.\n      //   2. Reading full visible length; the partial chunk already has a CRC\n      //      stored in block metadata, so we just continue reading checksumIn.\n      long partialChunkSize \u003d checksumDataLength % getBytesPerCRC();\n      if (partialChunkSize \u003e 0) {\n        if (isPartialBlk()) {\n          byte[] partialChunkCrcBytes \u003d crcPartialBlock();\n          crcComposer.update(\n              partialChunkCrcBytes, 0, partialChunkCrcBytes.length,\n              partialChunkSize);\n        } else {\n          int partialChunkCrc \u003d checksumIn.readInt();\n          crcComposer.update(partialChunkCrc, partialChunkSize);\n        }\n      }\n\n      byte[] composedCrcs \u003d crcComposer.digest();\n      setOutBytes(composedCrcs);\n      if (LOG.isDebugEnabled()) {\n        LOG.debug(\n            \"block\u003d{}, getBytesPerCRC\u003d{}, crcPerBlock\u003d{}, compositeCrc\u003d{}\",\n            getBlock(), getBytesPerCRC(), getCrcPerBlock(),\n            CrcUtil.toMultiCrcString(composedCrcs));\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/BlockChecksumHelper.java"
+    }
+  }
+}

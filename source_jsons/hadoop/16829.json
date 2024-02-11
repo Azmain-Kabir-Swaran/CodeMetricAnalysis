@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "MountTableRefresherService.java",
+  "functionName": "refresh",
+  "functionId": "refresh",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/MountTableRefresherService.java",
+  "functionStartLine": 208,
+  "functionEndLine": 252,
+  "numCommitsSeen": 3,
+  "timeTaken": 1275,
+  "changeHistory": [
+    "2f70b52a5bc6d057232a07916c1cc9c0af4ade47",
+    "8f6f9d9c8398567064c9369f48213db63f45538c"
+  ],
+  "changeHistoryShort": {
+    "2f70b52a5bc6d057232a07916c1cc9c0af4ade47": "Ybodychange",
+    "8f6f9d9c8398567064c9369f48213db63f45538c": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "2f70b52a5bc6d057232a07916c1cc9c0af4ade47": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14812. RBF: MountTableRefresherService should load cache when refresh. Contributed by xuzq.\n",
+      "commitDate": "04/09/19 7:59 PM",
+      "commitName": "2f70b52a5bc6d057232a07916c1cc9c0af4ade47",
+      "commitAuthor": "Ayush Saxena",
+      "commitDateOld": "24/06/19 9:33 AM",
+      "commitNameOld": "8f6f9d9c8398567064c9369f48213db63f45538c",
+      "commitAuthorOld": "Yiqun Lin",
+      "daysBetweenCommits": 72.44,
+      "commitsBetweenForRepo": 648,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,37 +1,45 @@\n   public void refresh() throws StateStoreUnavailableException {\n-    List\u003cRouterState\u003e cachedRecords \u003d\n-        router.getRouterStateManager().getCachedRecords();\n+    RouterStore routerStore \u003d router.getRouterStateManager();\n+\n+    try {\n+      routerStore.loadCache(true);\n+    } catch (IOException e) {\n+      LOG.warn(\"RouterStore load cache failed,\", e);\n+    }\n+\n+    List\u003cRouterState\u003e cachedRecords \u003d routerStore.getCachedRecords();\n     List\u003cMountTableRefresherThread\u003e refreshThreads \u003d new ArrayList\u003c\u003e();\n     for (RouterState routerState : cachedRecords) {\n       String adminAddress \u003d routerState.getAdminAddress();\n       if (adminAddress \u003d\u003d null || adminAddress.length() \u003d\u003d 0) {\n-        // this router has not enabled router admin\n+        // this router has not enabled router admin.\n         continue;\n       }\n       // No use of calling refresh on router which is not running state\n       if (routerState.getStatus() !\u003d RouterServiceState.RUNNING) {\n         LOG.info(\n-            \"Router {} is not running. Mount table cache will not refesh.\");\n+            \"Router {} is not running. Mount table cache will not refresh.\",\n+            routerState.getAddress());\n         // remove if RouterClient is cached.\n         removeFromCache(adminAddress);\n       } else if (isLocalAdmin(adminAddress)) {\n         /*\n          * Local router\u0027s cache update does not require RPC call, so no need for\n          * RouterClient\n          */\n         refreshThreads.add(getLocalRefresher(adminAddress));\n       } else {\n         try {\n           RouterClient client \u003d routerClientsCache.get(adminAddress);\n           refreshThreads.add(new MountTableRefresherThread(\n               client.getMountTableManager(), adminAddress));\n         } catch (ExecutionException execExcep) {\n           // Can not connect, seems router is stopped now.\n           LOG.warn(ROUTER_CONNECT_ERROR_MSG, adminAddress, execExcep);\n         }\n       }\n     }\n     if (!refreshThreads.isEmpty()) {\n       invokeRefresh(refreshThreads);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void refresh() throws StateStoreUnavailableException {\n    RouterStore routerStore \u003d router.getRouterStateManager();\n\n    try {\n      routerStore.loadCache(true);\n    } catch (IOException e) {\n      LOG.warn(\"RouterStore load cache failed,\", e);\n    }\n\n    List\u003cRouterState\u003e cachedRecords \u003d routerStore.getCachedRecords();\n    List\u003cMountTableRefresherThread\u003e refreshThreads \u003d new ArrayList\u003c\u003e();\n    for (RouterState routerState : cachedRecords) {\n      String adminAddress \u003d routerState.getAdminAddress();\n      if (adminAddress \u003d\u003d null || adminAddress.length() \u003d\u003d 0) {\n        // this router has not enabled router admin.\n        continue;\n      }\n      // No use of calling refresh on router which is not running state\n      if (routerState.getStatus() !\u003d RouterServiceState.RUNNING) {\n        LOG.info(\n            \"Router {} is not running. Mount table cache will not refresh.\",\n            routerState.getAddress());\n        // remove if RouterClient is cached.\n        removeFromCache(adminAddress);\n      } else if (isLocalAdmin(adminAddress)) {\n        /*\n         * Local router\u0027s cache update does not require RPC call, so no need for\n         * RouterClient\n         */\n        refreshThreads.add(getLocalRefresher(adminAddress));\n      } else {\n        try {\n          RouterClient client \u003d routerClientsCache.get(adminAddress);\n          refreshThreads.add(new MountTableRefresherThread(\n              client.getMountTableManager(), adminAddress));\n        } catch (ExecutionException execExcep) {\n          // Can not connect, seems router is stopped now.\n          LOG.warn(ROUTER_CONNECT_ERROR_MSG, adminAddress, execExcep);\n        }\n      }\n    }\n    if (!refreshThreads.isEmpty()) {\n      invokeRefresh(refreshThreads);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/MountTableRefresherService.java",
+      "extendedDetails": {}
+    },
+    "8f6f9d9c8398567064c9369f48213db63f45538c": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13443. RBF: Update mount table cache immediately after changing (add/update/remove) mount table entries. Contributed by Mohammad Arshad.\n",
+      "commitDate": "24/06/19 9:33 AM",
+      "commitName": "8f6f9d9c8398567064c9369f48213db63f45538c",
+      "commitAuthor": "Yiqun Lin",
+      "diff": "@@ -0,0 +1,37 @@\n+  public void refresh() throws StateStoreUnavailableException {\n+    List\u003cRouterState\u003e cachedRecords \u003d\n+        router.getRouterStateManager().getCachedRecords();\n+    List\u003cMountTableRefresherThread\u003e refreshThreads \u003d new ArrayList\u003c\u003e();\n+    for (RouterState routerState : cachedRecords) {\n+      String adminAddress \u003d routerState.getAdminAddress();\n+      if (adminAddress \u003d\u003d null || adminAddress.length() \u003d\u003d 0) {\n+        // this router has not enabled router admin\n+        continue;\n+      }\n+      // No use of calling refresh on router which is not running state\n+      if (routerState.getStatus() !\u003d RouterServiceState.RUNNING) {\n+        LOG.info(\n+            \"Router {} is not running. Mount table cache will not refesh.\");\n+        // remove if RouterClient is cached.\n+        removeFromCache(adminAddress);\n+      } else if (isLocalAdmin(adminAddress)) {\n+        /*\n+         * Local router\u0027s cache update does not require RPC call, so no need for\n+         * RouterClient\n+         */\n+        refreshThreads.add(getLocalRefresher(adminAddress));\n+      } else {\n+        try {\n+          RouterClient client \u003d routerClientsCache.get(adminAddress);\n+          refreshThreads.add(new MountTableRefresherThread(\n+              client.getMountTableManager(), adminAddress));\n+        } catch (ExecutionException execExcep) {\n+          // Can not connect, seems router is stopped now.\n+          LOG.warn(ROUTER_CONNECT_ERROR_MSG, adminAddress, execExcep);\n+        }\n+      }\n+    }\n+    if (!refreshThreads.isEmpty()) {\n+      invokeRefresh(refreshThreads);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void refresh() throws StateStoreUnavailableException {\n    List\u003cRouterState\u003e cachedRecords \u003d\n        router.getRouterStateManager().getCachedRecords();\n    List\u003cMountTableRefresherThread\u003e refreshThreads \u003d new ArrayList\u003c\u003e();\n    for (RouterState routerState : cachedRecords) {\n      String adminAddress \u003d routerState.getAdminAddress();\n      if (adminAddress \u003d\u003d null || adminAddress.length() \u003d\u003d 0) {\n        // this router has not enabled router admin\n        continue;\n      }\n      // No use of calling refresh on router which is not running state\n      if (routerState.getStatus() !\u003d RouterServiceState.RUNNING) {\n        LOG.info(\n            \"Router {} is not running. Mount table cache will not refesh.\");\n        // remove if RouterClient is cached.\n        removeFromCache(adminAddress);\n      } else if (isLocalAdmin(adminAddress)) {\n        /*\n         * Local router\u0027s cache update does not require RPC call, so no need for\n         * RouterClient\n         */\n        refreshThreads.add(getLocalRefresher(adminAddress));\n      } else {\n        try {\n          RouterClient client \u003d routerClientsCache.get(adminAddress);\n          refreshThreads.add(new MountTableRefresherThread(\n              client.getMountTableManager(), adminAddress));\n        } catch (ExecutionException execExcep) {\n          // Can not connect, seems router is stopped now.\n          LOG.warn(ROUTER_CONNECT_ERROR_MSG, adminAddress, execExcep);\n        }\n      }\n    }\n    if (!refreshThreads.isEmpty()) {\n      invokeRefresh(refreshThreads);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/MountTableRefresherService.java"
+    }
+  }
+}

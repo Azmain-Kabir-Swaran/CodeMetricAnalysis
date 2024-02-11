@@ -1,0 +1,54 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SubApplicationEntityReader.java",
+  "functionName": "getResults",
+  "functionId": "getResults___hbaseConf-Configuration__conn-Connection__filterList-FilterList",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/hadoop-yarn-server-timelineservice-hbase-client/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/reader/SubApplicationEntityReader.java",
+  "functionStartLine": 338,
+  "functionEndLine": 393,
+  "numCommitsSeen": 3,
+  "timeTaken": 1365,
+  "changeHistory": [
+    "9af30d46c6e82332a8eda20cb3eb5f987e25e7a2",
+    "b2efebdd077ecb7b6ffe7fb8a957dadb0e78290f"
+  ],
+  "changeHistoryShort": {
+    "9af30d46c6e82332a8eda20cb3eb5f987e25e7a2": "Yfilerename",
+    "b2efebdd077ecb7b6ffe7fb8a957dadb0e78290f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9af30d46c6e82332a8eda20cb3eb5f987e25e7a2": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-7919. Refactor timelineservice-hbase module into submodules. Contributed by Haibo Chen.\n",
+      "commitDate": "17/02/18 7:00 AM",
+      "commitName": "9af30d46c6e82332a8eda20cb3eb5f987e25e7a2",
+      "commitAuthor": "Rohith Sharma K S",
+      "commitDateOld": "17/02/18 3:24 AM",
+      "commitNameOld": "a1e56a62863d8d494af309ec5f476c4b7e4d5ef9",
+      "commitAuthorOld": "Arun Suresh",
+      "daysBetweenCommits": 0.15,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  protected ResultScanner getResults(Configuration hbaseConf, Connection conn,\n      FilterList filterList) throws IOException {\n\n    // Scan through part of the table to find the entities belong to one app\n    // and one type\n    Scan scan \u003d new Scan();\n    TimelineReaderContext context \u003d getContext();\n    if (context.getDoAsUser() \u003d\u003d null) {\n      throw new BadRequestException(\"Invalid user!\");\n    }\n\n    RowKeyPrefix\u003cSubApplicationRowKey\u003e subApplicationRowKeyPrefix \u003d null;\n    // default mode, will always scans from beginning of entity type.\n    if (getFilters() \u003d\u003d null || getFilters().getFromId() \u003d\u003d null) {\n      subApplicationRowKeyPrefix \u003d new SubApplicationRowKeyPrefix(\n          context.getDoAsUser(), context.getClusterId(),\n          context.getEntityType(), null, null, null);\n      scan.setRowPrefixFilter(subApplicationRowKeyPrefix.getRowKeyPrefix());\n    } else { // pagination mode, will scan from given entityIdPrefix!enitityId\n\n      SubApplicationRowKey entityRowKey \u003d null;\n      try {\n        entityRowKey \u003d SubApplicationRowKey\n            .parseRowKeyFromString(getFilters().getFromId());\n      } catch (IllegalArgumentException e) {\n        throw new BadRequestException(\"Invalid filter fromid is provided.\");\n      }\n      if (!context.getClusterId().equals(entityRowKey.getClusterId())) {\n        throw new BadRequestException(\n            \"fromid doesn\u0027t belong to clusterId\u003d\" + context.getClusterId());\n      }\n\n      // set start row\n      scan.setStartRow(entityRowKey.getRowKey());\n\n      // get the bytes for stop row\n      subApplicationRowKeyPrefix \u003d new SubApplicationRowKeyPrefix(\n          context.getDoAsUser(), context.getClusterId(),\n          context.getEntityType(), null, null, null);\n\n      // set stop row\n      scan.setStopRow(\n          HBaseTimelineStorageUtils.calculateTheClosestNextRowKeyForPrefix(\n              subApplicationRowKeyPrefix.getRowKeyPrefix()));\n\n      // set page filter to limit. This filter has to set only in pagination\n      // mode.\n      filterList.addFilter(new PageFilter(getFilters().getLimit()));\n    }\n    setMetricsTimeRange(scan);\n    scan.setMaxVersions(getDataToRetrieve().getMetricsLimit());\n    if (filterList !\u003d null \u0026\u0026 !filterList.getFilters().isEmpty()) {\n      scan.setFilter(filterList);\n    }\n    return getTable().getResultScanner(hbaseConf, conn, scan);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/hadoop-yarn-server-timelineservice-hbase-client/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/reader/SubApplicationEntityReader.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/reader/SubApplicationEntityReader.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/hadoop-yarn-server-timelineservice-hbase-client/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/reader/SubApplicationEntityReader.java"
+      }
+    },
+    "b2efebdd077ecb7b6ffe7fb8a957dadb0e78290f": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6861. Reader API for sub application entities (Rohith Sharma K S via Varun Saxena)\n",
+      "commitDate": "29/08/17 10:59 PM",
+      "commitName": "b2efebdd077ecb7b6ffe7fb8a957dadb0e78290f",
+      "commitAuthor": "Varun Saxena",
+      "diff": "@@ -0,0 +1,56 @@\n+  protected ResultScanner getResults(Configuration hbaseConf, Connection conn,\n+      FilterList filterList) throws IOException {\n+\n+    // Scan through part of the table to find the entities belong to one app\n+    // and one type\n+    Scan scan \u003d new Scan();\n+    TimelineReaderContext context \u003d getContext();\n+    if (context.getDoAsUser() \u003d\u003d null) {\n+      throw new BadRequestException(\"Invalid user!\");\n+    }\n+\n+    RowKeyPrefix\u003cSubApplicationRowKey\u003e subApplicationRowKeyPrefix \u003d null;\n+    // default mode, will always scans from beginning of entity type.\n+    if (getFilters() \u003d\u003d null || getFilters().getFromId() \u003d\u003d null) {\n+      subApplicationRowKeyPrefix \u003d new SubApplicationRowKeyPrefix(\n+          context.getDoAsUser(), context.getClusterId(),\n+          context.getEntityType(), null, null, null);\n+      scan.setRowPrefixFilter(subApplicationRowKeyPrefix.getRowKeyPrefix());\n+    } else { // pagination mode, will scan from given entityIdPrefix!enitityId\n+\n+      SubApplicationRowKey entityRowKey \u003d null;\n+      try {\n+        entityRowKey \u003d SubApplicationRowKey\n+            .parseRowKeyFromString(getFilters().getFromId());\n+      } catch (IllegalArgumentException e) {\n+        throw new BadRequestException(\"Invalid filter fromid is provided.\");\n+      }\n+      if (!context.getClusterId().equals(entityRowKey.getClusterId())) {\n+        throw new BadRequestException(\n+            \"fromid doesn\u0027t belong to clusterId\u003d\" + context.getClusterId());\n+      }\n+\n+      // set start row\n+      scan.setStartRow(entityRowKey.getRowKey());\n+\n+      // get the bytes for stop row\n+      subApplicationRowKeyPrefix \u003d new SubApplicationRowKeyPrefix(\n+          context.getDoAsUser(), context.getClusterId(),\n+          context.getEntityType(), null, null, null);\n+\n+      // set stop row\n+      scan.setStopRow(\n+          HBaseTimelineStorageUtils.calculateTheClosestNextRowKeyForPrefix(\n+              subApplicationRowKeyPrefix.getRowKeyPrefix()));\n+\n+      // set page filter to limit. This filter has to set only in pagination\n+      // mode.\n+      filterList.addFilter(new PageFilter(getFilters().getLimit()));\n+    }\n+    setMetricsTimeRange(scan);\n+    scan.setMaxVersions(getDataToRetrieve().getMetricsLimit());\n+    if (filterList !\u003d null \u0026\u0026 !filterList.getFilters().isEmpty()) {\n+      scan.setFilter(filterList);\n+    }\n+    return getTable().getResultScanner(hbaseConf, conn, scan);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected ResultScanner getResults(Configuration hbaseConf, Connection conn,\n      FilterList filterList) throws IOException {\n\n    // Scan through part of the table to find the entities belong to one app\n    // and one type\n    Scan scan \u003d new Scan();\n    TimelineReaderContext context \u003d getContext();\n    if (context.getDoAsUser() \u003d\u003d null) {\n      throw new BadRequestException(\"Invalid user!\");\n    }\n\n    RowKeyPrefix\u003cSubApplicationRowKey\u003e subApplicationRowKeyPrefix \u003d null;\n    // default mode, will always scans from beginning of entity type.\n    if (getFilters() \u003d\u003d null || getFilters().getFromId() \u003d\u003d null) {\n      subApplicationRowKeyPrefix \u003d new SubApplicationRowKeyPrefix(\n          context.getDoAsUser(), context.getClusterId(),\n          context.getEntityType(), null, null, null);\n      scan.setRowPrefixFilter(subApplicationRowKeyPrefix.getRowKeyPrefix());\n    } else { // pagination mode, will scan from given entityIdPrefix!enitityId\n\n      SubApplicationRowKey entityRowKey \u003d null;\n      try {\n        entityRowKey \u003d SubApplicationRowKey\n            .parseRowKeyFromString(getFilters().getFromId());\n      } catch (IllegalArgumentException e) {\n        throw new BadRequestException(\"Invalid filter fromid is provided.\");\n      }\n      if (!context.getClusterId().equals(entityRowKey.getClusterId())) {\n        throw new BadRequestException(\n            \"fromid doesn\u0027t belong to clusterId\u003d\" + context.getClusterId());\n      }\n\n      // set start row\n      scan.setStartRow(entityRowKey.getRowKey());\n\n      // get the bytes for stop row\n      subApplicationRowKeyPrefix \u003d new SubApplicationRowKeyPrefix(\n          context.getDoAsUser(), context.getClusterId(),\n          context.getEntityType(), null, null, null);\n\n      // set stop row\n      scan.setStopRow(\n          HBaseTimelineStorageUtils.calculateTheClosestNextRowKeyForPrefix(\n              subApplicationRowKeyPrefix.getRowKeyPrefix()));\n\n      // set page filter to limit. This filter has to set only in pagination\n      // mode.\n      filterList.addFilter(new PageFilter(getFilters().getLimit()));\n    }\n    setMetricsTimeRange(scan);\n    scan.setMaxVersions(getDataToRetrieve().getMetricsLimit());\n    if (filterList !\u003d null \u0026\u0026 !filterList.getFilters().isEmpty()) {\n      scan.setFilter(filterList);\n    }\n    return getTable().getResultScanner(hbaseConf, conn, scan);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-timelineservice-hbase/src/main/java/org/apache/hadoop/yarn/server/timelineservice/storage/reader/SubApplicationEntityReader.java"
+    }
+  }
+}

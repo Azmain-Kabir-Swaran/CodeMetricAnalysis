@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TaskAttemptImpl.java",
+  "functionName": "configureTokens",
+  "functionId": "configureTokens___jobToken-Token__JobTokenIdentifier____credentials-Credentials__serviceData-Map__String,ByteBuffer__",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/job/impl/TaskAttemptImpl.java",
+  "functionStartLine": 1026,
+  "functionEndLine": 1063,
+  "numCommitsSeen": 108,
+  "timeTaken": 1648,
+  "changeHistory": [
+    "845529b3ab338e759665a687eb525fb2cccde7bf"
+  ],
+  "changeHistoryShort": {
+    "845529b3ab338e759665a687eb525fb2cccde7bf": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "845529b3ab338e759665a687eb525fb2cccde7bf": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-6824. TaskAttemptImpl#createCommonContainerLaunchContext is longer than 150 lines. Contributed by Chris Trezzo.\n",
+      "commitDate": "02/04/17 9:06 PM",
+      "commitName": "845529b3ab338e759665a687eb525fb2cccde7bf",
+      "commitAuthor": "Akira Ajisaka",
+      "diff": "@@ -0,0 +1,38 @@\n+  private static ByteBuffer configureTokens(Token\u003cJobTokenIdentifier\u003e jobToken,\n+      Credentials credentials,\n+      Map\u003cString, ByteBuffer\u003e serviceData) throws IOException {\n+    // Setup up task credentials buffer\n+    LOG.info(\"Adding #\" + credentials.numberOfTokens() + \" tokens and #\"\n+        + credentials.numberOfSecretKeys()\n+        + \" secret keys for NM use for launching container\");\n+    Credentials taskCredentials \u003d new Credentials(credentials);\n+\n+    // LocalStorageToken is needed irrespective of whether security is enabled\n+    // or not.\n+    TokenCache.setJobToken(jobToken, taskCredentials);\n+\n+    DataOutputBuffer containerTokens_dob \u003d new DataOutputBuffer();\n+    LOG.info(\n+        \"Size of containertokens_dob is \" + taskCredentials.numberOfTokens());\n+    taskCredentials.writeTokenStorageToStream(containerTokens_dob);\n+    ByteBuffer taskCredentialsBuffer \u003d\n+        ByteBuffer.wrap(containerTokens_dob.getData(), 0,\n+            containerTokens_dob.getLength());\n+\n+    // Add shuffle secret key\n+    // The secret key is converted to a JobToken to preserve backwards\n+    // compatibility with an older ShuffleHandler running on an NM.\n+    LOG.info(\"Putting shuffle token in serviceData\");\n+    byte[] shuffleSecret \u003d TokenCache.getShuffleSecretKey(credentials);\n+    if (shuffleSecret \u003d\u003d null) {\n+      LOG.warn(\"Cannot locate shuffle secret in credentials.\"\n+          + \" Using job token as shuffle secret.\");\n+      shuffleSecret \u003d jobToken.getPassword();\n+    }\n+    Token\u003cJobTokenIdentifier\u003e shuffleToken \u003d\n+        new Token\u003cJobTokenIdentifier\u003e(jobToken.getIdentifier(), shuffleSecret,\n+            jobToken.getKind(), jobToken.getService());\n+    serviceData.put(ShuffleHandler.MAPREDUCE_SHUFFLE_SERVICEID,\n+        ShuffleHandler.serializeServiceData(shuffleToken));\n+    return taskCredentialsBuffer;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private static ByteBuffer configureTokens(Token\u003cJobTokenIdentifier\u003e jobToken,\n      Credentials credentials,\n      Map\u003cString, ByteBuffer\u003e serviceData) throws IOException {\n    // Setup up task credentials buffer\n    LOG.info(\"Adding #\" + credentials.numberOfTokens() + \" tokens and #\"\n        + credentials.numberOfSecretKeys()\n        + \" secret keys for NM use for launching container\");\n    Credentials taskCredentials \u003d new Credentials(credentials);\n\n    // LocalStorageToken is needed irrespective of whether security is enabled\n    // or not.\n    TokenCache.setJobToken(jobToken, taskCredentials);\n\n    DataOutputBuffer containerTokens_dob \u003d new DataOutputBuffer();\n    LOG.info(\n        \"Size of containertokens_dob is \" + taskCredentials.numberOfTokens());\n    taskCredentials.writeTokenStorageToStream(containerTokens_dob);\n    ByteBuffer taskCredentialsBuffer \u003d\n        ByteBuffer.wrap(containerTokens_dob.getData(), 0,\n            containerTokens_dob.getLength());\n\n    // Add shuffle secret key\n    // The secret key is converted to a JobToken to preserve backwards\n    // compatibility with an older ShuffleHandler running on an NM.\n    LOG.info(\"Putting shuffle token in serviceData\");\n    byte[] shuffleSecret \u003d TokenCache.getShuffleSecretKey(credentials);\n    if (shuffleSecret \u003d\u003d null) {\n      LOG.warn(\"Cannot locate shuffle secret in credentials.\"\n          + \" Using job token as shuffle secret.\");\n      shuffleSecret \u003d jobToken.getPassword();\n    }\n    Token\u003cJobTokenIdentifier\u003e shuffleToken \u003d\n        new Token\u003cJobTokenIdentifier\u003e(jobToken.getIdentifier(), shuffleSecret,\n            jobToken.getKind(), jobToken.getService());\n    serviceData.put(ShuffleHandler.MAPREDUCE_SHUFFLE_SERVICEID,\n        ShuffleHandler.serializeServiceData(shuffleToken));\n    return taskCredentialsBuffer;\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/job/impl/TaskAttemptImpl.java"
+    }
+  }
+}

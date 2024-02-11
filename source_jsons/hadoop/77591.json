@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RetryInvocationHandler.java",
+  "functionName": "invokeOnce",
+  "functionId": "invokeOnce",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/retry/RetryInvocationHandler.java",
+  "functionStartLine": 84,
+  "functionEndLine": 112,
+  "numCommitsSeen": 39,
+  "timeTaken": 1291,
+  "changeHistory": [
+    "d328e667067743f723e332d92154da8e84e65742",
+    "35f255b03b1bb5c94063ec1818af1d253ceee991"
+  ],
+  "changeHistoryShort": {
+    "d328e667067743f723e332d92154da8e84e65742": "Ybodychange",
+    "35f255b03b1bb5c94063ec1818af1d253ceee991": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d328e667067743f723e332d92154da8e84e65742": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13227. AsyncCallHandler should use an event driven architecture to handle async calls.\n",
+      "commitDate": "25/06/16 12:45 AM",
+      "commitName": "d328e667067743f723e332d92154da8e84e65742",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "10/06/16 10:38 AM",
+      "commitNameOld": "0bbb4ddd793063c87927035969884a34f60f2076",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 14.59,
+      "commitsBetweenForRepo": 130,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,29 @@\n     synchronized CallReturn invokeOnce() {\n       try {\n+        if (retryInfo !\u003d null) {\n+          return processWaitTimeAndRetryInfo();\n+        }\n+\n         // The number of times this invocation handler has ever been failed over\n         // before this method invocation attempt. Used to prevent concurrent\n         // failed method invocations from triggering multiple failover attempts.\n         final long failoverCount \u003d retryInvocationHandler.getFailoverCount();\n         try {\n           return invoke();\n         } catch (Exception e) {\n           if (LOG.isTraceEnabled()) {\n-            LOG.trace(this, e);\n+            LOG.trace(toString(), e);\n           }\n           if (Thread.currentThread().isInterrupted()) {\n             // If interrupted, do not retry.\n             throw e;\n           }\n-          retryInvocationHandler.handleException(\n-              method, retryPolicy, failoverCount, counters, e);\n-          return CallReturn.RETRY;\n+\n+          retryInfo \u003d retryInvocationHandler.handleException(\n+              method, callId, retryPolicy, counters, failoverCount, e);\n+          return processWaitTimeAndRetryInfo();\n         }\n       } catch(Throwable t) {\n         return new CallReturn(t);\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    synchronized CallReturn invokeOnce() {\n      try {\n        if (retryInfo !\u003d null) {\n          return processWaitTimeAndRetryInfo();\n        }\n\n        // The number of times this invocation handler has ever been failed over\n        // before this method invocation attempt. Used to prevent concurrent\n        // failed method invocations from triggering multiple failover attempts.\n        final long failoverCount \u003d retryInvocationHandler.getFailoverCount();\n        try {\n          return invoke();\n        } catch (Exception e) {\n          if (LOG.isTraceEnabled()) {\n            LOG.trace(toString(), e);\n          }\n          if (Thread.currentThread().isInterrupted()) {\n            // If interrupted, do not retry.\n            throw e;\n          }\n\n          retryInfo \u003d retryInvocationHandler.handleException(\n              method, callId, retryPolicy, counters, failoverCount, e);\n          return processWaitTimeAndRetryInfo();\n        }\n      } catch(Throwable t) {\n        return new CallReturn(t);\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/retry/RetryInvocationHandler.java",
+      "extendedDetails": {}
+    },
+    "35f255b03b1bb5c94063ec1818af1d253ceee991": {
+      "type": "Yintroduced",
+      "commitMessage": "Revert \"Revert \"HADOOP-13226 Support async call retry and failover.\"\"\n\nThis reverts commit 5360da8bd9f720384860f411bee081aef13b4bd4.\n",
+      "commitDate": "06/06/16 1:31 AM",
+      "commitName": "35f255b03b1bb5c94063ec1818af1d253ceee991",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "diff": "@@ -0,0 +1,24 @@\n+    synchronized CallReturn invokeOnce() {\n+      try {\n+        // The number of times this invocation handler has ever been failed over\n+        // before this method invocation attempt. Used to prevent concurrent\n+        // failed method invocations from triggering multiple failover attempts.\n+        final long failoverCount \u003d retryInvocationHandler.getFailoverCount();\n+        try {\n+          return invoke();\n+        } catch (Exception e) {\n+          if (LOG.isTraceEnabled()) {\n+            LOG.trace(this, e);\n+          }\n+          if (Thread.currentThread().isInterrupted()) {\n+            // If interrupted, do not retry.\n+            throw e;\n+          }\n+          retryInvocationHandler.handleException(\n+              method, retryPolicy, failoverCount, counters, e);\n+          return CallReturn.RETRY;\n+        }\n+      } catch(Throwable t) {\n+        return new CallReturn(t);\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    synchronized CallReturn invokeOnce() {\n      try {\n        // The number of times this invocation handler has ever been failed over\n        // before this method invocation attempt. Used to prevent concurrent\n        // failed method invocations from triggering multiple failover attempts.\n        final long failoverCount \u003d retryInvocationHandler.getFailoverCount();\n        try {\n          return invoke();\n        } catch (Exception e) {\n          if (LOG.isTraceEnabled()) {\n            LOG.trace(this, e);\n          }\n          if (Thread.currentThread().isInterrupted()) {\n            // If interrupted, do not retry.\n            throw e;\n          }\n          retryInvocationHandler.handleException(\n              method, retryPolicy, failoverCount, counters, e);\n          return CallReturn.RETRY;\n        }\n      } catch(Throwable t) {\n        return new CallReturn(t);\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/retry/RetryInvocationHandler.java"
+    }
+  }
+}

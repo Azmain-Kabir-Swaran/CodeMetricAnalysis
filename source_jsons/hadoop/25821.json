@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RMContainerAllocator.java",
+  "functionName": "handleReduceContainerRequest",
+  "functionId": "handleReduceContainerRequest___reqEvent-ContainerRequestEvent",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/rm/RMContainerAllocator.java",
+  "functionStartLine": 422,
+  "functionEndLine": 472,
+  "numCommitsSeen": 82,
+  "timeTaken": 1046,
+  "changeHistory": [
+    "fc2b69eba1c5df59f6175205c27dc7b584df50c0"
+  ],
+  "changeHistoryShort": {
+    "fc2b69eba1c5df59f6175205c27dc7b584df50c0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fc2b69eba1c5df59f6175205c27dc7b584df50c0": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-6765. MR should not schedule container requests in cases where reducer or mapper containers demand resource larger than the maximum supported (haibochen via rkanter)\n",
+      "commitDate": "01/11/16 8:47 PM",
+      "commitName": "fc2b69eba1c5df59f6175205c27dc7b584df50c0",
+      "commitAuthor": "Robert Kanter",
+      "diff": "@@ -0,0 +1,51 @@\n+  private void handleReduceContainerRequest(ContainerRequestEvent reqEvent) {\n+    assert(reqEvent.getAttemptID().getTaskId().getTaskType().equals(\n+        TaskType.REDUCE));\n+\n+    Resource supportedMaxContainerCapability \u003d getMaxContainerCapability();\n+    JobId jobId \u003d getJob().getID();\n+\n+    if (reduceResourceRequest.equals(Resources.none())) {\n+      reduceResourceRequest \u003d reqEvent.getCapability();\n+      eventHandler.handle(new JobHistoryEvent(jobId,\n+          new NormalizedResourceEvent(\n+              org.apache.hadoop.mapreduce.TaskType.REDUCE,\n+              reduceResourceRequest.getMemorySize())));\n+      LOG.info(\"reduceResourceRequest:\" + reduceResourceRequest);\n+    }\n+\n+    boolean reduceContainerRequestAccepted \u003d true;\n+    if (reduceResourceRequest.getMemorySize() \u003e\n+        supportedMaxContainerCapability.getMemorySize()\n+        ||\n+        reduceResourceRequest.getVirtualCores() \u003e\n+        supportedMaxContainerCapability.getVirtualCores()) {\n+      reduceContainerRequestAccepted \u003d false;\n+    }\n+\n+    if (reduceContainerRequestAccepted) {\n+      // set the resources\n+      reqEvent.getCapability().setVirtualCores(\n+          reduceResourceRequest.getVirtualCores());\n+      reqEvent.getCapability().setMemorySize(\n+          reduceResourceRequest.getMemorySize());\n+\n+      if (reqEvent.getEarlierAttemptFailed()) {\n+        //previously failed reducers are added to the front for fail fast\n+        pendingReduces.addFirst(new ContainerRequest(reqEvent,\n+            PRIORITY_REDUCE, reduceNodeLabelExpression));\n+      } else {\n+        //reduces are added to pending queue and are slowly ramped up\n+        pendingReduces.add(new ContainerRequest(reqEvent,\n+            PRIORITY_REDUCE, reduceNodeLabelExpression));\n+      }\n+    } else {\n+      String diagMsg \u003d \"REDUCE capability required is more than the \" +\n+          \"supported max container capability in the cluster. Killing\" +\n+          \" the Job. reduceResourceRequest: \" + reduceResourceRequest +\n+          \" maxContainerCapability:\" + supportedMaxContainerCapability;\n+      LOG.info(diagMsg);\n+      eventHandler.handle(new JobDiagnosticsUpdateEvent(jobId, diagMsg));\n+      eventHandler.handle(new JobEvent(jobId, JobEventType.JOB_KILL));\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void handleReduceContainerRequest(ContainerRequestEvent reqEvent) {\n    assert(reqEvent.getAttemptID().getTaskId().getTaskType().equals(\n        TaskType.REDUCE));\n\n    Resource supportedMaxContainerCapability \u003d getMaxContainerCapability();\n    JobId jobId \u003d getJob().getID();\n\n    if (reduceResourceRequest.equals(Resources.none())) {\n      reduceResourceRequest \u003d reqEvent.getCapability();\n      eventHandler.handle(new JobHistoryEvent(jobId,\n          new NormalizedResourceEvent(\n              org.apache.hadoop.mapreduce.TaskType.REDUCE,\n              reduceResourceRequest.getMemorySize())));\n      LOG.info(\"reduceResourceRequest:\" + reduceResourceRequest);\n    }\n\n    boolean reduceContainerRequestAccepted \u003d true;\n    if (reduceResourceRequest.getMemorySize() \u003e\n        supportedMaxContainerCapability.getMemorySize()\n        ||\n        reduceResourceRequest.getVirtualCores() \u003e\n        supportedMaxContainerCapability.getVirtualCores()) {\n      reduceContainerRequestAccepted \u003d false;\n    }\n\n    if (reduceContainerRequestAccepted) {\n      // set the resources\n      reqEvent.getCapability().setVirtualCores(\n          reduceResourceRequest.getVirtualCores());\n      reqEvent.getCapability().setMemorySize(\n          reduceResourceRequest.getMemorySize());\n\n      if (reqEvent.getEarlierAttemptFailed()) {\n        //previously failed reducers are added to the front for fail fast\n        pendingReduces.addFirst(new ContainerRequest(reqEvent,\n            PRIORITY_REDUCE, reduceNodeLabelExpression));\n      } else {\n        //reduces are added to pending queue and are slowly ramped up\n        pendingReduces.add(new ContainerRequest(reqEvent,\n            PRIORITY_REDUCE, reduceNodeLabelExpression));\n      }\n    } else {\n      String diagMsg \u003d \"REDUCE capability required is more than the \" +\n          \"supported max container capability in the cluster. Killing\" +\n          \" the Job. reduceResourceRequest: \" + reduceResourceRequest +\n          \" maxContainerCapability:\" + supportedMaxContainerCapability;\n      LOG.info(diagMsg);\n      eventHandler.handle(new JobDiagnosticsUpdateEvent(jobId, diagMsg));\n      eventHandler.handle(new JobEvent(jobId, JobEventType.JOB_KILL));\n    }\n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-app/src/main/java/org/apache/hadoop/mapreduce/v2/app/rm/RMContainerAllocator.java"
+    }
+  }
+}

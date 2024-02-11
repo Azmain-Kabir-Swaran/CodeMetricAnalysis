@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "TimelineConnector.java",
+  "functionName": "serviceInit",
+  "functionId": "serviceInit___conf-Configuration",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineConnector.java",
+  "functionStartLine": 102,
+  "functionEndLine": 133,
+  "numCommitsSeen": 5,
+  "timeTaken": 1410,
+  "changeHistory": [
+    "94607214ce87af871b024b4047ae3aa82058f9eb",
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711"
+  ],
+  "changeHistoryShort": {
+    "94607214ce87af871b024b4047ae3aa82058f9eb": "Ybodychange",
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "94607214ce87af871b024b4047ae3aa82058f9eb": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-6534. ResourceManager failed due to TimelineClient try to init SSLFactory even https is not enabled. Contributed by Rohith Sharma K S.\n\n(cherry picked from commit 09e36ff59c05b8bd54d346d1103de0a7300875c6)\n",
+      "commitDate": "27/04/17 1:11 PM",
+      "commitName": "94607214ce87af871b024b4047ae3aa82058f9eb",
+      "commitAuthor": "Junping Du",
+      "commitDateOld": "15/03/17 11:48 AM",
+      "commitNameOld": "221783b35bb78bda909c2417c7b9687d491fa196",
+      "commitAuthorOld": "Junping Du",
+      "daysBetweenCommits": 43.06,
+      "commitsBetweenForRepo": 244,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,27 +1,32 @@\n   protected void serviceInit(Configuration conf) throws Exception {\n     super.serviceInit(conf);\n     ClientConfig cc \u003d new DefaultClientConfig();\n     cc.getClasses().add(YarnJacksonJaxbJsonProvider.class);\n \n-    sslFactory \u003d getSSLFactory(conf);\n-    connConfigurator \u003d getConnConfigurator(sslFactory);\n+    if (YarnConfiguration.useHttps(conf)) {\n+      // If https is chosen, configures SSL client.\n+      sslFactory \u003d getSSLFactory(conf);\n+      connConfigurator \u003d getConnConfigurator(sslFactory);\n+    } else {\n+      connConfigurator \u003d DEFAULT_TIMEOUT_CONN_CONFIGURATOR;\n+    }\n \n     if (UserGroupInformation.isSecurityEnabled()) {\n       authenticator \u003d new KerberosDelegationTokenAuthenticator();\n     } else {\n       authenticator \u003d new PseudoDelegationTokenAuthenticator();\n     }\n     authenticator.setConnectionConfigurator(connConfigurator);\n \n     connectionRetry \u003d new TimelineClientConnectionRetry(conf);\n     client \u003d\n         new Client(\n             new URLConnectionClientHandler(new TimelineURLConnectionFactory(\n                 authUgi, authenticator, connConfigurator, token, doAsUser)),\n             cc);\n     if (requireConnectionRetry) {\n       TimelineJerseyRetryFilter retryFilter \u003d\n           new TimelineJerseyRetryFilter(connectionRetry);\n       client.addFilter(retryFilter);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void serviceInit(Configuration conf) throws Exception {\n    super.serviceInit(conf);\n    ClientConfig cc \u003d new DefaultClientConfig();\n    cc.getClasses().add(YarnJacksonJaxbJsonProvider.class);\n\n    if (YarnConfiguration.useHttps(conf)) {\n      // If https is chosen, configures SSL client.\n      sslFactory \u003d getSSLFactory(conf);\n      connConfigurator \u003d getConnConfigurator(sslFactory);\n    } else {\n      connConfigurator \u003d DEFAULT_TIMEOUT_CONN_CONFIGURATOR;\n    }\n\n    if (UserGroupInformation.isSecurityEnabled()) {\n      authenticator \u003d new KerberosDelegationTokenAuthenticator();\n    } else {\n      authenticator \u003d new PseudoDelegationTokenAuthenticator();\n    }\n    authenticator.setConnectionConfigurator(connConfigurator);\n\n    connectionRetry \u003d new TimelineClientConnectionRetry(conf);\n    client \u003d\n        new Client(\n            new URLConnectionClientHandler(new TimelineURLConnectionFactory(\n                authUgi, authenticator, connConfigurator, token, doAsUser)),\n            cc);\n    if (requireConnectionRetry) {\n      TimelineJerseyRetryFilter retryFilter \u003d\n          new TimelineJerseyRetryFilter(connectionRetry);\n      client.addFilter(retryFilter);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineConnector.java",
+      "extendedDetails": {}
+    },
+    "4fa1afdb883dab8786d2fb5c72a195dd2e87d711": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4675. Reorganize TimelineClient and TimelineClientImpl into separate classes for ATSv1.x and ATSv2. Contributed by Naganarasimha G R.\n",
+      "commitDate": "16/02/17 11:41 AM",
+      "commitName": "4fa1afdb883dab8786d2fb5c72a195dd2e87d711",
+      "commitAuthor": "Sangjin Lee",
+      "diff": "@@ -0,0 +1,27 @@\n+  protected void serviceInit(Configuration conf) throws Exception {\n+    super.serviceInit(conf);\n+    ClientConfig cc \u003d new DefaultClientConfig();\n+    cc.getClasses().add(YarnJacksonJaxbJsonProvider.class);\n+\n+    sslFactory \u003d getSSLFactory(conf);\n+    connConfigurator \u003d getConnConfigurator(sslFactory);\n+\n+    if (UserGroupInformation.isSecurityEnabled()) {\n+      authenticator \u003d new KerberosDelegationTokenAuthenticator();\n+    } else {\n+      authenticator \u003d new PseudoDelegationTokenAuthenticator();\n+    }\n+    authenticator.setConnectionConfigurator(connConfigurator);\n+\n+    connectionRetry \u003d new TimelineClientConnectionRetry(conf);\n+    client \u003d\n+        new Client(\n+            new URLConnectionClientHandler(new TimelineURLConnectionFactory(\n+                authUgi, authenticator, connConfigurator, token, doAsUser)),\n+            cc);\n+    if (requireConnectionRetry) {\n+      TimelineJerseyRetryFilter retryFilter \u003d\n+          new TimelineJerseyRetryFilter(connectionRetry);\n+      client.addFilter(retryFilter);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void serviceInit(Configuration conf) throws Exception {\n    super.serviceInit(conf);\n    ClientConfig cc \u003d new DefaultClientConfig();\n    cc.getClasses().add(YarnJacksonJaxbJsonProvider.class);\n\n    sslFactory \u003d getSSLFactory(conf);\n    connConfigurator \u003d getConnConfigurator(sslFactory);\n\n    if (UserGroupInformation.isSecurityEnabled()) {\n      authenticator \u003d new KerberosDelegationTokenAuthenticator();\n    } else {\n      authenticator \u003d new PseudoDelegationTokenAuthenticator();\n    }\n    authenticator.setConnectionConfigurator(connConfigurator);\n\n    connectionRetry \u003d new TimelineClientConnectionRetry(conf);\n    client \u003d\n        new Client(\n            new URLConnectionClientHandler(new TimelineURLConnectionFactory(\n                authUgi, authenticator, connConfigurator, token, doAsUser)),\n            cc);\n    if (requireConnectionRetry) {\n      TimelineJerseyRetryFilter retryFilter \u003d\n          new TimelineJerseyRetryFilter(connectionRetry);\n      client.addFilter(retryFilter);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-common/src/main/java/org/apache/hadoop/yarn/client/api/impl/TimelineConnector.java"
+    }
+  }
+}

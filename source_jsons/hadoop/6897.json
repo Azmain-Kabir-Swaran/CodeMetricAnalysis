@@ -1,0 +1,99 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSDirectory.java",
+  "functionName": "setINodeAttributeProvider",
+  "functionId": "setINodeAttributeProvider___provider-INodeAttributeProvider(annotations-@Nullable)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+  "functionStartLine": 215,
+  "functionEndLine": 252,
+  "numCommitsSeen": 639,
+  "timeTaken": 5518,
+  "changeHistory": [
+    "adecdb8b534c536354f4f47789467ffb82dd1496",
+    "061afcdf30ce10d04986672a0583d925d3f8f741",
+    "53a28afe293e5bf185c8d4f2c7aea212e66015c2"
+  ],
+  "changeHistoryShort": {
+    "adecdb8b534c536354f4f47789467ffb82dd1496": "Ybodychange",
+    "061afcdf30ce10d04986672a0583d925d3f8f741": "Ymultichange(Ybodychange,Yparametermetachange)",
+    "53a28afe293e5bf185c8d4f2c7aea212e66015c2": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "adecdb8b534c536354f4f47789467ffb82dd1496": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-15334. INodeAttributeProvider\u0027s new API checkPermissionWithContext not getting called in for authorization. (#1998)\n\nReviewed-by: Arpit Agarwal \u003carp@apache.org\u003e",
+      "commitDate": "05/05/20 4:04 PM",
+      "commitName": "adecdb8b534c536354f4f47789467ffb82dd1496",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "commitDateOld": "09/04/20 9:19 AM",
+      "commitNameOld": "061afcdf30ce10d04986672a0583d925d3f8f741",
+      "commitAuthorOld": "Wei-Chiu Chuang",
+      "daysBetweenCommits": 26.28,
+      "commitsBetweenForRepo": 87,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,38 @@\n   public void setINodeAttributeProvider(\n       @Nullable INodeAttributeProvider provider) {\n     attributeProvider \u003d provider;\n \n     if (attributeProvider \u003d\u003d null) {\n       // attributeProvider is set to null during NN shutdown.\n       return;\n     }\n \n     // if the runtime external authorization provider doesn\u0027t support\n     // checkPermissionWithContext(), fall back to the old API\n     // checkPermission().\n     // This check is done only once during NameNode initialization to reduce\n     // runtime overhead.\n     Class[] cArg \u003d new Class[1];\n     cArg[0] \u003d INodeAttributeProvider.AuthorizationContext.class;\n \n+    INodeAttributeProvider.AccessControlEnforcer enforcer \u003d\n+        attributeProvider.getExternalAccessControlEnforcer(null);\n+\n+    // If external enforcer is null, we use the default enforcer, which\n+    // supports the new API.\n+    if (enforcer \u003d\u003d null) {\n+      useAuthorizationWithContextAPI \u003d true;\n+      return;\n+    }\n+\n     try {\n-      Class\u003c?\u003e clazz \u003d attributeProvider.getClass();\n+      Class\u003c?\u003e clazz \u003d enforcer.getClass();\n       clazz.getDeclaredMethod(\"checkPermissionWithContext\", cArg);\n       useAuthorizationWithContextAPI \u003d true;\n       LOG.info(\"Use the new authorization provider API\");\n     } catch (NoSuchMethodException e) {\n       useAuthorizationWithContextAPI \u003d false;\n       LOG.info(\"Fallback to the old authorization provider API because \" +\n           \"the expected method is not found.\");\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void setINodeAttributeProvider(\n      @Nullable INodeAttributeProvider provider) {\n    attributeProvider \u003d provider;\n\n    if (attributeProvider \u003d\u003d null) {\n      // attributeProvider is set to null during NN shutdown.\n      return;\n    }\n\n    // if the runtime external authorization provider doesn\u0027t support\n    // checkPermissionWithContext(), fall back to the old API\n    // checkPermission().\n    // This check is done only once during NameNode initialization to reduce\n    // runtime overhead.\n    Class[] cArg \u003d new Class[1];\n    cArg[0] \u003d INodeAttributeProvider.AuthorizationContext.class;\n\n    INodeAttributeProvider.AccessControlEnforcer enforcer \u003d\n        attributeProvider.getExternalAccessControlEnforcer(null);\n\n    // If external enforcer is null, we use the default enforcer, which\n    // supports the new API.\n    if (enforcer \u003d\u003d null) {\n      useAuthorizationWithContextAPI \u003d true;\n      return;\n    }\n\n    try {\n      Class\u003c?\u003e clazz \u003d enforcer.getClass();\n      clazz.getDeclaredMethod(\"checkPermissionWithContext\", cArg);\n      useAuthorizationWithContextAPI \u003d true;\n      LOG.info(\"Use the new authorization provider API\");\n    } catch (NoSuchMethodException e) {\n      useAuthorizationWithContextAPI \u003d false;\n      LOG.info(\"Fallback to the old authorization provider API because \" +\n          \"the expected method is not found.\");\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+      "extendedDetails": {}
+    },
+    "061afcdf30ce10d04986672a0583d925d3f8f741": {
+      "type": "Ymultichange(Ybodychange,Yparametermetachange)",
+      "commitMessage": "HDFS-15269. NameNode should check the authorization API version only … (#1945)\n\nReviewed-by: Takanobu Asanuma \u003ctasanuma@apache.org\u003e\r\nReviewed-by: Akira Ajisaka \u003caajisaka@apache.org\u003e",
+      "commitDate": "09/04/20 9:19 AM",
+      "commitName": "061afcdf30ce10d04986672a0583d925d3f8f741",
+      "commitAuthor": "Wei-Chiu Chuang",
+      "subchanges": [
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-15269. NameNode should check the authorization API version only … (#1945)\n\nReviewed-by: Takanobu Asanuma \u003ctasanuma@apache.org\u003e\r\nReviewed-by: Akira Ajisaka \u003caajisaka@apache.org\u003e",
+          "commitDate": "09/04/20 9:19 AM",
+          "commitName": "061afcdf30ce10d04986672a0583d925d3f8f741",
+          "commitAuthor": "Wei-Chiu Chuang",
+          "commitDateOld": "25/03/20 10:28 AM",
+          "commitNameOld": "a700803a18fb957d2799001a2ce1dcb70f75c080",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 14.95,
+          "commitsBetweenForRepo": 46,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,28 @@\n-  public void setINodeAttributeProvider(INodeAttributeProvider provider) {\n+  public void setINodeAttributeProvider(\n+      @Nullable INodeAttributeProvider provider) {\n     attributeProvider \u003d provider;\n+\n+    if (attributeProvider \u003d\u003d null) {\n+      // attributeProvider is set to null during NN shutdown.\n+      return;\n+    }\n+\n+    // if the runtime external authorization provider doesn\u0027t support\n+    // checkPermissionWithContext(), fall back to the old API\n+    // checkPermission().\n+    // This check is done only once during NameNode initialization to reduce\n+    // runtime overhead.\n+    Class[] cArg \u003d new Class[1];\n+    cArg[0] \u003d INodeAttributeProvider.AuthorizationContext.class;\n+\n+    try {\n+      Class\u003c?\u003e clazz \u003d attributeProvider.getClass();\n+      clazz.getDeclaredMethod(\"checkPermissionWithContext\", cArg);\n+      useAuthorizationWithContextAPI \u003d true;\n+      LOG.info(\"Use the new authorization provider API\");\n+    } catch (NoSuchMethodException e) {\n+      useAuthorizationWithContextAPI \u003d false;\n+      LOG.info(\"Fallback to the old authorization provider API because \" +\n+          \"the expected method is not found.\");\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void setINodeAttributeProvider(\n      @Nullable INodeAttributeProvider provider) {\n    attributeProvider \u003d provider;\n\n    if (attributeProvider \u003d\u003d null) {\n      // attributeProvider is set to null during NN shutdown.\n      return;\n    }\n\n    // if the runtime external authorization provider doesn\u0027t support\n    // checkPermissionWithContext(), fall back to the old API\n    // checkPermission().\n    // This check is done only once during NameNode initialization to reduce\n    // runtime overhead.\n    Class[] cArg \u003d new Class[1];\n    cArg[0] \u003d INodeAttributeProvider.AuthorizationContext.class;\n\n    try {\n      Class\u003c?\u003e clazz \u003d attributeProvider.getClass();\n      clazz.getDeclaredMethod(\"checkPermissionWithContext\", cArg);\n      useAuthorizationWithContextAPI \u003d true;\n      LOG.info(\"Use the new authorization provider API\");\n    } catch (NoSuchMethodException e) {\n      useAuthorizationWithContextAPI \u003d false;\n      LOG.info(\"Fallback to the old authorization provider API because \" +\n          \"the expected method is not found.\");\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HDFS-15269. NameNode should check the authorization API version only … (#1945)\n\nReviewed-by: Takanobu Asanuma \u003ctasanuma@apache.org\u003e\r\nReviewed-by: Akira Ajisaka \u003caajisaka@apache.org\u003e",
+          "commitDate": "09/04/20 9:19 AM",
+          "commitName": "061afcdf30ce10d04986672a0583d925d3f8f741",
+          "commitAuthor": "Wei-Chiu Chuang",
+          "commitDateOld": "25/03/20 10:28 AM",
+          "commitNameOld": "a700803a18fb957d2799001a2ce1dcb70f75c080",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 14.95,
+          "commitsBetweenForRepo": 46,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,28 @@\n-  public void setINodeAttributeProvider(INodeAttributeProvider provider) {\n+  public void setINodeAttributeProvider(\n+      @Nullable INodeAttributeProvider provider) {\n     attributeProvider \u003d provider;\n+\n+    if (attributeProvider \u003d\u003d null) {\n+      // attributeProvider is set to null during NN shutdown.\n+      return;\n+    }\n+\n+    // if the runtime external authorization provider doesn\u0027t support\n+    // checkPermissionWithContext(), fall back to the old API\n+    // checkPermission().\n+    // This check is done only once during NameNode initialization to reduce\n+    // runtime overhead.\n+    Class[] cArg \u003d new Class[1];\n+    cArg[0] \u003d INodeAttributeProvider.AuthorizationContext.class;\n+\n+    try {\n+      Class\u003c?\u003e clazz \u003d attributeProvider.getClass();\n+      clazz.getDeclaredMethod(\"checkPermissionWithContext\", cArg);\n+      useAuthorizationWithContextAPI \u003d true;\n+      LOG.info(\"Use the new authorization provider API\");\n+    } catch (NoSuchMethodException e) {\n+      useAuthorizationWithContextAPI \u003d false;\n+      LOG.info(\"Fallback to the old authorization provider API because \" +\n+          \"the expected method is not found.\");\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void setINodeAttributeProvider(\n      @Nullable INodeAttributeProvider provider) {\n    attributeProvider \u003d provider;\n\n    if (attributeProvider \u003d\u003d null) {\n      // attributeProvider is set to null during NN shutdown.\n      return;\n    }\n\n    // if the runtime external authorization provider doesn\u0027t support\n    // checkPermissionWithContext(), fall back to the old API\n    // checkPermission().\n    // This check is done only once during NameNode initialization to reduce\n    // runtime overhead.\n    Class[] cArg \u003d new Class[1];\n    cArg[0] \u003d INodeAttributeProvider.AuthorizationContext.class;\n\n    try {\n      Class\u003c?\u003e clazz \u003d attributeProvider.getClass();\n      clazz.getDeclaredMethod(\"checkPermissionWithContext\", cArg);\n      useAuthorizationWithContextAPI \u003d true;\n      LOG.info(\"Use the new authorization provider API\");\n    } catch (NoSuchMethodException e) {\n      useAuthorizationWithContextAPI \u003d false;\n      LOG.info(\"Fallback to the old authorization provider API because \" +\n          \"the expected method is not found.\");\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java",
+          "extendedDetails": {
+            "oldValue": "[provider-INodeAttributeProvider]",
+            "newValue": "[provider-INodeAttributeProvider(annotations-@Nullable)]"
+          }
+        }
+      ]
+    },
+    "53a28afe293e5bf185c8d4f2c7aea212e66015c2": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-6826. Plugin interface to enable delegation of HDFS authorization assertions. Contributed by Arun Suresh.\n",
+      "commitDate": "24/03/15 4:02 PM",
+      "commitName": "53a28afe293e5bf185c8d4f2c7aea212e66015c2",
+      "commitAuthor": "Jitendra Pandey",
+      "diff": "@@ -0,0 +1,3 @@\n+  public void setINodeAttributeProvider(INodeAttributeProvider provider) {\n+    attributeProvider \u003d provider;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void setINodeAttributeProvider(INodeAttributeProvider provider) {\n    attributeProvider \u003d provider;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirectory.java"
+    }
+  }
+}

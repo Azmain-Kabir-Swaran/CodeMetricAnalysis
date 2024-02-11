@@ -1,0 +1,136 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ViewFs.java",
+  "functionName": "renameInternal",
+  "functionId": "renameInternal___src-Path(modifiers-final)__dst-Path(modifiers-final)__overwrite-boolean(modifiers-final)",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFs.java",
+  "functionStartLine": 490,
+  "functionEndLine": 520,
+  "numCommitsSeen": 36,
+  "timeTaken": 2199,
+  "changeHistory": [
+    "6d983cca52f113118bf49fec527ffb3eb869290a",
+    "0c837db8a874079dd5db83a7eef9c4d2b9d0e9ff",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+    "f1c74df922058e88791ed6971bbb96b53f6770f1"
+  ],
+  "changeHistoryShort": {
+    "6d983cca52f113118bf49fec527ffb3eb869290a": "Ybodychange",
+    "0c837db8a874079dd5db83a7eef9c4d2b9d0e9ff": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yfilerename",
+    "f1c74df922058e88791ed6971bbb96b53f6770f1": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6d983cca52f113118bf49fec527ffb3eb869290a": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14455. ViewFileSystem#rename should support be supported within same nameservice with different mountpoints. Contributed by Brahma Reddy Battula.\n",
+      "commitDate": "25/07/17 8:51 AM",
+      "commitName": "6d983cca52f113118bf49fec527ffb3eb869290a",
+      "commitAuthor": "Brahma Reddy Battula",
+      "commitDateOld": "22/03/17 10:22 PM",
+      "commitNameOld": "59d69257a888347f0fb9c51bb000afc986b64f98",
+      "commitAuthorOld": "Zhe Zhang",
+      "daysBetweenCommits": 124.44,
+      "commitsBetweenForRepo": 648,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,45 +1,31 @@\n   public void renameInternal(final Path src, final Path dst,\n       final boolean overwrite) throws IOException, UnresolvedLinkException {\n     // passing resolveLastComponet as false to catch renaming a mount point \n     // itself we need to catch this as an internal operation and fail.\n     InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resSrc \u003d \n       fsState.resolve(getUriPath(src), false); \n   \n     if (resSrc.isInternalDir()) {\n       throw new AccessControlException(\n           \"Cannot Rename within internal dirs of mount table: src\u003d\" + src\n               + \" is readOnly\");\n     }\n \n-    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d \n+    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d\n                                 fsState.resolve(getUriPath(dst), false);\n     if (resDst.isInternalDir()) {\n       throw new AccessControlException(\n           \"Cannot Rename within internal dirs of mount table: dest\u003d\" + dst\n               + \" is readOnly\");\n     }\n-    \n-    /**\n-    // Alternate 1: renames within same file system - valid but we disallow\n-    // Alternate 2: (as described in next para - valid but we have disallowed it\n-    //\n-    // Note we compare the URIs. the URIs include the link targets. \n-    // hence we allow renames across mount links as long as the mount links\n-    // point to the same target.\n-    if (!resSrc.targetFileSystem.getUri().equals(\n-              resDst.targetFileSystem.getUri())) {\n-      throw new IOException(\"Renames across Mount points not supported\");\n-    }\n-    */\n-    \n-    //\n-    // Alternate 3 : renames ONLY within the the same mount links.\n-    //\n+    //Alternate 1: renames within same file system\n+    URI srcUri \u003d resSrc.targetFileSystem.getUri();\n+    URI dstUri \u003d resDst.targetFileSystem.getUri();\n+    ViewFileSystem.verifyRenameStrategy(srcUri, dstUri,\n+        resSrc.targetFileSystem \u003d\u003d resDst.targetFileSystem, renameStrategy);\n \n-    if (resSrc.targetFileSystem !\u003dresDst.targetFileSystem) {\n-      throw new IOException(\"Renames across Mount points not supported\");\n-    }\n-    \n-    resSrc.targetFileSystem.renameInternal(resSrc.remainingPath,\n-      resDst.remainingPath, overwrite);\n+    ChRootedFs srcFS \u003d (ChRootedFs) resSrc.targetFileSystem;\n+    ChRootedFs dstFS \u003d (ChRootedFs) resDst.targetFileSystem;\n+    srcFS.getMyFs().renameInternal(srcFS.fullPath(resSrc.remainingPath),\n+        dstFS.fullPath(resDst.remainingPath), overwrite);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void renameInternal(final Path src, final Path dst,\n      final boolean overwrite) throws IOException, UnresolvedLinkException {\n    // passing resolveLastComponet as false to catch renaming a mount point \n    // itself we need to catch this as an internal operation and fail.\n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resSrc \u003d \n      fsState.resolve(getUriPath(src), false); \n  \n    if (resSrc.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: src\u003d\" + src\n              + \" is readOnly\");\n    }\n\n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d\n                                fsState.resolve(getUriPath(dst), false);\n    if (resDst.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: dest\u003d\" + dst\n              + \" is readOnly\");\n    }\n    //Alternate 1: renames within same file system\n    URI srcUri \u003d resSrc.targetFileSystem.getUri();\n    URI dstUri \u003d resDst.targetFileSystem.getUri();\n    ViewFileSystem.verifyRenameStrategy(srcUri, dstUri,\n        resSrc.targetFileSystem \u003d\u003d resDst.targetFileSystem, renameStrategy);\n\n    ChRootedFs srcFS \u003d (ChRootedFs) resSrc.targetFileSystem;\n    ChRootedFs dstFS \u003d (ChRootedFs) resDst.targetFileSystem;\n    srcFS.getMyFs().renameInternal(srcFS.fullPath(resSrc.remainingPath),\n        dstFS.fullPath(resDst.remainingPath), overwrite);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFs.java",
+      "extendedDetails": {}
+    },
+    "0c837db8a874079dd5db83a7eef9c4d2b9d0e9ff": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13201. Print the directory paths when ViewFs denies the rename operation on internal dirs. Contributed by Tianyin Xiu\n",
+      "commitDate": "27/10/16 7:16 AM",
+      "commitName": "0c837db8a874079dd5db83a7eef9c4d2b9d0e9ff",
+      "commitAuthor": "Brahma Reddy Battula",
+      "commitDateOld": "23/09/16 6:51 AM",
+      "commitNameOld": "bbdf350ff9fb624fe736c1eb9271c5dcb4e14b06",
+      "commitAuthorOld": "Brahma Reddy Battula",
+      "daysBetweenCommits": 34.02,
+      "commitsBetweenForRepo": 270,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,43 +1,45 @@\n   public void renameInternal(final Path src, final Path dst,\n       final boolean overwrite) throws IOException, UnresolvedLinkException {\n     // passing resolveLastComponet as false to catch renaming a mount point \n     // itself we need to catch this as an internal operation and fail.\n     InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resSrc \u003d \n       fsState.resolve(getUriPath(src), false); \n   \n     if (resSrc.isInternalDir()) {\n       throw new AccessControlException(\n-          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n+          \"Cannot Rename within internal dirs of mount table: src\u003d\" + src\n+              + \" is readOnly\");\n     }\n-      \n+\n     InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d \n                                 fsState.resolve(getUriPath(dst), false);\n     if (resDst.isInternalDir()) {\n       throw new AccessControlException(\n-          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n+          \"Cannot Rename within internal dirs of mount table: dest\u003d\" + dst\n+              + \" is readOnly\");\n     }\n     \n     /**\n     // Alternate 1: renames within same file system - valid but we disallow\n     // Alternate 2: (as described in next para - valid but we have disallowed it\n     //\n     // Note we compare the URIs. the URIs include the link targets. \n     // hence we allow renames across mount links as long as the mount links\n     // point to the same target.\n     if (!resSrc.targetFileSystem.getUri().equals(\n               resDst.targetFileSystem.getUri())) {\n       throw new IOException(\"Renames across Mount points not supported\");\n     }\n     */\n     \n     //\n     // Alternate 3 : renames ONLY within the the same mount links.\n     //\n \n     if (resSrc.targetFileSystem !\u003dresDst.targetFileSystem) {\n       throw new IOException(\"Renames across Mount points not supported\");\n     }\n     \n     resSrc.targetFileSystem.renameInternal(resSrc.remainingPath,\n       resDst.remainingPath, overwrite);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void renameInternal(final Path src, final Path dst,\n      final boolean overwrite) throws IOException, UnresolvedLinkException {\n    // passing resolveLastComponet as false to catch renaming a mount point \n    // itself we need to catch this as an internal operation and fail.\n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resSrc \u003d \n      fsState.resolve(getUriPath(src), false); \n  \n    if (resSrc.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: src\u003d\" + src\n              + \" is readOnly\");\n    }\n\n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d \n                                fsState.resolve(getUriPath(dst), false);\n    if (resDst.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: dest\u003d\" + dst\n              + \" is readOnly\");\n    }\n    \n    /**\n    // Alternate 1: renames within same file system - valid but we disallow\n    // Alternate 2: (as described in next para - valid but we have disallowed it\n    //\n    // Note we compare the URIs. the URIs include the link targets. \n    // hence we allow renames across mount links as long as the mount links\n    // point to the same target.\n    if (!resSrc.targetFileSystem.getUri().equals(\n              resDst.targetFileSystem.getUri())) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    */\n    \n    //\n    // Alternate 3 : renames ONLY within the the same mount links.\n    //\n\n    if (resSrc.targetFileSystem !\u003dresDst.targetFileSystem) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    \n    resSrc.targetFileSystem.renameInternal(resSrc.remainingPath,\n      resDst.remainingPath, overwrite);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFs.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void renameInternal(final Path src, final Path dst,\n      final boolean overwrite) throws IOException, UnresolvedLinkException {\n    // passing resolveLastComponet as false to catch renaming a mount point \n    // itself we need to catch this as an internal operation and fail.\n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resSrc \u003d \n      fsState.resolve(getUriPath(src), false); \n  \n    if (resSrc.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n    }\n      \n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d \n                                fsState.resolve(getUriPath(dst), false);\n    if (resDst.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n    }\n    \n    /**\n    // Alternate 1: renames within same file system - valid but we disallow\n    // Alternate 2: (as described in next para - valid but we have disallowed it\n    //\n    // Note we compare the URIs. the URIs include the link targets. \n    // hence we allow renames across mount links as long as the mount links\n    // point to the same target.\n    if (!resSrc.targetFileSystem.getUri().equals(\n              resDst.targetFileSystem.getUri())) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    */\n    \n    //\n    // Alternate 3 : renames ONLY within the the same mount links.\n    //\n\n    if (resSrc.targetFileSystem !\u003dresDst.targetFileSystem) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    \n    resSrc.targetFileSystem.renameInternal(resSrc.remainingPath,\n      resDst.remainingPath, overwrite);\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFs.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFs.java",
+        "newPath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFs.java"
+      }
+    },
+    "0f6dfeeacbab65a31a33927a4eb84871d371fe52": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-6671. Use maven for hadoop common builds. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153184 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/08/11 9:37 AM",
+      "commitName": "0f6dfeeacbab65a31a33927a4eb84871d371fe52",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "01/08/11 3:53 PM",
+      "commitNameOld": "9bac807cedbcff34e1a144fb475eff267e5ed86d",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void renameInternal(final Path src, final Path dst,\n      final boolean overwrite) throws IOException, UnresolvedLinkException {\n    // passing resolveLastComponet as false to catch renaming a mount point \n    // itself we need to catch this as an internal operation and fail.\n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resSrc \u003d \n      fsState.resolve(getUriPath(src), false); \n  \n    if (resSrc.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n    }\n      \n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d \n                                fsState.resolve(getUriPath(dst), false);\n    if (resDst.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n    }\n    \n    /**\n    // Alternate 1: renames within same file system - valid but we disallow\n    // Alternate 2: (as described in next para - valid but we have disallowed it\n    //\n    // Note we compare the URIs. the URIs include the link targets. \n    // hence we allow renames across mount links as long as the mount links\n    // point to the same target.\n    if (!resSrc.targetFileSystem.getUri().equals(\n              resDst.targetFileSystem.getUri())) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    */\n    \n    //\n    // Alternate 3 : renames ONLY within the the same mount links.\n    //\n\n    if (resSrc.targetFileSystem !\u003dresDst.targetFileSystem) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    \n    resSrc.targetFileSystem.renameInternal(resSrc.remainingPath,\n      resDst.remainingPath, overwrite);\n  }",
+      "path": "hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFs.java",
+      "extendedDetails": {
+        "oldPath": "common/src/java/org/apache/hadoop/fs/viewfs/ViewFs.java",
+        "newPath": "hadoop-common/src/main/java/org/apache/hadoop/fs/viewfs/ViewFs.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "11/06/11 9:13 PM",
+      "commitNameOld": "a285fb5effe9ba3be4ec5f942afaf5ddd1186151",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 0.74,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public void renameInternal(final Path src, final Path dst,\n      final boolean overwrite) throws IOException, UnresolvedLinkException {\n    // passing resolveLastComponet as false to catch renaming a mount point \n    // itself we need to catch this as an internal operation and fail.\n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resSrc \u003d \n      fsState.resolve(getUriPath(src), false); \n  \n    if (resSrc.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n    }\n      \n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d \n                                fsState.resolve(getUriPath(dst), false);\n    if (resDst.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n    }\n    \n    /**\n    // Alternate 1: renames within same file system - valid but we disallow\n    // Alternate 2: (as described in next para - valid but we have disallowed it\n    //\n    // Note we compare the URIs. the URIs include the link targets. \n    // hence we allow renames across mount links as long as the mount links\n    // point to the same target.\n    if (!resSrc.targetFileSystem.getUri().equals(\n              resDst.targetFileSystem.getUri())) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    */\n    \n    //\n    // Alternate 3 : renames ONLY within the the same mount links.\n    //\n\n    if (resSrc.targetFileSystem !\u003dresDst.targetFileSystem) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    \n    resSrc.targetFileSystem.renameInternal(resSrc.remainingPath,\n      resDst.remainingPath, overwrite);\n  }",
+      "path": "common/src/java/org/apache/hadoop/fs/viewfs/ViewFs.java",
+      "extendedDetails": {
+        "oldPath": "src/java/org/apache/hadoop/fs/viewfs/ViewFs.java",
+        "newPath": "common/src/java/org/apache/hadoop/fs/viewfs/ViewFs.java"
+      }
+    },
+    "f1c74df922058e88791ed6971bbb96b53f6770f1": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7257 Client side mount tables (sanjay)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1100026 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "05/05/11 7:11 PM",
+      "commitName": "f1c74df922058e88791ed6971bbb96b53f6770f1",
+      "commitAuthor": "Sanjay Radia",
+      "diff": "@@ -0,0 +1,43 @@\n+  public void renameInternal(final Path src, final Path dst,\n+      final boolean overwrite) throws IOException, UnresolvedLinkException {\n+    // passing resolveLastComponet as false to catch renaming a mount point \n+    // itself we need to catch this as an internal operation and fail.\n+    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resSrc \u003d \n+      fsState.resolve(getUriPath(src), false); \n+  \n+    if (resSrc.isInternalDir()) {\n+      throw new AccessControlException(\n+          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n+    }\n+      \n+    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d \n+                                fsState.resolve(getUriPath(dst), false);\n+    if (resDst.isInternalDir()) {\n+      throw new AccessControlException(\n+          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n+    }\n+    \n+    /**\n+    // Alternate 1: renames within same file system - valid but we disallow\n+    // Alternate 2: (as described in next para - valid but we have disallowed it\n+    //\n+    // Note we compare the URIs. the URIs include the link targets. \n+    // hence we allow renames across mount links as long as the mount links\n+    // point to the same target.\n+    if (!resSrc.targetFileSystem.getUri().equals(\n+              resDst.targetFileSystem.getUri())) {\n+      throw new IOException(\"Renames across Mount points not supported\");\n+    }\n+    */\n+    \n+    //\n+    // Alternate 3 : renames ONLY within the the same mount links.\n+    //\n+\n+    if (resSrc.targetFileSystem !\u003dresDst.targetFileSystem) {\n+      throw new IOException(\"Renames across Mount points not supported\");\n+    }\n+    \n+    resSrc.targetFileSystem.renameInternal(resSrc.remainingPath,\n+      resDst.remainingPath, overwrite);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void renameInternal(final Path src, final Path dst,\n      final boolean overwrite) throws IOException, UnresolvedLinkException {\n    // passing resolveLastComponet as false to catch renaming a mount point \n    // itself we need to catch this as an internal operation and fail.\n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resSrc \u003d \n      fsState.resolve(getUriPath(src), false); \n  \n    if (resSrc.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n    }\n      \n    InodeTree.ResolveResult\u003cAbstractFileSystem\u003e resDst \u003d \n                                fsState.resolve(getUriPath(dst), false);\n    if (resDst.isInternalDir()) {\n      throw new AccessControlException(\n          \"Cannot Rename within internal dirs of mount table: it is readOnly\");\n    }\n    \n    /**\n    // Alternate 1: renames within same file system - valid but we disallow\n    // Alternate 2: (as described in next para - valid but we have disallowed it\n    //\n    // Note we compare the URIs. the URIs include the link targets. \n    // hence we allow renames across mount links as long as the mount links\n    // point to the same target.\n    if (!resSrc.targetFileSystem.getUri().equals(\n              resDst.targetFileSystem.getUri())) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    */\n    \n    //\n    // Alternate 3 : renames ONLY within the the same mount links.\n    //\n\n    if (resSrc.targetFileSystem !\u003dresDst.targetFileSystem) {\n      throw new IOException(\"Renames across Mount points not supported\");\n    }\n    \n    resSrc.targetFileSystem.renameInternal(resSrc.remainingPath,\n      resDst.remainingPath, overwrite);\n  }",
+      "path": "src/java/org/apache/hadoop/fs/viewfs/ViewFs.java"
+    }
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ObserverReadProxyProvider.java",
+  "functionName": "changeProxy",
+  "functionId": "changeProxy___initial-NNProxyInfo__T__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/ObserverReadProxyProvider.java",
+  "functionStartLine": 281,
+  "functionEndLine": 293,
+  "numCommitsSeen": 24,
+  "timeTaken": 1807,
+  "changeHistory": [
+    "174b7d3126e215c519b1c4a74892c7020712f9df",
+    "bad3ffd2907d75395907ff6b76c909ab50add4bc",
+    "652b257478f723a9e119e5e9181f3c7450ac92b5",
+    "25b63e8da8e84252072bcd09ee5557c48e07a745",
+    "aa42fb0db78454e5cadc2df7b6fdaa8d913ae847"
+  ],
+  "changeHistoryShort": {
+    "174b7d3126e215c519b1c4a74892c7020712f9df": "Ybodychange",
+    "bad3ffd2907d75395907ff6b76c909ab50add4bc": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "652b257478f723a9e119e5e9181f3c7450ac92b5": "Ybodychange",
+    "25b63e8da8e84252072bcd09ee5557c48e07a745": "Ybodychange",
+    "aa42fb0db78454e5cadc2df7b6fdaa8d913ae847": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "174b7d3126e215c519b1c4a74892c7020712f9df": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14435. [SBN Read] Enable ObserverReadProxyProvider to gracefully handle StandbyException when fetching HAServiceState. Contributed by Erik Krogen.\n",
+      "commitDate": "22/04/19 1:29 PM",
+      "commitName": "174b7d3126e215c519b1c4a74892c7020712f9df",
+      "commitAuthor": "Erik Krogen",
+      "commitDateOld": "19/03/19 8:14 AM",
+      "commitNameOld": "55b3a718e95e62cdd01789050376b36d8e6a0f20",
+      "commitAuthorOld": "Erik Krogen",
+      "daysBetweenCommits": 34.22,
+      "commitsBetweenForRepo": 232,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,13 @@\n   private synchronized NNProxyInfo\u003cT\u003e changeProxy(NNProxyInfo\u003cT\u003e initial) {\n     if (currentProxy !\u003d initial) {\n       // Must have been a concurrent modification; ignore the move request\n       return currentProxy;\n     }\n     currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n     currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n-    try {\n-      HAServiceState state \u003d currentProxy.proxy.getHAServiceState();\n-      currentProxy.setCachedState(state);\n-    } catch (IOException e) {\n-      LOG.info(\"Failed to connect to {}. Setting cached state to Standby\",\n-          currentProxy.getAddress(), e);\n-      currentProxy.setCachedState(HAServiceState.STANDBY);\n-    }\n+    currentProxy.setCachedState(getHAServiceState(currentProxy));\n     LOG.debug(\"Changed current proxy from {} to {}\",\n         initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n         currentProxy.proxyInfo);\n     return currentProxy;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized NNProxyInfo\u003cT\u003e changeProxy(NNProxyInfo\u003cT\u003e initial) {\n    if (currentProxy !\u003d initial) {\n      // Must have been a concurrent modification; ignore the move request\n      return currentProxy;\n    }\n    currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n    currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n    currentProxy.setCachedState(getHAServiceState(currentProxy));\n    LOG.debug(\"Changed current proxy from {} to {}\",\n        initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n        currentProxy.proxyInfo);\n    return currentProxy;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/ObserverReadProxyProvider.java",
+      "extendedDetails": {}
+    },
+    "bad3ffd2907d75395907ff6b76c909ab50add4bc": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "HDFS-14279. [SBN read] Fix race condition in ObserverReadProxyProvider. Contributed by Erik Krogen.\n",
+      "commitDate": "22/02/19 1:58 PM",
+      "commitName": "bad3ffd2907d75395907ff6b76c909ab50add4bc",
+      "commitAuthor": "Erik Krogen",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-14279. [SBN read] Fix race condition in ObserverReadProxyProvider. Contributed by Erik Krogen.\n",
+          "commitDate": "22/02/19 1:58 PM",
+          "commitName": "bad3ffd2907d75395907ff6b76c909ab50add4bc",
+          "commitAuthor": "Erik Krogen",
+          "commitDateOld": "14/02/19 11:22 AM",
+          "commitNameOld": "64f28f9efa2ef3cd9dd54a6c5009029721e030ed",
+          "commitAuthorOld": "Erik Krogen",
+          "daysBetweenCommits": 8.11,
+          "commitsBetweenForRepo": 74,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,20 @@\n-  private synchronized void changeProxy(NNProxyInfo\u003cT\u003e initial) {\n+  private synchronized NNProxyInfo\u003cT\u003e changeProxy(NNProxyInfo\u003cT\u003e initial) {\n     if (currentProxy !\u003d initial) {\n       // Must have been a concurrent modification; ignore the move request\n-      return;\n+      return currentProxy;\n     }\n-    // Attempt to force concurrent callers of getCurrentProxy to wait for the\n-    // new proxy; best-effort by setting currentProxy to null\n-    currentProxy \u003d null;\n     currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n     currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n     try {\n       HAServiceState state \u003d currentProxy.proxy.getHAServiceState();\n       currentProxy.setCachedState(state);\n     } catch (IOException e) {\n       LOG.info(\"Failed to connect to {}. Setting cached state to Standby\",\n           currentProxy.getAddress(), e);\n       currentProxy.setCachedState(HAServiceState.STANDBY);\n     }\n     LOG.debug(\"Changed current proxy from {} to {}\",\n         initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n         currentProxy.proxyInfo);\n+    return currentProxy;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private synchronized NNProxyInfo\u003cT\u003e changeProxy(NNProxyInfo\u003cT\u003e initial) {\n    if (currentProxy !\u003d initial) {\n      // Must have been a concurrent modification; ignore the move request\n      return currentProxy;\n    }\n    currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n    currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n    try {\n      HAServiceState state \u003d currentProxy.proxy.getHAServiceState();\n      currentProxy.setCachedState(state);\n    } catch (IOException e) {\n      LOG.info(\"Failed to connect to {}. Setting cached state to Standby\",\n          currentProxy.getAddress(), e);\n      currentProxy.setCachedState(HAServiceState.STANDBY);\n    }\n    LOG.debug(\"Changed current proxy from {} to {}\",\n        initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n        currentProxy.proxyInfo);\n    return currentProxy;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/ObserverReadProxyProvider.java",
+          "extendedDetails": {
+            "oldValue": "void",
+            "newValue": "NNProxyInfo\u003cT\u003e"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-14279. [SBN read] Fix race condition in ObserverReadProxyProvider. Contributed by Erik Krogen.\n",
+          "commitDate": "22/02/19 1:58 PM",
+          "commitName": "bad3ffd2907d75395907ff6b76c909ab50add4bc",
+          "commitAuthor": "Erik Krogen",
+          "commitDateOld": "14/02/19 11:22 AM",
+          "commitNameOld": "64f28f9efa2ef3cd9dd54a6c5009029721e030ed",
+          "commitAuthorOld": "Erik Krogen",
+          "daysBetweenCommits": 8.11,
+          "commitsBetweenForRepo": 74,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,22 +1,20 @@\n-  private synchronized void changeProxy(NNProxyInfo\u003cT\u003e initial) {\n+  private synchronized NNProxyInfo\u003cT\u003e changeProxy(NNProxyInfo\u003cT\u003e initial) {\n     if (currentProxy !\u003d initial) {\n       // Must have been a concurrent modification; ignore the move request\n-      return;\n+      return currentProxy;\n     }\n-    // Attempt to force concurrent callers of getCurrentProxy to wait for the\n-    // new proxy; best-effort by setting currentProxy to null\n-    currentProxy \u003d null;\n     currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n     currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n     try {\n       HAServiceState state \u003d currentProxy.proxy.getHAServiceState();\n       currentProxy.setCachedState(state);\n     } catch (IOException e) {\n       LOG.info(\"Failed to connect to {}. Setting cached state to Standby\",\n           currentProxy.getAddress(), e);\n       currentProxy.setCachedState(HAServiceState.STANDBY);\n     }\n     LOG.debug(\"Changed current proxy from {} to {}\",\n         initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n         currentProxy.proxyInfo);\n+    return currentProxy;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private synchronized NNProxyInfo\u003cT\u003e changeProxy(NNProxyInfo\u003cT\u003e initial) {\n    if (currentProxy !\u003d initial) {\n      // Must have been a concurrent modification; ignore the move request\n      return currentProxy;\n    }\n    currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n    currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n    try {\n      HAServiceState state \u003d currentProxy.proxy.getHAServiceState();\n      currentProxy.setCachedState(state);\n    } catch (IOException e) {\n      LOG.info(\"Failed to connect to {}. Setting cached state to Standby\",\n          currentProxy.getAddress(), e);\n      currentProxy.setCachedState(HAServiceState.STANDBY);\n    }\n    LOG.debug(\"Changed current proxy from {} to {}\",\n        initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n        currentProxy.proxyInfo);\n    return currentProxy;\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/ObserverReadProxyProvider.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "652b257478f723a9e119e5e9181f3c7450ac92b5": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14035. NN status discovery does not leverage delegation token. Contributed by Chen Liang.\n",
+      "commitDate": "24/12/18 9:34 AM",
+      "commitName": "652b257478f723a9e119e5e9181f3c7450ac92b5",
+      "commitAuthor": "Chen Liang",
+      "commitDateOld": "24/12/18 9:34 AM",
+      "commitNameOld": "1a9ba9616a7e2279dcd5a30190b289945713054e",
+      "commitAuthorOld": "Chao Sun",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,22 @@\n   private synchronized void changeProxy(NNProxyInfo\u003cT\u003e initial) {\n     if (currentProxy !\u003d initial) {\n       // Must have been a concurrent modification; ignore the move request\n       return;\n     }\n     // Attempt to force concurrent callers of getCurrentProxy to wait for the\n     // new proxy; best-effort by setting currentProxy to null\n     currentProxy \u003d null;\n     currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n     currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n-    currentProxy.refreshCachedState();\n+    try {\n+      HAServiceState state \u003d currentProxy.proxy.getHAServiceState();\n+      currentProxy.setCachedState(state);\n+    } catch (IOException e) {\n+      LOG.info(\"Failed to connect to {}. Setting cached state to Standby\",\n+          currentProxy.getAddress(), e);\n+      currentProxy.setCachedState(HAServiceState.STANDBY);\n+    }\n     LOG.debug(\"Changed current proxy from {} to {}\",\n         initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n         currentProxy.proxyInfo);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void changeProxy(NNProxyInfo\u003cT\u003e initial) {\n    if (currentProxy !\u003d initial) {\n      // Must have been a concurrent modification; ignore the move request\n      return;\n    }\n    // Attempt to force concurrent callers of getCurrentProxy to wait for the\n    // new proxy; best-effort by setting currentProxy to null\n    currentProxy \u003d null;\n    currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n    currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n    try {\n      HAServiceState state \u003d currentProxy.proxy.getHAServiceState();\n      currentProxy.setCachedState(state);\n    } catch (IOException e) {\n      LOG.info(\"Failed to connect to {}. Setting cached state to Standby\",\n          currentProxy.getAddress(), e);\n      currentProxy.setCachedState(HAServiceState.STANDBY);\n    }\n    LOG.debug(\"Changed current proxy from {} to {}\",\n        initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n        currentProxy.proxyInfo);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/ObserverReadProxyProvider.java",
+      "extendedDetails": {}
+    },
+    "25b63e8da8e84252072bcd09ee5557c48e07a745": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13749. [SBN read] Use getServiceStatus to discover observer namenodes. Contributed by Chao Sun.\n",
+      "commitDate": "24/12/18 9:34 AM",
+      "commitName": "25b63e8da8e84252072bcd09ee5557c48e07a745",
+      "commitAuthor": "Erik Krogen",
+      "commitDateOld": "24/12/18 9:34 AM",
+      "commitNameOld": "aa42fb0db78454e5cadc2df7b6fdaa8d913ae847",
+      "commitAuthorOld": "Erik Krogen",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 3,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,15 @@\n   private synchronized void changeProxy(NNProxyInfo\u003cT\u003e initial) {\n     if (currentProxy !\u003d initial) {\n       // Must have been a concurrent modification; ignore the move request\n       return;\n     }\n     // Attempt to force concurrent callers of getCurrentProxy to wait for the\n     // new proxy; best-effort by setting currentProxy to null\n     currentProxy \u003d null;\n     currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n     currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n-    currentProxy.setCachedState(getServiceState(currentProxy));\n+    currentProxy.refreshCachedState();\n     LOG.debug(\"Changed current proxy from {} to {}\",\n         initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n         currentProxy.proxyInfo);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void changeProxy(NNProxyInfo\u003cT\u003e initial) {\n    if (currentProxy !\u003d initial) {\n      // Must have been a concurrent modification; ignore the move request\n      return;\n    }\n    // Attempt to force concurrent callers of getCurrentProxy to wait for the\n    // new proxy; best-effort by setting currentProxy to null\n    currentProxy \u003d null;\n    currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n    currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n    currentProxy.refreshCachedState();\n    LOG.debug(\"Changed current proxy from {} to {}\",\n        initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n        currentProxy.proxyInfo);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/ObserverReadProxyProvider.java",
+      "extendedDetails": {}
+    },
+    "aa42fb0db78454e5cadc2df7b6fdaa8d913ae847": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-13779. [SBN read] Implement proper failover and observer failure handling logic for for ObserverReadProxyProvider. Contributed by Erik Krogen.\n",
+      "commitDate": "24/12/18 9:34 AM",
+      "commitName": "aa42fb0db78454e5cadc2df7b6fdaa8d913ae847",
+      "commitAuthor": "Erik Krogen",
+      "diff": "@@ -0,0 +1,15 @@\n+  private synchronized void changeProxy(NNProxyInfo\u003cT\u003e initial) {\n+    if (currentProxy !\u003d initial) {\n+      // Must have been a concurrent modification; ignore the move request\n+      return;\n+    }\n+    // Attempt to force concurrent callers of getCurrentProxy to wait for the\n+    // new proxy; best-effort by setting currentProxy to null\n+    currentProxy \u003d null;\n+    currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n+    currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n+    currentProxy.setCachedState(getServiceState(currentProxy));\n+    LOG.debug(\"Changed current proxy from {} to {}\",\n+        initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n+        currentProxy.proxyInfo);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private synchronized void changeProxy(NNProxyInfo\u003cT\u003e initial) {\n    if (currentProxy !\u003d initial) {\n      // Must have been a concurrent modification; ignore the move request\n      return;\n    }\n    // Attempt to force concurrent callers of getCurrentProxy to wait for the\n    // new proxy; best-effort by setting currentProxy to null\n    currentProxy \u003d null;\n    currentIndex \u003d (currentIndex + 1) % nameNodeProxies.size();\n    currentProxy \u003d createProxyIfNeeded(nameNodeProxies.get(currentIndex));\n    currentProxy.setCachedState(getServiceState(currentProxy));\n    LOG.debug(\"Changed current proxy from {} to {}\",\n        initial \u003d\u003d null ? \"none\" : initial.proxyInfo,\n        currentProxy.proxyInfo);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/server/namenode/ha/ObserverReadProxyProvider.java"
+    }
+  }
+}

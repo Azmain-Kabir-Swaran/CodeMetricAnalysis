@@ -1,0 +1,169 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "LeveldbTimelineStore.java",
+  "functionName": "checkStartTimeInDb",
+  "functionId": "checkStartTimeInDb___entity-EntityIdentifier__suggestedStartTime-Long",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/LeveldbTimelineStore.java",
+  "functionStartLine": 1122,
+  "functionEndLine": 1156,
+  "numCommitsSeen": 26,
+  "timeTaken": 2643,
+  "changeHistory": [
+    "1ce4d33c2dc86d711b227a04d2f9a2ab696a24a1",
+    "001078e0677e39b962ca1da81fc34d7ac9a7e65c",
+    "0f1eda6bbf895a1239b25cdf8b17fabd3759e806",
+    "b3ea4aebff42131642af0393748dc751cb3fc31e",
+    "40464fba22bac99d0e5b79674152aa5dfba99483"
+  ],
+  "changeHistoryShort": {
+    "1ce4d33c2dc86d711b227a04d2f9a2ab696a24a1": "Ybodychange",
+    "001078e0677e39b962ca1da81fc34d7ac9a7e65c": "Yfilerename",
+    "0f1eda6bbf895a1239b25cdf8b17fabd3759e806": "Ymultichange(Yreturntypechange,Ybodychange)",
+    "b3ea4aebff42131642af0393748dc751cb3fc31e": "Ymultichange(Yparameterchange,Ybodychange)",
+    "40464fba22bac99d0e5b79674152aa5dfba99483": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1ce4d33c2dc86d711b227a04d2f9a2ab696a24a1": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-1984. LeveldbTimelineStore does not handle db exceptions properly. Contributed by Varun Saxena\n",
+      "commitDate": "24/11/14 2:36 PM",
+      "commitName": "1ce4d33c2dc86d711b227a04d2f9a2ab696a24a1",
+      "commitAuthor": "Jason Lowe",
+      "commitDateOld": "07/11/14 4:11 PM",
+      "commitNameOld": "4a114dd67aae83e5bb2d65470166de954acf36a2",
+      "commitAuthorOld": "Xuan",
+      "daysBetweenCommits": 16.93,
+      "commitsBetweenForRepo": 118,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,35 @@\n   private StartAndInsertTime checkStartTimeInDb(EntityIdentifier entity,\n       Long suggestedStartTime) throws IOException {\n     StartAndInsertTime startAndInsertTime \u003d null;\n     // create lookup key for start time\n     byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n-    // retrieve value for key\n-    byte[] v \u003d db.get(b);\n-    if (v \u003d\u003d null) {\n-      // start time doesn\u0027t exist in db\n-      if (suggestedStartTime \u003d\u003d null) {\n-        return null;\n+    try {\n+      // retrieve value for key\n+      byte[] v \u003d db.get(b);\n+      if (v \u003d\u003d null) {\n+        // start time doesn\u0027t exist in db\n+        if (suggestedStartTime \u003d\u003d null) {\n+          return null;\n+        }\n+        startAndInsertTime \u003d new StartAndInsertTime(suggestedStartTime,\n+            System.currentTimeMillis());\n+        \n+        // write suggested start time\n+        v \u003d new byte[16];\n+        writeReverseOrderedLong(suggestedStartTime, v, 0);\n+        writeReverseOrderedLong(startAndInsertTime.insertTime, v, 8);\n+        WriteOptions writeOptions \u003d new WriteOptions();\n+        writeOptions.sync(true);\n+        db.put(b, v, writeOptions);\n+      } else {\n+        // found start time in db, so ignore suggested start time\n+        startAndInsertTime \u003d new StartAndInsertTime(readReverseOrderedLong(v, 0),\n+            readReverseOrderedLong(v, 8));\n       }\n-      startAndInsertTime \u003d new StartAndInsertTime(suggestedStartTime,\n-          System.currentTimeMillis());\n-\n-      // write suggested start time\n-      v \u003d new byte[16];\n-      writeReverseOrderedLong(suggestedStartTime, v, 0);\n-      writeReverseOrderedLong(startAndInsertTime.insertTime, v, 8);\n-      WriteOptions writeOptions \u003d new WriteOptions();\n-      writeOptions.sync(true);\n-      db.put(b, v, writeOptions);\n-    } else {\n-      // found start time in db, so ignore suggested start time\n-      startAndInsertTime \u003d new StartAndInsertTime(readReverseOrderedLong(v, 0),\n-          readReverseOrderedLong(v, 8));\n-    }\n+    } catch(DBException e) {\n+      throw new IOException(e);            \t\n+    } \n     startTimeWriteCache.put(entity, startAndInsertTime);\n     startTimeReadCache.put(entity, startAndInsertTime.startTime);\n     return startAndInsertTime;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private StartAndInsertTime checkStartTimeInDb(EntityIdentifier entity,\n      Long suggestedStartTime) throws IOException {\n    StartAndInsertTime startAndInsertTime \u003d null;\n    // create lookup key for start time\n    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n    try {\n      // retrieve value for key\n      byte[] v \u003d db.get(b);\n      if (v \u003d\u003d null) {\n        // start time doesn\u0027t exist in db\n        if (suggestedStartTime \u003d\u003d null) {\n          return null;\n        }\n        startAndInsertTime \u003d new StartAndInsertTime(suggestedStartTime,\n            System.currentTimeMillis());\n        \n        // write suggested start time\n        v \u003d new byte[16];\n        writeReverseOrderedLong(suggestedStartTime, v, 0);\n        writeReverseOrderedLong(startAndInsertTime.insertTime, v, 8);\n        WriteOptions writeOptions \u003d new WriteOptions();\n        writeOptions.sync(true);\n        db.put(b, v, writeOptions);\n      } else {\n        // found start time in db, so ignore suggested start time\n        startAndInsertTime \u003d new StartAndInsertTime(readReverseOrderedLong(v, 0),\n            readReverseOrderedLong(v, 8));\n      }\n    } catch(DBException e) {\n      throw new IOException(e);            \t\n    } \n    startTimeWriteCache.put(entity, startAndInsertTime);\n    startTimeReadCache.put(entity, startAndInsertTime.startTime);\n    return startAndInsertTime;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/LeveldbTimelineStore.java",
+      "extendedDetails": {}
+    },
+    "001078e0677e39b962ca1da81fc34d7ac9a7e65c": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-2107. Refactored timeline classes into o.a.h.y.s.timeline package. Contributed by Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1598094 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "28/05/14 11:09 AM",
+      "commitName": "001078e0677e39b962ca1da81fc34d7ac9a7e65c",
+      "commitAuthor": "Zhijie Shen",
+      "commitDateOld": "28/05/14 10:44 AM",
+      "commitNameOld": "cfd8647d0f20c08761f908be1f5b718c1c372498",
+      "commitAuthorOld": "Colin McCabe",
+      "daysBetweenCommits": 0.02,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private StartAndInsertTime checkStartTimeInDb(EntityIdentifier entity,\n      Long suggestedStartTime) throws IOException {\n    StartAndInsertTime startAndInsertTime \u003d null;\n    // create lookup key for start time\n    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n    // retrieve value for key\n    byte[] v \u003d db.get(b);\n    if (v \u003d\u003d null) {\n      // start time doesn\u0027t exist in db\n      if (suggestedStartTime \u003d\u003d null) {\n        return null;\n      }\n      startAndInsertTime \u003d new StartAndInsertTime(suggestedStartTime,\n          System.currentTimeMillis());\n\n      // write suggested start time\n      v \u003d new byte[16];\n      writeReverseOrderedLong(suggestedStartTime, v, 0);\n      writeReverseOrderedLong(startAndInsertTime.insertTime, v, 8);\n      WriteOptions writeOptions \u003d new WriteOptions();\n      writeOptions.sync(true);\n      db.put(b, v, writeOptions);\n    } else {\n      // found start time in db, so ignore suggested start time\n      startAndInsertTime \u003d new StartAndInsertTime(readReverseOrderedLong(v, 0),\n          readReverseOrderedLong(v, 8));\n    }\n    startTimeWriteCache.put(entity, startAndInsertTime);\n    startTimeReadCache.put(entity, startAndInsertTime.startTime);\n    return startAndInsertTime;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/LeveldbTimelineStore.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/applicationhistoryservice/timeline/LeveldbTimelineStore.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/timeline/LeveldbTimelineStore.java"
+      }
+    },
+    "0f1eda6bbf895a1239b25cdf8b17fabd3759e806": {
+      "type": "Ymultichange(Yreturntypechange,Ybodychange)",
+      "commitMessage": "YARN-1838. Enhanced timeline service getEntities API to get entities from a given entity ID or insertion timestamp. Contributed by Billie Rinaldi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1580960 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/03/14 11:14 AM",
+      "commitName": "0f1eda6bbf895a1239b25cdf8b17fabd3759e806",
+      "commitAuthor": "Zhijie Shen",
+      "subchanges": [
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "YARN-1838. Enhanced timeline service getEntities API to get entities from a given entity ID or insertion timestamp. Contributed by Billie Rinaldi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1580960 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "24/03/14 11:14 AM",
+          "commitName": "0f1eda6bbf895a1239b25cdf8b17fabd3759e806",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "14/03/14 1:35 PM",
+          "commitNameOld": "b3ea4aebff42131642af0393748dc751cb3fc31e",
+          "commitAuthorOld": "Zhijie Shen",
+          "daysBetweenCommits": 9.9,
+          "commitsBetweenForRepo": 64,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,31 @@\n-  private byte[] checkStartTimeInDb(EntityIdentifier entity,\n+  private StartAndInsertTime checkStartTimeInDb(EntityIdentifier entity,\n       Long suggestedStartTime) throws IOException {\n+    StartAndInsertTime startAndInsertTime \u003d null;\n     // create lookup key for start time\n     byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n     // retrieve value for key\n     byte[] v \u003d db.get(b);\n-    byte[] revStartTime;\n     if (v \u003d\u003d null) {\n       // start time doesn\u0027t exist in db\n       if (suggestedStartTime \u003d\u003d null) {\n         return null;\n       }\n+      startAndInsertTime \u003d new StartAndInsertTime(suggestedStartTime,\n+          System.currentTimeMillis());\n+\n       // write suggested start time\n-      revStartTime \u003d writeReverseOrderedLong(suggestedStartTime);\n+      v \u003d new byte[16];\n+      writeReverseOrderedLong(suggestedStartTime, v, 0);\n+      writeReverseOrderedLong(startAndInsertTime.insertTime, v, 8);\n       WriteOptions writeOptions \u003d new WriteOptions();\n       writeOptions.sync(true);\n-      db.put(b, revStartTime, writeOptions);\n+      db.put(b, v, writeOptions);\n     } else {\n       // found start time in db, so ignore suggested start time\n-      suggestedStartTime \u003d readReverseOrderedLong(v, 0);\n-      revStartTime \u003d v;\n+      startAndInsertTime \u003d new StartAndInsertTime(readReverseOrderedLong(v, 0),\n+          readReverseOrderedLong(v, 8));\n     }\n-    startTimeWriteCache.put(entity, suggestedStartTime);\n-    startTimeReadCache.put(entity, suggestedStartTime);\n-    return revStartTime;\n+    startTimeWriteCache.put(entity, startAndInsertTime);\n+    startTimeReadCache.put(entity, startAndInsertTime.startTime);\n+    return startAndInsertTime;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private StartAndInsertTime checkStartTimeInDb(EntityIdentifier entity,\n      Long suggestedStartTime) throws IOException {\n    StartAndInsertTime startAndInsertTime \u003d null;\n    // create lookup key for start time\n    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n    // retrieve value for key\n    byte[] v \u003d db.get(b);\n    if (v \u003d\u003d null) {\n      // start time doesn\u0027t exist in db\n      if (suggestedStartTime \u003d\u003d null) {\n        return null;\n      }\n      startAndInsertTime \u003d new StartAndInsertTime(suggestedStartTime,\n          System.currentTimeMillis());\n\n      // write suggested start time\n      v \u003d new byte[16];\n      writeReverseOrderedLong(suggestedStartTime, v, 0);\n      writeReverseOrderedLong(startAndInsertTime.insertTime, v, 8);\n      WriteOptions writeOptions \u003d new WriteOptions();\n      writeOptions.sync(true);\n      db.put(b, v, writeOptions);\n    } else {\n      // found start time in db, so ignore suggested start time\n      startAndInsertTime \u003d new StartAndInsertTime(readReverseOrderedLong(v, 0),\n          readReverseOrderedLong(v, 8));\n    }\n    startTimeWriteCache.put(entity, startAndInsertTime);\n    startTimeReadCache.put(entity, startAndInsertTime.startTime);\n    return startAndInsertTime;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/applicationhistoryservice/timeline/LeveldbTimelineStore.java",
+          "extendedDetails": {
+            "oldValue": "byte[]",
+            "newValue": "StartAndInsertTime"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-1838. Enhanced timeline service getEntities API to get entities from a given entity ID or insertion timestamp. Contributed by Billie Rinaldi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1580960 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "24/03/14 11:14 AM",
+          "commitName": "0f1eda6bbf895a1239b25cdf8b17fabd3759e806",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "14/03/14 1:35 PM",
+          "commitNameOld": "b3ea4aebff42131642af0393748dc751cb3fc31e",
+          "commitAuthorOld": "Zhijie Shen",
+          "daysBetweenCommits": 9.9,
+          "commitsBetweenForRepo": 64,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,26 +1,31 @@\n-  private byte[] checkStartTimeInDb(EntityIdentifier entity,\n+  private StartAndInsertTime checkStartTimeInDb(EntityIdentifier entity,\n       Long suggestedStartTime) throws IOException {\n+    StartAndInsertTime startAndInsertTime \u003d null;\n     // create lookup key for start time\n     byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n     // retrieve value for key\n     byte[] v \u003d db.get(b);\n-    byte[] revStartTime;\n     if (v \u003d\u003d null) {\n       // start time doesn\u0027t exist in db\n       if (suggestedStartTime \u003d\u003d null) {\n         return null;\n       }\n+      startAndInsertTime \u003d new StartAndInsertTime(suggestedStartTime,\n+          System.currentTimeMillis());\n+\n       // write suggested start time\n-      revStartTime \u003d writeReverseOrderedLong(suggestedStartTime);\n+      v \u003d new byte[16];\n+      writeReverseOrderedLong(suggestedStartTime, v, 0);\n+      writeReverseOrderedLong(startAndInsertTime.insertTime, v, 8);\n       WriteOptions writeOptions \u003d new WriteOptions();\n       writeOptions.sync(true);\n-      db.put(b, revStartTime, writeOptions);\n+      db.put(b, v, writeOptions);\n     } else {\n       // found start time in db, so ignore suggested start time\n-      suggestedStartTime \u003d readReverseOrderedLong(v, 0);\n-      revStartTime \u003d v;\n+      startAndInsertTime \u003d new StartAndInsertTime(readReverseOrderedLong(v, 0),\n+          readReverseOrderedLong(v, 8));\n     }\n-    startTimeWriteCache.put(entity, suggestedStartTime);\n-    startTimeReadCache.put(entity, suggestedStartTime);\n-    return revStartTime;\n+    startTimeWriteCache.put(entity, startAndInsertTime);\n+    startTimeReadCache.put(entity, startAndInsertTime.startTime);\n+    return startAndInsertTime;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private StartAndInsertTime checkStartTimeInDb(EntityIdentifier entity,\n      Long suggestedStartTime) throws IOException {\n    StartAndInsertTime startAndInsertTime \u003d null;\n    // create lookup key for start time\n    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n    // retrieve value for key\n    byte[] v \u003d db.get(b);\n    if (v \u003d\u003d null) {\n      // start time doesn\u0027t exist in db\n      if (suggestedStartTime \u003d\u003d null) {\n        return null;\n      }\n      startAndInsertTime \u003d new StartAndInsertTime(suggestedStartTime,\n          System.currentTimeMillis());\n\n      // write suggested start time\n      v \u003d new byte[16];\n      writeReverseOrderedLong(suggestedStartTime, v, 0);\n      writeReverseOrderedLong(startAndInsertTime.insertTime, v, 8);\n      WriteOptions writeOptions \u003d new WriteOptions();\n      writeOptions.sync(true);\n      db.put(b, v, writeOptions);\n    } else {\n      // found start time in db, so ignore suggested start time\n      startAndInsertTime \u003d new StartAndInsertTime(readReverseOrderedLong(v, 0),\n          readReverseOrderedLong(v, 8));\n    }\n    startTimeWriteCache.put(entity, startAndInsertTime);\n    startTimeReadCache.put(entity, startAndInsertTime.startTime);\n    return startAndInsertTime;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/applicationhistoryservice/timeline/LeveldbTimelineStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "b3ea4aebff42131642af0393748dc751cb3fc31e": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "YARN-1717. Enabled periodically discarding old data in LeveldbTimelineStore. Contributed by Billie Rinaldi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1577693 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "14/03/14 1:35 PM",
+      "commitName": "b3ea4aebff42131642af0393748dc751cb3fc31e",
+      "commitAuthor": "Zhijie Shen",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-1717. Enabled periodically discarding old data in LeveldbTimelineStore. Contributed by Billie Rinaldi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1577693 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "14/03/14 1:35 PM",
+          "commitName": "b3ea4aebff42131642af0393748dc751cb3fc31e",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "04/03/14 9:32 AM",
+          "commitNameOld": "40464fba22bac99d0e5b79674152aa5dfba99483",
+          "commitAuthorOld": "Vinod Kumar Vavilapalli",
+          "daysBetweenCommits": 10.13,
+          "commitsBetweenForRepo": 99,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,26 @@\n   private byte[] checkStartTimeInDb(EntityIdentifier entity,\n-      Long suggestedStartTime, WriteBatch writeBatch) throws IOException {\n+      Long suggestedStartTime) throws IOException {\n     // create lookup key for start time\n     byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n     // retrieve value for key\n     byte[] v \u003d db.get(b);\n     byte[] revStartTime;\n     if (v \u003d\u003d null) {\n       // start time doesn\u0027t exist in db\n       if (suggestedStartTime \u003d\u003d null) {\n         return null;\n       }\n       // write suggested start time\n       revStartTime \u003d writeReverseOrderedLong(suggestedStartTime);\n-      writeBatch.put(b, revStartTime);\n+      WriteOptions writeOptions \u003d new WriteOptions();\n+      writeOptions.sync(true);\n+      db.put(b, revStartTime, writeOptions);\n     } else {\n       // found start time in db, so ignore suggested start time\n       suggestedStartTime \u003d readReverseOrderedLong(v, 0);\n       revStartTime \u003d v;\n     }\n     startTimeWriteCache.put(entity, suggestedStartTime);\n     startTimeReadCache.put(entity, suggestedStartTime);\n     return revStartTime;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private byte[] checkStartTimeInDb(EntityIdentifier entity,\n      Long suggestedStartTime) throws IOException {\n    // create lookup key for start time\n    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n    // retrieve value for key\n    byte[] v \u003d db.get(b);\n    byte[] revStartTime;\n    if (v \u003d\u003d null) {\n      // start time doesn\u0027t exist in db\n      if (suggestedStartTime \u003d\u003d null) {\n        return null;\n      }\n      // write suggested start time\n      revStartTime \u003d writeReverseOrderedLong(suggestedStartTime);\n      WriteOptions writeOptions \u003d new WriteOptions();\n      writeOptions.sync(true);\n      db.put(b, revStartTime, writeOptions);\n    } else {\n      // found start time in db, so ignore suggested start time\n      suggestedStartTime \u003d readReverseOrderedLong(v, 0);\n      revStartTime \u003d v;\n    }\n    startTimeWriteCache.put(entity, suggestedStartTime);\n    startTimeReadCache.put(entity, suggestedStartTime);\n    return revStartTime;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/applicationhistoryservice/timeline/LeveldbTimelineStore.java",
+          "extendedDetails": {
+            "oldValue": "[entity-EntityIdentifier, suggestedStartTime-Long, writeBatch-WriteBatch]",
+            "newValue": "[entity-EntityIdentifier, suggestedStartTime-Long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-1717. Enabled periodically discarding old data in LeveldbTimelineStore. Contributed by Billie Rinaldi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1577693 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "14/03/14 1:35 PM",
+          "commitName": "b3ea4aebff42131642af0393748dc751cb3fc31e",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "04/03/14 9:32 AM",
+          "commitNameOld": "40464fba22bac99d0e5b79674152aa5dfba99483",
+          "commitAuthorOld": "Vinod Kumar Vavilapalli",
+          "daysBetweenCommits": 10.13,
+          "commitsBetweenForRepo": 99,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,26 @@\n   private byte[] checkStartTimeInDb(EntityIdentifier entity,\n-      Long suggestedStartTime, WriteBatch writeBatch) throws IOException {\n+      Long suggestedStartTime) throws IOException {\n     // create lookup key for start time\n     byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n     // retrieve value for key\n     byte[] v \u003d db.get(b);\n     byte[] revStartTime;\n     if (v \u003d\u003d null) {\n       // start time doesn\u0027t exist in db\n       if (suggestedStartTime \u003d\u003d null) {\n         return null;\n       }\n       // write suggested start time\n       revStartTime \u003d writeReverseOrderedLong(suggestedStartTime);\n-      writeBatch.put(b, revStartTime);\n+      WriteOptions writeOptions \u003d new WriteOptions();\n+      writeOptions.sync(true);\n+      db.put(b, revStartTime, writeOptions);\n     } else {\n       // found start time in db, so ignore suggested start time\n       suggestedStartTime \u003d readReverseOrderedLong(v, 0);\n       revStartTime \u003d v;\n     }\n     startTimeWriteCache.put(entity, suggestedStartTime);\n     startTimeReadCache.put(entity, suggestedStartTime);\n     return revStartTime;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private byte[] checkStartTimeInDb(EntityIdentifier entity,\n      Long suggestedStartTime) throws IOException {\n    // create lookup key for start time\n    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n    // retrieve value for key\n    byte[] v \u003d db.get(b);\n    byte[] revStartTime;\n    if (v \u003d\u003d null) {\n      // start time doesn\u0027t exist in db\n      if (suggestedStartTime \u003d\u003d null) {\n        return null;\n      }\n      // write suggested start time\n      revStartTime \u003d writeReverseOrderedLong(suggestedStartTime);\n      WriteOptions writeOptions \u003d new WriteOptions();\n      writeOptions.sync(true);\n      db.put(b, revStartTime, writeOptions);\n    } else {\n      // found start time in db, so ignore suggested start time\n      suggestedStartTime \u003d readReverseOrderedLong(v, 0);\n      revStartTime \u003d v;\n    }\n    startTimeWriteCache.put(entity, suggestedStartTime);\n    startTimeReadCache.put(entity, suggestedStartTime);\n    return revStartTime;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/applicationhistoryservice/timeline/LeveldbTimelineStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "40464fba22bac99d0e5b79674152aa5dfba99483": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-1730. Implemented simple write-locking in the LevelDB based timeline-store. Contributed by Billie Rinaldi.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1574145 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/03/14 9:32 AM",
+      "commitName": "40464fba22bac99d0e5b79674152aa5dfba99483",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,24 @@\n+  private byte[] checkStartTimeInDb(EntityIdentifier entity,\n+      Long suggestedStartTime, WriteBatch writeBatch) throws IOException {\n+    // create lookup key for start time\n+    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n+    // retrieve value for key\n+    byte[] v \u003d db.get(b);\n+    byte[] revStartTime;\n+    if (v \u003d\u003d null) {\n+      // start time doesn\u0027t exist in db\n+      if (suggestedStartTime \u003d\u003d null) {\n+        return null;\n+      }\n+      // write suggested start time\n+      revStartTime \u003d writeReverseOrderedLong(suggestedStartTime);\n+      writeBatch.put(b, revStartTime);\n+    } else {\n+      // found start time in db, so ignore suggested start time\n+      suggestedStartTime \u003d readReverseOrderedLong(v, 0);\n+      revStartTime \u003d v;\n+    }\n+    startTimeWriteCache.put(entity, suggestedStartTime);\n+    startTimeReadCache.put(entity, suggestedStartTime);\n+    return revStartTime;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private byte[] checkStartTimeInDb(EntityIdentifier entity,\n      Long suggestedStartTime, WriteBatch writeBatch) throws IOException {\n    // create lookup key for start time\n    byte[] b \u003d createStartTimeLookupKey(entity.getId(), entity.getType());\n    // retrieve value for key\n    byte[] v \u003d db.get(b);\n    byte[] revStartTime;\n    if (v \u003d\u003d null) {\n      // start time doesn\u0027t exist in db\n      if (suggestedStartTime \u003d\u003d null) {\n        return null;\n      }\n      // write suggested start time\n      revStartTime \u003d writeReverseOrderedLong(suggestedStartTime);\n      writeBatch.put(b, revStartTime);\n    } else {\n      // found start time in db, so ignore suggested start time\n      suggestedStartTime \u003d readReverseOrderedLong(v, 0);\n      revStartTime \u003d v;\n    }\n    startTimeWriteCache.put(entity, suggestedStartTime);\n    startTimeReadCache.put(entity, suggestedStartTime);\n    return revStartTime;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-applicationhistoryservice/src/main/java/org/apache/hadoop/yarn/server/applicationhistoryservice/timeline/LeveldbTimelineStore.java"
+    }
+  }
+}

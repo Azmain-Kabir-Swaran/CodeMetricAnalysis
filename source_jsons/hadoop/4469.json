@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "InterDatanodeProtocolTranslatorPB.java",
+  "functionName": "initReplicaRecovery",
+  "functionId": "initReplicaRecovery___rBlock-RecoveringBlock",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocolPB/InterDatanodeProtocolTranslatorPB.java",
+  "functionStartLine": 77,
+  "functionEndLine": 101,
+  "numCommitsSeen": 11,
+  "timeTaken": 1689,
+  "changeHistory": [
+    "ee5daee1b75289d007193718b69bdede5f3aa11c",
+    "7a59150bff64fc81f838de586eacd6d062172605"
+  ],
+  "changeHistoryShort": {
+    "ee5daee1b75289d007193718b69bdede5f3aa11c": "Ybodychange",
+    "7a59150bff64fc81f838de586eacd6d062172605": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ee5daee1b75289d007193718b69bdede5f3aa11c": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3214. InterDatanodeProtocolServerSideTranslatorPB doesn\u0027t handle null response from initReplicaRecovery. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1311125 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "08/04/12 8:22 PM",
+      "commitName": "ee5daee1b75289d007193718b69bdede5f3aa11c",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "19/03/12 3:09 PM",
+      "commitNameOld": "6326605acb5a5bf48d994278c9d3a39733679e81",
+      "commitAuthorOld": "Tsz-wo Sze",
+      "daysBetweenCommits": 20.22,
+      "commitsBetweenForRepo": 162,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,14 +1,25 @@\n   public ReplicaRecoveryInfo initReplicaRecovery(RecoveringBlock rBlock)\n       throws IOException {\n     InitReplicaRecoveryRequestProto req \u003d InitReplicaRecoveryRequestProto\n         .newBuilder().setBlock(PBHelper.convert(rBlock)).build();\n     InitReplicaRecoveryResponseProto resp;\n     try {\n       resp \u003d rpcProxy.initReplicaRecovery(NULL_CONTROLLER, req);\n     } catch (ServiceException e) {\n       throw ProtobufHelper.getRemoteException(e);\n     }\n+    if (!resp.getReplicaFound()) {\n+      // No replica found on the remote node.\n+      return null;\n+    } else {\n+      if (!resp.hasBlock() || !resp.hasState()) {\n+        throw new IOException(\"Replica was found but missing fields. \" +\n+            \"Req: \" + req + \"\\n\" +\n+            \"Resp: \" + resp);\n+      }\n+    }\n+    \n     BlockProto b \u003d resp.getBlock();\n     return new ReplicaRecoveryInfo(b.getBlockId(), b.getNumBytes(),\n         b.getGenStamp(), PBHelper.convert(resp.getState()));\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ReplicaRecoveryInfo initReplicaRecovery(RecoveringBlock rBlock)\n      throws IOException {\n    InitReplicaRecoveryRequestProto req \u003d InitReplicaRecoveryRequestProto\n        .newBuilder().setBlock(PBHelper.convert(rBlock)).build();\n    InitReplicaRecoveryResponseProto resp;\n    try {\n      resp \u003d rpcProxy.initReplicaRecovery(NULL_CONTROLLER, req);\n    } catch (ServiceException e) {\n      throw ProtobufHelper.getRemoteException(e);\n    }\n    if (!resp.getReplicaFound()) {\n      // No replica found on the remote node.\n      return null;\n    } else {\n      if (!resp.hasBlock() || !resp.hasState()) {\n        throw new IOException(\"Replica was found but missing fields. \" +\n            \"Req: \" + req + \"\\n\" +\n            \"Resp: \" + resp);\n      }\n    }\n    \n    BlockProto b \u003d resp.getBlock();\n    return new ReplicaRecoveryInfo(b.getBlockId(), b.getNumBytes(),\n        b.getGenStamp(), PBHelper.convert(resp.getState()));\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocolPB/InterDatanodeProtocolTranslatorPB.java",
+      "extendedDetails": {}
+    },
+    "7a59150bff64fc81f838de586eacd6d062172605": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-2629. Implement protobuf service for InterDatanodeProtocol. Contributed by Suresh Srinivas.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1211206 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "06/12/11 2:19 PM",
+      "commitName": "7a59150bff64fc81f838de586eacd6d062172605",
+      "commitAuthor": "Suresh Srinivas",
+      "diff": "@@ -0,0 +1,14 @@\n+  public ReplicaRecoveryInfo initReplicaRecovery(RecoveringBlock rBlock)\n+      throws IOException {\n+    InitReplicaRecoveryRequestProto req \u003d InitReplicaRecoveryRequestProto\n+        .newBuilder().setBlock(PBHelper.convert(rBlock)).build();\n+    InitReplicaRecoveryResponseProto resp;\n+    try {\n+      resp \u003d rpcProxy.initReplicaRecovery(NULL_CONTROLLER, req);\n+    } catch (ServiceException e) {\n+      throw ProtobufHelper.getRemoteException(e);\n+    }\n+    BlockProto b \u003d resp.getBlock();\n+    return new ReplicaRecoveryInfo(b.getBlockId(), b.getNumBytes(),\n+        b.getGenStamp(), PBHelper.convert(resp.getState()));\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public ReplicaRecoveryInfo initReplicaRecovery(RecoveringBlock rBlock)\n      throws IOException {\n    InitReplicaRecoveryRequestProto req \u003d InitReplicaRecoveryRequestProto\n        .newBuilder().setBlock(PBHelper.convert(rBlock)).build();\n    InitReplicaRecoveryResponseProto resp;\n    try {\n      resp \u003d rpcProxy.initReplicaRecovery(NULL_CONTROLLER, req);\n    } catch (ServiceException e) {\n      throw ProtobufHelper.getRemoteException(e);\n    }\n    BlockProto b \u003d resp.getBlock();\n    return new ReplicaRecoveryInfo(b.getBlockId(), b.getNumBytes(),\n        b.getGenStamp(), PBHelper.convert(resp.getState()));\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/protocolPB/InterDatanodeProtocolTranslatorPB.java"
+    }
+  }
+}

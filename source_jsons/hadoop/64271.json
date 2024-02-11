@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "SessionTokenBinding.java",
+  "functionName": "createTokenIdentifier",
+  "functionId": "createTokenIdentifier___policy-Optional__RoleModel.Policy__(modifiers-final)__encryptionSecrets-EncryptionSecrets(modifiers-final)__renewer-Text(modifiers-final)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/auth/delegation/SessionTokenBinding.java",
+  "functionStartLine": 354,
+  "functionEndLine": 394,
+  "numCommitsSeen": 14,
+  "timeTaken": 2778,
+  "changeHistory": [
+    "1d5d7d0989e9ee2f4527dc47ba5c80e1c38f641a",
+    "6d0bffe17eadedd60d4599427248b0db4a7c5502"
+  ],
+  "changeHistoryShort": {
+    "1d5d7d0989e9ee2f4527dc47ba5c80e1c38f641a": "Ymultichange(Yparameterchange,Ybodychange)",
+    "6d0bffe17eadedd60d4599427248b0db4a7c5502": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1d5d7d0989e9ee2f4527dc47ba5c80e1c38f641a": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HADOOP-16658. S3A connector does not support including the token renewer in the token identifier.\n\nContributed by Phil Zampino.\n\nChange-Id: Iea9d5028dcf58bda4da985604f5cd3ac283619bd\n",
+      "commitDate": "23/10/19 8:32 AM",
+      "commitName": "1d5d7d0989e9ee2f4527dc47ba5c80e1c38f641a",
+      "commitAuthor": "Phil Zampino",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-16658. S3A connector does not support including the token renewer in the token identifier.\n\nContributed by Phil Zampino.\n\nChange-Id: Iea9d5028dcf58bda4da985604f5cd3ac283619bd\n",
+          "commitDate": "23/10/19 8:32 AM",
+          "commitName": "1d5d7d0989e9ee2f4527dc47ba5c80e1c38f641a",
+          "commitAuthor": "Phil Zampino",
+          "commitDateOld": "20/09/19 11:20 PM",
+          "commitNameOld": "e02b1023c2f42b6792d2941c1f987ae06259b021",
+          "commitAuthorOld": "Siddharth Seth",
+          "daysBetweenCommits": 32.38,
+          "commitsBetweenForRepo": 211,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,41 @@\n   public SessionTokenIdentifier createTokenIdentifier(\n       final Optional\u003cRoleModel.Policy\u003e policy,\n-      final EncryptionSecrets encryptionSecrets) throws IOException {\n+      final EncryptionSecrets encryptionSecrets,\n+      final Text renewer) throws IOException {\n     requireServiceStarted();\n \n     final MarshalledCredentials marshalledCredentials;\n     String origin \u003d AbstractS3ATokenIdentifier.createDefaultOriginMessage();\n     final Optional\u003cSTSClientFactory.STSClient\u003e client \u003d prepareSTSClient();\n \n     if (client.isPresent()) {\n       // this is the normal route: ask for a new STS token\n       marshalledCredentials \u003d fromSTSCredentials(\n           client.get()\n               .requestSessionCredentials(duration, TimeUnit.SECONDS));\n     } else {\n       // get a new set of parental session credentials (pick up IAM refresh)\n       if (!forwardMessageLogged.getAndSet(true)) {\n         // warn caller on the first -and only the first- use.\n         LOG.warn(\"Forwarding existing session credentials to {}\"\n             + \" -duration unknown\", getCanonicalUri());\n       }\n       origin +\u003d \" \" + CREDENTIALS_CONVERTED_TO_DELEGATION_TOKEN;\n       final AWSCredentials awsCredentials\n           \u003d parentAuthChain.getCredentials();\n       if (awsCredentials instanceof AWSSessionCredentials) {\n         marshalledCredentials \u003d fromAWSCredentials(\n             (AWSSessionCredentials) awsCredentials);\n       } else {\n         throw new DelegationTokenIOException(\n             \"AWS Authentication chain is no longer supplying session secrets\");\n       }\n     }\n     return new SessionTokenIdentifier(getKind(),\n-        getOwnerText(),\n-        getCanonicalUri(),\n-        marshalledCredentials,\n-        encryptionSecrets,\n-        origin);\n+         getOwnerText(),\n+         renewer,\n+         getCanonicalUri(),\n+         marshalledCredentials,\n+         encryptionSecrets,\n+         origin);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public SessionTokenIdentifier createTokenIdentifier(\n      final Optional\u003cRoleModel.Policy\u003e policy,\n      final EncryptionSecrets encryptionSecrets,\n      final Text renewer) throws IOException {\n    requireServiceStarted();\n\n    final MarshalledCredentials marshalledCredentials;\n    String origin \u003d AbstractS3ATokenIdentifier.createDefaultOriginMessage();\n    final Optional\u003cSTSClientFactory.STSClient\u003e client \u003d prepareSTSClient();\n\n    if (client.isPresent()) {\n      // this is the normal route: ask for a new STS token\n      marshalledCredentials \u003d fromSTSCredentials(\n          client.get()\n              .requestSessionCredentials(duration, TimeUnit.SECONDS));\n    } else {\n      // get a new set of parental session credentials (pick up IAM refresh)\n      if (!forwardMessageLogged.getAndSet(true)) {\n        // warn caller on the first -and only the first- use.\n        LOG.warn(\"Forwarding existing session credentials to {}\"\n            + \" -duration unknown\", getCanonicalUri());\n      }\n      origin +\u003d \" \" + CREDENTIALS_CONVERTED_TO_DELEGATION_TOKEN;\n      final AWSCredentials awsCredentials\n          \u003d parentAuthChain.getCredentials();\n      if (awsCredentials instanceof AWSSessionCredentials) {\n        marshalledCredentials \u003d fromAWSCredentials(\n            (AWSSessionCredentials) awsCredentials);\n      } else {\n        throw new DelegationTokenIOException(\n            \"AWS Authentication chain is no longer supplying session secrets\");\n      }\n    }\n    return new SessionTokenIdentifier(getKind(),\n         getOwnerText(),\n         renewer,\n         getCanonicalUri(),\n         marshalledCredentials,\n         encryptionSecrets,\n         origin);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/auth/delegation/SessionTokenBinding.java",
+          "extendedDetails": {
+            "oldValue": "[policy-Optional\u003cRoleModel.Policy\u003e(modifiers-final), encryptionSecrets-EncryptionSecrets(modifiers-final)]",
+            "newValue": "[policy-Optional\u003cRoleModel.Policy\u003e(modifiers-final), encryptionSecrets-EncryptionSecrets(modifiers-final), renewer-Text(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-16658. S3A connector does not support including the token renewer in the token identifier.\n\nContributed by Phil Zampino.\n\nChange-Id: Iea9d5028dcf58bda4da985604f5cd3ac283619bd\n",
+          "commitDate": "23/10/19 8:32 AM",
+          "commitName": "1d5d7d0989e9ee2f4527dc47ba5c80e1c38f641a",
+          "commitAuthor": "Phil Zampino",
+          "commitDateOld": "20/09/19 11:20 PM",
+          "commitNameOld": "e02b1023c2f42b6792d2941c1f987ae06259b021",
+          "commitAuthorOld": "Siddharth Seth",
+          "daysBetweenCommits": 32.38,
+          "commitsBetweenForRepo": 211,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,41 @@\n   public SessionTokenIdentifier createTokenIdentifier(\n       final Optional\u003cRoleModel.Policy\u003e policy,\n-      final EncryptionSecrets encryptionSecrets) throws IOException {\n+      final EncryptionSecrets encryptionSecrets,\n+      final Text renewer) throws IOException {\n     requireServiceStarted();\n \n     final MarshalledCredentials marshalledCredentials;\n     String origin \u003d AbstractS3ATokenIdentifier.createDefaultOriginMessage();\n     final Optional\u003cSTSClientFactory.STSClient\u003e client \u003d prepareSTSClient();\n \n     if (client.isPresent()) {\n       // this is the normal route: ask for a new STS token\n       marshalledCredentials \u003d fromSTSCredentials(\n           client.get()\n               .requestSessionCredentials(duration, TimeUnit.SECONDS));\n     } else {\n       // get a new set of parental session credentials (pick up IAM refresh)\n       if (!forwardMessageLogged.getAndSet(true)) {\n         // warn caller on the first -and only the first- use.\n         LOG.warn(\"Forwarding existing session credentials to {}\"\n             + \" -duration unknown\", getCanonicalUri());\n       }\n       origin +\u003d \" \" + CREDENTIALS_CONVERTED_TO_DELEGATION_TOKEN;\n       final AWSCredentials awsCredentials\n           \u003d parentAuthChain.getCredentials();\n       if (awsCredentials instanceof AWSSessionCredentials) {\n         marshalledCredentials \u003d fromAWSCredentials(\n             (AWSSessionCredentials) awsCredentials);\n       } else {\n         throw new DelegationTokenIOException(\n             \"AWS Authentication chain is no longer supplying session secrets\");\n       }\n     }\n     return new SessionTokenIdentifier(getKind(),\n-        getOwnerText(),\n-        getCanonicalUri(),\n-        marshalledCredentials,\n-        encryptionSecrets,\n-        origin);\n+         getOwnerText(),\n+         renewer,\n+         getCanonicalUri(),\n+         marshalledCredentials,\n+         encryptionSecrets,\n+         origin);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public SessionTokenIdentifier createTokenIdentifier(\n      final Optional\u003cRoleModel.Policy\u003e policy,\n      final EncryptionSecrets encryptionSecrets,\n      final Text renewer) throws IOException {\n    requireServiceStarted();\n\n    final MarshalledCredentials marshalledCredentials;\n    String origin \u003d AbstractS3ATokenIdentifier.createDefaultOriginMessage();\n    final Optional\u003cSTSClientFactory.STSClient\u003e client \u003d prepareSTSClient();\n\n    if (client.isPresent()) {\n      // this is the normal route: ask for a new STS token\n      marshalledCredentials \u003d fromSTSCredentials(\n          client.get()\n              .requestSessionCredentials(duration, TimeUnit.SECONDS));\n    } else {\n      // get a new set of parental session credentials (pick up IAM refresh)\n      if (!forwardMessageLogged.getAndSet(true)) {\n        // warn caller on the first -and only the first- use.\n        LOG.warn(\"Forwarding existing session credentials to {}\"\n            + \" -duration unknown\", getCanonicalUri());\n      }\n      origin +\u003d \" \" + CREDENTIALS_CONVERTED_TO_DELEGATION_TOKEN;\n      final AWSCredentials awsCredentials\n          \u003d parentAuthChain.getCredentials();\n      if (awsCredentials instanceof AWSSessionCredentials) {\n        marshalledCredentials \u003d fromAWSCredentials(\n            (AWSSessionCredentials) awsCredentials);\n      } else {\n        throw new DelegationTokenIOException(\n            \"AWS Authentication chain is no longer supplying session secrets\");\n      }\n    }\n    return new SessionTokenIdentifier(getKind(),\n         getOwnerText(),\n         renewer,\n         getCanonicalUri(),\n         marshalledCredentials,\n         encryptionSecrets,\n         origin);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/auth/delegation/SessionTokenBinding.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "6d0bffe17eadedd60d4599427248b0db4a7c5502": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14556. S3A to support Delegation Tokens.\n\nContributed by Steve Loughran and Daryn Sharp.\n",
+      "commitDate": "14/01/19 9:59 AM",
+      "commitName": "6d0bffe17eadedd60d4599427248b0db4a7c5502",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,39 @@\n+  public SessionTokenIdentifier createTokenIdentifier(\n+      final Optional\u003cRoleModel.Policy\u003e policy,\n+      final EncryptionSecrets encryptionSecrets) throws IOException {\n+    requireServiceStarted();\n+\n+    final MarshalledCredentials marshalledCredentials;\n+    String origin \u003d AbstractS3ATokenIdentifier.createDefaultOriginMessage();\n+    final Optional\u003cSTSClientFactory.STSClient\u003e client \u003d prepareSTSClient();\n+\n+    if (client.isPresent()) {\n+      // this is the normal route: ask for a new STS token\n+      marshalledCredentials \u003d fromSTSCredentials(\n+          client.get()\n+              .requestSessionCredentials(duration, TimeUnit.SECONDS));\n+    } else {\n+      // get a new set of parental session credentials (pick up IAM refresh)\n+      if (!forwardMessageLogged.getAndSet(true)) {\n+        // warn caller on the first -and only the first- use.\n+        LOG.warn(\"Forwarding existing session credentials to {}\"\n+            + \" -duration unknown\", getCanonicalUri());\n+      }\n+      origin +\u003d \" \" + CREDENTIALS_CONVERTED_TO_DELEGATION_TOKEN;\n+      final AWSCredentials awsCredentials\n+          \u003d parentAuthChain.getCredentials();\n+      if (awsCredentials instanceof AWSSessionCredentials) {\n+        marshalledCredentials \u003d fromAWSCredentials(\n+            (AWSSessionCredentials) awsCredentials);\n+      } else {\n+        throw new DelegationTokenIOException(\n+            \"AWS Authentication chain is no longer supplying session secrets\");\n+      }\n+    }\n+    return new SessionTokenIdentifier(getKind(),\n+        getOwnerText(),\n+        getCanonicalUri(),\n+        marshalledCredentials,\n+        encryptionSecrets,\n+        origin);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public SessionTokenIdentifier createTokenIdentifier(\n      final Optional\u003cRoleModel.Policy\u003e policy,\n      final EncryptionSecrets encryptionSecrets) throws IOException {\n    requireServiceStarted();\n\n    final MarshalledCredentials marshalledCredentials;\n    String origin \u003d AbstractS3ATokenIdentifier.createDefaultOriginMessage();\n    final Optional\u003cSTSClientFactory.STSClient\u003e client \u003d prepareSTSClient();\n\n    if (client.isPresent()) {\n      // this is the normal route: ask for a new STS token\n      marshalledCredentials \u003d fromSTSCredentials(\n          client.get()\n              .requestSessionCredentials(duration, TimeUnit.SECONDS));\n    } else {\n      // get a new set of parental session credentials (pick up IAM refresh)\n      if (!forwardMessageLogged.getAndSet(true)) {\n        // warn caller on the first -and only the first- use.\n        LOG.warn(\"Forwarding existing session credentials to {}\"\n            + \" -duration unknown\", getCanonicalUri());\n      }\n      origin +\u003d \" \" + CREDENTIALS_CONVERTED_TO_DELEGATION_TOKEN;\n      final AWSCredentials awsCredentials\n          \u003d parentAuthChain.getCredentials();\n      if (awsCredentials instanceof AWSSessionCredentials) {\n        marshalledCredentials \u003d fromAWSCredentials(\n            (AWSSessionCredentials) awsCredentials);\n      } else {\n        throw new DelegationTokenIOException(\n            \"AWS Authentication chain is no longer supplying session secrets\");\n      }\n    }\n    return new SessionTokenIdentifier(getKind(),\n        getOwnerText(),\n        getCanonicalUri(),\n        marshalledCredentials,\n        encryptionSecrets,\n        origin);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/auth/delegation/SessionTokenBinding.java"
+    }
+  }
+}

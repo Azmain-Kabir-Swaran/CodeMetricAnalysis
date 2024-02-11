@@ -1,0 +1,161 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DefaultOOMHandler.java",
+  "functionName": "killContainer",
+  "functionId": "killContainer",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java",
+  "functionStartLine": 222,
+  "functionEndLine": 257,
+  "numCommitsSeen": 6,
+  "timeTaken": 4002,
+  "changeHistory": [
+    "69b328943edf2f61c8fc139934420e3f10bf3813",
+    "d5eca1a6a0e3939eead6711805b7a61c364d254b",
+    "d9964799544eefcf424fcc178d987525f5356cdf"
+  ],
+  "changeHistoryShort": {
+    "69b328943edf2f61c8fc139934420e3f10bf3813": "Ybodychange",
+    "d5eca1a6a0e3939eead6711805b7a61c364d254b": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yrename,Yparameterchange)",
+    "d9964799544eefcf424fcc178d987525f5356cdf": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "69b328943edf2f61c8fc139934420e3f10bf3813": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8929. DefaultOOMHandler should only pick running containers to kill upon oom events (haibochen via rkanter)\n",
+      "commitDate": "24/10/18 1:15 PM",
+      "commitName": "69b328943edf2f61c8fc139934420e3f10bf3813",
+      "commitAuthor": "Robert Kanter",
+      "commitDateOld": "12/06/18 8:35 AM",
+      "commitNameOld": "652bcbb3e4950758e61ce123ecc1798ae2b60a7f",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 134.19,
+      "commitsBetweenForRepo": 1124,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,36 @@\n   protected boolean killContainer() {\n     boolean containerKilled \u003d false;\n \n     ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n     for (Container container : context.getContainers().values()) {\n+      if (!container.isRunning()) {\n+        // skip containers that are not running yet because killing them\n+        // won\u0027t release any memory to get us out of OOM.\n+        continue;\n+        // note even if it is indicated that the container is running from\n+        // container.isRunning(), the container process might not have been\n+        // running yet. From NM\u0027s perspective, a container is running as\n+        // soon as the container launch is handed over the container executor\n+      }\n       candidates.add(\n           new ContainerCandidate(container, isContainerOutOfLimit(container)));\n     }\n     Collections.sort(candidates);\n+    if (candidates.isEmpty()) {\n+      LOG.warn(\n+          \"Found no running containers to kill in order to release memory\");\n+    }\n \n-    if (candidates.size() \u003e 0) {\n-      ContainerCandidate candidate \u003d candidates.get(0);\n-      sigKill(candidate.container);\n-      String message \u003d String.format(\n-          \"container %s killed by elastic cgroups OOM handler.\",\n-          candidate.container.getContainerId());\n-      LOG.warn(message);\n-      containerKilled \u003d true;\n+    // make sure one container is killed successfully to release memory\n+    for(int i \u003d 0; !containerKilled \u0026\u0026 i \u003c candidates.size(); i++) {\n+      ContainerCandidate candidate \u003d candidates.get(i);\n+      if (sigKill(candidate.container)) {\n+        String message \u003d String.format(\n+            \"container %s killed by elastic cgroups OOM handler.\",\n+            candidate.container.getContainerId());\n+        LOG.warn(message);\n+        containerKilled \u003d true;\n+      }\n     }\n     return containerKilled;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected boolean killContainer() {\n    boolean containerKilled \u003d false;\n\n    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n    for (Container container : context.getContainers().values()) {\n      if (!container.isRunning()) {\n        // skip containers that are not running yet because killing them\n        // won\u0027t release any memory to get us out of OOM.\n        continue;\n        // note even if it is indicated that the container is running from\n        // container.isRunning(), the container process might not have been\n        // running yet. From NM\u0027s perspective, a container is running as\n        // soon as the container launch is handed over the container executor\n      }\n      candidates.add(\n          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n    }\n    Collections.sort(candidates);\n    if (candidates.isEmpty()) {\n      LOG.warn(\n          \"Found no running containers to kill in order to release memory\");\n    }\n\n    // make sure one container is killed successfully to release memory\n    for(int i \u003d 0; !containerKilled \u0026\u0026 i \u003c candidates.size(); i++) {\n      ContainerCandidate candidate \u003d candidates.get(i);\n      if (sigKill(candidate.container)) {\n        String message \u003d String.format(\n            \"container %s killed by elastic cgroups OOM handler.\",\n            candidate.container.getContainerId());\n        LOG.warn(message);\n        containerKilled \u003d true;\n      }\n    }\n    return containerKilled;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java",
+      "extendedDetails": {}
+    },
+    "d5eca1a6a0e3939eead6711805b7a61c364d254b": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yrename,Yparameterchange)",
+      "commitMessage": "YARN-6677. Preempt opportunistic containers when root container cgroup goes over memory limit. Contributed by Haibo Chen.\n",
+      "commitDate": "07/06/18 4:38 PM",
+      "commitName": "d5eca1a6a0e3939eead6711805b7a61c364d254b",
+      "commitAuthor": "Miklos Szegedi",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "YARN-6677. Preempt opportunistic containers when root container cgroup goes over memory limit. Contributed by Haibo Chen.\n",
+          "commitDate": "07/06/18 4:38 PM",
+          "commitName": "d5eca1a6a0e3939eead6711805b7a61c364d254b",
+          "commitAuthor": "Miklos Szegedi",
+          "commitDateOld": "07/06/18 4:10 PM",
+          "commitNameOld": "67fc70e09f941e9b43b022d9f42a9486ad759e6e",
+          "commitAuthorOld": "Inigo Goiri",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,33 +1,21 @@\n-  private boolean killContainerIfOOM(Container container, String fileName) {\n-    String value \u003d null;\n-    try {\n-      value \u003d cgroups.getCGroupParam(CGroupsHandler.CGroupController.MEMORY,\n-          container.getContainerId().toString(),\n-          fileName);\n-      long usage \u003d Long.parseLong(value);\n-      long request \u003d container.getResource().getMemorySize() * 1024 * 1024;\n+  protected boolean killContainer() {\n+    boolean containerKilled \u003d false;\n \n-      // Check if the container has exceeded its limits.\n-      if (usage \u003e request) {\n-        // Kill the container\n-        // We could call the regular cleanup but that sends a\n-        // SIGTERM first that cannot be handled by frozen processes.\n-        // Walk through the cgroup\n-        // tasks file and kill all processes in it\n-        sigKill(container);\n-        String message \u003d String.format(\n-            \"Container %s was killed by elastic cgroups OOM handler using %d \" +\n-                \"when requested only %d\",\n-            container.getContainerId(), usage, request);\n-        LOG.warn(message);\n-        return true;\n-      }\n-    } catch (ResourceHandlerException ex) {\n-      LOG.warn(String.format(\"Could not access memory resource for %s\",\n-          container.getContainerId()), ex);\n-    } catch (NumberFormatException ex) {\n-      LOG.warn(String.format(\"Could not parse %s in %s\",\n-          value, container.getContainerId()));\n+    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n+    for (Container container : context.getContainers().values()) {\n+      candidates.add(\n+          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n     }\n-    return false;\n+    Collections.sort(candidates);\n+\n+    if (candidates.size() \u003e 0) {\n+      ContainerCandidate candidate \u003d candidates.get(0);\n+      sigKill(candidate.container);\n+      String message \u003d String.format(\n+          \"container %s killed by elastic cgroups OOM handler.\",\n+          candidate.container.getContainerId());\n+      LOG.warn(message);\n+      containerKilled \u003d true;\n+    }\n+    return containerKilled;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected boolean killContainer() {\n    boolean containerKilled \u003d false;\n\n    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n    for (Container container : context.getContainers().values()) {\n      candidates.add(\n          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n    }\n    Collections.sort(candidates);\n\n    if (candidates.size() \u003e 0) {\n      ContainerCandidate candidate \u003d candidates.get(0);\n      sigKill(candidate.container);\n      String message \u003d String.format(\n          \"container %s killed by elastic cgroups OOM handler.\",\n          candidate.container.getContainerId());\n      LOG.warn(message);\n      containerKilled \u003d true;\n    }\n    return containerKilled;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java",
+            "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java",
+            "oldMethodName": "killContainerIfOOM",
+            "newMethodName": "killContainer"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "YARN-6677. Preempt opportunistic containers when root container cgroup goes over memory limit. Contributed by Haibo Chen.\n",
+          "commitDate": "07/06/18 4:38 PM",
+          "commitName": "d5eca1a6a0e3939eead6711805b7a61c364d254b",
+          "commitAuthor": "Miklos Szegedi",
+          "commitDateOld": "07/06/18 4:10 PM",
+          "commitNameOld": "67fc70e09f941e9b43b022d9f42a9486ad759e6e",
+          "commitAuthorOld": "Inigo Goiri",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,33 +1,21 @@\n-  private boolean killContainerIfOOM(Container container, String fileName) {\n-    String value \u003d null;\n-    try {\n-      value \u003d cgroups.getCGroupParam(CGroupsHandler.CGroupController.MEMORY,\n-          container.getContainerId().toString(),\n-          fileName);\n-      long usage \u003d Long.parseLong(value);\n-      long request \u003d container.getResource().getMemorySize() * 1024 * 1024;\n+  protected boolean killContainer() {\n+    boolean containerKilled \u003d false;\n \n-      // Check if the container has exceeded its limits.\n-      if (usage \u003e request) {\n-        // Kill the container\n-        // We could call the regular cleanup but that sends a\n-        // SIGTERM first that cannot be handled by frozen processes.\n-        // Walk through the cgroup\n-        // tasks file and kill all processes in it\n-        sigKill(container);\n-        String message \u003d String.format(\n-            \"Container %s was killed by elastic cgroups OOM handler using %d \" +\n-                \"when requested only %d\",\n-            container.getContainerId(), usage, request);\n-        LOG.warn(message);\n-        return true;\n-      }\n-    } catch (ResourceHandlerException ex) {\n-      LOG.warn(String.format(\"Could not access memory resource for %s\",\n-          container.getContainerId()), ex);\n-    } catch (NumberFormatException ex) {\n-      LOG.warn(String.format(\"Could not parse %s in %s\",\n-          value, container.getContainerId()));\n+    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n+    for (Container container : context.getContainers().values()) {\n+      candidates.add(\n+          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n     }\n-    return false;\n+    Collections.sort(candidates);\n+\n+    if (candidates.size() \u003e 0) {\n+      ContainerCandidate candidate \u003d candidates.get(0);\n+      sigKill(candidate.container);\n+      String message \u003d String.format(\n+          \"container %s killed by elastic cgroups OOM handler.\",\n+          candidate.container.getContainerId());\n+      LOG.warn(message);\n+      containerKilled \u003d true;\n+    }\n+    return containerKilled;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected boolean killContainer() {\n    boolean containerKilled \u003d false;\n\n    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n    for (Container container : context.getContainers().values()) {\n      candidates.add(\n          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n    }\n    Collections.sort(candidates);\n\n    if (candidates.size() \u003e 0) {\n      ContainerCandidate candidate \u003d candidates.get(0);\n      sigKill(candidate.container);\n      String message \u003d String.format(\n          \"container %s killed by elastic cgroups OOM handler.\",\n          candidate.container.getContainerId());\n      LOG.warn(message);\n      containerKilled \u003d true;\n    }\n    return containerKilled;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[protected]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-6677. Preempt opportunistic containers when root container cgroup goes over memory limit. Contributed by Haibo Chen.\n",
+          "commitDate": "07/06/18 4:38 PM",
+          "commitName": "d5eca1a6a0e3939eead6711805b7a61c364d254b",
+          "commitAuthor": "Miklos Szegedi",
+          "commitDateOld": "07/06/18 4:10 PM",
+          "commitNameOld": "67fc70e09f941e9b43b022d9f42a9486ad759e6e",
+          "commitAuthorOld": "Inigo Goiri",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,33 +1,21 @@\n-  private boolean killContainerIfOOM(Container container, String fileName) {\n-    String value \u003d null;\n-    try {\n-      value \u003d cgroups.getCGroupParam(CGroupsHandler.CGroupController.MEMORY,\n-          container.getContainerId().toString(),\n-          fileName);\n-      long usage \u003d Long.parseLong(value);\n-      long request \u003d container.getResource().getMemorySize() * 1024 * 1024;\n+  protected boolean killContainer() {\n+    boolean containerKilled \u003d false;\n \n-      // Check if the container has exceeded its limits.\n-      if (usage \u003e request) {\n-        // Kill the container\n-        // We could call the regular cleanup but that sends a\n-        // SIGTERM first that cannot be handled by frozen processes.\n-        // Walk through the cgroup\n-        // tasks file and kill all processes in it\n-        sigKill(container);\n-        String message \u003d String.format(\n-            \"Container %s was killed by elastic cgroups OOM handler using %d \" +\n-                \"when requested only %d\",\n-            container.getContainerId(), usage, request);\n-        LOG.warn(message);\n-        return true;\n-      }\n-    } catch (ResourceHandlerException ex) {\n-      LOG.warn(String.format(\"Could not access memory resource for %s\",\n-          container.getContainerId()), ex);\n-    } catch (NumberFormatException ex) {\n-      LOG.warn(String.format(\"Could not parse %s in %s\",\n-          value, container.getContainerId()));\n+    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n+    for (Container container : context.getContainers().values()) {\n+      candidates.add(\n+          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n     }\n-    return false;\n+    Collections.sort(candidates);\n+\n+    if (candidates.size() \u003e 0) {\n+      ContainerCandidate candidate \u003d candidates.get(0);\n+      sigKill(candidate.container);\n+      String message \u003d String.format(\n+          \"container %s killed by elastic cgroups OOM handler.\",\n+          candidate.container.getContainerId());\n+      LOG.warn(message);\n+      containerKilled \u003d true;\n+    }\n+    return containerKilled;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected boolean killContainer() {\n    boolean containerKilled \u003d false;\n\n    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n    for (Container container : context.getContainers().values()) {\n      candidates.add(\n          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n    }\n    Collections.sort(candidates);\n\n    if (candidates.size() \u003e 0) {\n      ContainerCandidate candidate \u003d candidates.get(0);\n      sigKill(candidate.container);\n      String message \u003d String.format(\n          \"container %s killed by elastic cgroups OOM handler.\",\n          candidate.container.getContainerId());\n      LOG.warn(message);\n      containerKilled \u003d true;\n    }\n    return containerKilled;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yrename",
+          "commitMessage": "YARN-6677. Preempt opportunistic containers when root container cgroup goes over memory limit. Contributed by Haibo Chen.\n",
+          "commitDate": "07/06/18 4:38 PM",
+          "commitName": "d5eca1a6a0e3939eead6711805b7a61c364d254b",
+          "commitAuthor": "Miklos Szegedi",
+          "commitDateOld": "07/06/18 4:10 PM",
+          "commitNameOld": "67fc70e09f941e9b43b022d9f42a9486ad759e6e",
+          "commitAuthorOld": "Inigo Goiri",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,33 +1,21 @@\n-  private boolean killContainerIfOOM(Container container, String fileName) {\n-    String value \u003d null;\n-    try {\n-      value \u003d cgroups.getCGroupParam(CGroupsHandler.CGroupController.MEMORY,\n-          container.getContainerId().toString(),\n-          fileName);\n-      long usage \u003d Long.parseLong(value);\n-      long request \u003d container.getResource().getMemorySize() * 1024 * 1024;\n+  protected boolean killContainer() {\n+    boolean containerKilled \u003d false;\n \n-      // Check if the container has exceeded its limits.\n-      if (usage \u003e request) {\n-        // Kill the container\n-        // We could call the regular cleanup but that sends a\n-        // SIGTERM first that cannot be handled by frozen processes.\n-        // Walk through the cgroup\n-        // tasks file and kill all processes in it\n-        sigKill(container);\n-        String message \u003d String.format(\n-            \"Container %s was killed by elastic cgroups OOM handler using %d \" +\n-                \"when requested only %d\",\n-            container.getContainerId(), usage, request);\n-        LOG.warn(message);\n-        return true;\n-      }\n-    } catch (ResourceHandlerException ex) {\n-      LOG.warn(String.format(\"Could not access memory resource for %s\",\n-          container.getContainerId()), ex);\n-    } catch (NumberFormatException ex) {\n-      LOG.warn(String.format(\"Could not parse %s in %s\",\n-          value, container.getContainerId()));\n+    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n+    for (Container container : context.getContainers().values()) {\n+      candidates.add(\n+          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n     }\n-    return false;\n+    Collections.sort(candidates);\n+\n+    if (candidates.size() \u003e 0) {\n+      ContainerCandidate candidate \u003d candidates.get(0);\n+      sigKill(candidate.container);\n+      String message \u003d String.format(\n+          \"container %s killed by elastic cgroups OOM handler.\",\n+          candidate.container.getContainerId());\n+      LOG.warn(message);\n+      containerKilled \u003d true;\n+    }\n+    return containerKilled;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected boolean killContainer() {\n    boolean containerKilled \u003d false;\n\n    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n    for (Container container : context.getContainers().values()) {\n      candidates.add(\n          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n    }\n    Collections.sort(candidates);\n\n    if (candidates.size() \u003e 0) {\n      ContainerCandidate candidate \u003d candidates.get(0);\n      sigKill(candidate.container);\n      String message \u003d String.format(\n          \"container %s killed by elastic cgroups OOM handler.\",\n          candidate.container.getContainerId());\n      LOG.warn(message);\n      containerKilled \u003d true;\n    }\n    return containerKilled;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java",
+          "extendedDetails": {
+            "oldValue": "killContainerIfOOM",
+            "newValue": "killContainer"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "YARN-6677. Preempt opportunistic containers when root container cgroup goes over memory limit. Contributed by Haibo Chen.\n",
+          "commitDate": "07/06/18 4:38 PM",
+          "commitName": "d5eca1a6a0e3939eead6711805b7a61c364d254b",
+          "commitAuthor": "Miklos Szegedi",
+          "commitDateOld": "07/06/18 4:10 PM",
+          "commitNameOld": "67fc70e09f941e9b43b022d9f42a9486ad759e6e",
+          "commitAuthorOld": "Inigo Goiri",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,33 +1,21 @@\n-  private boolean killContainerIfOOM(Container container, String fileName) {\n-    String value \u003d null;\n-    try {\n-      value \u003d cgroups.getCGroupParam(CGroupsHandler.CGroupController.MEMORY,\n-          container.getContainerId().toString(),\n-          fileName);\n-      long usage \u003d Long.parseLong(value);\n-      long request \u003d container.getResource().getMemorySize() * 1024 * 1024;\n+  protected boolean killContainer() {\n+    boolean containerKilled \u003d false;\n \n-      // Check if the container has exceeded its limits.\n-      if (usage \u003e request) {\n-        // Kill the container\n-        // We could call the regular cleanup but that sends a\n-        // SIGTERM first that cannot be handled by frozen processes.\n-        // Walk through the cgroup\n-        // tasks file and kill all processes in it\n-        sigKill(container);\n-        String message \u003d String.format(\n-            \"Container %s was killed by elastic cgroups OOM handler using %d \" +\n-                \"when requested only %d\",\n-            container.getContainerId(), usage, request);\n-        LOG.warn(message);\n-        return true;\n-      }\n-    } catch (ResourceHandlerException ex) {\n-      LOG.warn(String.format(\"Could not access memory resource for %s\",\n-          container.getContainerId()), ex);\n-    } catch (NumberFormatException ex) {\n-      LOG.warn(String.format(\"Could not parse %s in %s\",\n-          value, container.getContainerId()));\n+    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n+    for (Container container : context.getContainers().values()) {\n+      candidates.add(\n+          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n     }\n-    return false;\n+    Collections.sort(candidates);\n+\n+    if (candidates.size() \u003e 0) {\n+      ContainerCandidate candidate \u003d candidates.get(0);\n+      sigKill(candidate.container);\n+      String message \u003d String.format(\n+          \"container %s killed by elastic cgroups OOM handler.\",\n+          candidate.container.getContainerId());\n+      LOG.warn(message);\n+      containerKilled \u003d true;\n+    }\n+    return containerKilled;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected boolean killContainer() {\n    boolean containerKilled \u003d false;\n\n    ArrayList\u003cContainerCandidate\u003e candidates \u003d new ArrayList\u003c\u003e(0);\n    for (Container container : context.getContainers().values()) {\n      candidates.add(\n          new ContainerCandidate(container, isContainerOutOfLimit(container)));\n    }\n    Collections.sort(candidates);\n\n    if (candidates.size() \u003e 0) {\n      ContainerCandidate candidate \u003d candidates.get(0);\n      sigKill(candidate.container);\n      String message \u003d String.format(\n          \"container %s killed by elastic cgroups OOM handler.\",\n          candidate.container.getContainerId());\n      LOG.warn(message);\n      containerKilled \u003d true;\n    }\n    return containerKilled;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java",
+          "extendedDetails": {
+            "oldValue": "[container-Container, fileName-String]",
+            "newValue": "[]"
+          }
+        }
+      ]
+    },
+    "d9964799544eefcf424fcc178d987525f5356cdf": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4599. Set OOM control for memory cgroups. (Miklos Szegedi via Haibo Chen)\n",
+      "commitDate": "23/05/18 4:35 PM",
+      "commitName": "d9964799544eefcf424fcc178d987525f5356cdf",
+      "commitAuthor": "Haibo Chen",
+      "diff": "@@ -0,0 +1,33 @@\n+  private boolean killContainerIfOOM(Container container, String fileName) {\n+    String value \u003d null;\n+    try {\n+      value \u003d cgroups.getCGroupParam(CGroupsHandler.CGroupController.MEMORY,\n+          container.getContainerId().toString(),\n+          fileName);\n+      long usage \u003d Long.parseLong(value);\n+      long request \u003d container.getResource().getMemorySize() * 1024 * 1024;\n+\n+      // Check if the container has exceeded its limits.\n+      if (usage \u003e request) {\n+        // Kill the container\n+        // We could call the regular cleanup but that sends a\n+        // SIGTERM first that cannot be handled by frozen processes.\n+        // Walk through the cgroup\n+        // tasks file and kill all processes in it\n+        sigKill(container);\n+        String message \u003d String.format(\n+            \"Container %s was killed by elastic cgroups OOM handler using %d \" +\n+                \"when requested only %d\",\n+            container.getContainerId(), usage, request);\n+        LOG.warn(message);\n+        return true;\n+      }\n+    } catch (ResourceHandlerException ex) {\n+      LOG.warn(String.format(\"Could not access memory resource for %s\",\n+          container.getContainerId()), ex);\n+    } catch (NumberFormatException ex) {\n+      LOG.warn(String.format(\"Could not parse %s in %s\",\n+          value, container.getContainerId()));\n+    }\n+    return false;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private boolean killContainerIfOOM(Container container, String fileName) {\n    String value \u003d null;\n    try {\n      value \u003d cgroups.getCGroupParam(CGroupsHandler.CGroupController.MEMORY,\n          container.getContainerId().toString(),\n          fileName);\n      long usage \u003d Long.parseLong(value);\n      long request \u003d container.getResource().getMemorySize() * 1024 * 1024;\n\n      // Check if the container has exceeded its limits.\n      if (usage \u003e request) {\n        // Kill the container\n        // We could call the regular cleanup but that sends a\n        // SIGTERM first that cannot be handled by frozen processes.\n        // Walk through the cgroup\n        // tasks file and kill all processes in it\n        sigKill(container);\n        String message \u003d String.format(\n            \"Container %s was killed by elastic cgroups OOM handler using %d \" +\n                \"when requested only %d\",\n            container.getContainerId(), usage, request);\n        LOG.warn(message);\n        return true;\n      }\n    } catch (ResourceHandlerException ex) {\n      LOG.warn(String.format(\"Could not access memory resource for %s\",\n          container.getContainerId()), ex);\n    } catch (NumberFormatException ex) {\n      LOG.warn(String.format(\"Could not parse %s in %s\",\n          value, container.getContainerId()));\n    }\n    return false;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/linux/resources/DefaultOOMHandler.java"
+    }
+  }
+}

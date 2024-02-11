@@ -1,0 +1,39 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StripedBlockUtil.java",
+  "functionName": "divideOneStripe",
+  "functionId": "divideOneStripe___ecPolicy-ErasureCodingPolicy__cellSize-int__blockGroup-LocatedStripedBlock__rangeStartInBlockGroup-long__rangeEndInBlockGroup-long__buf-ByteBuffer",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/util/StripedBlockUtil.java",
+  "functionStartLine": 346,
+  "functionEndLine": 388,
+  "numCommitsSeen": 17,
+  "timeTaken": 1025,
+  "changeHistory": [
+    "382967be51052d59e31d8d05713645b8d3c2325b"
+  ],
+  "changeHistoryShort": {
+    "382967be51052d59e31d8d05713645b8d3c2325b": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "382967be51052d59e31d8d05713645b8d3c2325b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14373. EC : Decoding is failing when block group last incomplete cell fall in to AlignedStripe. Contributed by Surendra Singh Lilhore.\n",
+      "commitDate": "07/10/19 11:44 AM",
+      "commitName": "382967be51052d59e31d8d05713645b8d3c2325b",
+      "commitAuthor": "Surendra Singh Lilhore",
+      "commitDateOld": "11/01/19 10:54 AM",
+      "commitNameOld": "fb8932a727f757b2e9c1c61a18145878d0eb77bd",
+      "commitAuthorOld": "Giovanni Matteo Fumarola",
+      "daysBetweenCommits": 268.99,
+      "commitsBetweenForRepo": 2111,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,42 +1,43 @@\n   public static AlignedStripe[] divideOneStripe(ErasureCodingPolicy ecPolicy,\n       int cellSize, LocatedStripedBlock blockGroup, long rangeStartInBlockGroup,\n       long rangeEndInBlockGroup, ByteBuffer buf) {\n     final int dataBlkNum \u003d ecPolicy.getNumDataUnits();\n     // Step 1: map the byte range to StripingCells\n     StripingCell[] cells \u003d getStripingCellsOfByteRange(ecPolicy, cellSize,\n         blockGroup, rangeStartInBlockGroup, rangeEndInBlockGroup);\n \n     // Step 2: get the unmerged ranges on each internal block\n     VerticalRange[] ranges \u003d getRangesForInternalBlocks(ecPolicy, cellSize,\n         cells);\n \n     // Step 3: merge into stripes\n-    AlignedStripe[] stripes \u003d mergeRangesForInternalBlocks(ecPolicy, ranges);\n+    AlignedStripe[] stripes \u003d mergeRangesForInternalBlocks(ecPolicy, ranges,\n+        blockGroup, cellSize);\n \n     // Step 4: calculate each chunk\u0027s position in destination buffer. Since the\n     // whole read range is within a single stripe, the logic is simpler here.\n     int bufOffset \u003d\n         (int) (rangeStartInBlockGroup % ((long) cellSize * dataBlkNum));\n     for (StripingCell cell : cells) {\n       long cellStart \u003d cell.idxInInternalBlk * cellSize + cell.offset;\n       long cellEnd \u003d cellStart + cell.size - 1;\n       for (AlignedStripe s : stripes) {\n         long stripeEnd \u003d s.getOffsetInBlock() + s.getSpanInBlock() - 1;\n         long overlapStart \u003d Math.max(cellStart, s.getOffsetInBlock());\n         long overlapEnd \u003d Math.min(cellEnd, stripeEnd);\n         int overLapLen \u003d (int) (overlapEnd - overlapStart + 1);\n         if (overLapLen \u003e 0) {\n           Preconditions.checkState(s.chunks[cell.idxInStripe] \u003d\u003d null);\n           final int pos \u003d (int) (bufOffset + overlapStart - cellStart);\n           buf.position(pos);\n           buf.limit(pos + overLapLen);\n           s.chunks[cell.idxInStripe] \u003d new StripingChunk(buf.slice());\n         }\n       }\n       bufOffset +\u003d cell.size;\n     }\n \n     // Step 5: prepare ALLZERO blocks\n     prepareAllZeroChunks(blockGroup, stripes, cellSize, dataBlkNum);\n     return stripes;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static AlignedStripe[] divideOneStripe(ErasureCodingPolicy ecPolicy,\n      int cellSize, LocatedStripedBlock blockGroup, long rangeStartInBlockGroup,\n      long rangeEndInBlockGroup, ByteBuffer buf) {\n    final int dataBlkNum \u003d ecPolicy.getNumDataUnits();\n    // Step 1: map the byte range to StripingCells\n    StripingCell[] cells \u003d getStripingCellsOfByteRange(ecPolicy, cellSize,\n        blockGroup, rangeStartInBlockGroup, rangeEndInBlockGroup);\n\n    // Step 2: get the unmerged ranges on each internal block\n    VerticalRange[] ranges \u003d getRangesForInternalBlocks(ecPolicy, cellSize,\n        cells);\n\n    // Step 3: merge into stripes\n    AlignedStripe[] stripes \u003d mergeRangesForInternalBlocks(ecPolicy, ranges,\n        blockGroup, cellSize);\n\n    // Step 4: calculate each chunk\u0027s position in destination buffer. Since the\n    // whole read range is within a single stripe, the logic is simpler here.\n    int bufOffset \u003d\n        (int) (rangeStartInBlockGroup % ((long) cellSize * dataBlkNum));\n    for (StripingCell cell : cells) {\n      long cellStart \u003d cell.idxInInternalBlk * cellSize + cell.offset;\n      long cellEnd \u003d cellStart + cell.size - 1;\n      for (AlignedStripe s : stripes) {\n        long stripeEnd \u003d s.getOffsetInBlock() + s.getSpanInBlock() - 1;\n        long overlapStart \u003d Math.max(cellStart, s.getOffsetInBlock());\n        long overlapEnd \u003d Math.min(cellEnd, stripeEnd);\n        int overLapLen \u003d (int) (overlapEnd - overlapStart + 1);\n        if (overLapLen \u003e 0) {\n          Preconditions.checkState(s.chunks[cell.idxInStripe] \u003d\u003d null);\n          final int pos \u003d (int) (bufOffset + overlapStart - cellStart);\n          buf.position(pos);\n          buf.limit(pos + overLapLen);\n          s.chunks[cell.idxInStripe] \u003d new StripingChunk(buf.slice());\n        }\n      }\n      bufOffset +\u003d cell.size;\n    }\n\n    // Step 5: prepare ALLZERO blocks\n    prepareAllZeroChunks(blockGroup, stripes, cellSize, dataBlkNum);\n    return stripes;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/util/StripedBlockUtil.java",
+      "extendedDetails": {}
+    }
+  }
+}

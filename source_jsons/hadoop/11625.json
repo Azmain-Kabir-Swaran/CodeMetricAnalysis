@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockPoolSlice.java",
+  "functionName": "getVolumeMap",
+  "functionId": "getVolumeMap___volumeMap-ReplicaMap__lazyWriteReplicaMap-RamDiskReplicaTracker(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.java",
+  "functionStartLine": 432,
+  "functionEndLine": 472,
+  "numCommitsSeen": 75,
+  "timeTaken": 2535,
+  "changeHistory": [
+    "5689355783de005ebc604f4403dc5129a286bfca",
+    "fc1031af749435dc95efea6745b1b2300ce29446",
+    "b2d5ed36bcb80e2581191dcdc3976e825c959142"
+  ],
+  "changeHistoryShort": {
+    "5689355783de005ebc604f4403dc5129a286bfca": "Ybodychange",
+    "fc1031af749435dc95efea6745b1b2300ce29446": "Ybodychange",
+    "b2d5ed36bcb80e2581191dcdc3976e825c959142": "Yparameterchange"
+  },
+  "changeHistoryDetails": {
+    "5689355783de005ebc604f4403dc5129a286bfca": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13768. Adding replicas to volume map makes DataNode start slowly. Contributed by Surendra Singh Lilhore.\n",
+      "commitDate": "01/10/18 6:43 PM",
+      "commitName": "5689355783de005ebc604f4403dc5129a286bfca",
+      "commitAuthor": "Yiqun Lin",
+      "commitDateOld": "06/09/18 2:48 PM",
+      "commitNameOld": "eca1a4bfe952fc184fe90dde50bac9b0e5293568",
+      "commitAuthorOld": "Giovanni Matteo Fumarola",
+      "daysBetweenCommits": 25.16,
+      "commitsBetweenForRepo": 264,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,41 @@\n   void getVolumeMap(ReplicaMap volumeMap,\n                     final RamDiskReplicaTracker lazyWriteReplicaMap)\n       throws IOException {\n     // Recover lazy persist replicas, they will be added to the volumeMap\n     // when we scan the finalized directory.\n     if (lazypersistDir.exists()) {\n       int numRecovered \u003d moveLazyPersistReplicasToFinalized(lazypersistDir);\n       FsDatasetImpl.LOG.info(\n           \"Recovered \" + numRecovered + \" replicas from \" + lazypersistDir);\n     }\n \n     boolean  success \u003d readReplicasFromCache(volumeMap, lazyWriteReplicaMap);\n     if (!success) {\n+      List\u003cIOException\u003e exceptions \u003d Collections\n+          .synchronizedList(new ArrayList\u003cIOException\u003e());\n+      Queue\u003cRecursiveAction\u003e subTaskQueue \u003d\n+          new ConcurrentLinkedQueue\u003cRecursiveAction\u003e();\n+\n       // add finalized replicas\n-      addToReplicasMap(volumeMap, finalizedDir, lazyWriteReplicaMap, true);\n+      AddReplicaProcessor task \u003d new AddReplicaProcessor(volumeMap,\n+          finalizedDir, lazyWriteReplicaMap, true, exceptions, subTaskQueue);\n+      ForkJoinTask\u003cVoid\u003e finalizedTask \u003d addReplicaThreadPool.submit(task);\n+\n       // add rbw replicas\n-      addToReplicasMap(volumeMap, rbwDir, lazyWriteReplicaMap, false);\n+      task \u003d new AddReplicaProcessor(volumeMap, rbwDir, lazyWriteReplicaMap,\n+          false, exceptions, subTaskQueue);\n+      ForkJoinTask\u003cVoid\u003e rbwTask \u003d addReplicaThreadPool.submit(task);\n+\n+      try {\n+        finalizedTask.get();\n+        rbwTask.get();\n+      } catch (InterruptedException | ExecutionException e) {\n+        exceptions.add(new IOException(\n+            \"Failed to start sub tasks to add replica in replica map :\"\n+                + e.getMessage()));\n+      }\n+\n+      //wait for all the tasks to finish.\n+      waitForSubTaskToFinish(subTaskQueue, exceptions);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void getVolumeMap(ReplicaMap volumeMap,\n                    final RamDiskReplicaTracker lazyWriteReplicaMap)\n      throws IOException {\n    // Recover lazy persist replicas, they will be added to the volumeMap\n    // when we scan the finalized directory.\n    if (lazypersistDir.exists()) {\n      int numRecovered \u003d moveLazyPersistReplicasToFinalized(lazypersistDir);\n      FsDatasetImpl.LOG.info(\n          \"Recovered \" + numRecovered + \" replicas from \" + lazypersistDir);\n    }\n\n    boolean  success \u003d readReplicasFromCache(volumeMap, lazyWriteReplicaMap);\n    if (!success) {\n      List\u003cIOException\u003e exceptions \u003d Collections\n          .synchronizedList(new ArrayList\u003cIOException\u003e());\n      Queue\u003cRecursiveAction\u003e subTaskQueue \u003d\n          new ConcurrentLinkedQueue\u003cRecursiveAction\u003e();\n\n      // add finalized replicas\n      AddReplicaProcessor task \u003d new AddReplicaProcessor(volumeMap,\n          finalizedDir, lazyWriteReplicaMap, true, exceptions, subTaskQueue);\n      ForkJoinTask\u003cVoid\u003e finalizedTask \u003d addReplicaThreadPool.submit(task);\n\n      // add rbw replicas\n      task \u003d new AddReplicaProcessor(volumeMap, rbwDir, lazyWriteReplicaMap,\n          false, exceptions, subTaskQueue);\n      ForkJoinTask\u003cVoid\u003e rbwTask \u003d addReplicaThreadPool.submit(task);\n\n      try {\n        finalizedTask.get();\n        rbwTask.get();\n      } catch (InterruptedException | ExecutionException e) {\n        exceptions.add(new IOException(\n            \"Failed to start sub tasks to add replica in replica map :\"\n                + e.getMessage()));\n      }\n\n      //wait for all the tasks to finish.\n      waitForSubTaskToFinish(subTaskQueue, exceptions);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.java",
+      "extendedDetails": {}
+    },
+    "fc1031af749435dc95efea6745b1b2300ce29446": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7928. Scanning blocks from disk during rolling upgrade startup takes a lot of time if disks are busy. Contributed by Rushabh Shah.\n",
+      "commitDate": "25/03/15 12:42 PM",
+      "commitName": "fc1031af749435dc95efea6745b1b2300ce29446",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "11/12/14 12:36 PM",
+      "commitNameOld": "b9f6d0c956f0278c8b9b83e05b523a442a730ebb",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 103.96,
+      "commitsBetweenForRepo": 825,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,19 @@\n   void getVolumeMap(ReplicaMap volumeMap,\n                     final RamDiskReplicaTracker lazyWriteReplicaMap)\n       throws IOException {\n     // Recover lazy persist replicas, they will be added to the volumeMap\n     // when we scan the finalized directory.\n     if (lazypersistDir.exists()) {\n       int numRecovered \u003d moveLazyPersistReplicasToFinalized(lazypersistDir);\n       FsDatasetImpl.LOG.info(\n           \"Recovered \" + numRecovered + \" replicas from \" + lazypersistDir);\n     }\n-\n-    // add finalized replicas\n-    addToReplicasMap(volumeMap, finalizedDir, lazyWriteReplicaMap, true);\n-    // add rbw replicas\n-    addToReplicasMap(volumeMap, rbwDir, lazyWriteReplicaMap, false);\n+    \n+    boolean  success \u003d readReplicasFromCache(volumeMap, lazyWriteReplicaMap);\n+    if (!success) {\n+      // add finalized replicas\n+      addToReplicasMap(volumeMap, finalizedDir, lazyWriteReplicaMap, true);\n+      // add rbw replicas\n+      addToReplicasMap(volumeMap, rbwDir, lazyWriteReplicaMap, false);\n+    }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void getVolumeMap(ReplicaMap volumeMap,\n                    final RamDiskReplicaTracker lazyWriteReplicaMap)\n      throws IOException {\n    // Recover lazy persist replicas, they will be added to the volumeMap\n    // when we scan the finalized directory.\n    if (lazypersistDir.exists()) {\n      int numRecovered \u003d moveLazyPersistReplicasToFinalized(lazypersistDir);\n      FsDatasetImpl.LOG.info(\n          \"Recovered \" + numRecovered + \" replicas from \" + lazypersistDir);\n    }\n    \n    boolean  success \u003d readReplicasFromCache(volumeMap, lazyWriteReplicaMap);\n    if (!success) {\n      // add finalized replicas\n      addToReplicasMap(volumeMap, finalizedDir, lazyWriteReplicaMap, true);\n      // add rbw replicas\n      addToReplicasMap(volumeMap, rbwDir, lazyWriteReplicaMap, false);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.java",
+      "extendedDetails": {}
+    },
+    "b2d5ed36bcb80e2581191dcdc3976e825c959142": {
+      "type": "Yparameterchange",
+      "commitMessage": "HDFS-7100. Make eviction scheme pluggable. (Arpit Agarwal)\n",
+      "commitDate": "20/09/14 1:25 PM",
+      "commitName": "b2d5ed36bcb80e2581191dcdc3976e825c959142",
+      "commitAuthor": "arp",
+      "commitDateOld": "17/09/14 3:25 PM",
+      "commitNameOld": "4eab083b1b7faf4485274d1d30256cde08e11915",
+      "commitAuthorOld": "arp",
+      "daysBetweenCommits": 2.92,
+      "commitsBetweenForRepo": 45,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,16 +1,16 @@\n   void getVolumeMap(ReplicaMap volumeMap,\n-                    final LazyWriteReplicaTracker lazyWriteReplicaMap)\n+                    final RamDiskReplicaTracker lazyWriteReplicaMap)\n       throws IOException {\n     // Recover lazy persist replicas, they will be added to the volumeMap\n     // when we scan the finalized directory.\n     if (lazypersistDir.exists()) {\n       int numRecovered \u003d moveLazyPersistReplicasToFinalized(lazypersistDir);\n       FsDatasetImpl.LOG.info(\n           \"Recovered \" + numRecovered + \" replicas from \" + lazypersistDir);\n     }\n \n     // add finalized replicas\n     addToReplicasMap(volumeMap, finalizedDir, lazyWriteReplicaMap, true);\n     // add rbw replicas\n     addToReplicasMap(volumeMap, rbwDir, lazyWriteReplicaMap, false);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void getVolumeMap(ReplicaMap volumeMap,\n                    final RamDiskReplicaTracker lazyWriteReplicaMap)\n      throws IOException {\n    // Recover lazy persist replicas, they will be added to the volumeMap\n    // when we scan the finalized directory.\n    if (lazypersistDir.exists()) {\n      int numRecovered \u003d moveLazyPersistReplicasToFinalized(lazypersistDir);\n      FsDatasetImpl.LOG.info(\n          \"Recovered \" + numRecovered + \" replicas from \" + lazypersistDir);\n    }\n\n    // add finalized replicas\n    addToReplicasMap(volumeMap, finalizedDir, lazyWriteReplicaMap, true);\n    // add rbw replicas\n    addToReplicasMap(volumeMap, rbwDir, lazyWriteReplicaMap, false);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.java",
+      "extendedDetails": {
+        "oldValue": "[volumeMap-ReplicaMap, lazyWriteReplicaMap-LazyWriteReplicaTracker(modifiers-final)]",
+        "newValue": "[volumeMap-ReplicaMap, lazyWriteReplicaMap-RamDiskReplicaTracker(modifiers-final)]"
+      }
+    }
+  }
+}

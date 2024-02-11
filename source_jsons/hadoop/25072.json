@@ -1,0 +1,195 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "MRApps.java",
+  "functionName": "addLog4jSystemProperties",
+  "functionId": "addLog4jSystemProperties___task-Task__vargs-List__String____conf-Configuration",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/util/MRApps.java",
+  "functionStartLine": 597,
+  "functionEndLine": 669,
+  "numCommitsSeen": 178,
+  "timeTaken": 3159,
+  "changeHistory": [
+    "03ab24aa01ffea1cacf1fa9cbbf73c3f2904d981",
+    "ed63b116465290fdb0acdf89170025f47b307599",
+    "a6ea460a9150e84128ebef97ab6ea8881215de03",
+    "a2205a3b7279229b9ec94d0cc2796da8f40fd241",
+    "ab787f44aabfff0cd01b79a08a52ffaf923558b3"
+  ],
+  "changeHistoryShort": {
+    "03ab24aa01ffea1cacf1fa9cbbf73c3f2904d981": "Ymultichange(Yparameterchange,Ybodychange)",
+    "ed63b116465290fdb0acdf89170025f47b307599": "Ymultichange(Yparameterchange,Ybodychange)",
+    "a6ea460a9150e84128ebef97ab6ea8881215de03": "Ymultichange(Yparameterchange,Ybodychange)",
+    "a2205a3b7279229b9ec94d0cc2796da8f40fd241": "Ybodychange",
+    "ab787f44aabfff0cd01b79a08a52ffaf923558b3": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "03ab24aa01ffea1cacf1fa9cbbf73c3f2904d981": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "MAPREDUCE-5932. Provide an option to use a dedicated reduce-side shuffle log. Contributed by Gera Shegalov\n",
+      "commitDate": "03/12/14 9:02 AM",
+      "commitName": "03ab24aa01ffea1cacf1fa9cbbf73c3f2904d981",
+      "commitAuthor": "Jason Lowe",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "MAPREDUCE-5932. Provide an option to use a dedicated reduce-side shuffle log. Contributed by Gera Shegalov\n",
+          "commitDate": "03/12/14 9:02 AM",
+          "commitName": "03ab24aa01ffea1cacf1fa9cbbf73c3f2904d981",
+          "commitAuthor": "Jason Lowe",
+          "commitDateOld": "01/11/14 12:47 AM",
+          "commitNameOld": "ed63b116465290fdb0acdf89170025f47b307599",
+          "commitAuthorOld": "Zhijie Shen",
+          "daysBetweenCommits": 32.38,
+          "commitsBetweenForRepo": 247,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,73 @@\n-  public static void addLog4jSystemProperties(\n-      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs, \n-      Configuration conf) {\n+  public static void addLog4jSystemProperties(Task task,\n+      List\u003cString\u003e vargs, Configuration conf) {\n     String log4jPropertyFile \u003d\n         conf.get(MRJobConfig.MAPREDUCE_JOB_LOG4J_PROPERTIES_FILE, \"\");\n     if (log4jPropertyFile.isEmpty()) {\n       vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n     } else {\n       URI log4jURI \u003d null;\n       try {\n         log4jURI \u003d new URI(log4jPropertyFile);\n       } catch (URISyntaxException e) {\n         throw new IllegalArgumentException(e);\n       }\n       Path log4jPath \u003d new Path(log4jURI);\n       vargs.add(\"-Dlog4j.configuration\u003d\"+log4jPath.getName());\n     }\n-    \n+\n+    long logSize;\n+    String logLevel;\n+    int numBackups;\n+\n+    if (task \u003d\u003d null) {\n+      logSize \u003d conf.getLong(MRJobConfig.MR_AM_LOG_KB,\n+          MRJobConfig.DEFAULT_MR_AM_LOG_KB) \u003c\u003c 10;\n+      logLevel \u003d conf.get(\n+          MRJobConfig.MR_AM_LOG_LEVEL, MRJobConfig.DEFAULT_MR_AM_LOG_LEVEL);\n+      numBackups \u003d conf.getInt(MRJobConfig.MR_AM_LOG_BACKUPS,\n+          MRJobConfig.DEFAULT_MR_AM_LOG_BACKUPS);\n+    } else {\n+      logSize \u003d TaskLog.getTaskLogLimitBytes(conf);\n+      logLevel \u003d getChildLogLevel(conf, task.isMapTask());\n+      numBackups \u003d conf.getInt(MRJobConfig.TASK_LOG_BACKUPS,\n+          MRJobConfig.DEFAULT_TASK_LOG_BACKUPS);\n+    }\n+\n     vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n         ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n     vargs.add(\n         \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n+\n     if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n       // log should be rolled\n       vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n           + numBackups);\n       vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n     } else {\n       vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n     }\n+    vargs.add(\"-Dhadoop.root.logfile\u003d\" + TaskLog.LogName.SYSLOG);\n+\n+    if (   task !\u003d null\n+        \u0026\u0026 !task.isMapTask()\n+        \u0026\u0026 conf.getBoolean(MRJobConfig.REDUCE_SEPARATE_SHUFFLE_LOG,\n+               MRJobConfig.DEFAULT_REDUCE_SEPARATE_SHUFFLE_LOG)) {\n+      final int numShuffleBackups \u003d conf.getInt(MRJobConfig.SHUFFLE_LOG_BACKUPS,\n+          MRJobConfig.DEFAULT_SHUFFLE_LOG_BACKUPS);\n+      final long shuffleLogSize \u003d conf.getLong(MRJobConfig.SHUFFLE_LOG_KB,\n+          MRJobConfig.DEFAULT_SHUFFLE_LOG_KB) \u003c\u003c 10;\n+      final String shuffleLogger \u003d logLevel\n+          + (shuffleLogSize \u003e 0L \u0026\u0026 numShuffleBackups \u003e 0\n+                 ? \",shuffleCRLA\"\n+                 : \",shuffleCLA\");\n+\n+      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n+          + \"shuffle.logger\u003d\" + shuffleLogger);\n+      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n+          + \"shuffle.logfile\u003d\" + TaskLog.LogName.SYSLOG + \".shuffle\");\n+      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n+          + \"shuffle.log.filesize\u003d\" + shuffleLogSize);\n+      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n+          + \"shuffle.log.backups\u003d\" + numShuffleBackups);\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void addLog4jSystemProperties(Task task,\n      List\u003cString\u003e vargs, Configuration conf) {\n    String log4jPropertyFile \u003d\n        conf.get(MRJobConfig.MAPREDUCE_JOB_LOG4J_PROPERTIES_FILE, \"\");\n    if (log4jPropertyFile.isEmpty()) {\n      vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n    } else {\n      URI log4jURI \u003d null;\n      try {\n        log4jURI \u003d new URI(log4jPropertyFile);\n      } catch (URISyntaxException e) {\n        throw new IllegalArgumentException(e);\n      }\n      Path log4jPath \u003d new Path(log4jURI);\n      vargs.add(\"-Dlog4j.configuration\u003d\"+log4jPath.getName());\n    }\n\n    long logSize;\n    String logLevel;\n    int numBackups;\n\n    if (task \u003d\u003d null) {\n      logSize \u003d conf.getLong(MRJobConfig.MR_AM_LOG_KB,\n          MRJobConfig.DEFAULT_MR_AM_LOG_KB) \u003c\u003c 10;\n      logLevel \u003d conf.get(\n          MRJobConfig.MR_AM_LOG_LEVEL, MRJobConfig.DEFAULT_MR_AM_LOG_LEVEL);\n      numBackups \u003d conf.getInt(MRJobConfig.MR_AM_LOG_BACKUPS,\n          MRJobConfig.DEFAULT_MR_AM_LOG_BACKUPS);\n    } else {\n      logSize \u003d TaskLog.getTaskLogLimitBytes(conf);\n      logLevel \u003d getChildLogLevel(conf, task.isMapTask());\n      numBackups \u003d conf.getInt(MRJobConfig.TASK_LOG_BACKUPS,\n          MRJobConfig.DEFAULT_TASK_LOG_BACKUPS);\n    }\n\n    vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n        ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n    vargs.add(\n        \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n\n    if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n      // log should be rolled\n      vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n          + numBackups);\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n    } else {\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n    }\n    vargs.add(\"-Dhadoop.root.logfile\u003d\" + TaskLog.LogName.SYSLOG);\n\n    if (   task !\u003d null\n        \u0026\u0026 !task.isMapTask()\n        \u0026\u0026 conf.getBoolean(MRJobConfig.REDUCE_SEPARATE_SHUFFLE_LOG,\n               MRJobConfig.DEFAULT_REDUCE_SEPARATE_SHUFFLE_LOG)) {\n      final int numShuffleBackups \u003d conf.getInt(MRJobConfig.SHUFFLE_LOG_BACKUPS,\n          MRJobConfig.DEFAULT_SHUFFLE_LOG_BACKUPS);\n      final long shuffleLogSize \u003d conf.getLong(MRJobConfig.SHUFFLE_LOG_KB,\n          MRJobConfig.DEFAULT_SHUFFLE_LOG_KB) \u003c\u003c 10;\n      final String shuffleLogger \u003d logLevel\n          + (shuffleLogSize \u003e 0L \u0026\u0026 numShuffleBackups \u003e 0\n                 ? \",shuffleCRLA\"\n                 : \",shuffleCLA\");\n\n      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n          + \"shuffle.logger\u003d\" + shuffleLogger);\n      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n          + \"shuffle.logfile\u003d\" + TaskLog.LogName.SYSLOG + \".shuffle\");\n      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n          + \"shuffle.log.filesize\u003d\" + shuffleLogSize);\n      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n          + \"shuffle.log.backups\u003d\" + numShuffleBackups);\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/util/MRApps.java",
+          "extendedDetails": {
+            "oldValue": "[logLevel-String, logSize-long, numBackups-int, vargs-List\u003cString\u003e, conf-Configuration]",
+            "newValue": "[task-Task, vargs-List\u003cString\u003e, conf-Configuration]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "MAPREDUCE-5932. Provide an option to use a dedicated reduce-side shuffle log. Contributed by Gera Shegalov\n",
+          "commitDate": "03/12/14 9:02 AM",
+          "commitName": "03ab24aa01ffea1cacf1fa9cbbf73c3f2904d981",
+          "commitAuthor": "Jason Lowe",
+          "commitDateOld": "01/11/14 12:47 AM",
+          "commitNameOld": "ed63b116465290fdb0acdf89170025f47b307599",
+          "commitAuthorOld": "Zhijie Shen",
+          "daysBetweenCommits": 32.38,
+          "commitsBetweenForRepo": 247,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,73 @@\n-  public static void addLog4jSystemProperties(\n-      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs, \n-      Configuration conf) {\n+  public static void addLog4jSystemProperties(Task task,\n+      List\u003cString\u003e vargs, Configuration conf) {\n     String log4jPropertyFile \u003d\n         conf.get(MRJobConfig.MAPREDUCE_JOB_LOG4J_PROPERTIES_FILE, \"\");\n     if (log4jPropertyFile.isEmpty()) {\n       vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n     } else {\n       URI log4jURI \u003d null;\n       try {\n         log4jURI \u003d new URI(log4jPropertyFile);\n       } catch (URISyntaxException e) {\n         throw new IllegalArgumentException(e);\n       }\n       Path log4jPath \u003d new Path(log4jURI);\n       vargs.add(\"-Dlog4j.configuration\u003d\"+log4jPath.getName());\n     }\n-    \n+\n+    long logSize;\n+    String logLevel;\n+    int numBackups;\n+\n+    if (task \u003d\u003d null) {\n+      logSize \u003d conf.getLong(MRJobConfig.MR_AM_LOG_KB,\n+          MRJobConfig.DEFAULT_MR_AM_LOG_KB) \u003c\u003c 10;\n+      logLevel \u003d conf.get(\n+          MRJobConfig.MR_AM_LOG_LEVEL, MRJobConfig.DEFAULT_MR_AM_LOG_LEVEL);\n+      numBackups \u003d conf.getInt(MRJobConfig.MR_AM_LOG_BACKUPS,\n+          MRJobConfig.DEFAULT_MR_AM_LOG_BACKUPS);\n+    } else {\n+      logSize \u003d TaskLog.getTaskLogLimitBytes(conf);\n+      logLevel \u003d getChildLogLevel(conf, task.isMapTask());\n+      numBackups \u003d conf.getInt(MRJobConfig.TASK_LOG_BACKUPS,\n+          MRJobConfig.DEFAULT_TASK_LOG_BACKUPS);\n+    }\n+\n     vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n         ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n     vargs.add(\n         \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n+\n     if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n       // log should be rolled\n       vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n           + numBackups);\n       vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n     } else {\n       vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n     }\n+    vargs.add(\"-Dhadoop.root.logfile\u003d\" + TaskLog.LogName.SYSLOG);\n+\n+    if (   task !\u003d null\n+        \u0026\u0026 !task.isMapTask()\n+        \u0026\u0026 conf.getBoolean(MRJobConfig.REDUCE_SEPARATE_SHUFFLE_LOG,\n+               MRJobConfig.DEFAULT_REDUCE_SEPARATE_SHUFFLE_LOG)) {\n+      final int numShuffleBackups \u003d conf.getInt(MRJobConfig.SHUFFLE_LOG_BACKUPS,\n+          MRJobConfig.DEFAULT_SHUFFLE_LOG_BACKUPS);\n+      final long shuffleLogSize \u003d conf.getLong(MRJobConfig.SHUFFLE_LOG_KB,\n+          MRJobConfig.DEFAULT_SHUFFLE_LOG_KB) \u003c\u003c 10;\n+      final String shuffleLogger \u003d logLevel\n+          + (shuffleLogSize \u003e 0L \u0026\u0026 numShuffleBackups \u003e 0\n+                 ? \",shuffleCRLA\"\n+                 : \",shuffleCLA\");\n+\n+      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n+          + \"shuffle.logger\u003d\" + shuffleLogger);\n+      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n+          + \"shuffle.logfile\u003d\" + TaskLog.LogName.SYSLOG + \".shuffle\");\n+      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n+          + \"shuffle.log.filesize\u003d\" + shuffleLogSize);\n+      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n+          + \"shuffle.log.backups\u003d\" + numShuffleBackups);\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void addLog4jSystemProperties(Task task,\n      List\u003cString\u003e vargs, Configuration conf) {\n    String log4jPropertyFile \u003d\n        conf.get(MRJobConfig.MAPREDUCE_JOB_LOG4J_PROPERTIES_FILE, \"\");\n    if (log4jPropertyFile.isEmpty()) {\n      vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n    } else {\n      URI log4jURI \u003d null;\n      try {\n        log4jURI \u003d new URI(log4jPropertyFile);\n      } catch (URISyntaxException e) {\n        throw new IllegalArgumentException(e);\n      }\n      Path log4jPath \u003d new Path(log4jURI);\n      vargs.add(\"-Dlog4j.configuration\u003d\"+log4jPath.getName());\n    }\n\n    long logSize;\n    String logLevel;\n    int numBackups;\n\n    if (task \u003d\u003d null) {\n      logSize \u003d conf.getLong(MRJobConfig.MR_AM_LOG_KB,\n          MRJobConfig.DEFAULT_MR_AM_LOG_KB) \u003c\u003c 10;\n      logLevel \u003d conf.get(\n          MRJobConfig.MR_AM_LOG_LEVEL, MRJobConfig.DEFAULT_MR_AM_LOG_LEVEL);\n      numBackups \u003d conf.getInt(MRJobConfig.MR_AM_LOG_BACKUPS,\n          MRJobConfig.DEFAULT_MR_AM_LOG_BACKUPS);\n    } else {\n      logSize \u003d TaskLog.getTaskLogLimitBytes(conf);\n      logLevel \u003d getChildLogLevel(conf, task.isMapTask());\n      numBackups \u003d conf.getInt(MRJobConfig.TASK_LOG_BACKUPS,\n          MRJobConfig.DEFAULT_TASK_LOG_BACKUPS);\n    }\n\n    vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n        ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n    vargs.add(\n        \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n\n    if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n      // log should be rolled\n      vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n          + numBackups);\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n    } else {\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n    }\n    vargs.add(\"-Dhadoop.root.logfile\u003d\" + TaskLog.LogName.SYSLOG);\n\n    if (   task !\u003d null\n        \u0026\u0026 !task.isMapTask()\n        \u0026\u0026 conf.getBoolean(MRJobConfig.REDUCE_SEPARATE_SHUFFLE_LOG,\n               MRJobConfig.DEFAULT_REDUCE_SEPARATE_SHUFFLE_LOG)) {\n      final int numShuffleBackups \u003d conf.getInt(MRJobConfig.SHUFFLE_LOG_BACKUPS,\n          MRJobConfig.DEFAULT_SHUFFLE_LOG_BACKUPS);\n      final long shuffleLogSize \u003d conf.getLong(MRJobConfig.SHUFFLE_LOG_KB,\n          MRJobConfig.DEFAULT_SHUFFLE_LOG_KB) \u003c\u003c 10;\n      final String shuffleLogger \u003d logLevel\n          + (shuffleLogSize \u003e 0L \u0026\u0026 numShuffleBackups \u003e 0\n                 ? \",shuffleCRLA\"\n                 : \",shuffleCLA\");\n\n      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n          + \"shuffle.logger\u003d\" + shuffleLogger);\n      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n          + \"shuffle.logfile\u003d\" + TaskLog.LogName.SYSLOG + \".shuffle\");\n      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n          + \"shuffle.log.filesize\u003d\" + shuffleLogSize);\n      vargs.add(\"-D\" + MRJobConfig.MR_PREFIX\n          + \"shuffle.log.backups\u003d\" + numShuffleBackups);\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/util/MRApps.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "ed63b116465290fdb0acdf89170025f47b307599": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "MAPREDUCE-6052. Supported overriding the default container-log4j.properties file per job. Contributed by Junping Du.\n",
+      "commitDate": "01/11/14 12:47 AM",
+      "commitName": "ed63b116465290fdb0acdf89170025f47b307599",
+      "commitAuthor": "Zhijie Shen",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "MAPREDUCE-6052. Supported overriding the default container-log4j.properties file per job. Contributed by Junping Du.\n",
+          "commitDate": "01/11/14 12:47 AM",
+          "commitName": "ed63b116465290fdb0acdf89170025f47b307599",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "22/09/14 8:20 AM",
+          "commitNameOld": "7039b98e1c459e9e0d8caa28cdaa2868e2bde2eb",
+          "commitAuthorOld": "Jason Lowe",
+          "daysBetweenCommits": 39.69,
+          "commitsBetweenForRepo": 398,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,31 @@\n   public static void addLog4jSystemProperties(\n-      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs) {\n-    vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n+      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs, \n+      Configuration conf) {\n+    String log4jPropertyFile \u003d\n+        conf.get(MRJobConfig.MAPREDUCE_JOB_LOG4J_PROPERTIES_FILE, \"\");\n+    if (log4jPropertyFile.isEmpty()) {\n+      vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n+    } else {\n+      URI log4jURI \u003d null;\n+      try {\n+        log4jURI \u003d new URI(log4jPropertyFile);\n+      } catch (URISyntaxException e) {\n+        throw new IllegalArgumentException(e);\n+      }\n+      Path log4jPath \u003d new Path(log4jURI);\n+      vargs.add(\"-Dlog4j.configuration\u003d\"+log4jPath.getName());\n+    }\n+    \n     vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n         ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n     vargs.add(\n         \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n     if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n       // log should be rolled\n       vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n           + numBackups);\n       vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n     } else {\n       vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void addLog4jSystemProperties(\n      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs, \n      Configuration conf) {\n    String log4jPropertyFile \u003d\n        conf.get(MRJobConfig.MAPREDUCE_JOB_LOG4J_PROPERTIES_FILE, \"\");\n    if (log4jPropertyFile.isEmpty()) {\n      vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n    } else {\n      URI log4jURI \u003d null;\n      try {\n        log4jURI \u003d new URI(log4jPropertyFile);\n      } catch (URISyntaxException e) {\n        throw new IllegalArgumentException(e);\n      }\n      Path log4jPath \u003d new Path(log4jURI);\n      vargs.add(\"-Dlog4j.configuration\u003d\"+log4jPath.getName());\n    }\n    \n    vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n        ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n    vargs.add(\n        \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n    if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n      // log should be rolled\n      vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n          + numBackups);\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n    } else {\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/util/MRApps.java",
+          "extendedDetails": {
+            "oldValue": "[logLevel-String, logSize-long, numBackups-int, vargs-List\u003cString\u003e]",
+            "newValue": "[logLevel-String, logSize-long, numBackups-int, vargs-List\u003cString\u003e, conf-Configuration]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "MAPREDUCE-6052. Supported overriding the default container-log4j.properties file per job. Contributed by Junping Du.\n",
+          "commitDate": "01/11/14 12:47 AM",
+          "commitName": "ed63b116465290fdb0acdf89170025f47b307599",
+          "commitAuthor": "Zhijie Shen",
+          "commitDateOld": "22/09/14 8:20 AM",
+          "commitNameOld": "7039b98e1c459e9e0d8caa28cdaa2868e2bde2eb",
+          "commitAuthorOld": "Jason Lowe",
+          "daysBetweenCommits": 39.69,
+          "commitsBetweenForRepo": 398,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,31 @@\n   public static void addLog4jSystemProperties(\n-      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs) {\n-    vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n+      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs, \n+      Configuration conf) {\n+    String log4jPropertyFile \u003d\n+        conf.get(MRJobConfig.MAPREDUCE_JOB_LOG4J_PROPERTIES_FILE, \"\");\n+    if (log4jPropertyFile.isEmpty()) {\n+      vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n+    } else {\n+      URI log4jURI \u003d null;\n+      try {\n+        log4jURI \u003d new URI(log4jPropertyFile);\n+      } catch (URISyntaxException e) {\n+        throw new IllegalArgumentException(e);\n+      }\n+      Path log4jPath \u003d new Path(log4jURI);\n+      vargs.add(\"-Dlog4j.configuration\u003d\"+log4jPath.getName());\n+    }\n+    \n     vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n         ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n     vargs.add(\n         \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n     if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n       // log should be rolled\n       vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n           + numBackups);\n       vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n     } else {\n       vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void addLog4jSystemProperties(\n      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs, \n      Configuration conf) {\n    String log4jPropertyFile \u003d\n        conf.get(MRJobConfig.MAPREDUCE_JOB_LOG4J_PROPERTIES_FILE, \"\");\n    if (log4jPropertyFile.isEmpty()) {\n      vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n    } else {\n      URI log4jURI \u003d null;\n      try {\n        log4jURI \u003d new URI(log4jPropertyFile);\n      } catch (URISyntaxException e) {\n        throw new IllegalArgumentException(e);\n      }\n      Path log4jPath \u003d new Path(log4jURI);\n      vargs.add(\"-Dlog4j.configuration\u003d\"+log4jPath.getName());\n    }\n    \n    vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n        ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n    vargs.add(\n        \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n    if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n      // log should be rolled\n      vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n          + numBackups);\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n    } else {\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/util/MRApps.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "a6ea460a9150e84128ebef97ab6ea8881215de03": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "MAPREDUCE-5672. Provide optional RollingFileAppender for container log4j (syslog). Contributed by Gera Shegalov\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1558948 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "16/01/14 2:56 PM",
+      "commitName": "a6ea460a9150e84128ebef97ab6ea8881215de03",
+      "commitAuthor": "Jason Darrell Lowe",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "MAPREDUCE-5672. Provide optional RollingFileAppender for container log4j (syslog). Contributed by Gera Shegalov\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1558948 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "16/01/14 2:56 PM",
+          "commitName": "a6ea460a9150e84128ebef97ab6ea8881215de03",
+          "commitAuthor": "Jason Darrell Lowe",
+          "commitDateOld": "03/10/13 10:37 PM",
+          "commitNameOld": "65cd7bf6b120722ee6054393520c349eeacd4969",
+          "commitAuthorOld": "Chris Nauroth",
+          "daysBetweenCommits": 104.72,
+          "commitsBetweenForRepo": 610,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,9 +1,16 @@\n   public static void addLog4jSystemProperties(\n-      String logLevel, long logSize, List\u003cString\u003e vargs) {\n+      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs) {\n     vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n     vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n         ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n     vargs.add(\n         \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n-    vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\"); \n+    if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n+      // log should be rolled\n+      vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n+          + numBackups);\n+      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n+    } else {\n+      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void addLog4jSystemProperties(\n      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs) {\n    vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n    vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n        ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n    vargs.add(\n        \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n    if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n      // log should be rolled\n      vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n          + numBackups);\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n    } else {\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/util/MRApps.java",
+          "extendedDetails": {
+            "oldValue": "[logLevel-String, logSize-long, vargs-List\u003cString\u003e]",
+            "newValue": "[logLevel-String, logSize-long, numBackups-int, vargs-List\u003cString\u003e]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "MAPREDUCE-5672. Provide optional RollingFileAppender for container log4j (syslog). Contributed by Gera Shegalov\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1558948 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "16/01/14 2:56 PM",
+          "commitName": "a6ea460a9150e84128ebef97ab6ea8881215de03",
+          "commitAuthor": "Jason Darrell Lowe",
+          "commitDateOld": "03/10/13 10:37 PM",
+          "commitNameOld": "65cd7bf6b120722ee6054393520c349eeacd4969",
+          "commitAuthorOld": "Chris Nauroth",
+          "daysBetweenCommits": 104.72,
+          "commitsBetweenForRepo": 610,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,9 +1,16 @@\n   public static void addLog4jSystemProperties(\n-      String logLevel, long logSize, List\u003cString\u003e vargs) {\n+      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs) {\n     vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n     vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n         ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n     vargs.add(\n         \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n-    vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\"); \n+    if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n+      // log should be rolled\n+      vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n+          + numBackups);\n+      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n+    } else {\n+      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void addLog4jSystemProperties(\n      String logLevel, long logSize, int numBackups, List\u003cString\u003e vargs) {\n    vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n    vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n        ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n    vargs.add(\n        \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n    if (logSize \u003e 0L \u0026\u0026 numBackups \u003e 0) {\n      // log should be rolled\n      vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_BACKUPS + \"\u003d\"\n          + numBackups);\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CRLA\");\n    } else {\n      vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\");\n    }\n  }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/util/MRApps.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "a2205a3b7279229b9ec94d0cc2796da8f40fd241": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-720 and MAPREDUCE-5291. container-log4j.properties should not refer to mapreduce properties. Update MRApp to use YARN properties for log setup. Contributed by Zhijie Shen.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1488829 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/06/13 7:35 PM",
+      "commitName": "a2205a3b7279229b9ec94d0cc2796da8f40fd241",
+      "commitAuthor": "Siddharth Seth",
+      "commitDateOld": "24/05/13 6:46 PM",
+      "commitNameOld": "643155cbee54809e1a7febd96cbb7d8111689b38",
+      "commitAuthorOld": "Vinod Kumar Vavilapalli",
+      "daysBetweenCommits": 9.03,
+      "commitsBetweenForRepo": 48,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,8 +1,9 @@\n   public static void addLog4jSystemProperties(\n       String logLevel, long logSize, List\u003cString\u003e vargs) {\n     vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n-    vargs.add(\"-D\" + MRJobConfig.TASK_LOG_DIR + \"\u003d\" +\n+    vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n         ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n-    vargs.add(\"-D\" + MRJobConfig.TASK_LOG_SIZE + \"\u003d\" + logSize);\n+    vargs.add(\n+        \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n     vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\"); \n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void addLog4jSystemProperties(\n      String logLevel, long logSize, List\u003cString\u003e vargs) {\n    vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n    vargs.add(\"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_DIR + \"\u003d\" +\n        ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n    vargs.add(\n        \"-D\" + YarnConfiguration.YARN_APP_CONTAINER_LOG_SIZE + \"\u003d\" + logSize);\n    vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\"); \n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/util/MRApps.java",
+      "extendedDetails": {}
+    },
+    "ab787f44aabfff0cd01b79a08a52ffaf923558b3": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-3165. Ensure logging options are set correctly for MR AM and tasks. Contributed by Todd Lipcon. \n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1185887 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/10/11 2:45 PM",
+      "commitName": "ab787f44aabfff0cd01b79a08a52ffaf923558b3",
+      "commitAuthor": "Arun Murthy",
+      "diff": "@@ -0,0 +1,8 @@\n+  public static void addLog4jSystemProperties(\n+      String logLevel, long logSize, List\u003cString\u003e vargs) {\n+    vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n+    vargs.add(\"-D\" + MRJobConfig.TASK_LOG_DIR + \"\u003d\" +\n+        ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n+    vargs.add(\"-D\" + MRJobConfig.TASK_LOG_SIZE + \"\u003d\" + logSize);\n+    vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\"); \n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void addLog4jSystemProperties(\n      String logLevel, long logSize, List\u003cString\u003e vargs) {\n    vargs.add(\"-Dlog4j.configuration\u003dcontainer-log4j.properties\");\n    vargs.add(\"-D\" + MRJobConfig.TASK_LOG_DIR + \"\u003d\" +\n        ApplicationConstants.LOG_DIR_EXPANSION_VAR);\n    vargs.add(\"-D\" + MRJobConfig.TASK_LOG_SIZE + \"\u003d\" + logSize);\n    vargs.add(\"-Dhadoop.root.logger\u003d\" + logLevel + \",CLA\"); \n  }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-common/src/main/java/org/apache/hadoop/mapreduce/v2/util/MRApps.java"
+    }
+  }
+}

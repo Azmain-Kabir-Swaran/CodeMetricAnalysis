@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DelegationTokenSecretManager.java",
+  "functionName": "logExpireToken",
+  "functionId": "logExpireToken___dtId-DelegationTokenIdentifier(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java",
+  "functionStartLine": 395,
+  "functionEndLine": 421,
+  "numCommitsSeen": 23,
+  "timeTaken": 1660,
+  "changeHistory": [
+    "47473952e56b0380147d42f4110ad03c2276c961",
+    "f863543206a67ba295454609d618e16f91309b84"
+  ],
+  "changeHistoryShort": {
+    "47473952e56b0380147d42f4110ad03c2276c961": "Ybodychange",
+    "f863543206a67ba295454609d618e16f91309b84": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "47473952e56b0380147d42f4110ad03c2276c961": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13112. Token expiration edits may cause log corruption or deadlock. Contributed by Daryn Sharp.\n",
+      "commitDate": "15/02/18 1:32 PM",
+      "commitName": "47473952e56b0380147d42f4110ad03c2276c961",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "11/05/15 5:27 AM",
+      "commitNameOld": "7e543c27fa2881aa65967be384a6203bd5b2304f",
+      "commitAuthorOld": "Junping Du",
+      "daysBetweenCommits": 1011.38,
+      "commitsBetweenForRepo": 6960,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,15 +1,27 @@\n   protected void logExpireToken(final DelegationTokenIdentifier dtId)\n       throws IOException {\n-    synchronized (noInterruptsLock) {\n+    try {\n       // The edit logging code will fail catastrophically if it\n       // is interrupted during a logSync, since the interrupt\n       // closes the edit log files. Doing this inside the\n-      // above lock and then checking interruption status\n-      // prevents this bug.\n-      if (Thread.interrupted()) {\n-        throw new InterruptedIOException(\n-            \"Interrupted before expiring delegation token\");\n+      // fsn lock will prevent being interrupted when stopping\n+      // the secret manager.\n+      namesystem.readLockInterruptibly();\n+      try {\n+        // this monitor isn\u0027t necessary if stopped while holding write lock\n+        // but for safety, guard against a stop with read lock.\n+        synchronized (noInterruptsLock) {\n+          if (Thread.currentThread().isInterrupted()) {\n+            return; // leave flag set so secret monitor exits.\n+          }\n+          namesystem.logExpireDelegationToken(dtId);\n+        }\n+      } finally {\n+        namesystem.readUnlock();\n       }\n-      namesystem.logExpireDelegationToken(dtId);\n+    } catch (InterruptedException ie) {\n+      // AbstractDelegationTokenManager may crash if an exception is thrown.\n+      // The interrupt flag will be detected when it attempts to sleep.\n+      Thread.currentThread().interrupt();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void logExpireToken(final DelegationTokenIdentifier dtId)\n      throws IOException {\n    try {\n      // The edit logging code will fail catastrophically if it\n      // is interrupted during a logSync, since the interrupt\n      // closes the edit log files. Doing this inside the\n      // fsn lock will prevent being interrupted when stopping\n      // the secret manager.\n      namesystem.readLockInterruptibly();\n      try {\n        // this monitor isn\u0027t necessary if stopped while holding write lock\n        // but for safety, guard against a stop with read lock.\n        synchronized (noInterruptsLock) {\n          if (Thread.currentThread().isInterrupted()) {\n            return; // leave flag set so secret monitor exits.\n          }\n          namesystem.logExpireDelegationToken(dtId);\n        }\n      } finally {\n        namesystem.readUnlock();\n      }\n    } catch (InterruptedException ie) {\n      // AbstractDelegationTokenManager may crash if an exception is thrown.\n      // The interrupt flag will be detected when it attempts to sleep.\n      Thread.currentThread().interrupt();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java",
+      "extendedDetails": {}
+    },
+    "f863543206a67ba295454609d618e16f91309b84": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-4477. Secondary namenode may retain old tokens. Contributed by Daryn Sharp.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1467307 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/04/13 8:18 AM",
+      "commitName": "f863543206a67ba295454609d618e16f91309b84",
+      "commitAuthor": "Kihwal Lee",
+      "diff": "@@ -0,0 +1,15 @@\n+  protected void logExpireToken(final DelegationTokenIdentifier dtId)\n+      throws IOException {\n+    synchronized (noInterruptsLock) {\n+      // The edit logging code will fail catastrophically if it\n+      // is interrupted during a logSync, since the interrupt\n+      // closes the edit log files. Doing this inside the\n+      // above lock and then checking interruption status\n+      // prevents this bug.\n+      if (Thread.interrupted()) {\n+        throw new InterruptedIOException(\n+            \"Interrupted before expiring delegation token\");\n+      }\n+      namesystem.logExpireDelegationToken(dtId);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void logExpireToken(final DelegationTokenIdentifier dtId)\n      throws IOException {\n    synchronized (noInterruptsLock) {\n      // The edit logging code will fail catastrophically if it\n      // is interrupted during a logSync, since the interrupt\n      // closes the edit log files. Doing this inside the\n      // above lock and then checking interruption status\n      // prevents this bug.\n      if (Thread.interrupted()) {\n        throw new InterruptedIOException(\n            \"Interrupted before expiring delegation token\");\n      }\n      namesystem.logExpireDelegationToken(dtId);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/security/token/delegation/DelegationTokenSecretManager.java"
+    }
+  }
+}

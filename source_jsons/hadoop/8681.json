@@ -1,0 +1,125 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSEditLogLoader.java",
+  "functionName": "loadFSEdits",
+  "functionId": "loadFSEdits___edits-EditLogInputStream__expectedStartingTxId-long__maxTxnsToRead-long__startOpt-StartupOption__recovery-MetaRecoveryContext",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader.java",
+  "functionStartLine": 167,
+  "functionEndLine": 201,
+  "numCommitsSeen": 387,
+  "timeTaken": 5891,
+  "changeHistory": [
+    "a65bb97f5d8bf2eb817923a69bbb966359f736d7",
+    "ebe5853a458150b7e42fe7434851bfcbe25e354d",
+    "ff0b99eafeda035ebe0dc82cfe689808047a8893",
+    "75ead273bea8a7dad61c4f99c3a16cab2697c498"
+  ],
+  "changeHistoryShort": {
+    "a65bb97f5d8bf2eb817923a69bbb966359f736d7": "Ybodychange",
+    "ebe5853a458150b7e42fe7434851bfcbe25e354d": "Ymultichange(Yparameterchange,Ybodychange)",
+    "ff0b99eafeda035ebe0dc82cfe689808047a8893": "Ybodychange",
+    "75ead273bea8a7dad61c4f99c3a16cab2697c498": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "a65bb97f5d8bf2eb817923a69bbb966359f736d7": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13791. Limit logging frequency of edit tail related statements. Contributed by Erik Krogen.\n",
+      "commitDate": "24/12/18 9:34 AM",
+      "commitName": "a65bb97f5d8bf2eb817923a69bbb966359f736d7",
+      "commitAuthor": "Chen Liang",
+      "commitDateOld": "06/09/18 2:48 PM",
+      "commitNameOld": "eca1a4bfe952fc184fe90dde50bac9b0e5293568",
+      "commitAuthorOld": "Giovanni Matteo Fumarola",
+      "daysBetweenCommits": 108.82,
+      "commitsBetweenForRepo": 942,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,35 @@\n   long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n       long maxTxnsToRead,\n       StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n     StartupProgress prog \u003d NameNode.getStartupProgress();\n     Step step \u003d createStartupProgressStep(edits);\n     prog.beginStep(Phase.LOADING_EDITS, step);\n     fsNamesys.writeLock();\n     try {\n-      long startTime \u003d monotonicNow();\n-      FSImage.LOG.info(\"Start loading edits file \" + edits.getName()\n-          + \" maxTxnsToRead \u003d \" + maxTxnsToRead);\n+      long startTime \u003d timer.monotonicNow();\n+      LogAction preLogAction \u003d loadEditsLogHelper.record(\"pre\", startTime);\n+      if (preLogAction.shouldLog()) {\n+        FSImage.LOG.info(\"Start loading edits file \" + edits.getName()\n+            + \" maxTxnsToRead \u003d \" + maxTxnsToRead +\n+            LogThrottlingHelper.getLogSupressionMessage(preLogAction));\n+      }\n       long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n           maxTxnsToRead, startOpt, recovery);\n-      FSImage.LOG.info(\"Edits file \" + edits.getName() \n-          + \" of size \" + edits.length() + \" edits # \" + numEdits \n-          + \" loaded in \" + (monotonicNow()-startTime)/1000 + \" seconds\");\n+      long endTime \u003d timer.monotonicNow();\n+      LogAction postLogAction \u003d loadEditsLogHelper.record(\"post\", endTime,\n+          numEdits, edits.length(), endTime - startTime);\n+      if (postLogAction.shouldLog()) {\n+        FSImage.LOG.info(\"Loaded {} edits file(s) (the last named {}) of \" +\n+                \"total size {}, total edits {}, total load time {} ms\",\n+            postLogAction.getCount(), edits.getName(),\n+            postLogAction.getStats(1).getSum(),\n+            postLogAction.getStats(0).getSum(),\n+            postLogAction.getStats(2).getSum());\n+      }\n       return numEdits;\n     } finally {\n       edits.close();\n       fsNamesys.writeUnlock(\"loadFSEdits\");\n       prog.endStep(Phase.LOADING_EDITS, step);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n      long maxTxnsToRead,\n      StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n    StartupProgress prog \u003d NameNode.getStartupProgress();\n    Step step \u003d createStartupProgressStep(edits);\n    prog.beginStep(Phase.LOADING_EDITS, step);\n    fsNamesys.writeLock();\n    try {\n      long startTime \u003d timer.monotonicNow();\n      LogAction preLogAction \u003d loadEditsLogHelper.record(\"pre\", startTime);\n      if (preLogAction.shouldLog()) {\n        FSImage.LOG.info(\"Start loading edits file \" + edits.getName()\n            + \" maxTxnsToRead \u003d \" + maxTxnsToRead +\n            LogThrottlingHelper.getLogSupressionMessage(preLogAction));\n      }\n      long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n          maxTxnsToRead, startOpt, recovery);\n      long endTime \u003d timer.monotonicNow();\n      LogAction postLogAction \u003d loadEditsLogHelper.record(\"post\", endTime,\n          numEdits, edits.length(), endTime - startTime);\n      if (postLogAction.shouldLog()) {\n        FSImage.LOG.info(\"Loaded {} edits file(s) (the last named {}) of \" +\n                \"total size {}, total edits {}, total load time {} ms\",\n            postLogAction.getCount(), edits.getName(),\n            postLogAction.getStats(1).getSum(),\n            postLogAction.getStats(0).getSum(),\n            postLogAction.getStats(2).getSum());\n      }\n      return numEdits;\n    } finally {\n      edits.close();\n      fsNamesys.writeUnlock(\"loadFSEdits\");\n      prog.endStep(Phase.LOADING_EDITS, step);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader.java",
+      "extendedDetails": {}
+    },
+    "ebe5853a458150b7e42fe7434851bfcbe25e354d": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-12978. Fine-grained locking while consuming journal stream. Contributed by Konstantin Shvachko.",
+      "commitDate": "31/05/18 2:56 PM",
+      "commitName": "ebe5853a458150b7e42fe7434851bfcbe25e354d",
+      "commitAuthor": "Konstantin V Shvachko",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-12978. Fine-grained locking while consuming journal stream. Contributed by Konstantin Shvachko.",
+          "commitDate": "31/05/18 2:56 PM",
+          "commitName": "ebe5853a458150b7e42fe7434851bfcbe25e354d",
+          "commitAuthor": "Konstantin V Shvachko",
+          "commitDateOld": "07/12/17 11:15 AM",
+          "commitNameOld": "67662e2ac9e68f32b725c8118cf2be79a662fca5",
+          "commitAuthorOld": "Lei Xu",
+          "daysBetweenCommits": 175.11,
+          "commitsBetweenForRepo": 1795,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,23 @@\n   long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n+      long maxTxnsToRead,\n       StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n     StartupProgress prog \u003d NameNode.getStartupProgress();\n     Step step \u003d createStartupProgressStep(edits);\n     prog.beginStep(Phase.LOADING_EDITS, step);\n     fsNamesys.writeLock();\n     try {\n       long startTime \u003d monotonicNow();\n-      FSImage.LOG.info(\"Start loading edits file \" + edits.getName());\n+      FSImage.LOG.info(\"Start loading edits file \" + edits.getName()\n+          + \" maxTxnsToRead \u003d \" + maxTxnsToRead);\n       long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n-          startOpt, recovery);\n+          maxTxnsToRead, startOpt, recovery);\n       FSImage.LOG.info(\"Edits file \" + edits.getName() \n           + \" of size \" + edits.length() + \" edits # \" + numEdits \n           + \" loaded in \" + (monotonicNow()-startTime)/1000 + \" seconds\");\n       return numEdits;\n     } finally {\n       edits.close();\n       fsNamesys.writeUnlock(\"loadFSEdits\");\n       prog.endStep(Phase.LOADING_EDITS, step);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n      long maxTxnsToRead,\n      StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n    StartupProgress prog \u003d NameNode.getStartupProgress();\n    Step step \u003d createStartupProgressStep(edits);\n    prog.beginStep(Phase.LOADING_EDITS, step);\n    fsNamesys.writeLock();\n    try {\n      long startTime \u003d monotonicNow();\n      FSImage.LOG.info(\"Start loading edits file \" + edits.getName()\n          + \" maxTxnsToRead \u003d \" + maxTxnsToRead);\n      long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n          maxTxnsToRead, startOpt, recovery);\n      FSImage.LOG.info(\"Edits file \" + edits.getName() \n          + \" of size \" + edits.length() + \" edits # \" + numEdits \n          + \" loaded in \" + (monotonicNow()-startTime)/1000 + \" seconds\");\n      return numEdits;\n    } finally {\n      edits.close();\n      fsNamesys.writeUnlock(\"loadFSEdits\");\n      prog.endStep(Phase.LOADING_EDITS, step);\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader.java",
+          "extendedDetails": {
+            "oldValue": "[edits-EditLogInputStream, expectedStartingTxId-long, startOpt-StartupOption, recovery-MetaRecoveryContext]",
+            "newValue": "[edits-EditLogInputStream, expectedStartingTxId-long, maxTxnsToRead-long, startOpt-StartupOption, recovery-MetaRecoveryContext]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-12978. Fine-grained locking while consuming journal stream. Contributed by Konstantin Shvachko.",
+          "commitDate": "31/05/18 2:56 PM",
+          "commitName": "ebe5853a458150b7e42fe7434851bfcbe25e354d",
+          "commitAuthor": "Konstantin V Shvachko",
+          "commitDateOld": "07/12/17 11:15 AM",
+          "commitNameOld": "67662e2ac9e68f32b725c8118cf2be79a662fca5",
+          "commitAuthorOld": "Lei Xu",
+          "daysBetweenCommits": 175.11,
+          "commitsBetweenForRepo": 1795,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,23 @@\n   long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n+      long maxTxnsToRead,\n       StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n     StartupProgress prog \u003d NameNode.getStartupProgress();\n     Step step \u003d createStartupProgressStep(edits);\n     prog.beginStep(Phase.LOADING_EDITS, step);\n     fsNamesys.writeLock();\n     try {\n       long startTime \u003d monotonicNow();\n-      FSImage.LOG.info(\"Start loading edits file \" + edits.getName());\n+      FSImage.LOG.info(\"Start loading edits file \" + edits.getName()\n+          + \" maxTxnsToRead \u003d \" + maxTxnsToRead);\n       long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n-          startOpt, recovery);\n+          maxTxnsToRead, startOpt, recovery);\n       FSImage.LOG.info(\"Edits file \" + edits.getName() \n           + \" of size \" + edits.length() + \" edits # \" + numEdits \n           + \" loaded in \" + (monotonicNow()-startTime)/1000 + \" seconds\");\n       return numEdits;\n     } finally {\n       edits.close();\n       fsNamesys.writeUnlock(\"loadFSEdits\");\n       prog.endStep(Phase.LOADING_EDITS, step);\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n      long maxTxnsToRead,\n      StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n    StartupProgress prog \u003d NameNode.getStartupProgress();\n    Step step \u003d createStartupProgressStep(edits);\n    prog.beginStep(Phase.LOADING_EDITS, step);\n    fsNamesys.writeLock();\n    try {\n      long startTime \u003d monotonicNow();\n      FSImage.LOG.info(\"Start loading edits file \" + edits.getName()\n          + \" maxTxnsToRead \u003d \" + maxTxnsToRead);\n      long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n          maxTxnsToRead, startOpt, recovery);\n      FSImage.LOG.info(\"Edits file \" + edits.getName() \n          + \" of size \" + edits.length() + \" edits # \" + numEdits \n          + \" loaded in \" + (monotonicNow()-startTime)/1000 + \" seconds\");\n      return numEdits;\n    } finally {\n      edits.close();\n      fsNamesys.writeUnlock(\"loadFSEdits\");\n      prog.endStep(Phase.LOADING_EDITS, step);\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "ff0b99eafeda035ebe0dc82cfe689808047a8893": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10872. Add MutableRate metrics for FSNamesystemLock operations. Contributed by Erik Krogen.\n",
+      "commitDate": "14/11/16 11:05 AM",
+      "commitName": "ff0b99eafeda035ebe0dc82cfe689808047a8893",
+      "commitAuthor": "Zhe Zhang",
+      "commitDateOld": "24/10/16 3:14 PM",
+      "commitNameOld": "9d175853b0170683ad5f21d9bcdeaac49fe89e04",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 20.87,
+      "commitsBetweenForRepo": 229,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,21 @@\n   long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n       StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n     StartupProgress prog \u003d NameNode.getStartupProgress();\n     Step step \u003d createStartupProgressStep(edits);\n     prog.beginStep(Phase.LOADING_EDITS, step);\n     fsNamesys.writeLock();\n     try {\n       long startTime \u003d monotonicNow();\n       FSImage.LOG.info(\"Start loading edits file \" + edits.getName());\n       long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n           startOpt, recovery);\n       FSImage.LOG.info(\"Edits file \" + edits.getName() \n           + \" of size \" + edits.length() + \" edits # \" + numEdits \n           + \" loaded in \" + (monotonicNow()-startTime)/1000 + \" seconds\");\n       return numEdits;\n     } finally {\n       edits.close();\n-      fsNamesys.writeUnlock();\n+      fsNamesys.writeUnlock(\"loadFSEdits\");\n       prog.endStep(Phase.LOADING_EDITS, step);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n      StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n    StartupProgress prog \u003d NameNode.getStartupProgress();\n    Step step \u003d createStartupProgressStep(edits);\n    prog.beginStep(Phase.LOADING_EDITS, step);\n    fsNamesys.writeLock();\n    try {\n      long startTime \u003d monotonicNow();\n      FSImage.LOG.info(\"Start loading edits file \" + edits.getName());\n      long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n          startOpt, recovery);\n      FSImage.LOG.info(\"Edits file \" + edits.getName() \n          + \" of size \" + edits.length() + \" edits # \" + numEdits \n          + \" loaded in \" + (monotonicNow()-startTime)/1000 + \" seconds\");\n      return numEdits;\n    } finally {\n      edits.close();\n      fsNamesys.writeUnlock(\"loadFSEdits\");\n      prog.endStep(Phase.LOADING_EDITS, step);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader.java",
+      "extendedDetails": {}
+    },
+    "75ead273bea8a7dad61c4f99c3a16cab2697c498": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-6841. Use Time.monotonicNow() wherever applicable instead of Time.now(). Contributed by Vinayakumar B\n",
+      "commitDate": "20/03/15 12:02 PM",
+      "commitName": "75ead273bea8a7dad61c4f99c3a16cab2697c498",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "02/03/15 6:04 PM",
+      "commitNameOld": "431e7d84c7b68b34ff18de19afe8e46637047fa6",
+      "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+      "daysBetweenCommits": 17.71,
+      "commitsBetweenForRepo": 162,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,21 +1,21 @@\n   long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n       StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n     StartupProgress prog \u003d NameNode.getStartupProgress();\n     Step step \u003d createStartupProgressStep(edits);\n     prog.beginStep(Phase.LOADING_EDITS, step);\n     fsNamesys.writeLock();\n     try {\n-      long startTime \u003d now();\n+      long startTime \u003d monotonicNow();\n       FSImage.LOG.info(\"Start loading edits file \" + edits.getName());\n       long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n           startOpt, recovery);\n       FSImage.LOG.info(\"Edits file \" + edits.getName() \n           + \" of size \" + edits.length() + \" edits # \" + numEdits \n-          + \" loaded in \" + (now()-startTime)/1000 + \" seconds\");\n+          + \" loaded in \" + (monotonicNow()-startTime)/1000 + \" seconds\");\n       return numEdits;\n     } finally {\n       edits.close();\n       fsNamesys.writeUnlock();\n       prog.endStep(Phase.LOADING_EDITS, step);\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  long loadFSEdits(EditLogInputStream edits, long expectedStartingTxId,\n      StartupOption startOpt, MetaRecoveryContext recovery) throws IOException {\n    StartupProgress prog \u003d NameNode.getStartupProgress();\n    Step step \u003d createStartupProgressStep(edits);\n    prog.beginStep(Phase.LOADING_EDITS, step);\n    fsNamesys.writeLock();\n    try {\n      long startTime \u003d monotonicNow();\n      FSImage.LOG.info(\"Start loading edits file \" + edits.getName());\n      long numEdits \u003d loadEditRecords(edits, false, expectedStartingTxId,\n          startOpt, recovery);\n      FSImage.LOG.info(\"Edits file \" + edits.getName() \n          + \" of size \" + edits.length() + \" edits # \" + numEdits \n          + \" loaded in \" + (monotonicNow()-startTime)/1000 + \" seconds\");\n      return numEdits;\n    } finally {\n      edits.close();\n      fsNamesys.writeUnlock();\n      prog.endStep(Phase.LOADING_EDITS, step);\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogLoader.java",
+      "extendedDetails": {}
+    }
+  }
+}

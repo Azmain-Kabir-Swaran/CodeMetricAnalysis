@@ -1,0 +1,254 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DynamoDBMetadataStore.java",
+  "functionName": "fullPathsToPut",
+  "functionId": "fullPathsToPut___meta-DDBPathMetadata__operationState-BulkOperationState(annotations-@Nullable)",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+  "functionStartLine": 1368,
+  "functionEndLine": 1405,
+  "numCommitsSeen": 80,
+  "timeTaken": 6687,
+  "changeHistory": [
+    "e02eb24e0a9139418120027b694492e0738df20a",
+    "a36274d69947648dbe82721220cc5240ec5d396d",
+    "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3",
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+    "d7232857d8d1e10cdac171acdc931187e45fd6be",
+    "621b43e254afaff708cd6fc4698b29628f6abc33"
+  ],
+  "changeHistoryShort": {
+    "e02eb24e0a9139418120027b694492e0738df20a": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+    "a36274d69947648dbe82721220cc5240ec5d396d": "Ybodychange",
+    "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3": "Ybodychange",
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "d7232857d8d1e10cdac171acdc931187e45fd6be": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+    "621b43e254afaff708cd6fc4698b29628f6abc33": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e02eb24e0a9139418120027b694492e0738df20a": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+      "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+      "commitDate": "20/06/19 1:56 AM",
+      "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+          "commitDate": "20/06/19 1:56 AM",
+          "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "16/06/19 9:05 AM",
+          "commitNameOld": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 3.7,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,38 @@\n-  Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n+  List\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta,\n+      @Nullable BulkOperationState operationState)\n       throws IOException {\n     checkPathMetadata(meta);\n-    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n+    final List\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n+    final AncestorState ancestorState \u003d extractOrCreate(operationState,\n+        BulkOperationState.OperationType.Put);\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n+      synchronized (ancestorState) {\n+        if (ancestorState.findEntry(path, true)) {\n+          break;\n+        }\n+      }\n       final Item item \u003d getConsistentItem(path);\n       if (!itemExists(item)) {\n         final S3AFileStatus status \u003d makeDirStatus(path, username);\n         metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n             meta.isAuthoritativeDir(), meta.getLastUpdated()));\n         path \u003d path.getParent();\n       } else {\n+        // found the entry in the table, so add it to the ancestor state\n+        synchronized (ancestorState) {\n+          ancestorState.put(path, itemToPathMetadata(item, username));\n+        }\n+        // then break out of the loop.\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  List\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta,\n      @Nullable BulkOperationState operationState)\n      throws IOException {\n    checkPathMetadata(meta);\n    final List\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    final AncestorState ancestorState \u003d extractOrCreate(operationState,\n        BulkOperationState.OperationType.Put);\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      synchronized (ancestorState) {\n        if (ancestorState.findEntry(path, true)) {\n          break;\n        }\n      }\n      final Item item \u003d getConsistentItem(path);\n      if (!itemExists(item)) {\n        final S3AFileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir(), meta.getLastUpdated()));\n        path \u003d path.getParent();\n      } else {\n        // found the entry in the table, so add it to the ancestor state\n        synchronized (ancestorState) {\n          ancestorState.put(path, itemToPathMetadata(item, username));\n        }\n        // then break out of the loop.\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[meta-DDBPathMetadata]",
+            "newValue": "[meta-DDBPathMetadata, operationState-BulkOperationState(annotations-@Nullable)]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+          "commitDate": "20/06/19 1:56 AM",
+          "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "16/06/19 9:05 AM",
+          "commitNameOld": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 3.7,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,38 @@\n-  Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n+  List\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta,\n+      @Nullable BulkOperationState operationState)\n       throws IOException {\n     checkPathMetadata(meta);\n-    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n+    final List\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n+    final AncestorState ancestorState \u003d extractOrCreate(operationState,\n+        BulkOperationState.OperationType.Put);\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n+      synchronized (ancestorState) {\n+        if (ancestorState.findEntry(path, true)) {\n+          break;\n+        }\n+      }\n       final Item item \u003d getConsistentItem(path);\n       if (!itemExists(item)) {\n         final S3AFileStatus status \u003d makeDirStatus(path, username);\n         metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n             meta.isAuthoritativeDir(), meta.getLastUpdated()));\n         path \u003d path.getParent();\n       } else {\n+        // found the entry in the table, so add it to the ancestor state\n+        synchronized (ancestorState) {\n+          ancestorState.put(path, itemToPathMetadata(item, username));\n+        }\n+        // then break out of the loop.\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  List\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta,\n      @Nullable BulkOperationState operationState)\n      throws IOException {\n    checkPathMetadata(meta);\n    final List\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    final AncestorState ancestorState \u003d extractOrCreate(operationState,\n        BulkOperationState.OperationType.Put);\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      synchronized (ancestorState) {\n        if (ancestorState.findEntry(path, true)) {\n          break;\n        }\n      }\n      final Item item \u003d getConsistentItem(path);\n      if (!itemExists(item)) {\n        final S3AFileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir(), meta.getLastUpdated()));\n        path \u003d path.getParent();\n      } else {\n        // found the entry in the table, so add it to the ancestor state\n        synchronized (ancestorState) {\n          ancestorState.put(path, itemToPathMetadata(item, username));\n        }\n        // then break out of the loop.\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "Collection\u003cDDBPathMetadata\u003e",
+            "newValue": "List\u003cDDBPathMetadata\u003e"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15183. S3Guard store becomes inconsistent after partial failure of rename.\n\nContributed by Steve Loughran.\n\nChange-Id: I825b0bc36be960475d2d259b1cdab45ae1bb78eb\n",
+          "commitDate": "20/06/19 1:56 AM",
+          "commitName": "e02eb24e0a9139418120027b694492e0738df20a",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "16/06/19 9:05 AM",
+          "commitNameOld": "f9cc9e162175444efe9d5b07ecb9a795f750ca3c",
+          "commitAuthorOld": "Gabor Bota",
+          "daysBetweenCommits": 3.7,
+          "commitsBetweenForRepo": 44,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,38 @@\n-  Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n+  List\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta,\n+      @Nullable BulkOperationState operationState)\n       throws IOException {\n     checkPathMetadata(meta);\n-    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n+    final List\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n+    final AncestorState ancestorState \u003d extractOrCreate(operationState,\n+        BulkOperationState.OperationType.Put);\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n+      synchronized (ancestorState) {\n+        if (ancestorState.findEntry(path, true)) {\n+          break;\n+        }\n+      }\n       final Item item \u003d getConsistentItem(path);\n       if (!itemExists(item)) {\n         final S3AFileStatus status \u003d makeDirStatus(path, username);\n         metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n             meta.isAuthoritativeDir(), meta.getLastUpdated()));\n         path \u003d path.getParent();\n       } else {\n+        // found the entry in the table, so add it to the ancestor state\n+        synchronized (ancestorState) {\n+          ancestorState.put(path, itemToPathMetadata(item, username));\n+        }\n+        // then break out of the loop.\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  List\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta,\n      @Nullable BulkOperationState operationState)\n      throws IOException {\n    checkPathMetadata(meta);\n    final List\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    final AncestorState ancestorState \u003d extractOrCreate(operationState,\n        BulkOperationState.OperationType.Put);\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      synchronized (ancestorState) {\n        if (ancestorState.findEntry(path, true)) {\n          break;\n        }\n      }\n      final Item item \u003d getConsistentItem(path);\n      if (!itemExists(item)) {\n        final S3AFileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir(), meta.getLastUpdated()));\n        path \u003d path.getParent();\n      } else {\n        // found the entry in the table, so add it to the ancestor state\n        synchronized (ancestorState) {\n          ancestorState.put(path, itemToPathMetadata(item, username));\n        }\n        // then break out of the loop.\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "a36274d69947648dbe82721220cc5240ec5d396d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16085. S3Guard: use object version or etags to protect against inconsistent read after replace/overwrite.\n\nContributed by Ben Roling.\n\nS3Guard will now track the etag of uploaded files and, if an S3\nbucket is versioned, the object version.\n\nYou can then control how to react to a mismatch between the data\nin the DynamoDB table and that in the store: warn, fail, or, when\nusing versions, return the original value.\n\nThis adds two new columns to the table: etag and version.\nThis is transparent to older S3A clients -but when such clients\nadd/update data to the S3Guard table, they will not add these values.\nAs a result, the etag/version checks will not work with files uploaded by older clients.\n\nFor a consistent experience, upgrade all clients to use the latest hadoop version.\n",
+      "commitDate": "19/05/19 2:29 PM",
+      "commitName": "a36274d69947648dbe82721220cc5240ec5d396d",
+      "commitAuthor": "Ben Roling",
+      "commitDateOld": "11/04/19 5:12 PM",
+      "commitNameOld": "cf4efcab3b66271745b7be5db30fdc5ae656d06c",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 37.89,
+      "commitsBetweenForRepo": 188,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,25 @@\n   Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n       throws IOException {\n     checkPathMetadata(meta);\n     final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n       final Item item \u003d getConsistentItem(path);\n       if (!itemExists(item)) {\n-        final FileStatus status \u003d makeDirStatus(path, username);\n+        final S3AFileStatus status \u003d makeDirStatus(path, username);\n         metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n             meta.isAuthoritativeDir(), meta.getLastUpdated()));\n         path \u003d path.getParent();\n       } else {\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n      throws IOException {\n    checkPathMetadata(meta);\n    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      final Item item \u003d getConsistentItem(path);\n      if (!itemExists(item)) {\n        final S3AFileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir(), meta.getLastUpdated()));\n        path \u003d path.getParent();\n      } else {\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15621 S3Guard: Implement time-based (TTL) expiry for Authoritative Directory Listing. Contributed by Gabor Bota\n",
+      "commitDate": "02/10/18 9:22 PM",
+      "commitName": "046b8768af8a07a9e10ce43f538d6ac16e7fa5f3",
+      "commitAuthor": "Aaron Fabbri",
+      "commitDateOld": "12/09/18 9:04 PM",
+      "commitNameOld": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 20.01,
+      "commitsBetweenForRepo": 199,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,25 @@\n   Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n       throws IOException {\n     checkPathMetadata(meta);\n     final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n       final Item item \u003d getConsistentItem(path);\n       if (!itemExists(item)) {\n         final FileStatus status \u003d makeDirStatus(path, username);\n         metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n-            meta.isAuthoritativeDir()));\n+            meta.isAuthoritativeDir(), meta.getLastUpdated()));\n         path \u003d path.getParent();\n       } else {\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n      throws IOException {\n    checkPathMetadata(meta);\n    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      final Item item \u003d getConsistentItem(path);\n      if (!itemExists(item)) {\n        final FileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir(), meta.getLastUpdated()));\n        path \u003d path.getParent();\n      } else {\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+      "extendedDetails": {}
+    },
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+      "commitDate": "12/09/18 9:04 PM",
+      "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+          "commitDate": "12/09/18 9:04 PM",
+          "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "12/09/18 4:36 PM",
+          "commitNameOld": "d32a8d5d582725eb724b78f27310ad1efd33ed2a",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 0.19,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,25 @@\n-  private Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n+  Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n       throws IOException {\n     checkPathMetadata(meta);\n     final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n-      final Item item \u003d getConsistentItem(pathToKey(path));\n+      final Item item \u003d getConsistentItem(path);\n       if (!itemExists(item)) {\n         final FileStatus status \u003d makeDirStatus(path, username);\n         metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n             meta.isAuthoritativeDir()));\n         path \u003d path.getParent();\n       } else {\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n      throws IOException {\n    checkPathMetadata(meta);\n    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      final Item item \u003d getConsistentItem(path);\n      if (!itemExists(item)) {\n        final FileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir()));\n        path \u003d path.getParent();\n      } else {\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+          "commitDate": "12/09/18 9:04 PM",
+          "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "12/09/18 4:36 PM",
+          "commitNameOld": "d32a8d5d582725eb724b78f27310ad1efd33ed2a",
+          "commitAuthorOld": "Aaron Fabbri",
+          "daysBetweenCommits": 0.19,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,25 @@\n-  private Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n+  Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n       throws IOException {\n     checkPathMetadata(meta);\n     final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n-      final Item item \u003d getConsistentItem(pathToKey(path));\n+      final Item item \u003d getConsistentItem(path);\n       if (!itemExists(item)) {\n         final FileStatus status \u003d makeDirStatus(path, username);\n         metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n             meta.isAuthoritativeDir()));\n         path \u003d path.getParent();\n       } else {\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n      throws IOException {\n    checkPathMetadata(meta);\n    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      final Item item \u003d getConsistentItem(path);\n      if (!itemExists(item)) {\n        final FileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir()));\n        path \u003d path.getParent();\n      } else {\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "d7232857d8d1e10cdac171acdc931187e45fd6be": {
+      "type": "Ymultichange(Yparameterchange,Yreturntypechange,Ybodychange)",
+      "commitMessage": "HADOOP-14154 Persist isAuthoritative bit in DynamoDBMetaStore (Contributed by Gabor Bota)\n",
+      "commitDate": "17/08/18 10:15 AM",
+      "commitName": "d7232857d8d1e10cdac171acdc931187e45fd6be",
+      "commitAuthor": "Aaron Fabbri",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-14154 Persist isAuthoritative bit in DynamoDBMetaStore (Contributed by Gabor Bota)\n",
+          "commitDate": "17/08/18 10:15 AM",
+          "commitName": "d7232857d8d1e10cdac171acdc931187e45fd6be",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "08/08/18 10:57 PM",
+          "commitNameOld": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 8.47,
+          "commitsBetweenForRepo": 126,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,25 @@\n-  private Collection\u003cPathMetadata\u003e fullPathsToPut(PathMetadata meta)\n+  private Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n       throws IOException {\n     checkPathMetadata(meta);\n-    final Collection\u003cPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n+    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n       final Item item \u003d getConsistentItem(pathToKey(path));\n       if (!itemExists(item)) {\n         final FileStatus status \u003d makeDirStatus(path, username);\n-        metasToPut.add(new PathMetadata(status, Tristate.FALSE, false));\n+        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n+            meta.isAuthoritativeDir()));\n         path \u003d path.getParent();\n       } else {\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n      throws IOException {\n    checkPathMetadata(meta);\n    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      final Item item \u003d getConsistentItem(pathToKey(path));\n      if (!itemExists(item)) {\n        final FileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir()));\n        path \u003d path.getParent();\n      } else {\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "[meta-PathMetadata]",
+            "newValue": "[meta-DDBPathMetadata]"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-14154 Persist isAuthoritative bit in DynamoDBMetaStore (Contributed by Gabor Bota)\n",
+          "commitDate": "17/08/18 10:15 AM",
+          "commitName": "d7232857d8d1e10cdac171acdc931187e45fd6be",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "08/08/18 10:57 PM",
+          "commitNameOld": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 8.47,
+          "commitsBetweenForRepo": 126,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,25 @@\n-  private Collection\u003cPathMetadata\u003e fullPathsToPut(PathMetadata meta)\n+  private Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n       throws IOException {\n     checkPathMetadata(meta);\n-    final Collection\u003cPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n+    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n       final Item item \u003d getConsistentItem(pathToKey(path));\n       if (!itemExists(item)) {\n         final FileStatus status \u003d makeDirStatus(path, username);\n-        metasToPut.add(new PathMetadata(status, Tristate.FALSE, false));\n+        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n+            meta.isAuthoritativeDir()));\n         path \u003d path.getParent();\n       } else {\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n      throws IOException {\n    checkPathMetadata(meta);\n    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      final Item item \u003d getConsistentItem(pathToKey(path));\n      if (!itemExists(item)) {\n        final FileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir()));\n        path \u003d path.getParent();\n      } else {\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {
+            "oldValue": "Collection\u003cPathMetadata\u003e",
+            "newValue": "Collection\u003cDDBPathMetadata\u003e"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-14154 Persist isAuthoritative bit in DynamoDBMetaStore (Contributed by Gabor Bota)\n",
+          "commitDate": "17/08/18 10:15 AM",
+          "commitName": "d7232857d8d1e10cdac171acdc931187e45fd6be",
+          "commitAuthor": "Aaron Fabbri",
+          "commitDateOld": "08/08/18 10:57 PM",
+          "commitNameOld": "da9a39eed138210de29b59b90c449b28da1c04f9",
+          "commitAuthorOld": "Steve Loughran",
+          "daysBetweenCommits": 8.47,
+          "commitsBetweenForRepo": 126,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,25 @@\n-  private Collection\u003cPathMetadata\u003e fullPathsToPut(PathMetadata meta)\n+  private Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n       throws IOException {\n     checkPathMetadata(meta);\n-    final Collection\u003cPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n+    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n     // root path is not persisted\n     if (!meta.getFileStatus().getPath().isRoot()) {\n       metasToPut.add(meta);\n     }\n \n     // put all its ancestors if not present; as an optimization we return at its\n     // first existent ancestor\n     Path path \u003d meta.getFileStatus().getPath().getParent();\n     while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n       final Item item \u003d getConsistentItem(pathToKey(path));\n       if (!itemExists(item)) {\n         final FileStatus status \u003d makeDirStatus(path, username);\n-        metasToPut.add(new PathMetadata(status, Tristate.FALSE, false));\n+        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n+            meta.isAuthoritativeDir()));\n         path \u003d path.getParent();\n       } else {\n         break;\n       }\n     }\n     return metasToPut;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private Collection\u003cDDBPathMetadata\u003e fullPathsToPut(DDBPathMetadata meta)\n      throws IOException {\n    checkPathMetadata(meta);\n    final Collection\u003cDDBPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      final Item item \u003d getConsistentItem(pathToKey(path));\n      if (!itemExists(item)) {\n        final FileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new DDBPathMetadata(status, Tristate.FALSE, false,\n            meta.isAuthoritativeDir()));\n        path \u003d path.getParent();\n      } else {\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "621b43e254afaff708cd6fc4698b29628f6abc33": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13345 HS3Guard: Improved Consistency for S3A.\nContributed by: Chris Nauroth, Aaron Fabbri, Mingliang Liu, Lei (Eddy) Xu,\nSean Mackrory, Steve Loughran and others.\n",
+      "commitDate": "01/09/17 6:13 AM",
+      "commitName": "621b43e254afaff708cd6fc4698b29628f6abc33",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,24 @@\n+  private Collection\u003cPathMetadata\u003e fullPathsToPut(PathMetadata meta)\n+      throws IOException {\n+    checkPathMetadata(meta);\n+    final Collection\u003cPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n+    // root path is not persisted\n+    if (!meta.getFileStatus().getPath().isRoot()) {\n+      metasToPut.add(meta);\n+    }\n+\n+    // put all its ancestors if not present; as an optimization we return at its\n+    // first existent ancestor\n+    Path path \u003d meta.getFileStatus().getPath().getParent();\n+    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n+      final Item item \u003d getConsistentItem(pathToKey(path));\n+      if (!itemExists(item)) {\n+        final FileStatus status \u003d makeDirStatus(path, username);\n+        metasToPut.add(new PathMetadata(status, Tristate.FALSE, false));\n+        path \u003d path.getParent();\n+      } else {\n+        break;\n+      }\n+    }\n+    return metasToPut;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private Collection\u003cPathMetadata\u003e fullPathsToPut(PathMetadata meta)\n      throws IOException {\n    checkPathMetadata(meta);\n    final Collection\u003cPathMetadata\u003e metasToPut \u003d new ArrayList\u003c\u003e();\n    // root path is not persisted\n    if (!meta.getFileStatus().getPath().isRoot()) {\n      metasToPut.add(meta);\n    }\n\n    // put all its ancestors if not present; as an optimization we return at its\n    // first existent ancestor\n    Path path \u003d meta.getFileStatus().getPath().getParent();\n    while (path !\u003d null \u0026\u0026 !path.isRoot()) {\n      final Item item \u003d getConsistentItem(pathToKey(path));\n      if (!itemExists(item)) {\n        final FileStatus status \u003d makeDirStatus(path, username);\n        metasToPut.add(new PathMetadata(status, Tristate.FALSE, false));\n        path \u003d path.getParent();\n      } else {\n        break;\n      }\n    }\n    return metasToPut;\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/s3guard/DynamoDBMetadataStore.java"
+    }
+  }
+}

@@ -1,0 +1,114 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSEditLogOp.java",
+  "functionName": "readBlocks",
+  "functionId": "readBlocks___in-DataInputStream__logVersion-int",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+  "functionStartLine": 678,
+  "functionEndLine": 695,
+  "numCommitsSeen": 109,
+  "timeTaken": 7070,
+  "changeHistory": [
+    "98b00d7cc015555642068827e6c52eaed0740c94",
+    "64641c28b5ea8538033060452b0c45b7f2eeb60c",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "d86f3183d93714ba078416af4f609d26376eadb0",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "98b00d7cc015555642068827e6c52eaed0740c94": "Ybodychange",
+    "64641c28b5ea8538033060452b0c45b7f2eeb60c": "Ybodychange",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "d86f3183d93714ba078416af4f609d26376eadb0": "Yfilerename",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "98b00d7cc015555642068827e6c52eaed0740c94": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3134. harden edit log loader against malformed or malicious input. Contributed by Colin Patrick McCabe\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1336943 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/05/12 4:13 PM",
+      "commitName": "98b00d7cc015555642068827e6c52eaed0740c94",
+      "commitAuthor": "Eli Collins",
+      "commitDateOld": "18/04/12 6:31 PM",
+      "commitNameOld": "54e61ffdc0b993063eca8d748999f5c037fdd4c9",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 21.9,
+      "commitsBetweenForRepo": 137,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,18 @@\n     private static Block[] readBlocks(\n         DataInputStream in,\n         int logVersion) throws IOException {\n       int numBlocks \u003d in.readInt();\n+      if (numBlocks \u003c 0) {\n+        throw new IOException(\"invalid negative number of blocks\");\n+      } else if (numBlocks \u003e MAX_BLOCKS) {\n+        throw new IOException(\"invalid number of blocks: \" + numBlocks +\n+            \".  The maximum number of blocks per file is \" + MAX_BLOCKS);\n+      }\n       Block[] blocks \u003d new Block[numBlocks];\n       for (int i \u003d 0; i \u003c numBlocks; i++) {\n         Block blk \u003d new Block();\n         blk.readFields(in);\n         blocks[i] \u003d blk;\n       }\n       return blocks;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private static Block[] readBlocks(\n        DataInputStream in,\n        int logVersion) throws IOException {\n      int numBlocks \u003d in.readInt();\n      if (numBlocks \u003c 0) {\n        throw new IOException(\"invalid negative number of blocks\");\n      } else if (numBlocks \u003e MAX_BLOCKS) {\n        throw new IOException(\"invalid number of blocks: \" + numBlocks +\n            \".  The maximum number of blocks per file is \" + MAX_BLOCKS);\n      }\n      Block[] blocks \u003d new Block[numBlocks];\n      for (int i \u003d 0; i \u003c numBlocks; i++) {\n        Block blk \u003d new Block();\n        blk.readFields(in);\n        blocks[i] \u003d blk;\n      }\n      return blocks;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+      "extendedDetails": {}
+    },
+    "64641c28b5ea8538033060452b0c45b7f2eeb60c": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3137. Bump LAST_UPGRADABLE_LAYOUT_VERSION to -16. Contributed by Eli Collins\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1307173 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "29/03/12 5:11 PM",
+      "commitName": "64641c28b5ea8538033060452b0c45b7f2eeb60c",
+      "commitAuthor": "Eli Collins",
+      "commitDateOld": "29/02/12 4:37 PM",
+      "commitNameOld": "30cffeb388f9065f0c5ce5fa53e127940a8917b6",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 28.98,
+      "commitsBetweenForRepo": 175,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,12 @@\n     private static Block[] readBlocks(\n         DataInputStream in,\n         int logVersion) throws IOException {\n       int numBlocks \u003d in.readInt();\n       Block[] blocks \u003d new Block[numBlocks];\n       for (int i \u003d 0; i \u003c numBlocks; i++) {\n         Block blk \u003d new Block();\n-        if (logVersion \u003c\u003d -14) {\n-          blk.readFields(in);\n-        } else {\n-          BlockTwo oldblk \u003d new BlockTwo();\n-          oldblk.readFields(in);\n-          blk.set(oldblk.blkid, oldblk.len,\n-                  GenerationStamp.GRANDFATHER_GENERATION_STAMP);\n-        }\n+        blk.readFields(in);\n         blocks[i] \u003d blk;\n       }\n       return blocks;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private static Block[] readBlocks(\n        DataInputStream in,\n        int logVersion) throws IOException {\n      int numBlocks \u003d in.readInt();\n      Block[] blocks \u003d new Block[numBlocks];\n      for (int i \u003d 0; i \u003c numBlocks; i++) {\n        Block blk \u003d new Block();\n        blk.readFields(in);\n        blocks[i] \u003d blk;\n      }\n      return blocks;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+      "extendedDetails": {}
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    private static Block[] readBlocks(\n        DataInputStream in,\n        int logVersion) throws IOException {\n      int numBlocks \u003d in.readInt();\n      Block[] blocks \u003d new Block[numBlocks];\n      for (int i \u003d 0; i \u003c numBlocks; i++) {\n        Block blk \u003d new Block();\n        if (logVersion \u003c\u003d -14) {\n          blk.readFields(in);\n        } else {\n          BlockTwo oldblk \u003d new BlockTwo();\n          oldblk.readFields(in);\n          blk.set(oldblk.blkid, oldblk.len,\n                  GenerationStamp.GRANDFATHER_GENERATION_STAMP);\n        }\n        blocks[i] \u003d blk;\n      }\n      return blocks;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java"
+      }
+    },
+    "d86f3183d93714ba078416af4f609d26376eadb0": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-2096. Mavenization of hadoop-hdfs. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159702 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "19/08/11 10:36 AM",
+      "commitName": "d86f3183d93714ba078416af4f609d26376eadb0",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "19/08/11 10:26 AM",
+      "commitNameOld": "6ee5a73e0e91a2ef27753a32c576835e951d8119",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    private static Block[] readBlocks(\n        DataInputStream in,\n        int logVersion) throws IOException {\n      int numBlocks \u003d in.readInt();\n      Block[] blocks \u003d new Block[numBlocks];\n      for (int i \u003d 0; i \u003c numBlocks; i++) {\n        Block blk \u003d new Block();\n        if (logVersion \u003c\u003d -14) {\n          blk.readFields(in);\n        } else {\n          BlockTwo oldblk \u003d new BlockTwo();\n          oldblk.readFields(in);\n          blk.set(oldblk.blkid, oldblk.len,\n                  GenerationStamp.GRANDFATHER_GENERATION_STAMP);\n        }\n        blocks[i] \u003d blk;\n      }\n      return blocks;\n    }",
+      "path": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+      "extendedDetails": {
+        "oldPath": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java",
+        "newPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java"
+      }
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,19 @@\n+    private static Block[] readBlocks(\n+        DataInputStream in,\n+        int logVersion) throws IOException {\n+      int numBlocks \u003d in.readInt();\n+      Block[] blocks \u003d new Block[numBlocks];\n+      for (int i \u003d 0; i \u003c numBlocks; i++) {\n+        Block blk \u003d new Block();\n+        if (logVersion \u003c\u003d -14) {\n+          blk.readFields(in);\n+        } else {\n+          BlockTwo oldblk \u003d new BlockTwo();\n+          oldblk.readFields(in);\n+          blk.set(oldblk.blkid, oldblk.len,\n+                  GenerationStamp.GRANDFATHER_GENERATION_STAMP);\n+        }\n+        blocks[i] \u003d blk;\n+      }\n+      return blocks;\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private static Block[] readBlocks(\n        DataInputStream in,\n        int logVersion) throws IOException {\n      int numBlocks \u003d in.readInt();\n      Block[] blocks \u003d new Block[numBlocks];\n      for (int i \u003d 0; i \u003c numBlocks; i++) {\n        Block blk \u003d new Block();\n        if (logVersion \u003c\u003d -14) {\n          blk.readFields(in);\n        } else {\n          BlockTwo oldblk \u003d new BlockTwo();\n          oldblk.readFields(in);\n          blk.set(oldblk.blkid, oldblk.len,\n                  GenerationStamp.GRANDFATHER_GENERATION_STAMP);\n        }\n        blocks[i] \u003d blk;\n      }\n      return blocks;\n    }",
+      "path": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/FSEditLogOp.java"
+    }
+  }
+}

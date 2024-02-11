@@ -1,0 +1,54 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RegistryDNSServer.java",
+  "functionName": "manageRegistryDNS",
+  "functionId": "manageRegistryDNS",
+  "sourceFilePath": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNSServer.java",
+  "functionStartLine": 106,
+  "functionEndLine": 166,
+  "numCommitsSeen": 3,
+  "timeTaken": 1031,
+  "changeHistory": [
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae",
+    "f934f62fc71b4776e88f86d4254de0ea12147511"
+  ],
+  "changeHistoryShort": {
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae": "Yfilerename",
+    "f934f62fc71b4776e88f86d4254de0ea12147511": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e2a9fa8448e2aac34c318260e425786a6c8ca2ae": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-15821. Move YARN Registry to Hadoop Registry.\n              Contributed by Íñigo Goiri\n",
+      "commitDate": "19/10/18 4:46 PM",
+      "commitName": "e2a9fa8448e2aac34c318260e425786a6c8ca2ae",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "19/10/18 1:57 PM",
+      "commitNameOld": "00254d7b8c714ae2000d0934d260b23458033529",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.12,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void manageRegistryDNS() {\n\n    try {\n      registryOperations.monitorRegistryEntries();\n      registryOperations.registerPathListener(new PathListener() {\n        private String registryRoot \u003d getConfig().\n            get(RegistryConstants.KEY_REGISTRY_ZK_ROOT,\n                RegistryConstants.DEFAULT_ZK_REGISTRY_ROOT);\n\n        @Override\n        public void nodeAdded(String path) throws IOException {\n          // get a listing of service records\n          String relativePath \u003d getPathRelativeToRegistryRoot(path);\n          String child \u003d RegistryPathUtils.lastPathEntry(path);\n          Map\u003cString, RegistryPathStatus\u003e map \u003d new HashMap\u003c\u003e();\n          map.put(child, registryOperations.stat(relativePath));\n          Map\u003cString, ServiceRecord\u003e records \u003d\n              RegistryUtils.extractServiceRecords(registryOperations,\n                                                  getAdjustedParentPath(path),\n                                                  map);\n          processServiceRecords(records, register);\n          pathToRecordMap.putAll(records);\n        }\n\n        private String getAdjustedParentPath(String path) {\n          Preconditions.checkNotNull(path);\n          String adjustedPath \u003d null;\n          adjustedPath \u003d getPathRelativeToRegistryRoot(path);\n          try {\n            return RegistryPathUtils.parentOf(adjustedPath);\n          } catch (PathNotFoundException e) {\n            // attempt to use passed in path\n            return path;\n          }\n        }\n\n        private String getPathRelativeToRegistryRoot(String path) {\n          String adjustedPath;\n          if (path.equals(registryRoot)) {\n            adjustedPath \u003d \"/\";\n          } else {\n            adjustedPath \u003d path.substring(registryRoot.length());\n          }\n          return adjustedPath;\n        }\n\n        @Override\n        public void nodeRemoved(String path) throws IOException {\n          ServiceRecord record \u003d pathToRecordMap.remove(path.substring(\n              registryRoot.length()));\n          processServiceRecord(path, record, delete);\n        }\n\n      });\n\n      // create listener for record deletions\n\n    } catch (Exception e) {\n      LOG.warn(\"Unable to monitor the registry.  DNS support disabled.\", e);\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNSServer.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNSServer.java",
+        "newPath": "hadoop-common-project/hadoop-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNSServer.java"
+      }
+    },
+    "f934f62fc71b4776e88f86d4254de0ea12147511": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5218. Initial core change for DNS for YARN. Contributed by Jonathan Maron\n",
+      "commitDate": "06/11/17 1:28 PM",
+      "commitName": "f934f62fc71b4776e88f86d4254de0ea12147511",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,61 @@\n+  private void manageRegistryDNS() {\n+\n+    try {\n+      registryOperations.monitorRegistryEntries();\n+      registryOperations.registerPathListener(new PathListener() {\n+        private String registryRoot \u003d getConfig().\n+            get(RegistryConstants.KEY_REGISTRY_ZK_ROOT,\n+                RegistryConstants.DEFAULT_ZK_REGISTRY_ROOT);\n+\n+        @Override\n+        public void nodeAdded(String path) throws IOException {\n+          // get a listing of service records\n+          String relativePath \u003d getPathRelativeToRegistryRoot(path);\n+          String child \u003d RegistryPathUtils.lastPathEntry(path);\n+          Map\u003cString, RegistryPathStatus\u003e map \u003d new HashMap\u003c\u003e();\n+          map.put(child, registryOperations.stat(relativePath));\n+          Map\u003cString, ServiceRecord\u003e records \u003d\n+              RegistryUtils.extractServiceRecords(registryOperations,\n+                                                  getAdjustedParentPath(path),\n+                                                  map);\n+          processServiceRecords(records, register);\n+          pathToRecordMap.putAll(records);\n+        }\n+\n+        private String getAdjustedParentPath(String path) {\n+          Preconditions.checkNotNull(path);\n+          String adjustedPath \u003d null;\n+          adjustedPath \u003d getPathRelativeToRegistryRoot(path);\n+          try {\n+            return RegistryPathUtils.parentOf(adjustedPath);\n+          } catch (PathNotFoundException e) {\n+            // attempt to use passed in path\n+            return path;\n+          }\n+        }\n+\n+        private String getPathRelativeToRegistryRoot(String path) {\n+          String adjustedPath;\n+          if (path.equals(registryRoot)) {\n+            adjustedPath \u003d \"/\";\n+          } else {\n+            adjustedPath \u003d path.substring(registryRoot.length());\n+          }\n+          return adjustedPath;\n+        }\n+\n+        @Override\n+        public void nodeRemoved(String path) throws IOException {\n+          ServiceRecord record \u003d pathToRecordMap.remove(path.substring(\n+              registryRoot.length()));\n+          processServiceRecord(path, record, delete);\n+        }\n+\n+      });\n+\n+      // create listener for record deletions\n+\n+    } catch (Exception e) {\n+      LOG.warn(\"Unable to monitor the registry.  DNS support disabled.\", e);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void manageRegistryDNS() {\n\n    try {\n      registryOperations.monitorRegistryEntries();\n      registryOperations.registerPathListener(new PathListener() {\n        private String registryRoot \u003d getConfig().\n            get(RegistryConstants.KEY_REGISTRY_ZK_ROOT,\n                RegistryConstants.DEFAULT_ZK_REGISTRY_ROOT);\n\n        @Override\n        public void nodeAdded(String path) throws IOException {\n          // get a listing of service records\n          String relativePath \u003d getPathRelativeToRegistryRoot(path);\n          String child \u003d RegistryPathUtils.lastPathEntry(path);\n          Map\u003cString, RegistryPathStatus\u003e map \u003d new HashMap\u003c\u003e();\n          map.put(child, registryOperations.stat(relativePath));\n          Map\u003cString, ServiceRecord\u003e records \u003d\n              RegistryUtils.extractServiceRecords(registryOperations,\n                                                  getAdjustedParentPath(path),\n                                                  map);\n          processServiceRecords(records, register);\n          pathToRecordMap.putAll(records);\n        }\n\n        private String getAdjustedParentPath(String path) {\n          Preconditions.checkNotNull(path);\n          String adjustedPath \u003d null;\n          adjustedPath \u003d getPathRelativeToRegistryRoot(path);\n          try {\n            return RegistryPathUtils.parentOf(adjustedPath);\n          } catch (PathNotFoundException e) {\n            // attempt to use passed in path\n            return path;\n          }\n        }\n\n        private String getPathRelativeToRegistryRoot(String path) {\n          String adjustedPath;\n          if (path.equals(registryRoot)) {\n            adjustedPath \u003d \"/\";\n          } else {\n            adjustedPath \u003d path.substring(registryRoot.length());\n          }\n          return adjustedPath;\n        }\n\n        @Override\n        public void nodeRemoved(String path) throws IOException {\n          ServiceRecord record \u003d pathToRecordMap.remove(path.substring(\n              registryRoot.length()));\n          processServiceRecord(path, record, delete);\n        }\n\n      });\n\n      // create listener for record deletions\n\n    } catch (Exception e) {\n      LOG.warn(\"Unable to monitor the registry.  DNS support disabled.\", e);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-registry/src/main/java/org/apache/hadoop/registry/server/dns/RegistryDNSServer.java"
+    }
+  }
+}

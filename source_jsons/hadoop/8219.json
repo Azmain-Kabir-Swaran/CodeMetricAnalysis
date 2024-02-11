@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "XAttrFormat.java",
+  "functionName": "toBytes",
+  "functionId": "toBytes___xAttrs-List__XAttr__",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/XAttrFormat.java",
+  "functionStartLine": 171,
+  "functionEndLine": 194,
+  "numCommitsSeen": 4,
+  "timeTaken": 2304,
+  "changeHistory": [
+    "b60ca37914b22550e3630fa02742d40697decb31",
+    "0a1e922f3d8eca4e852be57124ec1bcafaadb289",
+    "eee0d4563c62647cfaaed6605ee713aaf69add78"
+  ],
+  "changeHistoryShort": {
+    "b60ca37914b22550e3630fa02742d40697decb31": "Ybodychange",
+    "0a1e922f3d8eca4e852be57124ec1bcafaadb289": "Ybodychange",
+    "eee0d4563c62647cfaaed6605ee713aaf69add78": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "b60ca37914b22550e3630fa02742d40697decb31": {
+      "type": "Ybodychange",
+      "commitMessage": "Fix potential FSImage corruption. Contributed by Daryn Sharp.\n",
+      "commitDate": "15/10/18 3:18 AM",
+      "commitName": "b60ca37914b22550e3630fa02742d40697decb31",
+      "commitAuthor": "Vinayakumar B",
+      "commitDateOld": "16/07/18 6:24 PM",
+      "commitNameOld": "0a1e922f3d8eca4e852be57124ec1bcafaadb289",
+      "commitAuthorOld": "Konstantin V Shvachko",
+      "daysBetweenCommits": 90.37,
+      "commitsBetweenForRepo": 802,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,24 @@\n   static byte[] toBytes(List\u003cXAttr\u003e xAttrs) {\n     if (xAttrs \u003d\u003d null || xAttrs.isEmpty()) {\n       return null;\n     }\n     ByteArrayOutputStream out \u003d new ByteArrayOutputStream();\n     try {\n       for (XAttr a : xAttrs) {\n-        int v \u003d XAttrStatusFormat.toInt(a.getNameSpace(), a.getName());\n+        // big-endian\n+        int v \u003d XAttrFormat.toInt(a);\n         out.write(Ints.toByteArray(v));\n         int vlen \u003d a.getValue() \u003d\u003d null ? 0 : a.getValue().length;\n         Preconditions.checkArgument(vlen \u003c XATTR_VALUE_LEN_MAX,\n             \"The length of xAttr values is too long.\");\n         out.write((byte)(vlen \u003e\u003e 8));\n         out.write((byte)(vlen));\n         if (vlen \u003e 0) {\n           out.write(a.getValue());\n         }\n       }\n     } catch (IOException e) {\n       // in fact, no exception\n     }\n     return out.toByteArray();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static byte[] toBytes(List\u003cXAttr\u003e xAttrs) {\n    if (xAttrs \u003d\u003d null || xAttrs.isEmpty()) {\n      return null;\n    }\n    ByteArrayOutputStream out \u003d new ByteArrayOutputStream();\n    try {\n      for (XAttr a : xAttrs) {\n        // big-endian\n        int v \u003d XAttrFormat.toInt(a);\n        out.write(Ints.toByteArray(v));\n        int vlen \u003d a.getValue() \u003d\u003d null ? 0 : a.getValue().length;\n        Preconditions.checkArgument(vlen \u003c XATTR_VALUE_LEN_MAX,\n            \"The length of xAttr values is too long.\");\n        out.write((byte)(vlen \u003e\u003e 8));\n        out.write((byte)(vlen));\n        if (vlen \u003e 0) {\n          out.write(a.getValue());\n        }\n      }\n    } catch (IOException e) {\n      // in fact, no exception\n    }\n    return out.toByteArray();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/XAttrFormat.java",
+      "extendedDetails": {}
+    },
+    "0a1e922f3d8eca4e852be57124ec1bcafaadb289": {
+      "type": "Ybodychange",
+      "commitMessage": "Fix potential FSImage corruption. Contributed by Ekanth Sethuramalingam \u0026 Arpit Agarwal.",
+      "commitDate": "16/07/18 6:24 PM",
+      "commitName": "0a1e922f3d8eca4e852be57124ec1bcafaadb289",
+      "commitAuthor": "Konstantin V Shvachko",
+      "commitDateOld": "27/08/15 7:54 PM",
+      "commitNameOld": "e166c038c0aaa57b245f985a1c0fadd5fe33c384",
+      "commitAuthorOld": "yliu",
+      "daysBetweenCommits": 1053.94,
+      "commitsBetweenForRepo": 7738,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,23 @@\n   static byte[] toBytes(List\u003cXAttr\u003e xAttrs) {\n     if (xAttrs \u003d\u003d null || xAttrs.isEmpty()) {\n       return null;\n     }\n     ByteArrayOutputStream out \u003d new ByteArrayOutputStream();\n     try {\n       for (XAttr a : xAttrs) {\n-        int nsOrd \u003d a.getNameSpace().ordinal();\n-        Preconditions.checkArgument(nsOrd \u003c 8, \"Too many namespaces.\");\n-        int nid \u003d XAttrStorage.getNameSerialNumber(a.getName());\n-        Preconditions.checkArgument(nid \u003c XATTR_NAME_ID_MAX,\n-            \"Too large serial number of the xattr name\");\n-\n-        // big-endian\n-        int v \u003d ((nsOrd \u0026 XATTR_NAMESPACE_MASK) \u003c\u003c XATTR_NAMESPACE_OFFSET)\n-            | (nid \u0026 XATTR_NAME_MASK);\n+        int v \u003d XAttrStatusFormat.toInt(a.getNameSpace(), a.getName());\n         out.write(Ints.toByteArray(v));\n         int vlen \u003d a.getValue() \u003d\u003d null ? 0 : a.getValue().length;\n         Preconditions.checkArgument(vlen \u003c XATTR_VALUE_LEN_MAX,\n             \"The length of xAttr values is too long.\");\n         out.write((byte)(vlen \u003e\u003e 8));\n         out.write((byte)(vlen));\n         if (vlen \u003e 0) {\n           out.write(a.getValue());\n         }\n       }\n     } catch (IOException e) {\n       // in fact, no exception\n     }\n     return out.toByteArray();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static byte[] toBytes(List\u003cXAttr\u003e xAttrs) {\n    if (xAttrs \u003d\u003d null || xAttrs.isEmpty()) {\n      return null;\n    }\n    ByteArrayOutputStream out \u003d new ByteArrayOutputStream();\n    try {\n      for (XAttr a : xAttrs) {\n        int v \u003d XAttrStatusFormat.toInt(a.getNameSpace(), a.getName());\n        out.write(Ints.toByteArray(v));\n        int vlen \u003d a.getValue() \u003d\u003d null ? 0 : a.getValue().length;\n        Preconditions.checkArgument(vlen \u003c XATTR_VALUE_LEN_MAX,\n            \"The length of xAttr values is too long.\");\n        out.write((byte)(vlen \u003e\u003e 8));\n        out.write((byte)(vlen));\n        if (vlen \u003e 0) {\n          out.write(a.getValue());\n        }\n      }\n    } catch (IOException e) {\n      // in fact, no exception\n    }\n    return out.toByteArray();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/XAttrFormat.java",
+      "extendedDetails": {}
+    },
+    "eee0d4563c62647cfaaed6605ee713aaf69add78": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-8900. Compact XAttrs to optimize memory footprint. (yliu)\n",
+      "commitDate": "25/08/15 1:16 AM",
+      "commitName": "eee0d4563c62647cfaaed6605ee713aaf69add78",
+      "commitAuthor": "yliu",
+      "diff": "@@ -0,0 +1,31 @@\n+  static byte[] toBytes(List\u003cXAttr\u003e xAttrs) {\n+    if (xAttrs \u003d\u003d null || xAttrs.isEmpty()) {\n+      return null;\n+    }\n+    ByteArrayOutputStream out \u003d new ByteArrayOutputStream();\n+    try {\n+      for (XAttr a : xAttrs) {\n+        int nsOrd \u003d a.getNameSpace().ordinal();\n+        Preconditions.checkArgument(nsOrd \u003c 8, \"Too many namespaces.\");\n+        int nid \u003d XAttrStorage.getNameSerialNumber(a.getName());\n+        Preconditions.checkArgument(nid \u003c XATTR_NAME_ID_MAX,\n+            \"Too large serial number of the xattr name\");\n+\n+        // big-endian\n+        int v \u003d ((nsOrd \u0026 XATTR_NAMESPACE_MASK) \u003c\u003c XATTR_NAMESPACE_OFFSET)\n+            | (nid \u0026 XATTR_NAME_MASK);\n+        out.write(Ints.toByteArray(v));\n+        int vlen \u003d a.getValue() \u003d\u003d null ? 0 : a.getValue().length;\n+        Preconditions.checkArgument(vlen \u003c XATTR_VALUE_LEN_MAX,\n+            \"The length of xAttr values is too long.\");\n+        out.write((byte)(vlen \u003e\u003e 8));\n+        out.write((byte)(vlen));\n+        if (vlen \u003e 0) {\n+          out.write(a.getValue());\n+        }\n+      }\n+    } catch (IOException e) {\n+      // in fact, no exception\n+    }\n+    return out.toByteArray();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static byte[] toBytes(List\u003cXAttr\u003e xAttrs) {\n    if (xAttrs \u003d\u003d null || xAttrs.isEmpty()) {\n      return null;\n    }\n    ByteArrayOutputStream out \u003d new ByteArrayOutputStream();\n    try {\n      for (XAttr a : xAttrs) {\n        int nsOrd \u003d a.getNameSpace().ordinal();\n        Preconditions.checkArgument(nsOrd \u003c 8, \"Too many namespaces.\");\n        int nid \u003d XAttrStorage.getNameSerialNumber(a.getName());\n        Preconditions.checkArgument(nid \u003c XATTR_NAME_ID_MAX,\n            \"Too large serial number of the xattr name\");\n\n        // big-endian\n        int v \u003d ((nsOrd \u0026 XATTR_NAMESPACE_MASK) \u003c\u003c XATTR_NAMESPACE_OFFSET)\n            | (nid \u0026 XATTR_NAME_MASK);\n        out.write(Ints.toByteArray(v));\n        int vlen \u003d a.getValue() \u003d\u003d null ? 0 : a.getValue().length;\n        Preconditions.checkArgument(vlen \u003c XATTR_VALUE_LEN_MAX,\n            \"The length of xAttr values is too long.\");\n        out.write((byte)(vlen \u003e\u003e 8));\n        out.write((byte)(vlen));\n        if (vlen \u003e 0) {\n          out.write(a.getValue());\n        }\n      }\n    } catch (IOException e) {\n      // in fact, no exception\n    }\n    return out.toByteArray();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/XAttrFormat.java"
+    }
+  }
+}

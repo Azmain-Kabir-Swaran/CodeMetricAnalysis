@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AsyncCallHandler.java",
+  "functionName": "invoke",
+  "functionId": "invoke",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/retry/AsyncCallHandler.java",
+  "functionStartLine": 274,
+  "functionEndLine": 310,
+  "numCommitsSeen": 4,
+  "timeTaken": 1270,
+  "changeHistory": [
+    "d328e667067743f723e332d92154da8e84e65742",
+    "35f255b03b1bb5c94063ec1818af1d253ceee991"
+  ],
+  "changeHistoryShort": {
+    "d328e667067743f723e332d92154da8e84e65742": "Ybodychange",
+    "35f255b03b1bb5c94063ec1818af1d253ceee991": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d328e667067743f723e332d92154da8e84e65742": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13227. AsyncCallHandler should use an event driven architecture to handle async calls.\n",
+      "commitDate": "25/06/16 12:45 AM",
+      "commitName": "d328e667067743f723e332d92154da8e84e65742",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "commitDateOld": "06/06/16 1:31 AM",
+      "commitNameOld": "35f255b03b1bb5c94063ec1818af1d253ceee991",
+      "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+      "daysBetweenCommits": 18.97,
+      "commitsBetweenForRepo": 164,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,36 +1,37 @@\n     CallReturn invoke() throws Throwable {\n       LOG.debug(\"{}.invoke {}\", getClass().getSimpleName(), this);\n       if (lowerLayerAsyncGet !\u003d null) {\n         // async call was submitted early, check the lower level async call\n         final boolean isDone \u003d lowerLayerAsyncGet.isDone();\n-        LOG.trace(\"invoke: lowerLayerAsyncGet.isDone()? {}\", isDone);\n+        LOG.trace(\"#{} invoke: lowerLayerAsyncGet.isDone()? {}\",\n+            getCallId(), isDone);\n         if (!isDone) {\n           return CallReturn.ASYNC_CALL_IN_PROGRESS;\n         }\n         try {\n           return new CallReturn(lowerLayerAsyncGet.get(0, TimeUnit.SECONDS));\n         } finally {\n           lowerLayerAsyncGet \u003d null;\n         }\n       }\n \n       // submit a new async call\n-      LOG.trace(\"invoke: ASYNC_INVOKED\");\n+      LOG.trace(\"#{} invoke: ASYNC_INVOKED\", getCallId());\n       final boolean mode \u003d Client.isAsynchronousMode();\n       try {\n         Client.setAsynchronousMode(true);\n         final Object r \u003d invokeMethod();\n         // invokeMethod should set LOWER_LAYER_ASYNC_RETURN and return null.\n         Preconditions.checkState(r \u003d\u003d null);\n         lowerLayerAsyncGet \u003d getLowerLayerAsyncReturn();\n \n-        if (counters.isZeros()) {\n+        if (getCounters().isZeros()) {\n           // first async attempt, initialize\n-          LOG.trace(\"invoke: initAsyncCall\");\n+          LOG.trace(\"#{} invoke: initAsyncCall\", getCallId());\n           asyncCallHandler.initAsyncCall(this, asyncCallReturn);\n         }\n         return CallReturn.ASYNC_INVOKED;\n       } finally {\n         Client.setAsynchronousMode(mode);\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    CallReturn invoke() throws Throwable {\n      LOG.debug(\"{}.invoke {}\", getClass().getSimpleName(), this);\n      if (lowerLayerAsyncGet !\u003d null) {\n        // async call was submitted early, check the lower level async call\n        final boolean isDone \u003d lowerLayerAsyncGet.isDone();\n        LOG.trace(\"#{} invoke: lowerLayerAsyncGet.isDone()? {}\",\n            getCallId(), isDone);\n        if (!isDone) {\n          return CallReturn.ASYNC_CALL_IN_PROGRESS;\n        }\n        try {\n          return new CallReturn(lowerLayerAsyncGet.get(0, TimeUnit.SECONDS));\n        } finally {\n          lowerLayerAsyncGet \u003d null;\n        }\n      }\n\n      // submit a new async call\n      LOG.trace(\"#{} invoke: ASYNC_INVOKED\", getCallId());\n      final boolean mode \u003d Client.isAsynchronousMode();\n      try {\n        Client.setAsynchronousMode(true);\n        final Object r \u003d invokeMethod();\n        // invokeMethod should set LOWER_LAYER_ASYNC_RETURN and return null.\n        Preconditions.checkState(r \u003d\u003d null);\n        lowerLayerAsyncGet \u003d getLowerLayerAsyncReturn();\n\n        if (getCounters().isZeros()) {\n          // first async attempt, initialize\n          LOG.trace(\"#{} invoke: initAsyncCall\", getCallId());\n          asyncCallHandler.initAsyncCall(this, asyncCallReturn);\n        }\n        return CallReturn.ASYNC_INVOKED;\n      } finally {\n        Client.setAsynchronousMode(mode);\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/retry/AsyncCallHandler.java",
+      "extendedDetails": {}
+    },
+    "35f255b03b1bb5c94063ec1818af1d253ceee991": {
+      "type": "Yintroduced",
+      "commitMessage": "Revert \"Revert \"HADOOP-13226 Support async call retry and failover.\"\"\n\nThis reverts commit 5360da8bd9f720384860f411bee081aef13b4bd4.\n",
+      "commitDate": "06/06/16 1:31 AM",
+      "commitName": "35f255b03b1bb5c94063ec1818af1d253ceee991",
+      "commitAuthor": "Tsz-Wo Nicholas Sze",
+      "diff": "@@ -0,0 +1,36 @@\n+    CallReturn invoke() throws Throwable {\n+      LOG.debug(\"{}.invoke {}\", getClass().getSimpleName(), this);\n+      if (lowerLayerAsyncGet !\u003d null) {\n+        // async call was submitted early, check the lower level async call\n+        final boolean isDone \u003d lowerLayerAsyncGet.isDone();\n+        LOG.trace(\"invoke: lowerLayerAsyncGet.isDone()? {}\", isDone);\n+        if (!isDone) {\n+          return CallReturn.ASYNC_CALL_IN_PROGRESS;\n+        }\n+        try {\n+          return new CallReturn(lowerLayerAsyncGet.get(0, TimeUnit.SECONDS));\n+        } finally {\n+          lowerLayerAsyncGet \u003d null;\n+        }\n+      }\n+\n+      // submit a new async call\n+      LOG.trace(\"invoke: ASYNC_INVOKED\");\n+      final boolean mode \u003d Client.isAsynchronousMode();\n+      try {\n+        Client.setAsynchronousMode(true);\n+        final Object r \u003d invokeMethod();\n+        // invokeMethod should set LOWER_LAYER_ASYNC_RETURN and return null.\n+        Preconditions.checkState(r \u003d\u003d null);\n+        lowerLayerAsyncGet \u003d getLowerLayerAsyncReturn();\n+\n+        if (counters.isZeros()) {\n+          // first async attempt, initialize\n+          LOG.trace(\"invoke: initAsyncCall\");\n+          asyncCallHandler.initAsyncCall(this, asyncCallReturn);\n+        }\n+        return CallReturn.ASYNC_INVOKED;\n+      } finally {\n+        Client.setAsynchronousMode(mode);\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    CallReturn invoke() throws Throwable {\n      LOG.debug(\"{}.invoke {}\", getClass().getSimpleName(), this);\n      if (lowerLayerAsyncGet !\u003d null) {\n        // async call was submitted early, check the lower level async call\n        final boolean isDone \u003d lowerLayerAsyncGet.isDone();\n        LOG.trace(\"invoke: lowerLayerAsyncGet.isDone()? {}\", isDone);\n        if (!isDone) {\n          return CallReturn.ASYNC_CALL_IN_PROGRESS;\n        }\n        try {\n          return new CallReturn(lowerLayerAsyncGet.get(0, TimeUnit.SECONDS));\n        } finally {\n          lowerLayerAsyncGet \u003d null;\n        }\n      }\n\n      // submit a new async call\n      LOG.trace(\"invoke: ASYNC_INVOKED\");\n      final boolean mode \u003d Client.isAsynchronousMode();\n      try {\n        Client.setAsynchronousMode(true);\n        final Object r \u003d invokeMethod();\n        // invokeMethod should set LOWER_LAYER_ASYNC_RETURN and return null.\n        Preconditions.checkState(r \u003d\u003d null);\n        lowerLayerAsyncGet \u003d getLowerLayerAsyncReturn();\n\n        if (counters.isZeros()) {\n          // first async attempt, initialize\n          LOG.trace(\"invoke: initAsyncCall\");\n          asyncCallHandler.initAsyncCall(this, asyncCallReturn);\n        }\n        return CallReturn.ASYNC_INVOKED;\n      } finally {\n        Client.setAsynchronousMode(mode);\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/io/retry/AsyncCallHandler.java"
+    }
+  }
+}

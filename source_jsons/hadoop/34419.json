@@ -1,0 +1,133 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ResourceLocalizationService.java",
+  "functionName": "handle",
+  "functionId": "handle___event-LocalizerEvent",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java",
+  "functionStartLine": 775,
+  "functionEndLine": 821,
+  "numCommitsSeen": 107,
+  "timeTaken": 9276,
+  "changeHistory": [
+    "6ff0453edeeb0ed7bc9a7d3fb6dfa7048104238b",
+    "e6fcfe28e304062c7d09231db757acb2953703ce",
+    "16cf201042ed51b2a4acc22ce608a8cae7e79a75",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517"
+  ],
+  "changeHistoryShort": {
+    "6ff0453edeeb0ed7bc9a7d3fb6dfa7048104238b": "Ybodychange",
+    "e6fcfe28e304062c7d09231db757acb2953703ce": "Ybodychange",
+    "16cf201042ed51b2a4acc22ce608a8cae7e79a75": "Ybodychange",
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": "Yfilerename",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6ff0453edeeb0ed7bc9a7d3fb6dfa7048104238b": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-9527.  Prevent rogue Localizer Runner from downloading same file repeatly.\n            Contributed by Jim Brennan\n",
+      "commitDate": "09/08/19 11:12 AM",
+      "commitName": "6ff0453edeeb0ed7bc9a7d3fb6dfa7048104238b",
+      "commitAuthor": "Eric Yang",
+      "commitDateOld": "15/03/19 4:20 PM",
+      "commitNameOld": "2064ca015d1584263aac0cc20c60b925a3aff612",
+      "commitAuthorOld": "Eric Yang",
+      "daysBetweenCommits": 146.79,
+      "commitsBetweenForRepo": 1054,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,37 +1,47 @@\n     public void handle(LocalizerEvent event) {\n       String locId \u003d event.getLocalizerId();\n       switch (event.getType()) {\n       case REQUEST_RESOURCE_LOCALIZATION:\n         // 0) find running localizer or start new thread\n         LocalizerResourceRequestEvent req \u003d\n           (LocalizerResourceRequestEvent)event;\n         switch (req.getVisibility()) {\n         case PUBLIC:\n           publicLocalizer.addResource(req);\n           break;\n         case PRIVATE:\n         case APPLICATION:\n           synchronized (privLocalizers) {\n             LocalizerRunner localizer \u003d privLocalizers.get(locId);\n             if (localizer !\u003d null \u0026\u0026 localizer.killContainerLocalizer.get()) {\n-              // Old localizer thread has been stopped, remove it and creates\n+              // Old localizer thread has been stopped, remove it and create\n               // a new localizer thread.\n               LOG.info(\"New \" + event.getType() + \" localize request for \"\n                   + locId + \", remove old private localizer.\");\n-              cleanupPrivLocalizers(locId);\n+              privLocalizers.remove(locId);\n+              localizer.interrupt();\n               localizer \u003d null;\n             }\n             if (null \u003d\u003d localizer) {\n+              // Don\u0027t create a new localizer if this one has been recently\n+              // cleaned up - this can happen if localization requests come\n+              // in after cleanupPrivLocalizers has been called.\n+              if (recentlyCleanedLocalizers.containsKey(locId)) {\n+                LOG.info(\n+                    \"Skipping localization request for recently cleaned \" +\n+                    \"localizer \" + locId + \" resource:\" + req.getResource());\n+                break;\n+              }\n               LOG.info(\"Created localizer for \" + locId);\n               localizer \u003d new LocalizerRunner(req.getContext(), locId);\n               privLocalizers.put(locId, localizer);\n               localizer.start();\n             }\n             // 1) propagate event\n             localizer.addResource(req);\n           }\n           break;\n         }\n         break;\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void handle(LocalizerEvent event) {\n      String locId \u003d event.getLocalizerId();\n      switch (event.getType()) {\n      case REQUEST_RESOURCE_LOCALIZATION:\n        // 0) find running localizer or start new thread\n        LocalizerResourceRequestEvent req \u003d\n          (LocalizerResourceRequestEvent)event;\n        switch (req.getVisibility()) {\n        case PUBLIC:\n          publicLocalizer.addResource(req);\n          break;\n        case PRIVATE:\n        case APPLICATION:\n          synchronized (privLocalizers) {\n            LocalizerRunner localizer \u003d privLocalizers.get(locId);\n            if (localizer !\u003d null \u0026\u0026 localizer.killContainerLocalizer.get()) {\n              // Old localizer thread has been stopped, remove it and create\n              // a new localizer thread.\n              LOG.info(\"New \" + event.getType() + \" localize request for \"\n                  + locId + \", remove old private localizer.\");\n              privLocalizers.remove(locId);\n              localizer.interrupt();\n              localizer \u003d null;\n            }\n            if (null \u003d\u003d localizer) {\n              // Don\u0027t create a new localizer if this one has been recently\n              // cleaned up - this can happen if localization requests come\n              // in after cleanupPrivLocalizers has been called.\n              if (recentlyCleanedLocalizers.containsKey(locId)) {\n                LOG.info(\n                    \"Skipping localization request for recently cleaned \" +\n                    \"localizer \" + locId + \" resource:\" + req.getResource());\n                break;\n              }\n              LOG.info(\"Created localizer for \" + locId);\n              localizer \u003d new LocalizerRunner(req.getContext(), locId);\n              privLocalizers.put(locId, localizer);\n              localizer.start();\n            }\n            // 1) propagate event\n            localizer.addResource(req);\n          }\n          break;\n        }\n        break;\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java",
+      "extendedDetails": {}
+    },
+    "e6fcfe28e304062c7d09231db757acb2953703ce": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-5576. Allow resource localization while container is running. Contributed by Jian He.\n",
+      "commitDate": "06/09/16 7:31 AM",
+      "commitName": "e6fcfe28e304062c7d09231db757acb2953703ce",
+      "commitAuthor": "Varun Vasudev",
+      "commitDateOld": "10/08/16 7:23 PM",
+      "commitNameOld": "aea3e65749333b97d8c45280077f03d4ebddb5a8",
+      "commitAuthorOld": "Ray Chiang",
+      "daysBetweenCommits": 26.51,
+      "commitsBetweenForRepo": 154,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,37 @@\n     public void handle(LocalizerEvent event) {\n       String locId \u003d event.getLocalizerId();\n       switch (event.getType()) {\n       case REQUEST_RESOURCE_LOCALIZATION:\n         // 0) find running localizer or start new thread\n         LocalizerResourceRequestEvent req \u003d\n           (LocalizerResourceRequestEvent)event;\n         switch (req.getVisibility()) {\n         case PUBLIC:\n           publicLocalizer.addResource(req);\n           break;\n         case PRIVATE:\n         case APPLICATION:\n           synchronized (privLocalizers) {\n             LocalizerRunner localizer \u003d privLocalizers.get(locId);\n+            if (localizer !\u003d null \u0026\u0026 localizer.killContainerLocalizer.get()) {\n+              // Old localizer thread has been stopped, remove it and creates\n+              // a new localizer thread.\n+              LOG.info(\"New \" + event.getType() + \" localize request for \"\n+                  + locId + \", remove old private localizer.\");\n+              cleanupPrivLocalizers(locId);\n+              localizer \u003d null;\n+            }\n             if (null \u003d\u003d localizer) {\n               LOG.info(\"Created localizer for \" + locId);\n               localizer \u003d new LocalizerRunner(req.getContext(), locId);\n               privLocalizers.put(locId, localizer);\n               localizer.start();\n             }\n             // 1) propagate event\n             localizer.addResource(req);\n           }\n           break;\n         }\n         break;\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void handle(LocalizerEvent event) {\n      String locId \u003d event.getLocalizerId();\n      switch (event.getType()) {\n      case REQUEST_RESOURCE_LOCALIZATION:\n        // 0) find running localizer or start new thread\n        LocalizerResourceRequestEvent req \u003d\n          (LocalizerResourceRequestEvent)event;\n        switch (req.getVisibility()) {\n        case PUBLIC:\n          publicLocalizer.addResource(req);\n          break;\n        case PRIVATE:\n        case APPLICATION:\n          synchronized (privLocalizers) {\n            LocalizerRunner localizer \u003d privLocalizers.get(locId);\n            if (localizer !\u003d null \u0026\u0026 localizer.killContainerLocalizer.get()) {\n              // Old localizer thread has been stopped, remove it and creates\n              // a new localizer thread.\n              LOG.info(\"New \" + event.getType() + \" localize request for \"\n                  + locId + \", remove old private localizer.\");\n              cleanupPrivLocalizers(locId);\n              localizer \u003d null;\n            }\n            if (null \u003d\u003d localizer) {\n              LOG.info(\"Created localizer for \" + locId);\n              localizer \u003d new LocalizerRunner(req.getContext(), locId);\n              privLocalizers.put(locId, localizer);\n              localizer.start();\n            }\n            // 1) propagate event\n            localizer.addResource(req);\n          }\n          break;\n        }\n        break;\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java",
+      "extendedDetails": {}
+    },
+    "16cf201042ed51b2a4acc22ce608a8cae7e79a75": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-293. Node Manager leaks LocalizerRunner object for every Container. Contributed by Robert Joseph Evans\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1428095 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "02/01/13 2:41 PM",
+      "commitName": "16cf201042ed51b2a4acc22ce608a8cae7e79a75",
+      "commitAuthor": "Jason Darrell Lowe",
+      "commitDateOld": "26/09/12 8:22 AM",
+      "commitNameOld": "050fd3a11744cde3d54c1fff23d8fdeb3803bf92",
+      "commitAuthorOld": "Thomas Graves",
+      "daysBetweenCommits": 98.3,
+      "commitsBetweenForRepo": 452,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,41 +1,29 @@\n     public void handle(LocalizerEvent event) {\n       String locId \u003d event.getLocalizerId();\n       switch (event.getType()) {\n       case REQUEST_RESOURCE_LOCALIZATION:\n         // 0) find running localizer or start new thread\n         LocalizerResourceRequestEvent req \u003d\n           (LocalizerResourceRequestEvent)event;\n         switch (req.getVisibility()) {\n         case PUBLIC:\n           publicLocalizer.addResource(req);\n           break;\n         case PRIVATE:\n         case APPLICATION:\n           synchronized (privLocalizers) {\n             LocalizerRunner localizer \u003d privLocalizers.get(locId);\n             if (null \u003d\u003d localizer) {\n-              LOG.info(\"Created localizer for \" + req.getLocalizerId());\n-              localizer \u003d new LocalizerRunner(req.getContext(),\n-                  req.getLocalizerId());\n+              LOG.info(\"Created localizer for \" + locId);\n+              localizer \u003d new LocalizerRunner(req.getContext(), locId);\n               privLocalizers.put(locId, localizer);\n               localizer.start();\n             }\n             // 1) propagate event\n             localizer.addResource(req);\n           }\n           break;\n         }\n         break;\n-      case ABORT_LOCALIZATION:\n-        // 0) find running localizer, interrupt and remove\n-        synchronized (privLocalizers) {\n-          LocalizerRunner localizer \u003d privLocalizers.get(locId);\n-          if (null \u003d\u003d localizer) {\n-            return; // ignore; already gone\n-          }\n-          privLocalizers.remove(locId);\n-          localizer.interrupt();\n-        }\n-        break;\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void handle(LocalizerEvent event) {\n      String locId \u003d event.getLocalizerId();\n      switch (event.getType()) {\n      case REQUEST_RESOURCE_LOCALIZATION:\n        // 0) find running localizer or start new thread\n        LocalizerResourceRequestEvent req \u003d\n          (LocalizerResourceRequestEvent)event;\n        switch (req.getVisibility()) {\n        case PUBLIC:\n          publicLocalizer.addResource(req);\n          break;\n        case PRIVATE:\n        case APPLICATION:\n          synchronized (privLocalizers) {\n            LocalizerRunner localizer \u003d privLocalizers.get(locId);\n            if (null \u003d\u003d localizer) {\n              LOG.info(\"Created localizer for \" + locId);\n              localizer \u003d new LocalizerRunner(req.getContext(), locId);\n              privLocalizers.put(locId, localizer);\n              localizer.start();\n            }\n            // 1) propagate event\n            localizer.addResource(req);\n          }\n          break;\n        }\n        break;\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java",
+      "extendedDetails": {}
+    },
+    "e1fdf62123625e4ba399af02f8aad500637d29d1": {
+      "type": "Yfilerename",
+      "commitMessage": "YARN-1. Promote YARN to be a sub-project of Apache Hadoop.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1370666 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/08/12 10:22 PM",
+      "commitName": "e1fdf62123625e4ba399af02f8aad500637d29d1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "07/08/12 7:53 PM",
+      "commitNameOld": "34554d1e11ee1d5b564d7d9ed3e6d55931d72749",
+      "commitAuthorOld": "Aaron Myers",
+      "daysBetweenCommits": 0.1,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    public void handle(LocalizerEvent event) {\n      String locId \u003d event.getLocalizerId();\n      switch (event.getType()) {\n      case REQUEST_RESOURCE_LOCALIZATION:\n        // 0) find running localizer or start new thread\n        LocalizerResourceRequestEvent req \u003d\n          (LocalizerResourceRequestEvent)event;\n        switch (req.getVisibility()) {\n        case PUBLIC:\n          publicLocalizer.addResource(req);\n          break;\n        case PRIVATE:\n        case APPLICATION:\n          synchronized (privLocalizers) {\n            LocalizerRunner localizer \u003d privLocalizers.get(locId);\n            if (null \u003d\u003d localizer) {\n              LOG.info(\"Created localizer for \" + req.getLocalizerId());\n              localizer \u003d new LocalizerRunner(req.getContext(),\n                  req.getLocalizerId());\n              privLocalizers.put(locId, localizer);\n              localizer.start();\n            }\n            // 1) propagate event\n            localizer.addResource(req);\n          }\n          break;\n        }\n        break;\n      case ABORT_LOCALIZATION:\n        // 0) find running localizer, interrupt and remove\n        synchronized (privLocalizers) {\n          LocalizerRunner localizer \u003d privLocalizers.get(locId);\n          if (null \u003d\u003d localizer) {\n            return; // ignore; already gone\n          }\n          privLocalizers.remove(locId);\n          localizer.interrupt();\n        }\n        break;\n      }\n    }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java",
+        "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java"
+      }
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "    public void handle(LocalizerEvent event) {\n      String locId \u003d event.getLocalizerId();\n      switch (event.getType()) {\n      case REQUEST_RESOURCE_LOCALIZATION:\n        // 0) find running localizer or start new thread\n        LocalizerResourceRequestEvent req \u003d\n          (LocalizerResourceRequestEvent)event;\n        switch (req.getVisibility()) {\n        case PUBLIC:\n          publicLocalizer.addResource(req);\n          break;\n        case PRIVATE:\n        case APPLICATION:\n          synchronized (privLocalizers) {\n            LocalizerRunner localizer \u003d privLocalizers.get(locId);\n            if (null \u003d\u003d localizer) {\n              LOG.info(\"Created localizer for \" + req.getLocalizerId());\n              localizer \u003d new LocalizerRunner(req.getContext(),\n                  req.getLocalizerId());\n              privLocalizers.put(locId, localizer);\n              localizer.start();\n            }\n            // 1) propagate event\n            localizer.addResource(req);\n          }\n          break;\n        }\n        break;\n      case ABORT_LOCALIZATION:\n        // 0) find running localizer, interrupt and remove\n        synchronized (privLocalizers) {\n          LocalizerRunner localizer \u003d privLocalizers.get(locId);\n          if (null \u003d\u003d localizer) {\n            return; // ignore; already gone\n          }\n          privLocalizers.remove(locId);\n          localizer.interrupt();\n        }\n        break;\n      }\n    }",
+      "path": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java",
+        "newPath": "hadoop-mapreduce-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java"
+      }
+    },
+    "dbecbe5dfe50f834fc3b8401709079e9470cc517": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-279. MapReduce 2.0. Merging MR-279 branch into trunk. Contributed by Arun C Murthy, Christopher Douglas, Devaraj Das, Greg Roelofs, Jeffrey Naisbitt, Josh Wills, Jonathan Eagles, Krishna Ramachandran, Luke Lu, Mahadev Konar, Robert Evans, Sharad Agarwal, Siddharth Seth, Thomas Graves, and Vinod Kumar Vavilapalli.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159166 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "18/08/11 4:07 AM",
+      "commitName": "dbecbe5dfe50f834fc3b8401709079e9470cc517",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,41 @@\n+    public void handle(LocalizerEvent event) {\n+      String locId \u003d event.getLocalizerId();\n+      switch (event.getType()) {\n+      case REQUEST_RESOURCE_LOCALIZATION:\n+        // 0) find running localizer or start new thread\n+        LocalizerResourceRequestEvent req \u003d\n+          (LocalizerResourceRequestEvent)event;\n+        switch (req.getVisibility()) {\n+        case PUBLIC:\n+          publicLocalizer.addResource(req);\n+          break;\n+        case PRIVATE:\n+        case APPLICATION:\n+          synchronized (privLocalizers) {\n+            LocalizerRunner localizer \u003d privLocalizers.get(locId);\n+            if (null \u003d\u003d localizer) {\n+              LOG.info(\"Created localizer for \" + req.getLocalizerId());\n+              localizer \u003d new LocalizerRunner(req.getContext(),\n+                  req.getLocalizerId());\n+              privLocalizers.put(locId, localizer);\n+              localizer.start();\n+            }\n+            // 1) propagate event\n+            localizer.addResource(req);\n+          }\n+          break;\n+        }\n+        break;\n+      case ABORT_LOCALIZATION:\n+        // 0) find running localizer, interrupt and remove\n+        synchronized (privLocalizers) {\n+          LocalizerRunner localizer \u003d privLocalizers.get(locId);\n+          if (null \u003d\u003d localizer) {\n+            return; // ignore; already gone\n+          }\n+          privLocalizers.remove(locId);\n+          localizer.interrupt();\n+        }\n+        break;\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void handle(LocalizerEvent event) {\n      String locId \u003d event.getLocalizerId();\n      switch (event.getType()) {\n      case REQUEST_RESOURCE_LOCALIZATION:\n        // 0) find running localizer or start new thread\n        LocalizerResourceRequestEvent req \u003d\n          (LocalizerResourceRequestEvent)event;\n        switch (req.getVisibility()) {\n        case PUBLIC:\n          publicLocalizer.addResource(req);\n          break;\n        case PRIVATE:\n        case APPLICATION:\n          synchronized (privLocalizers) {\n            LocalizerRunner localizer \u003d privLocalizers.get(locId);\n            if (null \u003d\u003d localizer) {\n              LOG.info(\"Created localizer for \" + req.getLocalizerId());\n              localizer \u003d new LocalizerRunner(req.getContext(),\n                  req.getLocalizerId());\n              privLocalizers.put(locId, localizer);\n              localizer.start();\n            }\n            // 1) propagate event\n            localizer.addResource(req);\n          }\n          break;\n        }\n        break;\n      case ABORT_LOCALIZATION:\n        // 0) find running localizer, interrupt and remove\n        synchronized (privLocalizers) {\n          LocalizerRunner localizer \u003d privLocalizers.get(locId);\n          if (null \u003d\u003d localizer) {\n            return; // ignore; already gone\n          }\n          privLocalizers.remove(locId);\n          localizer.interrupt();\n        }\n        break;\n      }\n    }",
+      "path": "hadoop-mapreduce/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/localizer/ResourceLocalizationService.java"
+    }
+  }
+}

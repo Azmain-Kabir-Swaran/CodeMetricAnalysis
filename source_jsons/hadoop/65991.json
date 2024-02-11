@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ChangeDetectionPolicy.java",
+  "functionName": "applyRevisionConstraint",
+  "functionId": "applyRevisionConstraint___request-GetObjectRequest__revisionId-String",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/ChangeDetectionPolicy.java",
+  "functionStartLine": 426,
+  "functionEndLine": 434,
+  "numCommitsSeen": 3,
+  "timeTaken": 1651,
+  "changeHistory": [
+    "9221704f857e33a5f9e00c19d3705e46e94f427b",
+    "a36274d69947648dbe82721220cc5240ec5d396d",
+    "6fa229891e06eea62cb9634efde755f40247e816"
+  ],
+  "changeHistoryShort": {
+    "9221704f857e33a5f9e00c19d3705e46e94f427b": "Ybodychange",
+    "a36274d69947648dbe82721220cc5240ec5d396d": "Ybodychange",
+    "6fa229891e06eea62cb9634efde755f40247e816": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9221704f857e33a5f9e00c19d3705e46e94f427b": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16490. Avoid/handle cached 404s during S3A file creation.\n\nContributed by Steve Loughran.\n\nThis patch avoids issuing any HEAD path request when creating a file with overwrite\u003dtrue,\nso 404s will not end up in the S3 load balancers unless someone calls getFileStatus/exists/isFile\nin their own code.\n\nThe Hadoop FsShell CommandWithDestination class is modified to not register uncreated files\nfor deleteOnExit(), because that calls exists() and so can place the 404 in the cache, even\nafter S3A is patched to not do it itself.\n\nBecause S3Guard knows when a file should be present, it adds a special FileNotFound retry policy\nindependently configurable from other retry policies; it is also exponential, but with\ndifferent parameters. This is because every HEAD request will refresh any 404 cached in\nthe S3 Load Balancers. It\u0027s not enough to retry: we have to have a suitable gap between\nattempts to (hopefully) ensure any cached entry wil be gone.\n\nThe options and values are:\n\nfs.s3a.s3guard.consistency.retry.interval: 2s\nfs.s3a.s3guard.consistency.retry.limit: 7\n\nThe S3A copy() method used during rename() raises a RemoteFileChangedException which is not caught\nso not downgraded to false. Thus: when a rename is unrecoverable, this fact is propagated.\n\nCopy operations without S3Guard lack the confidence that the file exists, so don\u0027t retry the same way:\nit will fail fast with a different error message. However, because create(path, overwrite\u003dfalse) no\nlonger does HEAD path, we can at least be confident that S3A itself is not creating those cached\n404 markers.\n\nChange-Id: Ia7807faad8b9a8546836cb19f816cccf17cca26d\n",
+      "commitDate": "11/09/19 8:46 AM",
+      "commitName": "9221704f857e33a5f9e00c19d3705e46e94f427b",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "19/05/19 2:29 PM",
+      "commitNameOld": "a36274d69947648dbe82721220cc5240ec5d396d",
+      "commitAuthorOld": "Ben Roling",
+      "daysBetweenCommits": 114.76,
+      "commitsBetweenForRepo": 975,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,7 +1,9 @@\n     public void applyRevisionConstraint(GetObjectRequest request,\n         String revisionId) {\n       if (revisionId !\u003d null) {\n         LOG.debug(\"Restricting get request to version {}\", revisionId);\n         request.withVersionId(revisionId);\n+      } else {\n+        LOG.debug(\"No version ID to use as a constraint\");\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void applyRevisionConstraint(GetObjectRequest request,\n        String revisionId) {\n      if (revisionId !\u003d null) {\n        LOG.debug(\"Restricting get request to version {}\", revisionId);\n        request.withVersionId(revisionId);\n      } else {\n        LOG.debug(\"No version ID to use as a constraint\");\n      }\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/ChangeDetectionPolicy.java",
+      "extendedDetails": {}
+    },
+    "a36274d69947648dbe82721220cc5240ec5d396d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-16085. S3Guard: use object version or etags to protect against inconsistent read after replace/overwrite.\n\nContributed by Ben Roling.\n\nS3Guard will now track the etag of uploaded files and, if an S3\nbucket is versioned, the object version.\n\nYou can then control how to react to a mismatch between the data\nin the DynamoDB table and that in the store: warn, fail, or, when\nusing versions, return the original value.\n\nThis adds two new columns to the table: etag and version.\nThis is transparent to older S3A clients -but when such clients\nadd/update data to the S3Guard table, they will not add these values.\nAs a result, the etag/version checks will not work with files uploaded by older clients.\n\nFor a consistent experience, upgrade all clients to use the latest hadoop version.\n",
+      "commitDate": "19/05/19 2:29 PM",
+      "commitName": "a36274d69947648dbe82721220cc5240ec5d396d",
+      "commitAuthor": "Ben Roling",
+      "commitDateOld": "13/03/19 1:37 PM",
+      "commitNameOld": "6fa229891e06eea62cb9634efde755f40247e816",
+      "commitAuthorOld": "Ben Roling",
+      "daysBetweenCommits": 67.04,
+      "commitsBetweenForRepo": 400,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,5 +1,7 @@\n     public void applyRevisionConstraint(GetObjectRequest request,\n         String revisionId) {\n-      LOG.debug(\"Restricting request to version {}\", revisionId);\n-      request.withVersionId(revisionId);\n+      if (revisionId !\u003d null) {\n+        LOG.debug(\"Restricting get request to version {}\", revisionId);\n+        request.withVersionId(revisionId);\n+      }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void applyRevisionConstraint(GetObjectRequest request,\n        String revisionId) {\n      if (revisionId !\u003d null) {\n        LOG.debug(\"Restricting get request to version {}\", revisionId);\n        request.withVersionId(revisionId);\n      }\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/ChangeDetectionPolicy.java",
+      "extendedDetails": {}
+    },
+    "6fa229891e06eea62cb9634efde755f40247e816": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15625. S3A input stream to use etags/version number to detect changed source files.\n\nAuthor: Ben Roling \u003cben.roling@gmail.com\u003e\n\nInitial patch from Brahma Reddy Battula.\n",
+      "commitDate": "13/03/19 1:37 PM",
+      "commitName": "6fa229891e06eea62cb9634efde755f40247e816",
+      "commitAuthor": "Ben Roling",
+      "diff": "@@ -0,0 +1,5 @@\n+    public void applyRevisionConstraint(GetObjectRequest request,\n+        String revisionId) {\n+      LOG.debug(\"Restricting request to version {}\", revisionId);\n+      request.withVersionId(revisionId);\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    public void applyRevisionConstraint(GetObjectRequest request,\n        String revisionId) {\n      LOG.debug(\"Restricting request to version {}\", revisionId);\n      request.withVersionId(revisionId);\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/impl/ChangeDetectionPolicy.java"
+    }
+  }
+}

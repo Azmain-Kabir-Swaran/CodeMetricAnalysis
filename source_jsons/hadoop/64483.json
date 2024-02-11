@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3AUtils.java",
+  "functionName": "getAWSAccessKeys",
+  "functionId": "getAWSAccessKeys___name-URI__conf-Configuration",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+  "functionStartLine": 814,
+  "functionEndLine": 830,
+  "numCommitsSeen": 51,
+  "timeTaken": 2170,
+  "changeHistory": [
+    "87f63b6479330840e9d708a729355948bb91fd4d",
+    "7ac88244c54ce483729af3d2736d9f4731e230ca",
+    "4aefe119a0203c03cdc893dcb3330fd37f26f0ee"
+  ],
+  "changeHistoryShort": {
+    "87f63b6479330840e9d708a729355948bb91fd4d": "Ybodychange",
+    "7ac88244c54ce483729af3d2736d9f4731e230ca": "Ybodychange",
+    "4aefe119a0203c03cdc893dcb3330fd37f26f0ee": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "87f63b6479330840e9d708a729355948bb91fd4d": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14833. Remove s3a user:secret authentication. Contributed by Steve Loughran\n",
+      "commitDate": "11/09/18 5:18 PM",
+      "commitName": "87f63b6479330840e9d708a729355948bb91fd4d",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "08/08/18 10:57 PM",
+      "commitNameOld": "da9a39eed138210de29b59b90c449b28da1c04f9",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 33.76,
+      "commitsBetweenForRepo": 275,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,17 @@\n   public static S3xLoginHelper.Login getAWSAccessKeys(URI name,\n       Configuration conf) throws IOException {\n-    S3xLoginHelper.Login login \u003d\n-        S3xLoginHelper.extractLoginDetailsWithWarnings(name);\n+    S3xLoginHelper.rejectSecretsInURIs(name);\n     Configuration c \u003d ProviderUtils.excludeIncompatibleCredentialProviders(\n         conf, S3AFileSystem.class);\n     String bucket \u003d name !\u003d null ? name.getHost() : \"\";\n \n-    // build the secrets. as getPassword() uses the last arg as\n-    // the return value if non-null, the ordering of\n-    // login -\u003e bucket -\u003e base is critical\n+    // get the secrets from the configuration\n \n-    // get the bucket values\n-    String accessKey \u003d lookupPassword(bucket, c, ACCESS_KEY,\n-        login.getUser());\n+    // get the access key\n+    String accessKey \u003d lookupPassword(bucket, c, ACCESS_KEY);\n \n-    // finally the base\n-    String secretKey \u003d lookupPassword(bucket, c, SECRET_KEY,\n-        login.getPassword());\n+    // and the secret\n+    String secretKey \u003d lookupPassword(bucket, c, SECRET_KEY);\n \n-    // and override with any per bucket values\n     return new S3xLoginHelper.Login(accessKey, secretKey);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static S3xLoginHelper.Login getAWSAccessKeys(URI name,\n      Configuration conf) throws IOException {\n    S3xLoginHelper.rejectSecretsInURIs(name);\n    Configuration c \u003d ProviderUtils.excludeIncompatibleCredentialProviders(\n        conf, S3AFileSystem.class);\n    String bucket \u003d name !\u003d null ? name.getHost() : \"\";\n\n    // get the secrets from the configuration\n\n    // get the access key\n    String accessKey \u003d lookupPassword(bucket, c, ACCESS_KEY);\n\n    // and the secret\n    String secretKey \u003d lookupPassword(bucket, c, SECRET_KEY);\n\n    return new S3xLoginHelper.Login(accessKey, secretKey);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+      "extendedDetails": {}
+    },
+    "7ac88244c54ce483729af3d2736d9f4731e230ca": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-14507. Extend per-bucket secret key config with explicit getPassword() on fs.s3a.$bucket.secret.key.\nContributed by Steve Loughran.\n",
+      "commitDate": "16/02/18 8:37 AM",
+      "commitName": "7ac88244c54ce483729af3d2736d9f4731e230ca",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "15/02/18 7:57 AM",
+      "commitNameOld": "9a013b255f301c557c3868dc1ad657202e9e7a67",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 1.03,
+      "commitsBetweenForRepo": 10,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,10 +1,23 @@\n   public static S3xLoginHelper.Login getAWSAccessKeys(URI name,\n       Configuration conf) throws IOException {\n     S3xLoginHelper.Login login \u003d\n         S3xLoginHelper.extractLoginDetailsWithWarnings(name);\n     Configuration c \u003d ProviderUtils.excludeIncompatibleCredentialProviders(\n         conf, S3AFileSystem.class);\n-    String accessKey \u003d getPassword(c, ACCESS_KEY, login.getUser());\n-    String secretKey \u003d getPassword(c, SECRET_KEY, login.getPassword());\n+    String bucket \u003d name !\u003d null ? name.getHost() : \"\";\n+\n+    // build the secrets. as getPassword() uses the last arg as\n+    // the return value if non-null, the ordering of\n+    // login -\u003e bucket -\u003e base is critical\n+\n+    // get the bucket values\n+    String accessKey \u003d lookupPassword(bucket, c, ACCESS_KEY,\n+        login.getUser());\n+\n+    // finally the base\n+    String secretKey \u003d lookupPassword(bucket, c, SECRET_KEY,\n+        login.getPassword());\n+\n+    // and override with any per bucket values\n     return new S3xLoginHelper.Login(accessKey, secretKey);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static S3xLoginHelper.Login getAWSAccessKeys(URI name,\n      Configuration conf) throws IOException {\n    S3xLoginHelper.Login login \u003d\n        S3xLoginHelper.extractLoginDetailsWithWarnings(name);\n    Configuration c \u003d ProviderUtils.excludeIncompatibleCredentialProviders(\n        conf, S3AFileSystem.class);\n    String bucket \u003d name !\u003d null ? name.getHost() : \"\";\n\n    // build the secrets. as getPassword() uses the last arg as\n    // the return value if non-null, the ordering of\n    // login -\u003e bucket -\u003e base is critical\n\n    // get the bucket values\n    String accessKey \u003d lookupPassword(bucket, c, ACCESS_KEY,\n        login.getUser());\n\n    // finally the base\n    String secretKey \u003d lookupPassword(bucket, c, SECRET_KEY,\n        login.getPassword());\n\n    // and override with any per bucket values\n    return new S3xLoginHelper.Login(accessKey, secretKey);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java",
+      "extendedDetails": {}
+    },
+    "4aefe119a0203c03cdc893dcb3330fd37f26f0ee": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-3733. \"s3x:\" URLs break when Secret Key contains a slash, even if encoded. Contributed by Steve Loughran.\n",
+      "commitDate": "16/06/16 11:13 AM",
+      "commitName": "4aefe119a0203c03cdc893dcb3330fd37f26f0ee",
+      "commitAuthor": "Ravi Prakash",
+      "diff": "@@ -0,0 +1,10 @@\n+  public static S3xLoginHelper.Login getAWSAccessKeys(URI name,\n+      Configuration conf) throws IOException {\n+    S3xLoginHelper.Login login \u003d\n+        S3xLoginHelper.extractLoginDetailsWithWarnings(name);\n+    Configuration c \u003d ProviderUtils.excludeIncompatibleCredentialProviders(\n+        conf, S3AFileSystem.class);\n+    String accessKey \u003d getPassword(c, ACCESS_KEY, login.getUser());\n+    String secretKey \u003d getPassword(c, SECRET_KEY, login.getPassword());\n+    return new S3xLoginHelper.Login(accessKey, secretKey);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static S3xLoginHelper.Login getAWSAccessKeys(URI name,\n      Configuration conf) throws IOException {\n    S3xLoginHelper.Login login \u003d\n        S3xLoginHelper.extractLoginDetailsWithWarnings(name);\n    Configuration c \u003d ProviderUtils.excludeIncompatibleCredentialProviders(\n        conf, S3AFileSystem.class);\n    String accessKey \u003d getPassword(c, ACCESS_KEY, login.getUser());\n    String secretKey \u003d getPassword(c, SECRET_KEY, login.getPassword());\n    return new S3xLoginHelper.Login(accessKey, secretKey);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3AUtils.java"
+    }
+  }
+}

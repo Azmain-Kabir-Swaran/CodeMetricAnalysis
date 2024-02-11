@@ -1,0 +1,214 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ActiveStandbyElector.java",
+  "functionName": "process",
+  "functionId": "process___event-WatchedEvent",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java",
+  "functionStartLine": 1187,
+  "functionEndLine": 1200,
+  "numCommitsSeen": 38,
+  "timeTaken": 1668,
+  "changeHistory": [
+    "9803ae374f69942aec82ec6eeeb9722523a1ade0",
+    "d863f7a1e452ecb26c3cb92bc6c90e552731304b",
+    "22a78a75b4cc700464fdbbe84eff321b8460f70e",
+    "b74d7427855eb7e20be70155c11acac0e333bd6a",
+    "31c2e3f29cbdc33a7333022d61130a25cee03684",
+    "cbfe8fea0ee9753b1f79dd8bb9a2972d0539e9ec"
+  ],
+  "changeHistoryShort": {
+    "9803ae374f69942aec82ec6eeeb9722523a1ade0": "Ybodychange",
+    "d863f7a1e452ecb26c3cb92bc6c90e552731304b": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "22a78a75b4cc700464fdbbe84eff321b8460f70e": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "b74d7427855eb7e20be70155c11acac0e333bd6a": "Ybodychange",
+    "31c2e3f29cbdc33a7333022d61130a25cee03684": "Ymultichange(Ymodifierchange,Ybodychange)",
+    "cbfe8fea0ee9753b1f79dd8bb9a2972d0539e9ec": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9803ae374f69942aec82ec6eeeb9722523a1ade0": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11459. Fix recent findbugs in ActiveStandbyElector, NetUtils and ShellBasedIdMapping (Contributed by Vinayakumar B)\n",
+      "commitDate": "05/01/15 7:45 PM",
+      "commitName": "9803ae374f69942aec82ec6eeeb9722523a1ade0",
+      "commitAuthor": "Vinayakumar B",
+      "commitDateOld": "24/04/14 4:03 PM",
+      "commitNameOld": "6d4c7df43401b87781e81c57405434ba9b9efd6f",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 256.2,
+      "commitsBetweenForRepo": 2028,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,14 @@\n     public void process(WatchedEvent event) {\n       hasReceivedEvent.countDown();\n       try {\n-        hasSetZooKeeper.await(zkSessionTimeout, TimeUnit.MILLISECONDS);\n+        if (!hasSetZooKeeper.await(zkSessionTimeout, TimeUnit.MILLISECONDS)) {\n+          LOG.debug(\"Event received with stale zk\");\n+        }\n         ActiveStandbyElector.this.processWatchEvent(\n             zk, event);\n       } catch (Throwable t) {\n         fatalError(\n             \"Failed to process watcher event \" + event + \": \" +\n             StringUtils.stringifyException(t));\n       }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void process(WatchedEvent event) {\n      hasReceivedEvent.countDown();\n      try {\n        if (!hasSetZooKeeper.await(zkSessionTimeout, TimeUnit.MILLISECONDS)) {\n          LOG.debug(\"Event received with stale zk\");\n        }\n        ActiveStandbyElector.this.processWatchEvent(\n            zk, event);\n      } catch (Throwable t) {\n        fatalError(\n            \"Failed to process watcher event \" + event + \": \" +\n            StringUtils.stringifyException(t));\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java",
+      "extendedDetails": {}
+    },
+    "d863f7a1e452ecb26c3cb92bc6c90e552731304b": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HADOOP-9183. Potential deadlock in ActiveStandbyElector.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1431251 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/01/13 2:05 AM",
+      "commitName": "d863f7a1e452ecb26c3cb92bc6c90e552731304b",
+      "commitAuthor": "Thomas White",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-9183. Potential deadlock in ActiveStandbyElector.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1431251 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "10/01/13 2:05 AM",
+          "commitName": "d863f7a1e452ecb26c3cb92bc6c90e552731304b",
+          "commitAuthor": "Thomas White",
+          "commitDateOld": "10/12/12 2:09 PM",
+          "commitNameOld": "22a78a75b4cc700464fdbbe84eff321b8460f70e",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 30.5,
+          "commitsBetweenForRepo": 125,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,12 @@\n-    public synchronized void process(WatchedEvent event) {\n-      if (zk !\u003d null) {\n-        forwardEvent(event);\n-      } else {\n-        queuedEvents.add(event);\n+    public void process(WatchedEvent event) {\n+      hasReceivedEvent.countDown();\n+      try {\n+        hasSetZooKeeper.await(zkSessionTimeout, TimeUnit.MILLISECONDS);\n+        ActiveStandbyElector.this.processWatchEvent(\n+            zk, event);\n+      } catch (Throwable t) {\n+        fatalError(\n+            \"Failed to process watcher event \" + event + \": \" +\n+            StringUtils.stringifyException(t));\n       }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public void process(WatchedEvent event) {\n      hasReceivedEvent.countDown();\n      try {\n        hasSetZooKeeper.await(zkSessionTimeout, TimeUnit.MILLISECONDS);\n        ActiveStandbyElector.this.processWatchEvent(\n            zk, event);\n      } catch (Throwable t) {\n        fatalError(\n            \"Failed to process watcher event \" + event + \": \" +\n            StringUtils.stringifyException(t));\n      }\n    }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java",
+          "extendedDetails": {
+            "oldValue": "[public, synchronized]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-9183. Potential deadlock in ActiveStandbyElector.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1431251 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "10/01/13 2:05 AM",
+          "commitName": "d863f7a1e452ecb26c3cb92bc6c90e552731304b",
+          "commitAuthor": "Thomas White",
+          "commitDateOld": "10/12/12 2:09 PM",
+          "commitNameOld": "22a78a75b4cc700464fdbbe84eff321b8460f70e",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 30.5,
+          "commitsBetweenForRepo": 125,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,7 +1,12 @@\n-    public synchronized void process(WatchedEvent event) {\n-      if (zk !\u003d null) {\n-        forwardEvent(event);\n-      } else {\n-        queuedEvents.add(event);\n+    public void process(WatchedEvent event) {\n+      hasReceivedEvent.countDown();\n+      try {\n+        hasSetZooKeeper.await(zkSessionTimeout, TimeUnit.MILLISECONDS);\n+        ActiveStandbyElector.this.processWatchEvent(\n+            zk, event);\n+      } catch (Throwable t) {\n+        fatalError(\n+            \"Failed to process watcher event \" + event + \": \" +\n+            StringUtils.stringifyException(t));\n       }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public void process(WatchedEvent event) {\n      hasReceivedEvent.countDown();\n      try {\n        hasSetZooKeeper.await(zkSessionTimeout, TimeUnit.MILLISECONDS);\n        ActiveStandbyElector.this.processWatchEvent(\n            zk, event);\n      } catch (Throwable t) {\n        fatalError(\n            \"Failed to process watcher event \" + event + \": \" +\n            StringUtils.stringifyException(t));\n      }\n    }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "22a78a75b4cc700464fdbbe84eff321b8460f70e": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HADOOP-9126. FormatZK and ZKFC startup can fail due to zkclient connection establishment delay. Contributed by Rakesh R and Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1419831 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "10/12/12 2:09 PM",
+      "commitName": "22a78a75b4cc700464fdbbe84eff321b8460f70e",
+      "commitAuthor": "Todd Lipcon",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-9126. FormatZK and ZKFC startup can fail due to zkclient connection establishment delay. Contributed by Rakesh R and Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1419831 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "10/12/12 2:09 PM",
+          "commitName": "22a78a75b4cc700464fdbbe84eff321b8460f70e",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "19/09/12 9:06 PM",
+          "commitNameOld": "4c56bccf5ee1d6ec1fcef0804eacae785c4d7c18",
+          "commitAuthorOld": "Suresh Srinivas",
+          "daysBetweenCommits": 81.75,
+          "commitsBetweenForRepo": 417,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,7 @@\n-    public void process(WatchedEvent event) {\n-      try {\n-        ActiveStandbyElector.this.processWatchEvent(\n-            zk, event);\n-      } catch (Throwable t) {\n-        fatalError(\n-            \"Failed to process watcher event \" + event + \": \" +\n-            StringUtils.stringifyException(t));\n+    public synchronized void process(WatchedEvent event) {\n+      if (zk !\u003d null) {\n+        forwardEvent(event);\n+      } else {\n+        queuedEvents.add(event);\n       }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public synchronized void process(WatchedEvent event) {\n      if (zk !\u003d null) {\n        forwardEvent(event);\n      } else {\n        queuedEvents.add(event);\n      }\n    }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java",
+          "extendedDetails": {
+            "oldValue": "[public]",
+            "newValue": "[public, synchronized]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-9126. FormatZK and ZKFC startup can fail due to zkclient connection establishment delay. Contributed by Rakesh R and Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1419831 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "10/12/12 2:09 PM",
+          "commitName": "22a78a75b4cc700464fdbbe84eff321b8460f70e",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "19/09/12 9:06 PM",
+          "commitNameOld": "4c56bccf5ee1d6ec1fcef0804eacae785c4d7c18",
+          "commitAuthorOld": "Suresh Srinivas",
+          "daysBetweenCommits": 81.75,
+          "commitsBetweenForRepo": 417,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,10 +1,7 @@\n-    public void process(WatchedEvent event) {\n-      try {\n-        ActiveStandbyElector.this.processWatchEvent(\n-            zk, event);\n-      } catch (Throwable t) {\n-        fatalError(\n-            \"Failed to process watcher event \" + event + \": \" +\n-            StringUtils.stringifyException(t));\n+    public synchronized void process(WatchedEvent event) {\n+      if (zk !\u003d null) {\n+        forwardEvent(event);\n+      } else {\n+        queuedEvents.add(event);\n       }\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    public synchronized void process(WatchedEvent event) {\n      if (zk !\u003d null) {\n        forwardEvent(event);\n      } else {\n        queuedEvents.add(event);\n      }\n    }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "b74d7427855eb7e20be70155c11acac0e333bd6a": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-8245. Fix flakiness in TestZKFailoverController. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-3042@1309554 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/04/12 12:21 PM",
+      "commitName": "b74d7427855eb7e20be70155c11acac0e333bd6a",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "03/04/12 4:37 PM",
+      "commitNameOld": "30e1b3bba856b2379a0dc1e7450512427d39c5d7",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 0.82,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,4 +1,10 @@\n     public void process(WatchedEvent event) {\n-      ActiveStandbyElector.this.processWatchEvent(\n-          zk, event);\n+      try {\n+        ActiveStandbyElector.this.processWatchEvent(\n+            zk, event);\n+      } catch (Throwable t) {\n+        fatalError(\n+            \"Failed to process watcher event \" + event + \": \" +\n+            StringUtils.stringifyException(t));\n+      }\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void process(WatchedEvent event) {\n      try {\n        ActiveStandbyElector.this.processWatchEvent(\n            zk, event);\n      } catch (Throwable t) {\n        fatalError(\n            \"Failed to process watcher event \" + event + \": \" +\n            StringUtils.stringifyException(t));\n      }\n    }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java",
+      "extendedDetails": {}
+    },
+    "31c2e3f29cbdc33a7333022d61130a25cee03684": {
+      "type": "Ymultichange(Ymodifierchange,Ybodychange)",
+      "commitMessage": "HADOOP-8212. Improve ActiveStandbyElector\u0027s behavior when session expires. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1305510 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "26/03/12 12:31 PM",
+      "commitName": "31c2e3f29cbdc33a7333022d61130a25cee03684",
+      "commitAuthor": "Todd Lipcon",
+      "subchanges": [
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-8212. Improve ActiveStandbyElector\u0027s behavior when session expires. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1305510 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "26/03/12 12:31 PM",
+          "commitName": "31c2e3f29cbdc33a7333022d61130a25cee03684",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "23/03/12 5:05 PM",
+          "commitNameOld": "805c1280ce2773bc61ea718723b42b09d795688f",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 2.81,
+          "commitsBetweenForRepo": 12,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,70 +1,4 @@\n-  public synchronized void process(WatchedEvent event) {\n-    Event.EventType eventType \u003d event.getType();\n-    LOG.debug(\"Watcher event type: \" + eventType + \" with state:\"\n-        + event.getState() + \" for path:\" + event.getPath()\n-        + \" connectionState: \" + zkConnectionState);\n-    if (zkClient \u003d\u003d null) {\n-      // zkClient is nulled before closing the connection\n-      // this is the callback with session expired after we closed the session\n-      return;\n-    }\n-\n-    if (eventType \u003d\u003d Event.EventType.None) {\n-      // the connection state has changed\n-      switch (event.getState()) {\n-      case SyncConnected:\n-        // if the listener was asked to move to safe state then it needs to\n-        // be undone\n-        ConnectionState prevConnectionState \u003d zkConnectionState;\n-        zkConnectionState \u003d ConnectionState.CONNECTED;\n-        if (prevConnectionState \u003d\u003d ConnectionState.DISCONNECTED) {\n-          monitorActiveStatus();\n-        }\n-        break;\n-      case Disconnected:\n-        // ask the app to move to safe state because zookeeper connection\n-        // is not active and we dont know our state\n-        zkConnectionState \u003d ConnectionState.DISCONNECTED;\n-        enterNeutralMode();\n-        break;\n-      case Expired:\n-        // the connection got terminated because of session timeout\n-        // call listener to reconnect\n-        enterNeutralMode();\n-        reJoinElection();\n-        break;\n-      default:\n-        fatalError(\"Unexpected Zookeeper watch event state: \"\n-            + event.getState());\n-        break;\n-      }\n-\n-      return;\n-    }\n-\n-    // a watch on lock path in zookeeper has fired. so something has changed on\n-    // the lock. ideally we should check that the path is the same as the lock\n-    // path but trusting zookeeper for now\n-    String path \u003d event.getPath();\n-    if (path !\u003d null) {\n-      switch (eventType) {\n-      case NodeDeleted:\n-        if (state \u003d\u003d State.ACTIVE) {\n-          enterNeutralMode();\n-        }\n-        joinElectionInternal();\n-        break;\n-      case NodeDataChanged:\n-        monitorActiveStatus();\n-        break;\n-      default:\n-        LOG.debug(\"Unexpected node event: \" + eventType + \" for path: \" + path);\n-        monitorActiveStatus();\n-      }\n-\n-      return;\n-    }\n-\n-    // some unexpected error has occurred\n-    fatalError(\"Unexpected watch error from Zookeeper\");\n-  }\n\\ No newline at end of file\n+    public void process(WatchedEvent event) {\n+      ActiveStandbyElector.this.processWatchEvent(\n+          zk, event);\n+    }\n\\ No newline at end of file\n",
+          "actualSource": "    public void process(WatchedEvent event) {\n      ActiveStandbyElector.this.processWatchEvent(\n          zk, event);\n    }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java",
+          "extendedDetails": {
+            "oldValue": "[public, synchronized]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-8212. Improve ActiveStandbyElector\u0027s behavior when session expires. Contributed by Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1305510 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "26/03/12 12:31 PM",
+          "commitName": "31c2e3f29cbdc33a7333022d61130a25cee03684",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "23/03/12 5:05 PM",
+          "commitNameOld": "805c1280ce2773bc61ea718723b42b09d795688f",
+          "commitAuthorOld": "Todd Lipcon",
+          "daysBetweenCommits": 2.81,
+          "commitsBetweenForRepo": 12,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,70 +1,4 @@\n-  public synchronized void process(WatchedEvent event) {\n-    Event.EventType eventType \u003d event.getType();\n-    LOG.debug(\"Watcher event type: \" + eventType + \" with state:\"\n-        + event.getState() + \" for path:\" + event.getPath()\n-        + \" connectionState: \" + zkConnectionState);\n-    if (zkClient \u003d\u003d null) {\n-      // zkClient is nulled before closing the connection\n-      // this is the callback with session expired after we closed the session\n-      return;\n-    }\n-\n-    if (eventType \u003d\u003d Event.EventType.None) {\n-      // the connection state has changed\n-      switch (event.getState()) {\n-      case SyncConnected:\n-        // if the listener was asked to move to safe state then it needs to\n-        // be undone\n-        ConnectionState prevConnectionState \u003d zkConnectionState;\n-        zkConnectionState \u003d ConnectionState.CONNECTED;\n-        if (prevConnectionState \u003d\u003d ConnectionState.DISCONNECTED) {\n-          monitorActiveStatus();\n-        }\n-        break;\n-      case Disconnected:\n-        // ask the app to move to safe state because zookeeper connection\n-        // is not active and we dont know our state\n-        zkConnectionState \u003d ConnectionState.DISCONNECTED;\n-        enterNeutralMode();\n-        break;\n-      case Expired:\n-        // the connection got terminated because of session timeout\n-        // call listener to reconnect\n-        enterNeutralMode();\n-        reJoinElection();\n-        break;\n-      default:\n-        fatalError(\"Unexpected Zookeeper watch event state: \"\n-            + event.getState());\n-        break;\n-      }\n-\n-      return;\n-    }\n-\n-    // a watch on lock path in zookeeper has fired. so something has changed on\n-    // the lock. ideally we should check that the path is the same as the lock\n-    // path but trusting zookeeper for now\n-    String path \u003d event.getPath();\n-    if (path !\u003d null) {\n-      switch (eventType) {\n-      case NodeDeleted:\n-        if (state \u003d\u003d State.ACTIVE) {\n-          enterNeutralMode();\n-        }\n-        joinElectionInternal();\n-        break;\n-      case NodeDataChanged:\n-        monitorActiveStatus();\n-        break;\n-      default:\n-        LOG.debug(\"Unexpected node event: \" + eventType + \" for path: \" + path);\n-        monitorActiveStatus();\n-      }\n-\n-      return;\n-    }\n-\n-    // some unexpected error has occurred\n-    fatalError(\"Unexpected watch error from Zookeeper\");\n-  }\n\\ No newline at end of file\n+    public void process(WatchedEvent event) {\n+      ActiveStandbyElector.this.processWatchEvent(\n+          zk, event);\n+    }\n\\ No newline at end of file\n",
+          "actualSource": "    public void process(WatchedEvent event) {\n      ActiveStandbyElector.this.processWatchEvent(\n          zk, event);\n    }",
+          "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "cbfe8fea0ee9753b1f79dd8bb9a2972d0539e9ec": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7992. Add ZKClient library to facilitate leader election. Contributed by Bikas Saha.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/branches/HDFS-1623@1235841 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "25/01/12 9:26 AM",
+      "commitName": "cbfe8fea0ee9753b1f79dd8bb9a2972d0539e9ec",
+      "commitAuthor": "Suresh Srinivas",
+      "diff": "@@ -0,0 +1,70 @@\n+  public synchronized void process(WatchedEvent event) {\n+    Event.EventType eventType \u003d event.getType();\n+    LOG.debug(\"Watcher event type: \" + eventType + \" with state:\"\n+        + event.getState() + \" for path:\" + event.getPath()\n+        + \" connectionState: \" + zkConnectionState);\n+    if (zkClient \u003d\u003d null) {\n+      // zkClient is nulled before closing the connection\n+      // this is the callback with session expired after we closed the session\n+      return;\n+    }\n+\n+    if (eventType \u003d\u003d Event.EventType.None) {\n+      // the connection state has changed\n+      switch (event.getState()) {\n+      case SyncConnected:\n+        // if the listener was asked to move to safe state then it needs to\n+        // be undone\n+        ConnectionState prevConnectionState \u003d zkConnectionState;\n+        zkConnectionState \u003d ConnectionState.CONNECTED;\n+        if (prevConnectionState \u003d\u003d ConnectionState.DISCONNECTED) {\n+          monitorActiveStatus();\n+        }\n+        break;\n+      case Disconnected:\n+        // ask the app to move to safe state because zookeeper connection\n+        // is not active and we dont know our state\n+        zkConnectionState \u003d ConnectionState.DISCONNECTED;\n+        enterNeutralMode();\n+        break;\n+      case Expired:\n+        // the connection got terminated because of session timeout\n+        // call listener to reconnect\n+        enterNeutralMode();\n+        reJoinElection();\n+        break;\n+      default:\n+        fatalError(\"Unexpected Zookeeper watch event state: \"\n+            + event.getState());\n+        break;\n+      }\n+\n+      return;\n+    }\n+\n+    // a watch on lock path in zookeeper has fired. so something has changed on\n+    // the lock. ideally we should check that the path is the same as the lock\n+    // path but trusting zookeeper for now\n+    String path \u003d event.getPath();\n+    if (path !\u003d null) {\n+      switch (eventType) {\n+      case NodeDeleted:\n+        if (state \u003d\u003d State.ACTIVE) {\n+          enterNeutralMode();\n+        }\n+        joinElectionInternal();\n+        break;\n+      case NodeDataChanged:\n+        monitorActiveStatus();\n+        break;\n+      default:\n+        LOG.debug(\"Unexpected node event: \" + eventType + \" for path: \" + path);\n+        monitorActiveStatus();\n+      }\n+\n+      return;\n+    }\n+\n+    // some unexpected error has occurred\n+    fatalError(\"Unexpected watch error from Zookeeper\");\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void process(WatchedEvent event) {\n    Event.EventType eventType \u003d event.getType();\n    LOG.debug(\"Watcher event type: \" + eventType + \" with state:\"\n        + event.getState() + \" for path:\" + event.getPath()\n        + \" connectionState: \" + zkConnectionState);\n    if (zkClient \u003d\u003d null) {\n      // zkClient is nulled before closing the connection\n      // this is the callback with session expired after we closed the session\n      return;\n    }\n\n    if (eventType \u003d\u003d Event.EventType.None) {\n      // the connection state has changed\n      switch (event.getState()) {\n      case SyncConnected:\n        // if the listener was asked to move to safe state then it needs to\n        // be undone\n        ConnectionState prevConnectionState \u003d zkConnectionState;\n        zkConnectionState \u003d ConnectionState.CONNECTED;\n        if (prevConnectionState \u003d\u003d ConnectionState.DISCONNECTED) {\n          monitorActiveStatus();\n        }\n        break;\n      case Disconnected:\n        // ask the app to move to safe state because zookeeper connection\n        // is not active and we dont know our state\n        zkConnectionState \u003d ConnectionState.DISCONNECTED;\n        enterNeutralMode();\n        break;\n      case Expired:\n        // the connection got terminated because of session timeout\n        // call listener to reconnect\n        enterNeutralMode();\n        reJoinElection();\n        break;\n      default:\n        fatalError(\"Unexpected Zookeeper watch event state: \"\n            + event.getState());\n        break;\n      }\n\n      return;\n    }\n\n    // a watch on lock path in zookeeper has fired. so something has changed on\n    // the lock. ideally we should check that the path is the same as the lock\n    // path but trusting zookeeper for now\n    String path \u003d event.getPath();\n    if (path !\u003d null) {\n      switch (eventType) {\n      case NodeDeleted:\n        if (state \u003d\u003d State.ACTIVE) {\n          enterNeutralMode();\n        }\n        joinElectionInternal();\n        break;\n      case NodeDataChanged:\n        monitorActiveStatus();\n        break;\n      default:\n        LOG.debug(\"Unexpected node event: \" + eventType + \" for path: \" + path);\n        monitorActiveStatus();\n      }\n\n      return;\n    }\n\n    // some unexpected error has occurred\n    fatalError(\"Unexpected watch error from Zookeeper\");\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ha/ActiveStandbyElector.java"
+    }
+  }
+}

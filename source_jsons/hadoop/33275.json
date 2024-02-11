@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "NvidiaDockerV1CommandPlugin.java",
+  "functionName": "updateDockerRunCommand",
+  "functionId": "updateDockerRunCommand___dockerRunCommand-DockerRunCommand__container-Container",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/resourceplugin/gpu/NvidiaDockerV1CommandPlugin.java",
+  "functionStartLine": 213,
+  "functionEndLine": 268,
+  "numCommitsSeen": 3,
+  "timeTaken": 1269,
+  "changeHistory": [
+    "9114d7a5a0159bbe70e9c289dbe1fc5db9101db5"
+  ],
+  "changeHistoryShort": {
+    "9114d7a5a0159bbe70e9c289dbe1fc5db9101db5": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "9114d7a5a0159bbe70e9c289dbe1fc5db9101db5": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-7224. Support GPU isolation for docker container. Contributed by Wangda Tan.\n",
+      "commitDate": "28/10/17 10:38 PM",
+      "commitName": "9114d7a5a0159bbe70e9c289dbe1fc5db9101db5",
+      "commitAuthor": "Sunil G",
+      "diff": "@@ -0,0 +1,56 @@\n+  public synchronized void updateDockerRunCommand(\n+      DockerRunCommand dockerRunCommand, Container container)\n+      throws ContainerExecutionException {\n+    if (!initializeWhenGpuRequested(container)) {\n+      return;\n+    }\n+\n+    Set\u003cGpuDevice\u003e assignedResources \u003d getAssignedGpus(container);\n+    if (assignedResources \u003d\u003d null || assignedResources.isEmpty()) {\n+      return;\n+    }\n+\n+    // Write to dockerRunCommand\n+    for (Map.Entry\u003cString, Set\u003cString\u003e\u003e option : additionalCommands\n+        .entrySet()) {\n+      String key \u003d option.getKey();\n+      Set\u003cString\u003e values \u003d option.getValue();\n+      if (key.equals(DEVICE_OPTION)) {\n+        int foundGpuDevices \u003d 0;\n+        for (String deviceName : values) {\n+          // When specified is a GPU card (device name like /dev/nvidia[n]\n+          // Get index of the GPU (which is [n]).\n+          Integer gpuIdx \u003d getGpuIndexFromDeviceName(deviceName);\n+          if (gpuIdx \u003e\u003d 0) {\n+            // Use assignedResources to filter --device given by\n+            // nvidia-docker-plugin.\n+            for (GpuDevice gpuDevice : assignedResources) {\n+              if (gpuDevice.getIndex() \u003d\u003d gpuIdx) {\n+                foundGpuDevices++;\n+                dockerRunCommand.addDevice(deviceName, deviceName);\n+              }\n+            }\n+          } else{\n+            // When gpuIdx \u003c 0, it is a controller device (such as\n+            // /dev/nvidiactl). In this case, add device directly.\n+            dockerRunCommand.addDevice(deviceName, deviceName);\n+          }\n+        }\n+\n+        // Cannot get all assigned Gpu devices from docker plugin output\n+        if (foundGpuDevices \u003c assignedResources.size()) {\n+          throw new ContainerExecutionException(\n+              \"Cannot get all assigned Gpu devices from docker plugin output\");\n+        }\n+      } else if (key.equals(MOUNT_RO_OPTION)) {\n+        for (String value : values) {\n+          int idx \u003d value.indexOf(\u0027:\u0027);\n+          String source \u003d value.substring(0, idx);\n+          String target \u003d value.substring(idx + 1);\n+          dockerRunCommand.addReadOnlyMountLocation(source, target, true);\n+        }\n+      } else{\n+        throw new ContainerExecutionException(\"Unsupported option:\" + key);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public synchronized void updateDockerRunCommand(\n      DockerRunCommand dockerRunCommand, Container container)\n      throws ContainerExecutionException {\n    if (!initializeWhenGpuRequested(container)) {\n      return;\n    }\n\n    Set\u003cGpuDevice\u003e assignedResources \u003d getAssignedGpus(container);\n    if (assignedResources \u003d\u003d null || assignedResources.isEmpty()) {\n      return;\n    }\n\n    // Write to dockerRunCommand\n    for (Map.Entry\u003cString, Set\u003cString\u003e\u003e option : additionalCommands\n        .entrySet()) {\n      String key \u003d option.getKey();\n      Set\u003cString\u003e values \u003d option.getValue();\n      if (key.equals(DEVICE_OPTION)) {\n        int foundGpuDevices \u003d 0;\n        for (String deviceName : values) {\n          // When specified is a GPU card (device name like /dev/nvidia[n]\n          // Get index of the GPU (which is [n]).\n          Integer gpuIdx \u003d getGpuIndexFromDeviceName(deviceName);\n          if (gpuIdx \u003e\u003d 0) {\n            // Use assignedResources to filter --device given by\n            // nvidia-docker-plugin.\n            for (GpuDevice gpuDevice : assignedResources) {\n              if (gpuDevice.getIndex() \u003d\u003d gpuIdx) {\n                foundGpuDevices++;\n                dockerRunCommand.addDevice(deviceName, deviceName);\n              }\n            }\n          } else{\n            // When gpuIdx \u003c 0, it is a controller device (such as\n            // /dev/nvidiactl). In this case, add device directly.\n            dockerRunCommand.addDevice(deviceName, deviceName);\n          }\n        }\n\n        // Cannot get all assigned Gpu devices from docker plugin output\n        if (foundGpuDevices \u003c assignedResources.size()) {\n          throw new ContainerExecutionException(\n              \"Cannot get all assigned Gpu devices from docker plugin output\");\n        }\n      } else if (key.equals(MOUNT_RO_OPTION)) {\n        for (String value : values) {\n          int idx \u003d value.indexOf(\u0027:\u0027);\n          String source \u003d value.substring(0, idx);\n          String target \u003d value.substring(idx + 1);\n          dockerRunCommand.addReadOnlyMountLocation(source, target, true);\n        }\n      } else{\n        throw new ContainerExecutionException(\"Unsupported option:\" + key);\n      }\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/resourceplugin/gpu/NvidiaDockerV1CommandPlugin.java"
+    }
+  }
+}

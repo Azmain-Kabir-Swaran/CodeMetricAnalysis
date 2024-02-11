@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DataNodeUGIProvider.java",
+  "functionName": "ugi",
+  "functionId": "ugi",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/webhdfs/DataNodeUGIProvider.java",
+  "functionStartLine": 71,
+  "functionEndLine": 112,
+  "numCommitsSeen": 6,
+  "timeTaken": 1931,
+  "changeHistory": [
+    "fe5624b85d71720ae9da90a01cad9a3d1ea41160",
+    "88beb46cf6e6fd3e51f73a411a2750de7595e326",
+    "84cbd72afda6344e220526fac5c560f00f84e374",
+    "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4"
+  ],
+  "changeHistoryShort": {
+    "fe5624b85d71720ae9da90a01cad9a3d1ea41160": "Ybodychange",
+    "88beb46cf6e6fd3e51f73a411a2750de7595e326": "Ybodychange",
+    "84cbd72afda6344e220526fac5c560f00f84e374": "Ybodychange",
+    "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fe5624b85d71720ae9da90a01cad9a3d1ea41160": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8855. Webhdfs client leaks active NameNode connections. Contributed by Xiaobing Zhou.\n",
+      "commitDate": "24/11/15 12:47 PM",
+      "commitName": "fe5624b85d71720ae9da90a01cad9a3d1ea41160",
+      "commitAuthor": "Xiaoyu Yao",
+      "commitDateOld": "04/11/15 10:21 AM",
+      "commitNameOld": "88beb46cf6e6fd3e51f73a411a2750de7595e326",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 20.1,
+      "commitsBetweenForRepo": 139,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,42 @@\n   UserGroupInformation ugi() throws IOException {\n-    if (UserGroupInformation.isSecurityEnabled()) {\n-      return tokenUGI();\n+    UserGroupInformation ugi;\n+\n+    try {\n+      if (UserGroupInformation.isSecurityEnabled()) {\n+        final Token\u003cDelegationTokenIdentifier\u003e token \u003d params.delegationToken();\n+\n+        ugi \u003d ugiCache.get(buildTokenCacheKey(token),\n+            new Callable\u003cUserGroupInformation\u003e() {\n+              @Override\n+              public UserGroupInformation call() throws Exception {\n+                return tokenUGI(token);\n+              }\n+            });\n+      } else {\n+        final String usernameFromQuery \u003d params.userName();\n+        final String doAsUserFromQuery \u003d params.doAsUser();\n+        final String remoteUser \u003d usernameFromQuery \u003d\u003d null ? JspHelper\n+            .getDefaultWebUserName(params.conf()) // not specified in request\n+            : usernameFromQuery;\n+\n+        ugi \u003d ugiCache.get(\n+            buildNonTokenCacheKey(doAsUserFromQuery, remoteUser),\n+            new Callable\u003cUserGroupInformation\u003e() {\n+              @Override\n+              public UserGroupInformation call() throws Exception {\n+                return nonTokenUGI(usernameFromQuery, doAsUserFromQuery,\n+                    remoteUser);\n+              }\n+            });\n+      }\n+    } catch (ExecutionException e) {\n+      Throwable cause \u003d e.getCause();\n+      if (cause instanceof IOException) {\n+        throw (IOException) cause;\n+      } else {\n+        throw new IOException(cause);\n+      }\n     }\n \n-    final String usernameFromQuery \u003d params.userName();\n-    final String doAsUserFromQuery \u003d params.doAsUser();\n-    final String remoteUser \u003d usernameFromQuery \u003d\u003d null\n-        ? JspHelper.getDefaultWebUserName(params.conf()) // not specified in\n-        // request\n-        : usernameFromQuery;\n-\n-    UserGroupInformation ugi \u003d UserGroupInformation.createRemoteUser(remoteUser);\n-    JspHelper.checkUsername(ugi.getShortUserName(), usernameFromQuery);\n-    if (doAsUserFromQuery !\u003d null) {\n-      // create and attempt to authorize a proxy user\n-      ugi \u003d UserGroupInformation.createProxyUser(doAsUserFromQuery, ugi);\n-    }\n     return ugi;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  UserGroupInformation ugi() throws IOException {\n    UserGroupInformation ugi;\n\n    try {\n      if (UserGroupInformation.isSecurityEnabled()) {\n        final Token\u003cDelegationTokenIdentifier\u003e token \u003d params.delegationToken();\n\n        ugi \u003d ugiCache.get(buildTokenCacheKey(token),\n            new Callable\u003cUserGroupInformation\u003e() {\n              @Override\n              public UserGroupInformation call() throws Exception {\n                return tokenUGI(token);\n              }\n            });\n      } else {\n        final String usernameFromQuery \u003d params.userName();\n        final String doAsUserFromQuery \u003d params.doAsUser();\n        final String remoteUser \u003d usernameFromQuery \u003d\u003d null ? JspHelper\n            .getDefaultWebUserName(params.conf()) // not specified in request\n            : usernameFromQuery;\n\n        ugi \u003d ugiCache.get(\n            buildNonTokenCacheKey(doAsUserFromQuery, remoteUser),\n            new Callable\u003cUserGroupInformation\u003e() {\n              @Override\n              public UserGroupInformation call() throws Exception {\n                return nonTokenUGI(usernameFromQuery, doAsUserFromQuery,\n                    remoteUser);\n              }\n            });\n      }\n    } catch (ExecutionException e) {\n      Throwable cause \u003d e.getCause();\n      if (cause instanceof IOException) {\n        throw (IOException) cause;\n      } else {\n        throw new IOException(cause);\n      }\n    }\n\n    return ugi;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/webhdfs/DataNodeUGIProvider.java",
+      "extendedDetails": {}
+    },
+    "88beb46cf6e6fd3e51f73a411a2750de7595e326": {
+      "type": "Ybodychange",
+      "commitMessage": "Revert \"HDFS-8855. Webhdfs client leaks active NameNode connections. Contributed by Xiaobing Zhou.\"\n\nThis reverts commit 84cbd72afda6344e220526fac5c560f00f84e374.\n",
+      "commitDate": "04/11/15 10:21 AM",
+      "commitName": "88beb46cf6e6fd3e51f73a411a2750de7595e326",
+      "commitAuthor": "Haohui Mai",
+      "commitDateOld": "13/10/15 9:12 AM",
+      "commitNameOld": "84cbd72afda6344e220526fac5c560f00f84e374",
+      "commitAuthorOld": "Jitendra Pandey",
+      "daysBetweenCommits": 22.09,
+      "commitsBetweenForRepo": 217,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,42 +1,20 @@\n   UserGroupInformation ugi() throws IOException {\n-    UserGroupInformation ugi;\n-\n-    try {\n-      if (UserGroupInformation.isSecurityEnabled()) {\n-        final Token\u003cDelegationTokenIdentifier\u003e token \u003d params.delegationToken();\n-\n-        ugi \u003d ugiCache.get(buildTokenCacheKey(token),\n-            new Callable\u003cUserGroupInformation\u003e() {\n-              @Override\n-              public UserGroupInformation call() throws Exception {\n-                return tokenUGI(token);\n-              }\n-            });\n-      } else {\n-        final String usernameFromQuery \u003d params.userName();\n-        final String doAsUserFromQuery \u003d params.doAsUser();\n-        final String remoteUser \u003d usernameFromQuery \u003d\u003d null ? JspHelper\n-            .getDefaultWebUserName(params.conf()) // not specified in request\n-            : usernameFromQuery;\n-\n-        ugi \u003d ugiCache.get(\n-            buildNonTokenCacheKey(doAsUserFromQuery, remoteUser),\n-            new Callable\u003cUserGroupInformation\u003e() {\n-              @Override\n-              public UserGroupInformation call() throws Exception {\n-                return nonTokenUGI(usernameFromQuery, doAsUserFromQuery,\n-                    remoteUser);\n-              }\n-            });\n-      }\n-    } catch (ExecutionException e) {\n-      Throwable cause \u003d e.getCause();\n-      if (cause instanceof IOException) {\n-        throw (IOException) cause;\n-      } else {\n-        throw new IOException(cause);\n-      }\n+    if (UserGroupInformation.isSecurityEnabled()) {\n+      return tokenUGI();\n     }\n \n+    final String usernameFromQuery \u003d params.userName();\n+    final String doAsUserFromQuery \u003d params.doAsUser();\n+    final String remoteUser \u003d usernameFromQuery \u003d\u003d null\n+        ? JspHelper.getDefaultWebUserName(params.conf()) // not specified in\n+        // request\n+        : usernameFromQuery;\n+\n+    UserGroupInformation ugi \u003d UserGroupInformation.createRemoteUser(remoteUser);\n+    JspHelper.checkUsername(ugi.getShortUserName(), usernameFromQuery);\n+    if (doAsUserFromQuery !\u003d null) {\n+      // create and attempt to authorize a proxy user\n+      ugi \u003d UserGroupInformation.createProxyUser(doAsUserFromQuery, ugi);\n+    }\n     return ugi;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  UserGroupInformation ugi() throws IOException {\n    if (UserGroupInformation.isSecurityEnabled()) {\n      return tokenUGI();\n    }\n\n    final String usernameFromQuery \u003d params.userName();\n    final String doAsUserFromQuery \u003d params.doAsUser();\n    final String remoteUser \u003d usernameFromQuery \u003d\u003d null\n        ? JspHelper.getDefaultWebUserName(params.conf()) // not specified in\n        // request\n        : usernameFromQuery;\n\n    UserGroupInformation ugi \u003d UserGroupInformation.createRemoteUser(remoteUser);\n    JspHelper.checkUsername(ugi.getShortUserName(), usernameFromQuery);\n    if (doAsUserFromQuery !\u003d null) {\n      // create and attempt to authorize a proxy user\n      ugi \u003d UserGroupInformation.createProxyUser(doAsUserFromQuery, ugi);\n    }\n    return ugi;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/webhdfs/DataNodeUGIProvider.java",
+      "extendedDetails": {}
+    },
+    "84cbd72afda6344e220526fac5c560f00f84e374": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8855. Webhdfs client leaks active NameNode connections. Contributed by Xiaobing Zhou.\n",
+      "commitDate": "13/10/15 9:12 AM",
+      "commitName": "84cbd72afda6344e220526fac5c560f00f84e374",
+      "commitAuthor": "Jitendra Pandey",
+      "commitDateOld": "17/11/14 11:42 AM",
+      "commitNameOld": "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 329.85,
+      "commitsBetweenForRepo": 2672,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,20 +1,42 @@\n   UserGroupInformation ugi() throws IOException {\n-    if (UserGroupInformation.isSecurityEnabled()) {\n-      return tokenUGI();\n+    UserGroupInformation ugi;\n+\n+    try {\n+      if (UserGroupInformation.isSecurityEnabled()) {\n+        final Token\u003cDelegationTokenIdentifier\u003e token \u003d params.delegationToken();\n+\n+        ugi \u003d ugiCache.get(buildTokenCacheKey(token),\n+            new Callable\u003cUserGroupInformation\u003e() {\n+              @Override\n+              public UserGroupInformation call() throws Exception {\n+                return tokenUGI(token);\n+              }\n+            });\n+      } else {\n+        final String usernameFromQuery \u003d params.userName();\n+        final String doAsUserFromQuery \u003d params.doAsUser();\n+        final String remoteUser \u003d usernameFromQuery \u003d\u003d null ? JspHelper\n+            .getDefaultWebUserName(params.conf()) // not specified in request\n+            : usernameFromQuery;\n+\n+        ugi \u003d ugiCache.get(\n+            buildNonTokenCacheKey(doAsUserFromQuery, remoteUser),\n+            new Callable\u003cUserGroupInformation\u003e() {\n+              @Override\n+              public UserGroupInformation call() throws Exception {\n+                return nonTokenUGI(usernameFromQuery, doAsUserFromQuery,\n+                    remoteUser);\n+              }\n+            });\n+      }\n+    } catch (ExecutionException e) {\n+      Throwable cause \u003d e.getCause();\n+      if (cause instanceof IOException) {\n+        throw (IOException) cause;\n+      } else {\n+        throw new IOException(cause);\n+      }\n     }\n \n-    final String usernameFromQuery \u003d params.userName();\n-    final String doAsUserFromQuery \u003d params.doAsUser();\n-    final String remoteUser \u003d usernameFromQuery \u003d\u003d null\n-        ? JspHelper.getDefaultWebUserName(params.conf()) // not specified in\n-        // request\n-        : usernameFromQuery;\n-\n-    UserGroupInformation ugi \u003d UserGroupInformation.createRemoteUser(remoteUser);\n-    JspHelper.checkUsername(ugi.getShortUserName(), usernameFromQuery);\n-    if (doAsUserFromQuery !\u003d null) {\n-      // create and attempt to authorize a proxy user\n-      ugi \u003d UserGroupInformation.createProxyUser(doAsUserFromQuery, ugi);\n-    }\n     return ugi;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  UserGroupInformation ugi() throws IOException {\n    UserGroupInformation ugi;\n\n    try {\n      if (UserGroupInformation.isSecurityEnabled()) {\n        final Token\u003cDelegationTokenIdentifier\u003e token \u003d params.delegationToken();\n\n        ugi \u003d ugiCache.get(buildTokenCacheKey(token),\n            new Callable\u003cUserGroupInformation\u003e() {\n              @Override\n              public UserGroupInformation call() throws Exception {\n                return tokenUGI(token);\n              }\n            });\n      } else {\n        final String usernameFromQuery \u003d params.userName();\n        final String doAsUserFromQuery \u003d params.doAsUser();\n        final String remoteUser \u003d usernameFromQuery \u003d\u003d null ? JspHelper\n            .getDefaultWebUserName(params.conf()) // not specified in request\n            : usernameFromQuery;\n\n        ugi \u003d ugiCache.get(\n            buildNonTokenCacheKey(doAsUserFromQuery, remoteUser),\n            new Callable\u003cUserGroupInformation\u003e() {\n              @Override\n              public UserGroupInformation call() throws Exception {\n                return nonTokenUGI(usernameFromQuery, doAsUserFromQuery,\n                    remoteUser);\n              }\n            });\n      }\n    } catch (ExecutionException e) {\n      Throwable cause \u003d e.getCause();\n      if (cause instanceof IOException) {\n        throw (IOException) cause;\n      } else {\n        throw new IOException(cause);\n      }\n    }\n\n    return ugi;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/webhdfs/DataNodeUGIProvider.java",
+      "extendedDetails": {}
+    },
+    "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7279. Use netty to implement DatanodeWebHdfsMethods. Contributed by Haohui Mai.\n",
+      "commitDate": "17/11/14 11:42 AM",
+      "commitName": "bf8e4332cb4c33d0287ae6ecca61b335402ac1c4",
+      "commitAuthor": "Haohui Mai",
+      "diff": "@@ -0,0 +1,20 @@\n+  UserGroupInformation ugi() throws IOException {\n+    if (UserGroupInformation.isSecurityEnabled()) {\n+      return tokenUGI();\n+    }\n+\n+    final String usernameFromQuery \u003d params.userName();\n+    final String doAsUserFromQuery \u003d params.doAsUser();\n+    final String remoteUser \u003d usernameFromQuery \u003d\u003d null\n+        ? JspHelper.getDefaultWebUserName(params.conf()) // not specified in\n+        // request\n+        : usernameFromQuery;\n+\n+    UserGroupInformation ugi \u003d UserGroupInformation.createRemoteUser(remoteUser);\n+    JspHelper.checkUsername(ugi.getShortUserName(), usernameFromQuery);\n+    if (doAsUserFromQuery !\u003d null) {\n+      // create and attempt to authorize a proxy user\n+      ugi \u003d UserGroupInformation.createProxyUser(doAsUserFromQuery, ugi);\n+    }\n+    return ugi;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  UserGroupInformation ugi() throws IOException {\n    if (UserGroupInformation.isSecurityEnabled()) {\n      return tokenUGI();\n    }\n\n    final String usernameFromQuery \u003d params.userName();\n    final String doAsUserFromQuery \u003d params.doAsUser();\n    final String remoteUser \u003d usernameFromQuery \u003d\u003d null\n        ? JspHelper.getDefaultWebUserName(params.conf()) // not specified in\n        // request\n        : usernameFromQuery;\n\n    UserGroupInformation ugi \u003d UserGroupInformation.createRemoteUser(remoteUser);\n    JspHelper.checkUsername(ugi.getShortUserName(), usernameFromQuery);\n    if (doAsUserFromQuery !\u003d null) {\n      // create and attempt to authorize a proxy user\n      ugi \u003d UserGroupInformation.createProxyUser(doAsUserFromQuery, ugi);\n    }\n    return ugi;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/web/webhdfs/DataNodeUGIProvider.java"
+    }
+  }
+}

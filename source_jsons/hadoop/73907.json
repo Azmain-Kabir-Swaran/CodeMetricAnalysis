@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "Server.java",
+  "functionName": "buildNegotiateResponse",
+  "functionId": "buildNegotiateResponse___authMethods-List__AuthMethod__",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Server.java",
+  "functionStartLine": 3144,
+  "functionEndLine": 3166,
+  "numCommitsSeen": 162,
+  "timeTaken": 4360,
+  "changeHistory": [
+    "65be21267587f04a2c33af65b951211cc9085b15",
+    "5f9b4c14a175873b4f82654513e289c657c694eb"
+  ],
+  "changeHistoryShort": {
+    "65be21267587f04a2c33af65b951211cc9085b15": "Ybodychange",
+    "5f9b4c14a175873b4f82654513e289c657c694eb": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "65be21267587f04a2c33af65b951211cc9085b15": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-9698. [RPC v9] Client must honor server\u0027s SASL negotiate response (daryn)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1508086 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "29/07/13 7:44 AM",
+      "commitName": "65be21267587f04a2c33af65b951211cc9085b15",
+      "commitAuthor": "Daryn Sharp",
+      "commitDateOld": "24/07/13 12:48 AM",
+      "commitNameOld": "a0a986dda77ea03dac9cfc7e0631bae611034ef4",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 5.29,
+      "commitsBetweenForRepo": 31,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,23 @@\n   private RpcSaslProto buildNegotiateResponse(List\u003cAuthMethod\u003e authMethods)\n       throws IOException {\n     RpcSaslProto.Builder negotiateBuilder \u003d RpcSaslProto.newBuilder();\n-    negotiateBuilder.setState(SaslState.NEGOTIATE);\n-    for (AuthMethod authMethod : authMethods) {\n-      if (authMethod \u003d\u003d AuthMethod.SIMPLE) { // not a SASL method\n-        continue;\n+    if (authMethods.contains(AuthMethod.SIMPLE) \u0026\u0026 authMethods.size() \u003d\u003d 1) {\n+      // SIMPLE-only servers return success in response to negotiate\n+      negotiateBuilder.setState(SaslState.SUCCESS);\n+    } else {\n+      negotiateBuilder.setState(SaslState.NEGOTIATE);\n+      for (AuthMethod authMethod : authMethods) {\n+        SaslRpcServer saslRpcServer \u003d new SaslRpcServer(authMethod);      \n+        SaslAuth.Builder builder \u003d negotiateBuilder.addAuthsBuilder()\n+            .setMethod(authMethod.toString())\n+            .setMechanism(saslRpcServer.mechanism);\n+        if (saslRpcServer.protocol !\u003d null) {\n+          builder.setProtocol(saslRpcServer.protocol);\n+        }\n+        if (saslRpcServer.serverId !\u003d null) {\n+          builder.setServerId(saslRpcServer.serverId);\n+        }\n       }\n-      SaslRpcServer saslRpcServer \u003d new SaslRpcServer(authMethod);      \n-      negotiateBuilder.addAuthsBuilder()\n-          .setMethod(authMethod.toString())\n-          .setMechanism(saslRpcServer.mechanism)\n-          .setProtocol(saslRpcServer.protocol)\n-          .setServerId(saslRpcServer.serverId);\n     }\n     return negotiateBuilder.build();\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private RpcSaslProto buildNegotiateResponse(List\u003cAuthMethod\u003e authMethods)\n      throws IOException {\n    RpcSaslProto.Builder negotiateBuilder \u003d RpcSaslProto.newBuilder();\n    if (authMethods.contains(AuthMethod.SIMPLE) \u0026\u0026 authMethods.size() \u003d\u003d 1) {\n      // SIMPLE-only servers return success in response to negotiate\n      negotiateBuilder.setState(SaslState.SUCCESS);\n    } else {\n      negotiateBuilder.setState(SaslState.NEGOTIATE);\n      for (AuthMethod authMethod : authMethods) {\n        SaslRpcServer saslRpcServer \u003d new SaslRpcServer(authMethod);      \n        SaslAuth.Builder builder \u003d negotiateBuilder.addAuthsBuilder()\n            .setMethod(authMethod.toString())\n            .setMechanism(saslRpcServer.mechanism);\n        if (saslRpcServer.protocol !\u003d null) {\n          builder.setProtocol(saslRpcServer.protocol);\n        }\n        if (saslRpcServer.serverId !\u003d null) {\n          builder.setServerId(saslRpcServer.serverId);\n        }\n      }\n    }\n    return negotiateBuilder.build();\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Server.java",
+      "extendedDetails": {}
+    },
+    "5f9b4c14a175873b4f82654513e289c657c694eb": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-9421. [RPC v9] Convert SASL to use ProtoBuf and provide negotiation capabilities (daryn)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1495577 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "21/06/13 1:09 PM",
+      "commitName": "5f9b4c14a175873b4f82654513e289c657c694eb",
+      "commitAuthor": "Daryn Sharp",
+      "diff": "@@ -0,0 +1,17 @@\n+  private RpcSaslProto buildNegotiateResponse(List\u003cAuthMethod\u003e authMethods)\n+      throws IOException {\n+    RpcSaslProto.Builder negotiateBuilder \u003d RpcSaslProto.newBuilder();\n+    negotiateBuilder.setState(SaslState.NEGOTIATE);\n+    for (AuthMethod authMethod : authMethods) {\n+      if (authMethod \u003d\u003d AuthMethod.SIMPLE) { // not a SASL method\n+        continue;\n+      }\n+      SaslRpcServer saslRpcServer \u003d new SaslRpcServer(authMethod);      \n+      negotiateBuilder.addAuthsBuilder()\n+          .setMethod(authMethod.toString())\n+          .setMechanism(saslRpcServer.mechanism)\n+          .setProtocol(saslRpcServer.protocol)\n+          .setServerId(saslRpcServer.serverId);\n+    }\n+    return negotiateBuilder.build();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private RpcSaslProto buildNegotiateResponse(List\u003cAuthMethod\u003e authMethods)\n      throws IOException {\n    RpcSaslProto.Builder negotiateBuilder \u003d RpcSaslProto.newBuilder();\n    negotiateBuilder.setState(SaslState.NEGOTIATE);\n    for (AuthMethod authMethod : authMethods) {\n      if (authMethod \u003d\u003d AuthMethod.SIMPLE) { // not a SASL method\n        continue;\n      }\n      SaslRpcServer saslRpcServer \u003d new SaslRpcServer(authMethod);      \n      negotiateBuilder.addAuthsBuilder()\n          .setMethod(authMethod.toString())\n          .setMechanism(saslRpcServer.mechanism)\n          .setProtocol(saslRpcServer.protocol)\n          .setServerId(saslRpcServer.serverId);\n    }\n    return negotiateBuilder.build();\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/ipc/Server.java"
+    }
+  }
+}

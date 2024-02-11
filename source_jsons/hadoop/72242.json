@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "XDR.java",
+  "functionName": "writeMessageTcp",
+  "functionId": "writeMessageTcp___request-XDR__last-boolean",
+  "sourceFilePath": "hadoop-common-project/hadoop-nfs/src/main/java/org/apache/hadoop/oncrpc/XDR.java",
+  "functionStartLine": 245,
+  "functionEndLine": 254,
+  "numCommitsSeen": 8,
+  "timeTaken": 697,
+  "changeHistory": [
+    "c16442c45958f6c6a106d2a3949d84b1404a256c",
+    "8ef140d38b16a18050e9e7901e8aadd424aef20f"
+  ],
+  "changeHistoryShort": {
+    "c16442c45958f6c6a106d2a3949d84b1404a256c": "Ybodychange",
+    "8ef140d38b16a18050e9e7901e8aadd424aef20f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "c16442c45958f6c6a106d2a3949d84b1404a256c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-9669 Reduce the number of byte array creations and copies in XDR data manipulation. Contributed by Haohui Mai\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1524259 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "17/09/13 5:06 PM",
+      "commitName": "c16442c45958f6c6a106d2a3949d84b1404a256c",
+      "commitAuthor": "Brandon Li",
+      "commitDateOld": "10/09/13 12:29 PM",
+      "commitNameOld": "613979c8fdacf25fd563395ecc399c4de94d3ee7",
+      "commitAuthorOld": "Jing Zhao",
+      "daysBetweenCommits": 7.19,
+      "commitsBetweenForRepo": 40,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,8 +1,10 @@\n   public static ChannelBuffer writeMessageTcp(XDR request, boolean last) {\n-    byte[] fragmentHeader \u003d XDR.recordMark(request.bytearr.length, last);\n-    ChannelBuffer outBuf \u003d ChannelBuffers.buffer(fragmentHeader.length\n-        + request.bytearr.length);\n-    outBuf.writeBytes(fragmentHeader);\n-    outBuf.writeBytes(request.bytearr);\n-    return outBuf;\n+    Preconditions.checkState(request.state \u003d\u003d XDR.State.WRITING);\n+    ByteBuffer b \u003d request.buf.duplicate();\n+    b.flip();\n+    byte[] fragmentHeader \u003d XDR.recordMark(b.limit(), last);\n+    ByteBuffer headerBuf \u003d ByteBuffer.wrap(fragmentHeader);\n+\n+    // TODO: Investigate whether making a copy of the buffer is necessary.\n+    return ChannelBuffers.copiedBuffer(headerBuf, b);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static ChannelBuffer writeMessageTcp(XDR request, boolean last) {\n    Preconditions.checkState(request.state \u003d\u003d XDR.State.WRITING);\n    ByteBuffer b \u003d request.buf.duplicate();\n    b.flip();\n    byte[] fragmentHeader \u003d XDR.recordMark(b.limit(), last);\n    ByteBuffer headerBuf \u003d ByteBuffer.wrap(fragmentHeader);\n\n    // TODO: Investigate whether making a copy of the buffer is necessary.\n    return ChannelBuffers.copiedBuffer(headerBuf, b);\n  }",
+      "path": "hadoop-common-project/hadoop-nfs/src/main/java/org/apache/hadoop/oncrpc/XDR.java",
+      "extendedDetails": {}
+    },
+    "8ef140d38b16a18050e9e7901e8aadd424aef20f": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-9509. Implement ONCRPC and XDR. Contributed by Brandon Li\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1490845 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "07/06/13 2:45 PM",
+      "commitName": "8ef140d38b16a18050e9e7901e8aadd424aef20f",
+      "commitAuthor": "Brandon Li",
+      "diff": "@@ -0,0 +1,8 @@\n+  public static ChannelBuffer writeMessageTcp(XDR request, boolean last) {\n+    byte[] fragmentHeader \u003d XDR.recordMark(request.bytearr.length, last);\n+    ChannelBuffer outBuf \u003d ChannelBuffers.buffer(fragmentHeader.length\n+        + request.bytearr.length);\n+    outBuf.writeBytes(fragmentHeader);\n+    outBuf.writeBytes(request.bytearr);\n+    return outBuf;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static ChannelBuffer writeMessageTcp(XDR request, boolean last) {\n    byte[] fragmentHeader \u003d XDR.recordMark(request.bytearr.length, last);\n    ChannelBuffer outBuf \u003d ChannelBuffers.buffer(fragmentHeader.length\n        + request.bytearr.length);\n    outBuf.writeBytes(fragmentHeader);\n    outBuf.writeBytes(request.bytearr);\n    return outBuf;\n  }",
+      "path": "hadoop-common-project/hadoop-nfs/src/main/java/org/apache/hadoop/oncrpc/XDR.java"
+    }
+  }
+}

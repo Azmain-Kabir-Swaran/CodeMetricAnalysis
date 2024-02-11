@@ -1,0 +1,141 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AbstractYarnScheduler.java",
+  "functionName": "rollbackContainerUpdate",
+  "functionId": "rollbackContainerUpdate___containerId-ContainerId",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+  "functionStartLine": 1460,
+  "functionEndLine": 1486,
+  "numCommitsSeen": 263,
+  "timeTaken": 5851,
+  "changeHistory": [
+    "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4",
+    "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f",
+    "d16b17b4d299b4d58f879a2a15708bacd0938685"
+  ],
+  "changeHistoryShort": {
+    "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yrename)",
+    "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f": "Ybodychange",
+    "d16b17b4d299b4d58f879a2a15708bacd0938685": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yrename)",
+      "commitMessage": "YARN-6216. Unify Container Resizing code paths with Container Updates making it scheduler agnostic. (Arun Suresh via wangda)\n",
+      "commitDate": "28/02/17 10:35 AM",
+      "commitName": "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4",
+      "commitAuthor": "Wangda Tan",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "YARN-6216. Unify Container Resizing code paths with Container Updates making it scheduler agnostic. (Arun Suresh via wangda)\n",
+          "commitDate": "28/02/17 10:35 AM",
+          "commitName": "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4",
+          "commitAuthor": "Wangda Tan",
+          "commitDateOld": "28/02/17 9:27 AM",
+          "commitNameOld": "480b4dd574d0355bf6c976a38bb45cb86adb2714",
+          "commitAuthorOld": "Gera Shegalov",
+          "daysBetweenCommits": 0.05,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,27 @@\n-  private void rollbackContainerResource(\n+  protected void rollbackContainerUpdate(\n       ContainerId containerId) {\n     RMContainer rmContainer \u003d getRMContainer(containerId);\n     if (rmContainer \u003d\u003d null) {\n       LOG.info(\"Cannot rollback resource for container \" + containerId\n           + \". The container does not exist.\");\n       return;\n     }\n-    FiCaSchedulerApp application \u003d getCurrentAttemptForContainer(containerId);\n-    if (application \u003d\u003d null) {\n+    T app \u003d getCurrentAttemptForContainer(containerId);\n+    if (getCurrentAttemptForContainer(containerId) \u003d\u003d null) {\n       LOG.info(\"Cannot rollback resource for container \" + containerId\n           + \". The application that the container \"\n           + \"belongs to does not exist.\");\n       return;\n     }\n-    LOG.info(\"Roll back resource for container \" + containerId);\n \n-    SchedulerNode schedulerNode \u003d getSchedulerNode(\n-        rmContainer.getAllocatedNode());\n-    SchedContainerChangeRequest decreaseRequest \u003d\n-        new SchedContainerChangeRequest(this.rmContext, schedulerNode,\n-            rmContainer, rmContainer.getLastConfirmedResource());\n-    decreaseContainer(decreaseRequest, application);\n+    if (Resources.fitsIn(rmContainer.getLastConfirmedResource(),\n+        rmContainer.getContainer().getResource())) {\n+      LOG.info(\"Roll back resource for container \" + containerId);\n+      handleDecreaseRequests(app, Arrays.asList(\n+          UpdateContainerRequest.newInstance(\n+              rmContainer.getContainer().getVersion(),\n+              rmContainer.getContainerId(),\n+              ContainerUpdateType.DECREASE_RESOURCE,\n+              rmContainer.getLastConfirmedResource(), null)));\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected void rollbackContainerUpdate(\n      ContainerId containerId) {\n    RMContainer rmContainer \u003d getRMContainer(containerId);\n    if (rmContainer \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The container does not exist.\");\n      return;\n    }\n    T app \u003d getCurrentAttemptForContainer(containerId);\n    if (getCurrentAttemptForContainer(containerId) \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The application that the container \"\n          + \"belongs to does not exist.\");\n      return;\n    }\n\n    if (Resources.fitsIn(rmContainer.getLastConfirmedResource(),\n        rmContainer.getContainer().getResource())) {\n      LOG.info(\"Roll back resource for container \" + containerId);\n      handleDecreaseRequests(app, Arrays.asList(\n          UpdateContainerRequest.newInstance(\n              rmContainer.getContainer().getVersion(),\n              rmContainer.getContainerId(),\n              ContainerUpdateType.DECREASE_RESOURCE,\n              rmContainer.getLastConfirmedResource(), null)));\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java",
+            "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+            "oldMethodName": "rollbackContainerResource",
+            "newMethodName": "rollbackContainerUpdate"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "YARN-6216. Unify Container Resizing code paths with Container Updates making it scheduler agnostic. (Arun Suresh via wangda)\n",
+          "commitDate": "28/02/17 10:35 AM",
+          "commitName": "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4",
+          "commitAuthor": "Wangda Tan",
+          "commitDateOld": "28/02/17 9:27 AM",
+          "commitNameOld": "480b4dd574d0355bf6c976a38bb45cb86adb2714",
+          "commitAuthorOld": "Gera Shegalov",
+          "daysBetweenCommits": 0.05,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,27 @@\n-  private void rollbackContainerResource(\n+  protected void rollbackContainerUpdate(\n       ContainerId containerId) {\n     RMContainer rmContainer \u003d getRMContainer(containerId);\n     if (rmContainer \u003d\u003d null) {\n       LOG.info(\"Cannot rollback resource for container \" + containerId\n           + \". The container does not exist.\");\n       return;\n     }\n-    FiCaSchedulerApp application \u003d getCurrentAttemptForContainer(containerId);\n-    if (application \u003d\u003d null) {\n+    T app \u003d getCurrentAttemptForContainer(containerId);\n+    if (getCurrentAttemptForContainer(containerId) \u003d\u003d null) {\n       LOG.info(\"Cannot rollback resource for container \" + containerId\n           + \". The application that the container \"\n           + \"belongs to does not exist.\");\n       return;\n     }\n-    LOG.info(\"Roll back resource for container \" + containerId);\n \n-    SchedulerNode schedulerNode \u003d getSchedulerNode(\n-        rmContainer.getAllocatedNode());\n-    SchedContainerChangeRequest decreaseRequest \u003d\n-        new SchedContainerChangeRequest(this.rmContext, schedulerNode,\n-            rmContainer, rmContainer.getLastConfirmedResource());\n-    decreaseContainer(decreaseRequest, application);\n+    if (Resources.fitsIn(rmContainer.getLastConfirmedResource(),\n+        rmContainer.getContainer().getResource())) {\n+      LOG.info(\"Roll back resource for container \" + containerId);\n+      handleDecreaseRequests(app, Arrays.asList(\n+          UpdateContainerRequest.newInstance(\n+              rmContainer.getContainer().getVersion(),\n+              rmContainer.getContainerId(),\n+              ContainerUpdateType.DECREASE_RESOURCE,\n+              rmContainer.getLastConfirmedResource(), null)));\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected void rollbackContainerUpdate(\n      ContainerId containerId) {\n    RMContainer rmContainer \u003d getRMContainer(containerId);\n    if (rmContainer \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The container does not exist.\");\n      return;\n    }\n    T app \u003d getCurrentAttemptForContainer(containerId);\n    if (getCurrentAttemptForContainer(containerId) \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The application that the container \"\n          + \"belongs to does not exist.\");\n      return;\n    }\n\n    if (Resources.fitsIn(rmContainer.getLastConfirmedResource(),\n        rmContainer.getContainer().getResource())) {\n      LOG.info(\"Roll back resource for container \" + containerId);\n      handleDecreaseRequests(app, Arrays.asList(\n          UpdateContainerRequest.newInstance(\n              rmContainer.getContainer().getVersion(),\n              rmContainer.getContainerId(),\n              ContainerUpdateType.DECREASE_RESOURCE,\n              rmContainer.getLastConfirmedResource(), null)));\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[protected]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-6216. Unify Container Resizing code paths with Container Updates making it scheduler agnostic. (Arun Suresh via wangda)\n",
+          "commitDate": "28/02/17 10:35 AM",
+          "commitName": "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4",
+          "commitAuthor": "Wangda Tan",
+          "commitDateOld": "28/02/17 9:27 AM",
+          "commitNameOld": "480b4dd574d0355bf6c976a38bb45cb86adb2714",
+          "commitAuthorOld": "Gera Shegalov",
+          "daysBetweenCommits": 0.05,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,27 @@\n-  private void rollbackContainerResource(\n+  protected void rollbackContainerUpdate(\n       ContainerId containerId) {\n     RMContainer rmContainer \u003d getRMContainer(containerId);\n     if (rmContainer \u003d\u003d null) {\n       LOG.info(\"Cannot rollback resource for container \" + containerId\n           + \". The container does not exist.\");\n       return;\n     }\n-    FiCaSchedulerApp application \u003d getCurrentAttemptForContainer(containerId);\n-    if (application \u003d\u003d null) {\n+    T app \u003d getCurrentAttemptForContainer(containerId);\n+    if (getCurrentAttemptForContainer(containerId) \u003d\u003d null) {\n       LOG.info(\"Cannot rollback resource for container \" + containerId\n           + \". The application that the container \"\n           + \"belongs to does not exist.\");\n       return;\n     }\n-    LOG.info(\"Roll back resource for container \" + containerId);\n \n-    SchedulerNode schedulerNode \u003d getSchedulerNode(\n-        rmContainer.getAllocatedNode());\n-    SchedContainerChangeRequest decreaseRequest \u003d\n-        new SchedContainerChangeRequest(this.rmContext, schedulerNode,\n-            rmContainer, rmContainer.getLastConfirmedResource());\n-    decreaseContainer(decreaseRequest, application);\n+    if (Resources.fitsIn(rmContainer.getLastConfirmedResource(),\n+        rmContainer.getContainer().getResource())) {\n+      LOG.info(\"Roll back resource for container \" + containerId);\n+      handleDecreaseRequests(app, Arrays.asList(\n+          UpdateContainerRequest.newInstance(\n+              rmContainer.getContainer().getVersion(),\n+              rmContainer.getContainerId(),\n+              ContainerUpdateType.DECREASE_RESOURCE,\n+              rmContainer.getLastConfirmedResource(), null)));\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected void rollbackContainerUpdate(\n      ContainerId containerId) {\n    RMContainer rmContainer \u003d getRMContainer(containerId);\n    if (rmContainer \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The container does not exist.\");\n      return;\n    }\n    T app \u003d getCurrentAttemptForContainer(containerId);\n    if (getCurrentAttemptForContainer(containerId) \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The application that the container \"\n          + \"belongs to does not exist.\");\n      return;\n    }\n\n    if (Resources.fitsIn(rmContainer.getLastConfirmedResource(),\n        rmContainer.getContainer().getResource())) {\n      LOG.info(\"Roll back resource for container \" + containerId);\n      handleDecreaseRequests(app, Arrays.asList(\n          UpdateContainerRequest.newInstance(\n              rmContainer.getContainer().getVersion(),\n              rmContainer.getContainerId(),\n              ContainerUpdateType.DECREASE_RESOURCE,\n              rmContainer.getLastConfirmedResource(), null)));\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yrename",
+          "commitMessage": "YARN-6216. Unify Container Resizing code paths with Container Updates making it scheduler agnostic. (Arun Suresh via wangda)\n",
+          "commitDate": "28/02/17 10:35 AM",
+          "commitName": "eac6b4c35c50e555c2f1b5f913bb2c4d839f1ff4",
+          "commitAuthor": "Wangda Tan",
+          "commitDateOld": "28/02/17 9:27 AM",
+          "commitNameOld": "480b4dd574d0355bf6c976a38bb45cb86adb2714",
+          "commitAuthorOld": "Gera Shegalov",
+          "daysBetweenCommits": 0.05,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,24 +1,27 @@\n-  private void rollbackContainerResource(\n+  protected void rollbackContainerUpdate(\n       ContainerId containerId) {\n     RMContainer rmContainer \u003d getRMContainer(containerId);\n     if (rmContainer \u003d\u003d null) {\n       LOG.info(\"Cannot rollback resource for container \" + containerId\n           + \". The container does not exist.\");\n       return;\n     }\n-    FiCaSchedulerApp application \u003d getCurrentAttemptForContainer(containerId);\n-    if (application \u003d\u003d null) {\n+    T app \u003d getCurrentAttemptForContainer(containerId);\n+    if (getCurrentAttemptForContainer(containerId) \u003d\u003d null) {\n       LOG.info(\"Cannot rollback resource for container \" + containerId\n           + \". The application that the container \"\n           + \"belongs to does not exist.\");\n       return;\n     }\n-    LOG.info(\"Roll back resource for container \" + containerId);\n \n-    SchedulerNode schedulerNode \u003d getSchedulerNode(\n-        rmContainer.getAllocatedNode());\n-    SchedContainerChangeRequest decreaseRequest \u003d\n-        new SchedContainerChangeRequest(this.rmContext, schedulerNode,\n-            rmContainer, rmContainer.getLastConfirmedResource());\n-    decreaseContainer(decreaseRequest, application);\n+    if (Resources.fitsIn(rmContainer.getLastConfirmedResource(),\n+        rmContainer.getContainer().getResource())) {\n+      LOG.info(\"Roll back resource for container \" + containerId);\n+      handleDecreaseRequests(app, Arrays.asList(\n+          UpdateContainerRequest.newInstance(\n+              rmContainer.getContainer().getVersion(),\n+              rmContainer.getContainerId(),\n+              ContainerUpdateType.DECREASE_RESOURCE,\n+              rmContainer.getLastConfirmedResource(), null)));\n+    }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected void rollbackContainerUpdate(\n      ContainerId containerId) {\n    RMContainer rmContainer \u003d getRMContainer(containerId);\n    if (rmContainer \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The container does not exist.\");\n      return;\n    }\n    T app \u003d getCurrentAttemptForContainer(containerId);\n    if (getCurrentAttemptForContainer(containerId) \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The application that the container \"\n          + \"belongs to does not exist.\");\n      return;\n    }\n\n    if (Resources.fitsIn(rmContainer.getLastConfirmedResource(),\n        rmContainer.getContainer().getResource())) {\n      LOG.info(\"Roll back resource for container \" + containerId);\n      handleDecreaseRequests(app, Arrays.asList(\n          UpdateContainerRequest.newInstance(\n              rmContainer.getContainer().getVersion(),\n              rmContainer.getContainerId(),\n              ContainerUpdateType.DECREASE_RESOURCE,\n              rmContainer.getLastConfirmedResource(), null)));\n    }\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/AbstractYarnScheduler.java",
+          "extendedDetails": {
+            "oldValue": "rollbackContainerResource",
+            "newValue": "rollbackContainerUpdate"
+          }
+        }
+      ]
+    },
+    "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-3139. Improve locks in AbstractYarnScheduler/CapacityScheduler/FairScheduler. Contributed by Wangda Tan\n",
+      "commitDate": "04/10/16 5:23 PM",
+      "commitName": "31f8da22d0b8d2dcce5fbc8e45d832f40acf056f",
+      "commitAuthor": "Jian He",
+      "commitDateOld": "30/08/16 3:52 PM",
+      "commitNameOld": "d6d9cff21b7b6141ed88359652cf22e8973c0661",
+      "commitAuthorOld": "Arun Suresh",
+      "daysBetweenCommits": 35.06,
+      "commitsBetweenForRepo": 195,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,24 @@\n   private void rollbackContainerResource(\n       ContainerId containerId) {\n     RMContainer rmContainer \u003d getRMContainer(containerId);\n     if (rmContainer \u003d\u003d null) {\n-      LOG.info(\"Cannot rollback resource for container \" + containerId +\n-          \". The container does not exist.\");\n+      LOG.info(\"Cannot rollback resource for container \" + containerId\n+          + \". The container does not exist.\");\n       return;\n     }\n     FiCaSchedulerApp application \u003d getCurrentAttemptForContainer(containerId);\n     if (application \u003d\u003d null) {\n-      LOG.info(\"Cannot rollback resource for container \" + containerId +\n-          \". The application that the container belongs to does not exist.\");\n+      LOG.info(\"Cannot rollback resource for container \" + containerId\n+          + \". The application that the container \"\n+          + \"belongs to does not exist.\");\n       return;\n     }\n     LOG.info(\"Roll back resource for container \" + containerId);\n-    LeafQueue leafQueue \u003d (LeafQueue) application.getQueue();\n-    synchronized(leafQueue) {\n-      SchedulerNode schedulerNode \u003d\n-          getSchedulerNode(rmContainer.getAllocatedNode());\n-      SchedContainerChangeRequest decreaseRequest \u003d\n-          new SchedContainerChangeRequest(this.rmContext, schedulerNode,\n-              rmContainer, rmContainer.getLastConfirmedResource());\n-      decreaseContainer(decreaseRequest, application);\n-    }\n+\n+    SchedulerNode schedulerNode \u003d getSchedulerNode(\n+        rmContainer.getAllocatedNode());\n+    SchedContainerChangeRequest decreaseRequest \u003d\n+        new SchedContainerChangeRequest(this.rmContext, schedulerNode,\n+            rmContainer, rmContainer.getLastConfirmedResource());\n+    decreaseContainer(decreaseRequest, application);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void rollbackContainerResource(\n      ContainerId containerId) {\n    RMContainer rmContainer \u003d getRMContainer(containerId);\n    if (rmContainer \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The container does not exist.\");\n      return;\n    }\n    FiCaSchedulerApp application \u003d getCurrentAttemptForContainer(containerId);\n    if (application \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId\n          + \". The application that the container \"\n          + \"belongs to does not exist.\");\n      return;\n    }\n    LOG.info(\"Roll back resource for container \" + containerId);\n\n    SchedulerNode schedulerNode \u003d getSchedulerNode(\n        rmContainer.getAllocatedNode());\n    SchedContainerChangeRequest decreaseRequest \u003d\n        new SchedContainerChangeRequest(this.rmContext, schedulerNode,\n            rmContainer, rmContainer.getLastConfirmedResource());\n    decreaseContainer(decreaseRequest, application);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java",
+      "extendedDetails": {}
+    },
+    "d16b17b4d299b4d58f879a2a15708bacd0938685": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-4138. Roll back container resource allocation after resource increase token expires. Contributed by Meng Ding\n",
+      "commitDate": "10/02/16 6:06 PM",
+      "commitName": "d16b17b4d299b4d58f879a2a15708bacd0938685",
+      "commitAuthor": "Jian He",
+      "diff": "@@ -0,0 +1,25 @@\n+  private void rollbackContainerResource(\n+      ContainerId containerId) {\n+    RMContainer rmContainer \u003d getRMContainer(containerId);\n+    if (rmContainer \u003d\u003d null) {\n+      LOG.info(\"Cannot rollback resource for container \" + containerId +\n+          \". The container does not exist.\");\n+      return;\n+    }\n+    FiCaSchedulerApp application \u003d getCurrentAttemptForContainer(containerId);\n+    if (application \u003d\u003d null) {\n+      LOG.info(\"Cannot rollback resource for container \" + containerId +\n+          \". The application that the container belongs to does not exist.\");\n+      return;\n+    }\n+    LOG.info(\"Roll back resource for container \" + containerId);\n+    LeafQueue leafQueue \u003d (LeafQueue) application.getQueue();\n+    synchronized(leafQueue) {\n+      SchedulerNode schedulerNode \u003d\n+          getSchedulerNode(rmContainer.getAllocatedNode());\n+      SchedContainerChangeRequest decreaseRequest \u003d\n+          new SchedContainerChangeRequest(this.rmContext, schedulerNode,\n+              rmContainer, rmContainer.getLastConfirmedResource());\n+      decreaseContainer(decreaseRequest, application);\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void rollbackContainerResource(\n      ContainerId containerId) {\n    RMContainer rmContainer \u003d getRMContainer(containerId);\n    if (rmContainer \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId +\n          \". The container does not exist.\");\n      return;\n    }\n    FiCaSchedulerApp application \u003d getCurrentAttemptForContainer(containerId);\n    if (application \u003d\u003d null) {\n      LOG.info(\"Cannot rollback resource for container \" + containerId +\n          \". The application that the container belongs to does not exist.\");\n      return;\n    }\n    LOG.info(\"Roll back resource for container \" + containerId);\n    LeafQueue leafQueue \u003d (LeafQueue) application.getQueue();\n    synchronized(leafQueue) {\n      SchedulerNode schedulerNode \u003d\n          getSchedulerNode(rmContainer.getAllocatedNode());\n      SchedContainerChangeRequest decreaseRequest \u003d\n          new SchedContainerChangeRequest(this.rmContext, schedulerNode,\n              rmContainer, rmContainer.getLastConfirmedResource());\n      decreaseContainer(decreaseRequest, application);\n    }\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/scheduler/capacity/CapacityScheduler.java"
+    }
+  }
+}

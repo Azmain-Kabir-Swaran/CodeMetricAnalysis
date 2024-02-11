@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "HadoopArchiveLogsRunner.java",
+  "functionName": "run",
+  "functionId": "run___args-String[]",
+  "sourceFilePath": "hadoop-tools/hadoop-archive-logs/src/main/java/org/apache/hadoop/tools/HadoopArchiveLogsRunner.java",
+  "functionStartLine": 105,
+  "functionEndLine": 131,
+  "numCommitsSeen": 4,
+  "timeTaken": 709,
+  "changeHistory": [
+    "6d84cc16b3e0685fef01d0e3526b0f7556ceff51",
+    "119cc75e7ebd723790f6326498383304aba384a2"
+  ],
+  "changeHistoryShort": {
+    "6d84cc16b3e0685fef01d0e3526b0f7556ceff51": "Ybodychange",
+    "119cc75e7ebd723790f6326498383304aba384a2": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "6d84cc16b3e0685fef01d0e3526b0f7556ceff51": {
+      "type": "Ybodychange",
+      "commitMessage": "MAPREDUCE-6550. archive-logs tool changes log ownership to the Yarn user when using DefaultContainerExecutor (rkanter)\n",
+      "commitDate": "25/11/15 5:12 PM",
+      "commitName": "6d84cc16b3e0685fef01d0e3526b0f7556ceff51",
+      "commitAuthor": "Robert Kanter",
+      "commitDateOld": "09/09/15 5:45 PM",
+      "commitNameOld": "119cc75e7ebd723790f6326498383304aba384a2",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 77.02,
+      "commitsBetweenForRepo": 627,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,49 +1,27 @@\n   public int run(String[] args) throws Exception {\n     handleOpts(args);\n-    String remoteAppLogDir \u003d remoteLogDir + File.separator + user\n-        + File.separator + suffix + File.separator + appId;\n \n-    // Run \u0027hadoop archives\u0027 command in local mode\n-    Configuration haConf \u003d new Configuration(getConf());\n-    haConf.set(\"mapreduce.framework.name\", \"local\");\n-    HadoopArchives ha \u003d new HadoopArchives(haConf);\n-    String[] haArgs \u003d {\n-        \"-archiveName\",\n-        appId + \".har\",\n-        \"-p\",\n-        remoteAppLogDir,\n-        \"*\",\n-        workingDir\n-    };\n-    StringBuilder sb \u003d new StringBuilder(\"Executing \u0027hadoop archives\u0027\");\n-    for (String haArg : haArgs) {\n-      sb.append(\"\\n\\t\").append(haArg);\n+    Integer exitCode \u003d 1;\n+    UserGroupInformation loginUser \u003d UserGroupInformation.getLoginUser();\n+    // If we\u0027re running as the user, then no need to impersonate\n+    // (which might fail if user is not a proxyuser for themselves)\n+    // Also if !proxy is set\n+    if (!proxy || loginUser.getShortUserName().equals(user)) {\n+      LOG.info(\"Running as \" + user);\n+      exitCode \u003d runInternal();\n+    } else {\n+      // Otherwise impersonate user.  If we\u0027re not allowed to, then this will\n+      // fail with an Exception\n+      LOG.info(\"Running as \" + loginUser.getShortUserName() + \" but will \" +\n+          \"impersonate \" + user);\n+      UserGroupInformation proxyUser \u003d\n+          UserGroupInformation.createProxyUser(user, loginUser);\n+      exitCode \u003d proxyUser.doAs(new PrivilegedExceptionAction\u003cInteger\u003e() {\n+        @Override\n+        public Integer run() throws Exception {\n+          return runInternal();\n+        }\n+      });\n     }\n-    LOG.info(sb.toString());\n-    ha.run(haArgs);\n-\n-    FileSystem fs \u003d null;\n-    // Move har file to correct location and delete original logs\n-    try {\n-      fs \u003d FileSystem.get(conf);\n-      LOG.info(\"Moving har to original location\");\n-      fs.rename(new Path(workingDir, appId + \".har\"),\n-          new Path(remoteAppLogDir, appId + \".har\"));\n-      LOG.info(\"Deleting original logs\");\n-      for (FileStatus original : fs.listStatus(new Path(remoteAppLogDir),\n-          new PathFilter() {\n-            @Override\n-            public boolean accept(Path path) {\n-              return !path.getName().endsWith(\".har\");\n-            }\n-          })) {\n-        fs.delete(original.getPath(), false);\n-      }\n-    } finally {\n-      if (fs !\u003d null) {\n-        fs.close();\n-      }\n-    }\n-\n-    return 0;\n+    return exitCode;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public int run(String[] args) throws Exception {\n    handleOpts(args);\n\n    Integer exitCode \u003d 1;\n    UserGroupInformation loginUser \u003d UserGroupInformation.getLoginUser();\n    // If we\u0027re running as the user, then no need to impersonate\n    // (which might fail if user is not a proxyuser for themselves)\n    // Also if !proxy is set\n    if (!proxy || loginUser.getShortUserName().equals(user)) {\n      LOG.info(\"Running as \" + user);\n      exitCode \u003d runInternal();\n    } else {\n      // Otherwise impersonate user.  If we\u0027re not allowed to, then this will\n      // fail with an Exception\n      LOG.info(\"Running as \" + loginUser.getShortUserName() + \" but will \" +\n          \"impersonate \" + user);\n      UserGroupInformation proxyUser \u003d\n          UserGroupInformation.createProxyUser(user, loginUser);\n      exitCode \u003d proxyUser.doAs(new PrivilegedExceptionAction\u003cInteger\u003e() {\n        @Override\n        public Integer run() throws Exception {\n          return runInternal();\n        }\n      });\n    }\n    return exitCode;\n  }",
+      "path": "hadoop-tools/hadoop-archive-logs/src/main/java/org/apache/hadoop/tools/HadoopArchiveLogsRunner.java",
+      "extendedDetails": {}
+    },
+    "119cc75e7ebd723790f6326498383304aba384a2": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-6415. Create a tool to combine aggregated logs into HAR files. (Robert Kanter via kasha)\n",
+      "commitDate": "09/09/15 5:45 PM",
+      "commitName": "119cc75e7ebd723790f6326498383304aba384a2",
+      "commitAuthor": "Karthik Kambatla",
+      "diff": "@@ -0,0 +1,49 @@\n+  public int run(String[] args) throws Exception {\n+    handleOpts(args);\n+    String remoteAppLogDir \u003d remoteLogDir + File.separator + user\n+        + File.separator + suffix + File.separator + appId;\n+\n+    // Run \u0027hadoop archives\u0027 command in local mode\n+    Configuration haConf \u003d new Configuration(getConf());\n+    haConf.set(\"mapreduce.framework.name\", \"local\");\n+    HadoopArchives ha \u003d new HadoopArchives(haConf);\n+    String[] haArgs \u003d {\n+        \"-archiveName\",\n+        appId + \".har\",\n+        \"-p\",\n+        remoteAppLogDir,\n+        \"*\",\n+        workingDir\n+    };\n+    StringBuilder sb \u003d new StringBuilder(\"Executing \u0027hadoop archives\u0027\");\n+    for (String haArg : haArgs) {\n+      sb.append(\"\\n\\t\").append(haArg);\n+    }\n+    LOG.info(sb.toString());\n+    ha.run(haArgs);\n+\n+    FileSystem fs \u003d null;\n+    // Move har file to correct location and delete original logs\n+    try {\n+      fs \u003d FileSystem.get(conf);\n+      LOG.info(\"Moving har to original location\");\n+      fs.rename(new Path(workingDir, appId + \".har\"),\n+          new Path(remoteAppLogDir, appId + \".har\"));\n+      LOG.info(\"Deleting original logs\");\n+      for (FileStatus original : fs.listStatus(new Path(remoteAppLogDir),\n+          new PathFilter() {\n+            @Override\n+            public boolean accept(Path path) {\n+              return !path.getName().endsWith(\".har\");\n+            }\n+          })) {\n+        fs.delete(original.getPath(), false);\n+      }\n+    } finally {\n+      if (fs !\u003d null) {\n+        fs.close();\n+      }\n+    }\n+\n+    return 0;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public int run(String[] args) throws Exception {\n    handleOpts(args);\n    String remoteAppLogDir \u003d remoteLogDir + File.separator + user\n        + File.separator + suffix + File.separator + appId;\n\n    // Run \u0027hadoop archives\u0027 command in local mode\n    Configuration haConf \u003d new Configuration(getConf());\n    haConf.set(\"mapreduce.framework.name\", \"local\");\n    HadoopArchives ha \u003d new HadoopArchives(haConf);\n    String[] haArgs \u003d {\n        \"-archiveName\",\n        appId + \".har\",\n        \"-p\",\n        remoteAppLogDir,\n        \"*\",\n        workingDir\n    };\n    StringBuilder sb \u003d new StringBuilder(\"Executing \u0027hadoop archives\u0027\");\n    for (String haArg : haArgs) {\n      sb.append(\"\\n\\t\").append(haArg);\n    }\n    LOG.info(sb.toString());\n    ha.run(haArgs);\n\n    FileSystem fs \u003d null;\n    // Move har file to correct location and delete original logs\n    try {\n      fs \u003d FileSystem.get(conf);\n      LOG.info(\"Moving har to original location\");\n      fs.rename(new Path(workingDir, appId + \".har\"),\n          new Path(remoteAppLogDir, appId + \".har\"));\n      LOG.info(\"Deleting original logs\");\n      for (FileStatus original : fs.listStatus(new Path(remoteAppLogDir),\n          new PathFilter() {\n            @Override\n            public boolean accept(Path path) {\n              return !path.getName().endsWith(\".har\");\n            }\n          })) {\n        fs.delete(original.getPath(), false);\n      }\n    } finally {\n      if (fs !\u003d null) {\n        fs.close();\n      }\n    }\n\n    return 0;\n  }",
+      "path": "hadoop-tools/hadoop-archive-logs/src/main/java/org/apache/hadoop/tools/HadoopArchiveLogsRunner.java"
+    }
+  }
+}

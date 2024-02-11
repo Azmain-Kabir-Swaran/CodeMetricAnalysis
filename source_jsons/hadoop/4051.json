@@ -1,0 +1,183 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DistributedFileSystem.java",
+  "functionName": "provisionEZTrash",
+  "functionId": "provisionEZTrash___path-Path(modifiers-final)__trashPermission-FsPermission(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+  "functionStartLine": 2792,
+  "functionEndLine": 2814,
+  "numCommitsSeen": 135,
+  "timeTaken": 5015,
+  "changeHistory": [
+    "edf9445708ffb7a9e59cb933e049b540f99add1e",
+    "5af572b6443715b7a741296c1bd520a1840f9a7c",
+    "92e5e9159850c01635091ea6ded0d8ee76691a9a",
+    "dacd1f50feb24ccdf6155b2b7a6126fe21a47ad0"
+  ],
+  "changeHistoryShort": {
+    "edf9445708ffb7a9e59cb933e049b540f99add1e": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparametermetachange,Yparameterchange)",
+    "5af572b6443715b7a741296c1bd520a1840f9a7c": "Ybodychange",
+    "92e5e9159850c01635091ea6ded0d8ee76691a9a": "Yfilerename",
+    "dacd1f50feb24ccdf6155b2b7a6126fe21a47ad0": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "edf9445708ffb7a9e59cb933e049b540f99add1e": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparametermetachange,Yparameterchange)",
+      "commitMessage": "HDFS-13109. Support fully qualified hdfs path in EZ commands. Contributed by Hanisha Koneru.\n",
+      "commitDate": "06/03/18 4:44 PM",
+      "commitName": "edf9445708ffb7a9e59cb933e049b540f99add1e",
+      "commitAuthor": "Xiaoyu Yao",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-13109. Support fully qualified hdfs path in EZ commands. Contributed by Hanisha Koneru.\n",
+          "commitDate": "06/03/18 4:44 PM",
+          "commitName": "edf9445708ffb7a9e59cb933e049b540f99add1e",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "06/03/18 1:35 PM",
+          "commitNameOld": "346caa209571dedf1331b2658d5702b45dd40bfe",
+          "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+          "daysBetweenCommits": 0.13,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,23 @@\n-  private void provisionEZTrash(Path path) throws IOException {\n-    // make sure the path is an EZ\n-    EncryptionZone ez \u003d dfs.getEZForPath(path);\n-    if (ez \u003d\u003d null) {\n-      throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n-    }\n-\n-    String ezPath \u003d ez.getPath();\n-    if (!path.toString().equals(ezPath)) {\n-      throw new IllegalArgumentException(path + \" is not the root of an \" +\n-          \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n-    }\n-\n-    // check if the trash directory exists\n-\n-    Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n-\n-    try {\n-      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n-      String errMessage \u003d \"Will not provision new trash directory for \" +\n-          \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n-      if (!trashFileStatus.isDirectory()) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: \" + trashPath.toString() + \" is not a directory\";\n+  public void provisionEZTrash(final Path path,\n+      final FsPermission trashPermission) throws IOException {\n+    Path absF \u003d fixRelativePart(path);\n+    new FileSystemLinkResolver\u003cVoid\u003e() {\n+      @Override\n+      public Void doCall(Path p) throws IOException {\n+        provisionEZTrash(getPathName(p), trashPermission);\n+        return null;\n       }\n-      if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: the permission of \" +\n-            trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n-      }\n-      throw new FileAlreadyExistsException(errMessage);\n-    } catch (FileNotFoundException ignored) {\n-      // no trash path\n-    }\n \n-    // Update the permission bits\n-    dfs.mkdir(trashPath, TRASH_PERMISSION);\n-    dfs.setPermission(trashPath, TRASH_PERMISSION);\n+      @Override\n+      public Void next(FileSystem fs, Path p) throws IOException {\n+        if (fs instanceof DistributedFileSystem) {\n+          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n+          myDfs.provisionEZTrash(p, trashPermission);\n+          return null;\n+        }\n+        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n+            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n+            + p);\n+      }\n+    }.resolve(this, absF);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void provisionEZTrash(final Path path,\n      final FsPermission trashPermission) throws IOException {\n    Path absF \u003d fixRelativePart(path);\n    new FileSystemLinkResolver\u003cVoid\u003e() {\n      @Override\n      public Void doCall(Path p) throws IOException {\n        provisionEZTrash(getPathName(p), trashPermission);\n        return null;\n      }\n\n      @Override\n      public Void next(FileSystem fs, Path p) throws IOException {\n        if (fs instanceof DistributedFileSystem) {\n          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n          myDfs.provisionEZTrash(p, trashPermission);\n          return null;\n        }\n        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n            + p);\n      }\n    }.resolve(this, absF);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/client/HdfsAdmin.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+            "oldMethodName": "provisionEZTrash",
+            "newMethodName": "provisionEZTrash"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-13109. Support fully qualified hdfs path in EZ commands. Contributed by Hanisha Koneru.\n",
+          "commitDate": "06/03/18 4:44 PM",
+          "commitName": "edf9445708ffb7a9e59cb933e049b540f99add1e",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "06/03/18 1:35 PM",
+          "commitNameOld": "346caa209571dedf1331b2658d5702b45dd40bfe",
+          "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+          "daysBetweenCommits": 0.13,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,23 @@\n-  private void provisionEZTrash(Path path) throws IOException {\n-    // make sure the path is an EZ\n-    EncryptionZone ez \u003d dfs.getEZForPath(path);\n-    if (ez \u003d\u003d null) {\n-      throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n-    }\n-\n-    String ezPath \u003d ez.getPath();\n-    if (!path.toString().equals(ezPath)) {\n-      throw new IllegalArgumentException(path + \" is not the root of an \" +\n-          \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n-    }\n-\n-    // check if the trash directory exists\n-\n-    Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n-\n-    try {\n-      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n-      String errMessage \u003d \"Will not provision new trash directory for \" +\n-          \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n-      if (!trashFileStatus.isDirectory()) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: \" + trashPath.toString() + \" is not a directory\";\n+  public void provisionEZTrash(final Path path,\n+      final FsPermission trashPermission) throws IOException {\n+    Path absF \u003d fixRelativePart(path);\n+    new FileSystemLinkResolver\u003cVoid\u003e() {\n+      @Override\n+      public Void doCall(Path p) throws IOException {\n+        provisionEZTrash(getPathName(p), trashPermission);\n+        return null;\n       }\n-      if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: the permission of \" +\n-            trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n-      }\n-      throw new FileAlreadyExistsException(errMessage);\n-    } catch (FileNotFoundException ignored) {\n-      // no trash path\n-    }\n \n-    // Update the permission bits\n-    dfs.mkdir(trashPath, TRASH_PERMISSION);\n-    dfs.setPermission(trashPath, TRASH_PERMISSION);\n+      @Override\n+      public Void next(FileSystem fs, Path p) throws IOException {\n+        if (fs instanceof DistributedFileSystem) {\n+          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n+          myDfs.provisionEZTrash(p, trashPermission);\n+          return null;\n+        }\n+        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n+            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n+            + p);\n+      }\n+    }.resolve(this, absF);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void provisionEZTrash(final Path path,\n      final FsPermission trashPermission) throws IOException {\n    Path absF \u003d fixRelativePart(path);\n    new FileSystemLinkResolver\u003cVoid\u003e() {\n      @Override\n      public Void doCall(Path p) throws IOException {\n        provisionEZTrash(getPathName(p), trashPermission);\n        return null;\n      }\n\n      @Override\n      public Void next(FileSystem fs, Path p) throws IOException {\n        if (fs instanceof DistributedFileSystem) {\n          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n          myDfs.provisionEZTrash(p, trashPermission);\n          return null;\n        }\n        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n            + p);\n      }\n    }.resolve(this, absF);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13109. Support fully qualified hdfs path in EZ commands. Contributed by Hanisha Koneru.\n",
+          "commitDate": "06/03/18 4:44 PM",
+          "commitName": "edf9445708ffb7a9e59cb933e049b540f99add1e",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "06/03/18 1:35 PM",
+          "commitNameOld": "346caa209571dedf1331b2658d5702b45dd40bfe",
+          "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+          "daysBetweenCommits": 0.13,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,23 @@\n-  private void provisionEZTrash(Path path) throws IOException {\n-    // make sure the path is an EZ\n-    EncryptionZone ez \u003d dfs.getEZForPath(path);\n-    if (ez \u003d\u003d null) {\n-      throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n-    }\n-\n-    String ezPath \u003d ez.getPath();\n-    if (!path.toString().equals(ezPath)) {\n-      throw new IllegalArgumentException(path + \" is not the root of an \" +\n-          \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n-    }\n-\n-    // check if the trash directory exists\n-\n-    Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n-\n-    try {\n-      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n-      String errMessage \u003d \"Will not provision new trash directory for \" +\n-          \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n-      if (!trashFileStatus.isDirectory()) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: \" + trashPath.toString() + \" is not a directory\";\n+  public void provisionEZTrash(final Path path,\n+      final FsPermission trashPermission) throws IOException {\n+    Path absF \u003d fixRelativePart(path);\n+    new FileSystemLinkResolver\u003cVoid\u003e() {\n+      @Override\n+      public Void doCall(Path p) throws IOException {\n+        provisionEZTrash(getPathName(p), trashPermission);\n+        return null;\n       }\n-      if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: the permission of \" +\n-            trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n-      }\n-      throw new FileAlreadyExistsException(errMessage);\n-    } catch (FileNotFoundException ignored) {\n-      // no trash path\n-    }\n \n-    // Update the permission bits\n-    dfs.mkdir(trashPath, TRASH_PERMISSION);\n-    dfs.setPermission(trashPath, TRASH_PERMISSION);\n+      @Override\n+      public Void next(FileSystem fs, Path p) throws IOException {\n+        if (fs instanceof DistributedFileSystem) {\n+          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n+          myDfs.provisionEZTrash(p, trashPermission);\n+          return null;\n+        }\n+        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n+            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n+            + p);\n+      }\n+    }.resolve(this, absF);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void provisionEZTrash(final Path path,\n      final FsPermission trashPermission) throws IOException {\n    Path absF \u003d fixRelativePart(path);\n    new FileSystemLinkResolver\u003cVoid\u003e() {\n      @Override\n      public Void doCall(Path p) throws IOException {\n        provisionEZTrash(getPathName(p), trashPermission);\n        return null;\n      }\n\n      @Override\n      public Void next(FileSystem fs, Path p) throws IOException {\n        if (fs instanceof DistributedFileSystem) {\n          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n          myDfs.provisionEZTrash(p, trashPermission);\n          return null;\n        }\n        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n            + p);\n      }\n    }.resolve(this, absF);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparametermetachange",
+          "commitMessage": "HDFS-13109. Support fully qualified hdfs path in EZ commands. Contributed by Hanisha Koneru.\n",
+          "commitDate": "06/03/18 4:44 PM",
+          "commitName": "edf9445708ffb7a9e59cb933e049b540f99add1e",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "06/03/18 1:35 PM",
+          "commitNameOld": "346caa209571dedf1331b2658d5702b45dd40bfe",
+          "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+          "daysBetweenCommits": 0.13,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,23 @@\n-  private void provisionEZTrash(Path path) throws IOException {\n-    // make sure the path is an EZ\n-    EncryptionZone ez \u003d dfs.getEZForPath(path);\n-    if (ez \u003d\u003d null) {\n-      throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n-    }\n-\n-    String ezPath \u003d ez.getPath();\n-    if (!path.toString().equals(ezPath)) {\n-      throw new IllegalArgumentException(path + \" is not the root of an \" +\n-          \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n-    }\n-\n-    // check if the trash directory exists\n-\n-    Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n-\n-    try {\n-      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n-      String errMessage \u003d \"Will not provision new trash directory for \" +\n-          \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n-      if (!trashFileStatus.isDirectory()) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: \" + trashPath.toString() + \" is not a directory\";\n+  public void provisionEZTrash(final Path path,\n+      final FsPermission trashPermission) throws IOException {\n+    Path absF \u003d fixRelativePart(path);\n+    new FileSystemLinkResolver\u003cVoid\u003e() {\n+      @Override\n+      public Void doCall(Path p) throws IOException {\n+        provisionEZTrash(getPathName(p), trashPermission);\n+        return null;\n       }\n-      if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: the permission of \" +\n-            trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n-      }\n-      throw new FileAlreadyExistsException(errMessage);\n-    } catch (FileNotFoundException ignored) {\n-      // no trash path\n-    }\n \n-    // Update the permission bits\n-    dfs.mkdir(trashPath, TRASH_PERMISSION);\n-    dfs.setPermission(trashPath, TRASH_PERMISSION);\n+      @Override\n+      public Void next(FileSystem fs, Path p) throws IOException {\n+        if (fs instanceof DistributedFileSystem) {\n+          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n+          myDfs.provisionEZTrash(p, trashPermission);\n+          return null;\n+        }\n+        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n+            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n+            + p);\n+      }\n+    }.resolve(this, absF);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void provisionEZTrash(final Path path,\n      final FsPermission trashPermission) throws IOException {\n    Path absF \u003d fixRelativePart(path);\n    new FileSystemLinkResolver\u003cVoid\u003e() {\n      @Override\n      public Void doCall(Path p) throws IOException {\n        provisionEZTrash(getPathName(p), trashPermission);\n        return null;\n      }\n\n      @Override\n      public Void next(FileSystem fs, Path p) throws IOException {\n        if (fs instanceof DistributedFileSystem) {\n          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n          myDfs.provisionEZTrash(p, trashPermission);\n          return null;\n        }\n        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n            + p);\n      }\n    }.resolve(this, absF);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[path-Path]",
+            "newValue": "[path-Path(modifiers-final), trashPermission-FsPermission(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13109. Support fully qualified hdfs path in EZ commands. Contributed by Hanisha Koneru.\n",
+          "commitDate": "06/03/18 4:44 PM",
+          "commitName": "edf9445708ffb7a9e59cb933e049b540f99add1e",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "06/03/18 1:35 PM",
+          "commitNameOld": "346caa209571dedf1331b2658d5702b45dd40bfe",
+          "commitAuthorOld": "Tsz-Wo Nicholas Sze",
+          "daysBetweenCommits": 0.13,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,39 +1,23 @@\n-  private void provisionEZTrash(Path path) throws IOException {\n-    // make sure the path is an EZ\n-    EncryptionZone ez \u003d dfs.getEZForPath(path);\n-    if (ez \u003d\u003d null) {\n-      throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n-    }\n-\n-    String ezPath \u003d ez.getPath();\n-    if (!path.toString().equals(ezPath)) {\n-      throw new IllegalArgumentException(path + \" is not the root of an \" +\n-          \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n-    }\n-\n-    // check if the trash directory exists\n-\n-    Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n-\n-    try {\n-      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n-      String errMessage \u003d \"Will not provision new trash directory for \" +\n-          \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n-      if (!trashFileStatus.isDirectory()) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: \" + trashPath.toString() + \" is not a directory\";\n+  public void provisionEZTrash(final Path path,\n+      final FsPermission trashPermission) throws IOException {\n+    Path absF \u003d fixRelativePart(path);\n+    new FileSystemLinkResolver\u003cVoid\u003e() {\n+      @Override\n+      public Void doCall(Path p) throws IOException {\n+        provisionEZTrash(getPathName(p), trashPermission);\n+        return null;\n       }\n-      if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n-        errMessage +\u003d \"\\r\\n\" +\n-            \"Warning: the permission of \" +\n-            trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n-      }\n-      throw new FileAlreadyExistsException(errMessage);\n-    } catch (FileNotFoundException ignored) {\n-      // no trash path\n-    }\n \n-    // Update the permission bits\n-    dfs.mkdir(trashPath, TRASH_PERMISSION);\n-    dfs.setPermission(trashPath, TRASH_PERMISSION);\n+      @Override\n+      public Void next(FileSystem fs, Path p) throws IOException {\n+        if (fs instanceof DistributedFileSystem) {\n+          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n+          myDfs.provisionEZTrash(p, trashPermission);\n+          return null;\n+        }\n+        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n+            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n+            + p);\n+      }\n+    }.resolve(this, absF);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public void provisionEZTrash(final Path path,\n      final FsPermission trashPermission) throws IOException {\n    Path absF \u003d fixRelativePart(path);\n    new FileSystemLinkResolver\u003cVoid\u003e() {\n      @Override\n      public Void doCall(Path p) throws IOException {\n        provisionEZTrash(getPathName(p), trashPermission);\n        return null;\n      }\n\n      @Override\n      public Void next(FileSystem fs, Path p) throws IOException {\n        if (fs instanceof DistributedFileSystem) {\n          DistributedFileSystem myDfs \u003d (DistributedFileSystem)fs;\n          myDfs.provisionEZTrash(p, trashPermission);\n          return null;\n        }\n        throw new UnsupportedOperationException(\"Cannot provisionEZTrash \" +\n            \"through a symlink to a non-DistributedFileSystem: \" + fs + \" -\u003e \"\n            + p);\n      }\n    }.resolve(this, absF);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/DistributedFileSystem.java",
+          "extendedDetails": {
+            "oldValue": "[path-Path]",
+            "newValue": "[path-Path(modifiers-final), trashPermission-FsPermission(modifiers-final)]"
+          }
+        }
+      ]
+    },
+    "5af572b6443715b7a741296c1bd520a1840f9a7c": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-13427. Eliminate needless uses of FileSystem#{exists(), isFile(), isDirectory()}. Contributed by Steve Loughran and Mingliang Liu\n",
+      "commitDate": "15/11/16 10:57 AM",
+      "commitName": "5af572b6443715b7a741296c1bd520a1840f9a7c",
+      "commitAuthor": "Mingliang Liu",
+      "commitDateOld": "03/10/16 4:01 PM",
+      "commitNameOld": "853d65a157362661ccab10379c2d82e780382f83",
+      "commitAuthorOld": "Xiao Chen",
+      "daysBetweenCommits": 42.83,
+      "commitsBetweenForRepo": 385,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,37 +1,39 @@\n   private void provisionEZTrash(Path path) throws IOException {\n     // make sure the path is an EZ\n     EncryptionZone ez \u003d dfs.getEZForPath(path);\n     if (ez \u003d\u003d null) {\n       throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n     }\n \n     String ezPath \u003d ez.getPath();\n     if (!path.toString().equals(ezPath)) {\n       throw new IllegalArgumentException(path + \" is not the root of an \" +\n           \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n     }\n \n     // check if the trash directory exists\n \n     Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n \n-    if (dfs.exists(trashPath)) {\n+    try {\n+      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n       String errMessage \u003d \"Will not provision new trash directory for \" +\n           \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n-      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n       if (!trashFileStatus.isDirectory()) {\n         errMessage +\u003d \"\\r\\n\" +\n             \"Warning: \" + trashPath.toString() + \" is not a directory\";\n       }\n       if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n         errMessage +\u003d \"\\r\\n\" +\n             \"Warning: the permission of \" +\n             trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n       }\n-      throw new IOException(errMessage);\n+      throw new FileAlreadyExistsException(errMessage);\n+    } catch (FileNotFoundException ignored) {\n+      // no trash path\n     }\n \n     // Update the permission bits\n     dfs.mkdir(trashPath, TRASH_PERMISSION);\n     dfs.setPermission(trashPath, TRASH_PERMISSION);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  private void provisionEZTrash(Path path) throws IOException {\n    // make sure the path is an EZ\n    EncryptionZone ez \u003d dfs.getEZForPath(path);\n    if (ez \u003d\u003d null) {\n      throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n    }\n\n    String ezPath \u003d ez.getPath();\n    if (!path.toString().equals(ezPath)) {\n      throw new IllegalArgumentException(path + \" is not the root of an \" +\n          \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n    }\n\n    // check if the trash directory exists\n\n    Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n\n    try {\n      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n      String errMessage \u003d \"Will not provision new trash directory for \" +\n          \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n      if (!trashFileStatus.isDirectory()) {\n        errMessage +\u003d \"\\r\\n\" +\n            \"Warning: \" + trashPath.toString() + \" is not a directory\";\n      }\n      if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n        errMessage +\u003d \"\\r\\n\" +\n            \"Warning: the permission of \" +\n            trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n      }\n      throw new FileAlreadyExistsException(errMessage);\n    } catch (FileNotFoundException ignored) {\n      // no trash path\n    }\n\n    // Update the permission bits\n    dfs.mkdir(trashPath, TRASH_PERMISSION);\n    dfs.setPermission(trashPath, TRASH_PERMISSION);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/client/HdfsAdmin.java",
+      "extendedDetails": {}
+    },
+    "92e5e9159850c01635091ea6ded0d8ee76691a9a": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-10914. Move remnants of oah.hdfs.client to hadoop-hdfs-client.\n",
+      "commitDate": "28/09/16 4:01 PM",
+      "commitName": "92e5e9159850c01635091ea6ded0d8ee76691a9a",
+      "commitAuthor": "Andrew Wang",
+      "commitDateOld": "28/09/16 3:57 PM",
+      "commitNameOld": "5f34402adae191232fe78e62990396ca07f314bb",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  private void provisionEZTrash(Path path) throws IOException {\n    // make sure the path is an EZ\n    EncryptionZone ez \u003d dfs.getEZForPath(path);\n    if (ez \u003d\u003d null) {\n      throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n    }\n\n    String ezPath \u003d ez.getPath();\n    if (!path.toString().equals(ezPath)) {\n      throw new IllegalArgumentException(path + \" is not the root of an \" +\n          \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n    }\n\n    // check if the trash directory exists\n\n    Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n\n    if (dfs.exists(trashPath)) {\n      String errMessage \u003d \"Will not provision new trash directory for \" +\n          \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n      if (!trashFileStatus.isDirectory()) {\n        errMessage +\u003d \"\\r\\n\" +\n            \"Warning: \" + trashPath.toString() + \" is not a directory\";\n      }\n      if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n        errMessage +\u003d \"\\r\\n\" +\n            \"Warning: the permission of \" +\n            trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n      }\n      throw new IOException(errMessage);\n    }\n\n    // Update the permission bits\n    dfs.mkdir(trashPath, TRASH_PERMISSION);\n    dfs.setPermission(trashPath, TRASH_PERMISSION);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/client/HdfsAdmin.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/client/HdfsAdmin.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/client/HdfsAdmin.java"
+      }
+    },
+    "dacd1f50feb24ccdf6155b2b7a6126fe21a47ad0": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-10324. Trash directory in an encryption zone should be pre-created with correct permissions. Contributed by Wei-Chiu Chuang.\n",
+      "commitDate": "05/05/16 6:08 PM",
+      "commitName": "dacd1f50feb24ccdf6155b2b7a6126fe21a47ad0",
+      "commitAuthor": "Xiaoyu Yao",
+      "diff": "@@ -0,0 +1,37 @@\n+  private void provisionEZTrash(Path path) throws IOException {\n+    // make sure the path is an EZ\n+    EncryptionZone ez \u003d dfs.getEZForPath(path);\n+    if (ez \u003d\u003d null) {\n+      throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n+    }\n+\n+    String ezPath \u003d ez.getPath();\n+    if (!path.toString().equals(ezPath)) {\n+      throw new IllegalArgumentException(path + \" is not the root of an \" +\n+          \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n+    }\n+\n+    // check if the trash directory exists\n+\n+    Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n+\n+    if (dfs.exists(trashPath)) {\n+      String errMessage \u003d \"Will not provision new trash directory for \" +\n+          \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n+      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n+      if (!trashFileStatus.isDirectory()) {\n+        errMessage +\u003d \"\\r\\n\" +\n+            \"Warning: \" + trashPath.toString() + \" is not a directory\";\n+      }\n+      if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n+        errMessage +\u003d \"\\r\\n\" +\n+            \"Warning: the permission of \" +\n+            trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n+      }\n+      throw new IOException(errMessage);\n+    }\n+\n+    // Update the permission bits\n+    dfs.mkdir(trashPath, TRASH_PERMISSION);\n+    dfs.setPermission(trashPath, TRASH_PERMISSION);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private void provisionEZTrash(Path path) throws IOException {\n    // make sure the path is an EZ\n    EncryptionZone ez \u003d dfs.getEZForPath(path);\n    if (ez \u003d\u003d null) {\n      throw new IllegalArgumentException(path + \" is not an encryption zone.\");\n    }\n\n    String ezPath \u003d ez.getPath();\n    if (!path.toString().equals(ezPath)) {\n      throw new IllegalArgumentException(path + \" is not the root of an \" +\n          \"encryption zone. Do you mean \" + ez.getPath() + \"?\");\n    }\n\n    // check if the trash directory exists\n\n    Path trashPath \u003d new Path(ez.getPath(), FileSystem.TRASH_PREFIX);\n\n    if (dfs.exists(trashPath)) {\n      String errMessage \u003d \"Will not provision new trash directory for \" +\n          \"encryption zone \" + ez.getPath() + \". Path already exists.\";\n      FileStatus trashFileStatus \u003d dfs.getFileStatus(trashPath);\n      if (!trashFileStatus.isDirectory()) {\n        errMessage +\u003d \"\\r\\n\" +\n            \"Warning: \" + trashPath.toString() + \" is not a directory\";\n      }\n      if (!trashFileStatus.getPermission().equals(TRASH_PERMISSION)) {\n        errMessage +\u003d \"\\r\\n\" +\n            \"Warning: the permission of \" +\n            trashPath.toString() + \" is not \" + TRASH_PERMISSION;\n      }\n      throw new IOException(errMessage);\n    }\n\n    // Update the permission bits\n    dfs.mkdir(trashPath, TRASH_PERMISSION);\n    dfs.setPermission(trashPath, TRASH_PERMISSION);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/client/HdfsAdmin.java"
+    }
+  }
+}

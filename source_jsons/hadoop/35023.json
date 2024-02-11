@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ConfigurationNodeAttributesProvider.java",
+  "functionName": "parseAttributes",
+  "functionId": "parseAttributes___config-String",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/nodelabels/ConfigurationNodeAttributesProvider.java",
+  "functionStartLine": 72,
+  "functionEndLine": 133,
+  "numCommitsSeen": 2,
+  "timeTaken": 1537,
+  "changeHistory": [
+    "440ff7f563df5e7db72dce020c3c3dc379f88c91",
+    "3b3b6efe2103244febfe6b4f61989e92bd7bb08a"
+  ],
+  "changeHistoryShort": {
+    "440ff7f563df5e7db72dce020c3c3dc379f88c91": "Ybodychange",
+    "3b3b6efe2103244febfe6b4f61989e92bd7bb08a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "440ff7f563df5e7db72dce020c3c3dc379f88c91": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-8094. Support configuration based Node Attribute provider. Contributed by Weiwei Yang.\n",
+      "commitDate": "12/09/18 3:31 AM",
+      "commitName": "440ff7f563df5e7db72dce020c3c3dc379f88c91",
+      "commitAuthor": "Sunil G",
+      "commitDateOld": "12/09/18 3:31 AM",
+      "commitNameOld": "3b3b6efe2103244febfe6b4f61989e92bd7bb08a",
+      "commitAuthorOld": "Naganarasimha",
+      "daysBetweenCommits": 0.0,
+      "commitsBetweenForRepo": 2,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,4 +1,62 @@\n   public Set\u003cNodeAttribute\u003e parseAttributes(String config)\n       throws IOException {\n-    return new HashSet\u003c\u003e();\n+    if (Strings.isNullOrEmpty(config)) {\n+      return ImmutableSet.of();\n+    }\n+    Set\u003cNodeAttribute\u003e attributeSet \u003d new HashSet\u003c\u003e();\n+    // Configuration value should be in one line, format:\n+    // \"ATTRIBUTE_NAME,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE\",\n+    // multiple node-attributes are delimited by \":\".\n+    // Each attribute str should not container any space.\n+    String[] attributeStrs \u003d config.split(NODE_ATTRIBUTES_DELIMITER);\n+    for (String attributeStr : attributeStrs) {\n+      String[] fields \u003d attributeStr.split(NODE_ATTRIBUTE_DELIMITER);\n+      if (fields.length !\u003d 3) {\n+        throw new IOException(\"Invalid value for \"\n+            + YarnConfiguration.NM_PROVIDER_CONFIGURED_NODE_ATTRIBUTES\n+            + \"\u003d\" + config);\n+      }\n+\n+      // We don\u0027t allow user config to overwrite our dist prefix,\n+      // so disallow any prefix set in the configuration.\n+      if (fields[0].contains(\"/\")) {\n+        throw new IOException(\"Node attribute set in \"\n+            + YarnConfiguration.NM_PROVIDER_CONFIGURED_NODE_ATTRIBUTES\n+            + \" should not contain any prefix.\");\n+      }\n+\n+      // Make sure attribute type is valid.\n+      if (!EnumUtils.isValidEnum(NodeAttributeType.class, fields[1])) {\n+        throw new IOException(\"Invalid node attribute type: \"\n+            + fields[1] + \", valid values are \"\n+            + Arrays.asList(NodeAttributeType.values()));\n+      }\n+\n+      // Automatically setup prefix for collected attributes\n+      NodeAttribute na \u003d NodeAttribute.newInstance(\n+          NodeAttribute.PREFIX_DISTRIBUTED,\n+          fields[0],\n+          NodeAttributeType.valueOf(fields[1]),\n+          fields[2]);\n+\n+      // Since a NodeAttribute is identical with another one as long as\n+      // their prefix and name are same, to avoid attributes getting\n+      // overwritten by ambiguous attribute, make sure it fails in such\n+      // case.\n+      if (!attributeSet.add(na)) {\n+        throw new IOException(\"Ambiguous node attribute is found: \"\n+            + na.toString() + \", a same attribute already exists\");\n+      }\n+    }\n+\n+    // Before updating the attributes to the provider,\n+    // verify if they are valid\n+    try {\n+      NodeLabelUtil.validateNodeAttributes(attributeSet);\n+    } catch (IOException e) {\n+      throw new IOException(\"Node attributes set by configuration property: \"\n+          + YarnConfiguration.NM_PROVIDER_CONFIGURED_NODE_ATTRIBUTES\n+          + \" is not valid. Detail message: \" + e.getMessage());\n+    }\n+    return attributeSet;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public Set\u003cNodeAttribute\u003e parseAttributes(String config)\n      throws IOException {\n    if (Strings.isNullOrEmpty(config)) {\n      return ImmutableSet.of();\n    }\n    Set\u003cNodeAttribute\u003e attributeSet \u003d new HashSet\u003c\u003e();\n    // Configuration value should be in one line, format:\n    // \"ATTRIBUTE_NAME,ATTRIBUTE_TYPE,ATTRIBUTE_VALUE\",\n    // multiple node-attributes are delimited by \":\".\n    // Each attribute str should not container any space.\n    String[] attributeStrs \u003d config.split(NODE_ATTRIBUTES_DELIMITER);\n    for (String attributeStr : attributeStrs) {\n      String[] fields \u003d attributeStr.split(NODE_ATTRIBUTE_DELIMITER);\n      if (fields.length !\u003d 3) {\n        throw new IOException(\"Invalid value for \"\n            + YarnConfiguration.NM_PROVIDER_CONFIGURED_NODE_ATTRIBUTES\n            + \"\u003d\" + config);\n      }\n\n      // We don\u0027t allow user config to overwrite our dist prefix,\n      // so disallow any prefix set in the configuration.\n      if (fields[0].contains(\"/\")) {\n        throw new IOException(\"Node attribute set in \"\n            + YarnConfiguration.NM_PROVIDER_CONFIGURED_NODE_ATTRIBUTES\n            + \" should not contain any prefix.\");\n      }\n\n      // Make sure attribute type is valid.\n      if (!EnumUtils.isValidEnum(NodeAttributeType.class, fields[1])) {\n        throw new IOException(\"Invalid node attribute type: \"\n            + fields[1] + \", valid values are \"\n            + Arrays.asList(NodeAttributeType.values()));\n      }\n\n      // Automatically setup prefix for collected attributes\n      NodeAttribute na \u003d NodeAttribute.newInstance(\n          NodeAttribute.PREFIX_DISTRIBUTED,\n          fields[0],\n          NodeAttributeType.valueOf(fields[1]),\n          fields[2]);\n\n      // Since a NodeAttribute is identical with another one as long as\n      // their prefix and name are same, to avoid attributes getting\n      // overwritten by ambiguous attribute, make sure it fails in such\n      // case.\n      if (!attributeSet.add(na)) {\n        throw new IOException(\"Ambiguous node attribute is found: \"\n            + na.toString() + \", a same attribute already exists\");\n      }\n    }\n\n    // Before updating the attributes to the provider,\n    // verify if they are valid\n    try {\n      NodeLabelUtil.validateNodeAttributes(attributeSet);\n    } catch (IOException e) {\n      throw new IOException(\"Node attributes set by configuration property: \"\n          + YarnConfiguration.NM_PROVIDER_CONFIGURED_NODE_ATTRIBUTES\n          + \" is not valid. Detail message: \" + e.getMessage());\n    }\n    return attributeSet;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/nodelabels/ConfigurationNodeAttributesProvider.java",
+      "extendedDetails": {}
+    },
+    "3b3b6efe2103244febfe6b4f61989e92bd7bb08a": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-7871. Node attributes reporting from NM to RM. Contributed by Weiwei Yang.\n",
+      "commitDate": "12/09/18 3:31 AM",
+      "commitName": "3b3b6efe2103244febfe6b4f61989e92bd7bb08a",
+      "commitAuthor": "Naganarasimha",
+      "diff": "@@ -0,0 +1,4 @@\n+  public Set\u003cNodeAttribute\u003e parseAttributes(String config)\n+      throws IOException {\n+    return new HashSet\u003c\u003e();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public Set\u003cNodeAttribute\u003e parseAttributes(String config)\n      throws IOException {\n    return new HashSet\u003c\u003e();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/nodelabels/ConfigurationNodeAttributesProvider.java"
+    }
+  }
+}

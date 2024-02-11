@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AlignedPlannerWithGreedy.java",
+  "functionName": "init",
+  "functionId": "init___conf-Configuration",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/AlignedPlannerWithGreedy.java",
+  "functionStartLine": 58,
+  "functionEndLine": 85,
+  "numCommitsSeen": 4,
+  "timeTaken": 2676,
+  "changeHistory": [
+    "a3a615eeab8c14ccdc548311097e62a916963dc5",
+    "5f5b031d1f20cb7f621db41979e963eaa42cf52f"
+  ],
+  "changeHistoryShort": {
+    "a3a615eeab8c14ccdc548311097e62a916963dc5": "Ybodychange",
+    "5f5b031d1f20cb7f621db41979e963eaa42cf52f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "a3a615eeab8c14ccdc548311097e62a916963dc5": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-4359. Update LowCost agents logic to take advantage of YARN-4358. (Jonathan Yaniv and Ishai Menache via Subru).\n",
+      "commitDate": "01/05/17 4:01 PM",
+      "commitName": "a3a615eeab8c14ccdc548311097e62a916963dc5",
+      "commitAuthor": "Subru Krishnan",
+      "commitDateOld": "27/02/17 7:08 AM",
+      "commitNameOld": "5f5b031d1f20cb7f621db41979e963eaa42cf52f",
+      "commitAuthorOld": "Naganarasimha",
+      "daysBetweenCommits": 63.33,
+      "commitsBetweenForRepo": 373,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,28 @@\n   public void init(Configuration conf) {\n     int smoothnessFactor \u003d\n         conf.getInt(SMOOTHNESS_FACTOR, DEFAULT_SMOOTHNESS_FACTOR);\n+    allocateLeft \u003d conf.getBoolean(FAVOR_EARLY_ALLOCATION,\n+            DEFAULT_GREEDY_FAVOR_EARLY_ALLOCATION);\n \n     // List of algorithms\n     List\u003cReservationAgent\u003e listAlg \u003d new LinkedList\u003cReservationAgent\u003e();\n \n     // LowCostAligned planning algorithm\n     ReservationAgent algAligned \u003d\n-        new IterativePlanner(new StageEarliestStartByDemand(),\n-            new StageAllocatorLowCostAligned(smoothnessFactor), false);\n+        new IterativePlanner(new StageExecutionIntervalByDemand(),\n+            new StageAllocatorLowCostAligned(smoothnessFactor, allocateLeft),\n+            allocateLeft);\n+\n     listAlg.add(algAligned);\n \n     // Greedy planning algorithm\n     ReservationAgent algGreedy \u003d\n-        new IterativePlanner(new StageEarliestStartByJobArrival(),\n-            new StageAllocatorGreedy(), false);\n+        new IterativePlanner(new StageExecutionIntervalUnconstrained(),\n+            new StageAllocatorGreedyRLE(allocateLeft), allocateLeft);\n     listAlg.add(algGreedy);\n \n     // Set planner:\n     // 1. Attempt to execute algAligned\n     // 2. If failed, fall back to algGreedy\n     planner \u003d new TryManyReservationAgents(listAlg);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void init(Configuration conf) {\n    int smoothnessFactor \u003d\n        conf.getInt(SMOOTHNESS_FACTOR, DEFAULT_SMOOTHNESS_FACTOR);\n    allocateLeft \u003d conf.getBoolean(FAVOR_EARLY_ALLOCATION,\n            DEFAULT_GREEDY_FAVOR_EARLY_ALLOCATION);\n\n    // List of algorithms\n    List\u003cReservationAgent\u003e listAlg \u003d new LinkedList\u003cReservationAgent\u003e();\n\n    // LowCostAligned planning algorithm\n    ReservationAgent algAligned \u003d\n        new IterativePlanner(new StageExecutionIntervalByDemand(),\n            new StageAllocatorLowCostAligned(smoothnessFactor, allocateLeft),\n            allocateLeft);\n\n    listAlg.add(algAligned);\n\n    // Greedy planning algorithm\n    ReservationAgent algGreedy \u003d\n        new IterativePlanner(new StageExecutionIntervalUnconstrained(),\n            new StageAllocatorGreedyRLE(allocateLeft), allocateLeft);\n    listAlg.add(algGreedy);\n\n    // Set planner:\n    // 1. Attempt to execute algAligned\n    // 2. If failed, fall back to algGreedy\n    planner \u003d new TryManyReservationAgents(listAlg);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/AlignedPlannerWithGreedy.java",
+      "extendedDetails": {}
+    },
+    "5f5b031d1f20cb7f621db41979e963eaa42cf52f": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-5703. ReservationAgents are not correctly configured. Contributed by Manikandan R.\n",
+      "commitDate": "27/02/17 7:08 AM",
+      "commitName": "5f5b031d1f20cb7f621db41979e963eaa42cf52f",
+      "commitAuthor": "Naganarasimha",
+      "diff": "@@ -0,0 +1,24 @@\n+  public void init(Configuration conf) {\n+    int smoothnessFactor \u003d\n+        conf.getInt(SMOOTHNESS_FACTOR, DEFAULT_SMOOTHNESS_FACTOR);\n+\n+    // List of algorithms\n+    List\u003cReservationAgent\u003e listAlg \u003d new LinkedList\u003cReservationAgent\u003e();\n+\n+    // LowCostAligned planning algorithm\n+    ReservationAgent algAligned \u003d\n+        new IterativePlanner(new StageEarliestStartByDemand(),\n+            new StageAllocatorLowCostAligned(smoothnessFactor), false);\n+    listAlg.add(algAligned);\n+\n+    // Greedy planning algorithm\n+    ReservationAgent algGreedy \u003d\n+        new IterativePlanner(new StageEarliestStartByJobArrival(),\n+            new StageAllocatorGreedy(), false);\n+    listAlg.add(algGreedy);\n+\n+    // Set planner:\n+    // 1. Attempt to execute algAligned\n+    // 2. If failed, fall back to algGreedy\n+    planner \u003d new TryManyReservationAgents(listAlg);\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void init(Configuration conf) {\n    int smoothnessFactor \u003d\n        conf.getInt(SMOOTHNESS_FACTOR, DEFAULT_SMOOTHNESS_FACTOR);\n\n    // List of algorithms\n    List\u003cReservationAgent\u003e listAlg \u003d new LinkedList\u003cReservationAgent\u003e();\n\n    // LowCostAligned planning algorithm\n    ReservationAgent algAligned \u003d\n        new IterativePlanner(new StageEarliestStartByDemand(),\n            new StageAllocatorLowCostAligned(smoothnessFactor), false);\n    listAlg.add(algAligned);\n\n    // Greedy planning algorithm\n    ReservationAgent algGreedy \u003d\n        new IterativePlanner(new StageEarliestStartByJobArrival(),\n            new StageAllocatorGreedy(), false);\n    listAlg.add(algGreedy);\n\n    // Set planner:\n    // 1. Attempt to execute algAligned\n    // 2. If failed, fall back to algGreedy\n    planner \u003d new TryManyReservationAgents(listAlg);\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-resourcemanager/src/main/java/org/apache/hadoop/yarn/server/resourcemanager/reservation/planning/AlignedPlannerWithGreedy.java"
+    }
+  }
+}

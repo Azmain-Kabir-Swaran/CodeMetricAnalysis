@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "AWSCredentialProviderList.java",
+  "functionName": "close",
+  "functionId": "close",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/AWSCredentialProviderList.java",
+  "functionStartLine": 301,
+  "functionEndLine": 327,
+  "numCommitsSeen": 8,
+  "timeTaken": 2080,
+  "changeHistory": [
+    "da9a39eed138210de29b59b90c449b28da1c04f9",
+    "268ab4e0279b3e40f4a627d3dfe91e2a3523a8cc"
+  ],
+  "changeHistoryShort": {
+    "da9a39eed138210de29b59b90c449b28da1c04f9": "Ybodychange",
+    "268ab4e0279b3e40f4a627d3dfe91e2a3523a8cc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "da9a39eed138210de29b59b90c449b28da1c04f9": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15583. Stabilize S3A Assumed Role support.\nContributed by Steve Loughran.\n",
+      "commitDate": "08/08/18 10:57 PM",
+      "commitName": "da9a39eed138210de29b59b90c449b28da1c04f9",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "27/06/18 10:37 PM",
+      "commitNameOld": "2b2399d623539ab68e71a38fa9fbfc9a405bddb8",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 42.01,
+      "commitsBetweenForRepo": 267,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,7 +1,27 @@\n   public void close() {\n-    for(AWSCredentialsProvider p: providers) {\n+    synchronized (this) {\n+      if (closed.get()) {\n+        // already closed: no-op\n+        return;\n+      }\n+      int remainder \u003d refCount.decrementAndGet();\n+      if (remainder !\u003d 0) {\n+        // still actively used, or somehow things are\n+        // now negative\n+        LOG.debug(\"Not closing {}\", this);\n+        return;\n+      }\n+      // at this point, the closing is going to happen\n+      LOG.debug(\"Closing {}\", this);\n+      closed.set(true);\n+    }\n+\n+    // do this outside the synchronized block.\n+    for (AWSCredentialsProvider p : providers) {\n       if (p instanceof Closeable) {\n-        IOUtils.closeStream((Closeable)p);\n+        IOUtils.closeStream((Closeable) p);\n+      } else if (p instanceof AutoCloseable) {\n+        S3AUtils.closeAutocloseables(LOG, (AutoCloseable)p);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public void close() {\n    synchronized (this) {\n      if (closed.get()) {\n        // already closed: no-op\n        return;\n      }\n      int remainder \u003d refCount.decrementAndGet();\n      if (remainder !\u003d 0) {\n        // still actively used, or somehow things are\n        // now negative\n        LOG.debug(\"Not closing {}\", this);\n        return;\n      }\n      // at this point, the closing is going to happen\n      LOG.debug(\"Closing {}\", this);\n      closed.set(true);\n    }\n\n    // do this outside the synchronized block.\n    for (AWSCredentialsProvider p : providers) {\n      if (p instanceof Closeable) {\n        IOUtils.closeStream((Closeable) p);\n      } else if (p instanceof AutoCloseable) {\n        S3AUtils.closeAutocloseables(LOG, (AutoCloseable)p);\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/AWSCredentialProviderList.java",
+      "extendedDetails": {}
+    },
+    "268ab4e0279b3e40f4a627d3dfe91e2a3523a8cc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-15141 Support IAM Assumed roles in S3A. Contributed by Steve Loughran.\n",
+      "commitDate": "17/01/18 12:05 AM",
+      "commitName": "268ab4e0279b3e40f4a627d3dfe91e2a3523a8cc",
+      "commitAuthor": "Aaron Fabbri",
+      "diff": "@@ -0,0 +1,7 @@\n+  public void close() {\n+    for(AWSCredentialsProvider p: providers) {\n+      if (p instanceof Closeable) {\n+        IOUtils.closeStream((Closeable)p);\n+      }\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public void close() {\n    for(AWSCredentialsProvider p: providers) {\n      if (p instanceof Closeable) {\n        IOUtils.closeStream((Closeable)p);\n      }\n    }\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/AWSCredentialProviderList.java"
+    }
+  }
+}

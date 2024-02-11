@@ -1,0 +1,140 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "RouterRpcServer.java",
+  "functionName": "getDatanodeReport",
+  "functionId": "getDatanodeReport___type-DatanodeReportType__requireResponse-boolean__timeOutMs-long",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcServer.java",
+  "functionStartLine": 879,
+  "functionEndLine": 913,
+  "numCommitsSeen": 79,
+  "timeTaken": 5099,
+  "changeHistory": [
+    "7fe924b1c03a2fa45188027bdc0a36cb6c8b4ba4",
+    "a71656c1c1bf6c680f1382a76ddcac870061f320",
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+    "d5d6a0353bb85b882cc4ef60e3a12d63243d34ba",
+    "81601dac8ec7650bec14700b174910390a92fe1f"
+  ],
+  "changeHistoryShort": {
+    "7fe924b1c03a2fa45188027bdc0a36cb6c8b4ba4": "Ybodychange",
+    "a71656c1c1bf6c680f1382a76ddcac870061f320": "Ymultichange(Yparameterchange,Ybodychange)",
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": "Yfilerename",
+    "d5d6a0353bb85b882cc4ef60e3a12d63243d34ba": "Ybodychange",
+    "81601dac8ec7650bec14700b174910390a92fe1f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7fe924b1c03a2fa45188027bdc0a36cb6c8b4ba4": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-15016. RBF: getDatanodeReport() should return the latest update. Contributed by Inigo Goiri.\n",
+      "commitDate": "13/12/19 10:51 AM",
+      "commitName": "7fe924b1c03a2fa45188027bdc0a36cb6c8b4ba4",
+      "commitAuthor": "Inigo Goiri",
+      "commitDateOld": "24/06/19 9:33 AM",
+      "commitNameOld": "719d57bf46765121550831189591fd420d2b078d",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 172.1,
+      "commitsBetweenForRepo": 1142,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,34 +1,35 @@\n   public DatanodeInfo[] getDatanodeReport(\n       DatanodeReportType type, boolean requireResponse, long timeOutMs)\n           throws IOException {\n     checkOperation(OperationCategory.UNCHECKED);\n \n     Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n     RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n         new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n \n     Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n     Map\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e results \u003d\n         rpcClient.invokeConcurrent(nss, method, requireResponse, false,\n             timeOutMs, DatanodeInfo[].class);\n     for (Entry\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e entry :\n         results.entrySet()) {\n       FederationNamespaceInfo ns \u003d entry.getKey();\n       DatanodeInfo[] result \u003d entry.getValue();\n       for (DatanodeInfo node : result) {\n         String nodeId \u003d node.getXferAddr();\n-        if (!datanodesMap.containsKey(nodeId)) {\n+        DatanodeInfo dn \u003d datanodesMap.get(nodeId);\n+        if (dn \u003d\u003d null || node.getLastUpdate() \u003e dn.getLastUpdate()) {\n           // Add the subcluster as a suffix to the network location\n           node.setNetworkLocation(\n               NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n               node.getNetworkLocation());\n           datanodesMap.put(nodeId, node);\n         } else {\n           LOG.debug(\"{} is in multiple subclusters\", nodeId);\n         }\n       }\n     }\n     // Map -\u003e Array\n     Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n     return toArray(datanodes, DatanodeInfo.class);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public DatanodeInfo[] getDatanodeReport(\n      DatanodeReportType type, boolean requireResponse, long timeOutMs)\n          throws IOException {\n    checkOperation(OperationCategory.UNCHECKED);\n\n    Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n    RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n        new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    Map\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e results \u003d\n        rpcClient.invokeConcurrent(nss, method, requireResponse, false,\n            timeOutMs, DatanodeInfo[].class);\n    for (Entry\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e entry :\n        results.entrySet()) {\n      FederationNamespaceInfo ns \u003d entry.getKey();\n      DatanodeInfo[] result \u003d entry.getValue();\n      for (DatanodeInfo node : result) {\n        String nodeId \u003d node.getXferAddr();\n        DatanodeInfo dn \u003d datanodesMap.get(nodeId);\n        if (dn \u003d\u003d null || node.getLastUpdate() \u003e dn.getLastUpdate()) {\n          // Add the subcluster as a suffix to the network location\n          node.setNetworkLocation(\n              NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n              node.getNetworkLocation());\n          datanodesMap.put(nodeId, node);\n        } else {\n          LOG.debug(\"{} is in multiple subclusters\", nodeId);\n        }\n      }\n    }\n    // Map -\u003e Array\n    Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n    return toArray(datanodes, DatanodeInfo.class);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcServer.java",
+      "extendedDetails": {}
+    },
+    "a71656c1c1bf6c680f1382a76ddcac870061f320": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-13347. RBF: Cache datanode reports. Contributed by Inigo Goiri.\n",
+      "commitDate": "27/03/18 8:00 PM",
+      "commitName": "a71656c1c1bf6c680f1382a76ddcac870061f320",
+      "commitAuthor": "Yiqun Lin",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13347. RBF: Cache datanode reports. Contributed by Inigo Goiri.\n",
+          "commitDate": "27/03/18 8:00 PM",
+          "commitName": "a71656c1c1bf6c680f1382a76ddcac870061f320",
+          "commitAuthor": "Yiqun Lin",
+          "commitDateOld": "26/03/18 3:33 AM",
+          "commitNameOld": "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+          "commitAuthorOld": "Yiqun Lin",
+          "daysBetweenCommits": 1.69,
+          "commitsBetweenForRepo": 17,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,35 +1,34 @@\n   public DatanodeInfo[] getDatanodeReport(\n-      DatanodeReportType type, long timeOutMs) throws IOException {\n+      DatanodeReportType type, boolean requireResponse, long timeOutMs)\n+          throws IOException {\n     checkOperation(OperationCategory.UNCHECKED);\n \n     Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n     RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n         new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n \n     Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n     Map\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e results \u003d\n-        rpcClient.invokeConcurrent(\n-            nss, method, true, false, timeOutMs, DatanodeInfo[].class);\n+        rpcClient.invokeConcurrent(nss, method, requireResponse, false,\n+            timeOutMs, DatanodeInfo[].class);\n     for (Entry\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e entry :\n         results.entrySet()) {\n       FederationNamespaceInfo ns \u003d entry.getKey();\n       DatanodeInfo[] result \u003d entry.getValue();\n       for (DatanodeInfo node : result) {\n         String nodeId \u003d node.getXferAddr();\n         if (!datanodesMap.containsKey(nodeId)) {\n           // Add the subcluster as a suffix to the network location\n           node.setNetworkLocation(\n               NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n               node.getNetworkLocation());\n           datanodesMap.put(nodeId, node);\n         } else {\n           LOG.debug(\"{} is in multiple subclusters\", nodeId);\n         }\n       }\n     }\n     // Map -\u003e Array\n     Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n-    DatanodeInfo[] combinedData \u003d new DatanodeInfo[datanodes.size()];\n-    combinedData \u003d datanodes.toArray(combinedData);\n-    return combinedData;\n+    return toArray(datanodes, DatanodeInfo.class);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public DatanodeInfo[] getDatanodeReport(\n      DatanodeReportType type, boolean requireResponse, long timeOutMs)\n          throws IOException {\n    checkOperation(OperationCategory.UNCHECKED);\n\n    Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n    RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n        new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    Map\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e results \u003d\n        rpcClient.invokeConcurrent(nss, method, requireResponse, false,\n            timeOutMs, DatanodeInfo[].class);\n    for (Entry\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e entry :\n        results.entrySet()) {\n      FederationNamespaceInfo ns \u003d entry.getKey();\n      DatanodeInfo[] result \u003d entry.getValue();\n      for (DatanodeInfo node : result) {\n        String nodeId \u003d node.getXferAddr();\n        if (!datanodesMap.containsKey(nodeId)) {\n          // Add the subcluster as a suffix to the network location\n          node.setNetworkLocation(\n              NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n              node.getNetworkLocation());\n          datanodesMap.put(nodeId, node);\n        } else {\n          LOG.debug(\"{} is in multiple subclusters\", nodeId);\n        }\n      }\n    }\n    // Map -\u003e Array\n    Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n    return toArray(datanodes, DatanodeInfo.class);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcServer.java",
+          "extendedDetails": {
+            "oldValue": "[type-DatanodeReportType, timeOutMs-long]",
+            "newValue": "[type-DatanodeReportType, requireResponse-boolean, timeOutMs-long]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13347. RBF: Cache datanode reports. Contributed by Inigo Goiri.\n",
+          "commitDate": "27/03/18 8:00 PM",
+          "commitName": "a71656c1c1bf6c680f1382a76ddcac870061f320",
+          "commitAuthor": "Yiqun Lin",
+          "commitDateOld": "26/03/18 3:33 AM",
+          "commitNameOld": "cfc3a1c8f06fba4f4bd5ffe8bb2a6944d066948e",
+          "commitAuthorOld": "Yiqun Lin",
+          "daysBetweenCommits": 1.69,
+          "commitsBetweenForRepo": 17,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,35 +1,34 @@\n   public DatanodeInfo[] getDatanodeReport(\n-      DatanodeReportType type, long timeOutMs) throws IOException {\n+      DatanodeReportType type, boolean requireResponse, long timeOutMs)\n+          throws IOException {\n     checkOperation(OperationCategory.UNCHECKED);\n \n     Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n     RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n         new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n \n     Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n     Map\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e results \u003d\n-        rpcClient.invokeConcurrent(\n-            nss, method, true, false, timeOutMs, DatanodeInfo[].class);\n+        rpcClient.invokeConcurrent(nss, method, requireResponse, false,\n+            timeOutMs, DatanodeInfo[].class);\n     for (Entry\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e entry :\n         results.entrySet()) {\n       FederationNamespaceInfo ns \u003d entry.getKey();\n       DatanodeInfo[] result \u003d entry.getValue();\n       for (DatanodeInfo node : result) {\n         String nodeId \u003d node.getXferAddr();\n         if (!datanodesMap.containsKey(nodeId)) {\n           // Add the subcluster as a suffix to the network location\n           node.setNetworkLocation(\n               NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n               node.getNetworkLocation());\n           datanodesMap.put(nodeId, node);\n         } else {\n           LOG.debug(\"{} is in multiple subclusters\", nodeId);\n         }\n       }\n     }\n     // Map -\u003e Array\n     Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n-    DatanodeInfo[] combinedData \u003d new DatanodeInfo[datanodes.size()];\n-    combinedData \u003d datanodes.toArray(combinedData);\n-    return combinedData;\n+    return toArray(datanodes, DatanodeInfo.class);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public DatanodeInfo[] getDatanodeReport(\n      DatanodeReportType type, boolean requireResponse, long timeOutMs)\n          throws IOException {\n    checkOperation(OperationCategory.UNCHECKED);\n\n    Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n    RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n        new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    Map\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e results \u003d\n        rpcClient.invokeConcurrent(nss, method, requireResponse, false,\n            timeOutMs, DatanodeInfo[].class);\n    for (Entry\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e entry :\n        results.entrySet()) {\n      FederationNamespaceInfo ns \u003d entry.getKey();\n      DatanodeInfo[] result \u003d entry.getValue();\n      for (DatanodeInfo node : result) {\n        String nodeId \u003d node.getXferAddr();\n        if (!datanodesMap.containsKey(nodeId)) {\n          // Add the subcluster as a suffix to the network location\n          node.setNetworkLocation(\n              NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n              node.getNetworkLocation());\n          datanodesMap.put(nodeId, node);\n        } else {\n          LOG.debug(\"{} is in multiple subclusters\", nodeId);\n        }\n      }\n    }\n    // Map -\u003e Array\n    Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n    return toArray(datanodes, DatanodeInfo.class);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcServer.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-13215. RBF: Move Router to its own module. Contributed by Wei Yan\n",
+      "commitDate": "19/03/18 10:13 PM",
+      "commitName": "6e2b5fa493ff8e8c2bb28e6f6f4c19347bc9b99d",
+      "commitAuthor": "weiy",
+      "commitDateOld": "19/03/18 5:19 PM",
+      "commitNameOld": "e65ff1c8be48ef4f04ed96f96ac4caef4974944d",
+      "commitAuthorOld": "Inigo Goiri",
+      "daysBetweenCommits": 0.2,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public DatanodeInfo[] getDatanodeReport(\n      DatanodeReportType type, long timeOutMs) throws IOException {\n    checkOperation(OperationCategory.UNCHECKED);\n\n    Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n    RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n        new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    Map\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e results \u003d\n        rpcClient.invokeConcurrent(\n            nss, method, true, false, timeOutMs, DatanodeInfo[].class);\n    for (Entry\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e entry :\n        results.entrySet()) {\n      FederationNamespaceInfo ns \u003d entry.getKey();\n      DatanodeInfo[] result \u003d entry.getValue();\n      for (DatanodeInfo node : result) {\n        String nodeId \u003d node.getXferAddr();\n        if (!datanodesMap.containsKey(nodeId)) {\n          // Add the subcluster as a suffix to the network location\n          node.setNetworkLocation(\n              NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n              node.getNetworkLocation());\n          datanodesMap.put(nodeId, node);\n        } else {\n          LOG.debug(\"{} is in multiple subclusters\", nodeId);\n        }\n      }\n    }\n    // Map -\u003e Array\n    Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n    DatanodeInfo[] combinedData \u003d new DatanodeInfo[datanodes.size()];\n    combinedData \u003d datanodes.toArray(combinedData);\n    return combinedData;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcServer.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcServer.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs-rbf/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcServer.java"
+      }
+    },
+    "d5d6a0353bb85b882cc4ef60e3a12d63243d34ba": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-12919. RBF: Support erasure coding methods in RouterRpcServer. Contributed by Inigo Goiri.\n",
+      "commitDate": "12/01/18 4:25 PM",
+      "commitName": "d5d6a0353bb85b882cc4ef60e3a12d63243d34ba",
+      "commitAuthor": "Inigo Goiri",
+      "commitDateOld": "09/01/18 9:59 PM",
+      "commitNameOld": "d98a2e6e2383f8b66def346409b0517aa32d298d",
+      "commitAuthorOld": "Yiqun Lin",
+      "daysBetweenCommits": 2.77,
+      "commitsBetweenForRepo": 16,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,33 +1,35 @@\n   public DatanodeInfo[] getDatanodeReport(\n       DatanodeReportType type, long timeOutMs) throws IOException {\n     checkOperation(OperationCategory.UNCHECKED);\n \n     Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n     RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n         new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n \n     Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n-    Map\u003cFederationNamespaceInfo, Object\u003e results \u003d\n-        rpcClient.invokeConcurrent(nss, method, true, false, timeOutMs);\n-    for (Entry\u003cFederationNamespaceInfo, Object\u003e entry : results.entrySet()) {\n+    Map\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e results \u003d\n+        rpcClient.invokeConcurrent(\n+            nss, method, true, false, timeOutMs, DatanodeInfo[].class);\n+    for (Entry\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e entry :\n+        results.entrySet()) {\n       FederationNamespaceInfo ns \u003d entry.getKey();\n-      DatanodeInfo[] result \u003d (DatanodeInfo[]) entry.getValue();\n+      DatanodeInfo[] result \u003d entry.getValue();\n       for (DatanodeInfo node : result) {\n         String nodeId \u003d node.getXferAddr();\n         if (!datanodesMap.containsKey(nodeId)) {\n           // Add the subcluster as a suffix to the network location\n           node.setNetworkLocation(\n               NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n               node.getNetworkLocation());\n           datanodesMap.put(nodeId, node);\n         } else {\n           LOG.debug(\"{} is in multiple subclusters\", nodeId);\n         }\n       }\n     }\n     // Map -\u003e Array\n     Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n     DatanodeInfo[] combinedData \u003d new DatanodeInfo[datanodes.size()];\n     combinedData \u003d datanodes.toArray(combinedData);\n     return combinedData;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public DatanodeInfo[] getDatanodeReport(\n      DatanodeReportType type, long timeOutMs) throws IOException {\n    checkOperation(OperationCategory.UNCHECKED);\n\n    Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n    RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n        new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    Map\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e results \u003d\n        rpcClient.invokeConcurrent(\n            nss, method, true, false, timeOutMs, DatanodeInfo[].class);\n    for (Entry\u003cFederationNamespaceInfo, DatanodeInfo[]\u003e entry :\n        results.entrySet()) {\n      FederationNamespaceInfo ns \u003d entry.getKey();\n      DatanodeInfo[] result \u003d entry.getValue();\n      for (DatanodeInfo node : result) {\n        String nodeId \u003d node.getXferAddr();\n        if (!datanodesMap.containsKey(nodeId)) {\n          // Add the subcluster as a suffix to the network location\n          node.setNetworkLocation(\n              NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n              node.getNetworkLocation());\n          datanodesMap.put(nodeId, node);\n        } else {\n          LOG.debug(\"{} is in multiple subclusters\", nodeId);\n        }\n      }\n    }\n    // Map -\u003e Array\n    Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n    DatanodeInfo[] combinedData \u003d new DatanodeInfo[datanodes.size()];\n    combinedData \u003d datanodes.toArray(combinedData);\n    return combinedData;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcServer.java",
+      "extendedDetails": {}
+    },
+    "81601dac8ec7650bec14700b174910390a92fe1f": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-12273. Federation UI. Contributed by Inigo Goiri.\n\n(cherry picked from commit adbb2e00c7b85524fd43bd68895d49814c16680a)\n",
+      "commitDate": "06/10/17 6:50 PM",
+      "commitName": "81601dac8ec7650bec14700b174910390a92fe1f",
+      "commitAuthor": "Inigo Goiri",
+      "diff": "@@ -0,0 +1,33 @@\n+  public DatanodeInfo[] getDatanodeReport(\n+      DatanodeReportType type, long timeOutMs) throws IOException {\n+    checkOperation(OperationCategory.UNCHECKED);\n+\n+    Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n+    RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n+        new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n+\n+    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n+    Map\u003cFederationNamespaceInfo, Object\u003e results \u003d\n+        rpcClient.invokeConcurrent(nss, method, true, false, timeOutMs);\n+    for (Entry\u003cFederationNamespaceInfo, Object\u003e entry : results.entrySet()) {\n+      FederationNamespaceInfo ns \u003d entry.getKey();\n+      DatanodeInfo[] result \u003d (DatanodeInfo[]) entry.getValue();\n+      for (DatanodeInfo node : result) {\n+        String nodeId \u003d node.getXferAddr();\n+        if (!datanodesMap.containsKey(nodeId)) {\n+          // Add the subcluster as a suffix to the network location\n+          node.setNetworkLocation(\n+              NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n+              node.getNetworkLocation());\n+          datanodesMap.put(nodeId, node);\n+        } else {\n+          LOG.debug(\"{} is in multiple subclusters\", nodeId);\n+        }\n+      }\n+    }\n+    // Map -\u003e Array\n+    Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n+    DatanodeInfo[] combinedData \u003d new DatanodeInfo[datanodes.size()];\n+    combinedData \u003d datanodes.toArray(combinedData);\n+    return combinedData;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public DatanodeInfo[] getDatanodeReport(\n      DatanodeReportType type, long timeOutMs) throws IOException {\n    checkOperation(OperationCategory.UNCHECKED);\n\n    Map\u003cString, DatanodeInfo\u003e datanodesMap \u003d new LinkedHashMap\u003c\u003e();\n    RemoteMethod method \u003d new RemoteMethod(\"getDatanodeReport\",\n        new Class\u003c?\u003e[] {DatanodeReportType.class}, type);\n\n    Set\u003cFederationNamespaceInfo\u003e nss \u003d namenodeResolver.getNamespaces();\n    Map\u003cFederationNamespaceInfo, Object\u003e results \u003d\n        rpcClient.invokeConcurrent(nss, method, true, false, timeOutMs);\n    for (Entry\u003cFederationNamespaceInfo, Object\u003e entry : results.entrySet()) {\n      FederationNamespaceInfo ns \u003d entry.getKey();\n      DatanodeInfo[] result \u003d (DatanodeInfo[]) entry.getValue();\n      for (DatanodeInfo node : result) {\n        String nodeId \u003d node.getXferAddr();\n        if (!datanodesMap.containsKey(nodeId)) {\n          // Add the subcluster as a suffix to the network location\n          node.setNetworkLocation(\n              NodeBase.PATH_SEPARATOR_STR + ns.getNameserviceId() +\n              node.getNetworkLocation());\n          datanodesMap.put(nodeId, node);\n        } else {\n          LOG.debug(\"{} is in multiple subclusters\", nodeId);\n        }\n      }\n    }\n    // Map -\u003e Array\n    Collection\u003cDatanodeInfo\u003e datanodes \u003d datanodesMap.values();\n    DatanodeInfo[] combinedData \u003d new DatanodeInfo[datanodes.size()];\n    combinedData \u003d datanodes.toArray(combinedData);\n    return combinedData;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/federation/router/RouterRpcServer.java"
+    }
+  }
+}

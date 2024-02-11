@@ -1,0 +1,218 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "StripeReader.java",
+  "functionName": "decodeAndFillBuffer",
+  "functionId": "decodeAndFillBuffer___fillBuffer-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StripeReader.java",
+  "functionStartLine": 424,
+  "functionEndLine": 454,
+  "numCommitsSeen": 24,
+  "timeTaken": 3269,
+  "changeHistory": [
+    "a8e428b2dc0883184b43cb776d5c7196aaa3bf56",
+    "31ebccc96238136560f4210bdf6766fe18e0650c",
+    "734d54c1a8950446e68098f62d8964e02ecc2890",
+    "401db4fc65140979fe7665983e36905e886df971",
+    "c201cf951d5adefefe7c68e882a0c07962248577"
+  ],
+  "changeHistoryShort": {
+    "a8e428b2dc0883184b43cb776d5c7196aaa3bf56": "Ybodychange",
+    "31ebccc96238136560f4210bdf6766fe18e0650c": "Yexceptionschange",
+    "734d54c1a8950446e68098f62d8964e02ecc2890": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparameterchange)",
+    "401db4fc65140979fe7665983e36905e886df971": "Ymultichange(Yparameterchange,Ybodychange)",
+    "c201cf951d5adefefe7c68e882a0c07962248577": "Ybodychange"
+  },
+  "changeHistoryDetails": {
+    "a8e428b2dc0883184b43cb776d5c7196aaa3bf56": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13468. Add erasure coding metrics into ReadStatistics. (Contributed by Lei (Eddy) Xu)\n",
+      "commitDate": "26/04/18 1:54 PM",
+      "commitName": "a8e428b2dc0883184b43cb776d5c7196aaa3bf56",
+      "commitAuthor": "Lei Xu",
+      "commitDateOld": "16/10/17 7:44 PM",
+      "commitNameOld": "31ebccc96238136560f4210bdf6766fe18e0650c",
+      "commitAuthorOld": "Lei Xu",
+      "daysBetweenCommits": 191.76,
+      "commitsBetweenForRepo": 1897,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,31 @@\n   void decodeAndFillBuffer(boolean fillBuffer) throws IOException {\n     // Step 1: prepare indices and output buffers for missing data units\n     int[] decodeIndices \u003d prepareErasedIndices();\n \n     final int decodeChunkNum \u003d decodeIndices.length;\n     ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n     for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n       outputs[i] \u003d decodeInputs[decodeIndices[i]];\n       decodeInputs[decodeIndices[i]] \u003d null;\n     }\n+\n+    long start \u003d Time.monotonicNow();\n     // Step 2: decode into prepared output buffers\n     decoder.decode(decodeInputs, decodeIndices, outputs);\n \n     // Step 3: fill original application buffer with decoded data\n     if (fillBuffer) {\n       for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n         int missingBlkIdx \u003d decodeIndices[i];\n         StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n         if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n           chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n         }\n       }\n     }\n+    long end \u003d Time.monotonicNow();\n+    // Decoding time includes CPU time on erasure coding and memory copying of\n+    // decoded data.\n+    dfsStripedInputStream.readStatistics.addErasureCodingDecodingTime(\n+        end - start);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void decodeAndFillBuffer(boolean fillBuffer) throws IOException {\n    // Step 1: prepare indices and output buffers for missing data units\n    int[] decodeIndices \u003d prepareErasedIndices();\n\n    final int decodeChunkNum \u003d decodeIndices.length;\n    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n      decodeInputs[decodeIndices[i]] \u003d null;\n    }\n\n    long start \u003d Time.monotonicNow();\n    // Step 2: decode into prepared output buffers\n    decoder.decode(decodeInputs, decodeIndices, outputs);\n\n    // Step 3: fill original application buffer with decoded data\n    if (fillBuffer) {\n      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n        int missingBlkIdx \u003d decodeIndices[i];\n        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n        }\n      }\n    }\n    long end \u003d Time.monotonicNow();\n    // Decoding time includes CPU time on erasure coding and memory copying of\n    // decoded data.\n    dfsStripedInputStream.readStatistics.addErasureCodingDecodingTime(\n        end - start);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StripeReader.java",
+      "extendedDetails": {}
+    },
+    "31ebccc96238136560f4210bdf6766fe18e0650c": {
+      "type": "Yexceptionschange",
+      "commitMessage": "HDFS-12613. Native EC coder should implement release() as idempotent function. (Lei (Eddy) Xu)\n",
+      "commitDate": "16/10/17 7:44 PM",
+      "commitName": "31ebccc96238136560f4210bdf6766fe18e0650c",
+      "commitAuthor": "Lei Xu",
+      "commitDateOld": "21/09/16 6:34 AM",
+      "commitNameOld": "734d54c1a8950446e68098f62d8964e02ecc2890",
+      "commitAuthorOld": "Kai Zheng",
+      "daysBetweenCommits": 390.55,
+      "commitsBetweenForRepo": 2538,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,24 @@\n-  void decodeAndFillBuffer(boolean fillBuffer) {\n+  void decodeAndFillBuffer(boolean fillBuffer) throws IOException {\n     // Step 1: prepare indices and output buffers for missing data units\n     int[] decodeIndices \u003d prepareErasedIndices();\n \n     final int decodeChunkNum \u003d decodeIndices.length;\n     ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n     for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n       outputs[i] \u003d decodeInputs[decodeIndices[i]];\n       decodeInputs[decodeIndices[i]] \u003d null;\n     }\n     // Step 2: decode into prepared output buffers\n     decoder.decode(decodeInputs, decodeIndices, outputs);\n \n     // Step 3: fill original application buffer with decoded data\n     if (fillBuffer) {\n       for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n         int missingBlkIdx \u003d decodeIndices[i];\n         StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n         if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n           chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n         }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  void decodeAndFillBuffer(boolean fillBuffer) throws IOException {\n    // Step 1: prepare indices and output buffers for missing data units\n    int[] decodeIndices \u003d prepareErasedIndices();\n\n    final int decodeChunkNum \u003d decodeIndices.length;\n    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n      decodeInputs[decodeIndices[i]] \u003d null;\n    }\n    // Step 2: decode into prepared output buffers\n    decoder.decode(decodeInputs, decodeIndices, outputs);\n\n    // Step 3: fill original application buffer with decoded data\n    if (fillBuffer) {\n      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n        int missingBlkIdx \u003d decodeIndices[i];\n        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n        }\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StripeReader.java",
+      "extendedDetails": {
+        "oldValue": "[]",
+        "newValue": "[IOException]"
+      }
+    },
+    "734d54c1a8950446e68098f62d8964e02ecc2890": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yparameterchange)",
+      "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+      "commitDate": "21/09/16 6:34 AM",
+      "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+      "commitAuthor": "Kai Zheng",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+          "commitDate": "21/09/16 6:34 AM",
+          "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "20/09/16 12:03 AM",
+          "commitNameOld": "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 1.27,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,24 @@\n-  public static void decodeAndFillBuffer(final ByteBuffer[] decodeInputs,\n-      AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n-      RawErasureDecoder decoder) {\n+  void decodeAndFillBuffer(boolean fillBuffer) {\n     // Step 1: prepare indices and output buffers for missing data units\n-    int[] decodeIndices \u003d new int[parityBlkNum];\n-    int pos \u003d 0;\n-    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n-      if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n-          alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n-        decodeIndices[pos++] \u003d i;\n-      }\n-    }\n-    decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n-    ByteBuffer[] decodeOutputs \u003d new ByteBuffer[decodeIndices.length];\n-    for (int i \u003d 0; i \u003c decodeOutputs.length; i++) {\n-      decodeOutputs[i] \u003d ByteBuffer.allocate(\n-          (int) alignedStripe.getSpanInBlock());\n-    }\n+    int[] decodeIndices \u003d prepareErasedIndices();\n \n+    final int decodeChunkNum \u003d decodeIndices.length;\n+    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n+    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n+      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n+      decodeInputs[decodeIndices[i]] \u003d null;\n+    }\n     // Step 2: decode into prepared output buffers\n-    decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n+    decoder.decode(decodeInputs, decodeIndices, outputs);\n \n     // Step 3: fill original application buffer with decoded data\n-    for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n-      int missingBlkIdx \u003d decodeIndices[i];\n-      StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n-      if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n-        chunk.getChunkBuffer().copyFrom(decodeOutputs[i]);\n+    if (fillBuffer) {\n+      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n+        int missingBlkIdx \u003d decodeIndices[i];\n+        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n+        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n+          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n+        }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void decodeAndFillBuffer(boolean fillBuffer) {\n    // Step 1: prepare indices and output buffers for missing data units\n    int[] decodeIndices \u003d prepareErasedIndices();\n\n    final int decodeChunkNum \u003d decodeIndices.length;\n    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n      decodeInputs[decodeIndices[i]] \u003d null;\n    }\n    // Step 2: decode into prepared output buffers\n    decoder.decode(decodeInputs, decodeIndices, outputs);\n\n    // Step 3: fill original application buffer with decoded data\n    if (fillBuffer) {\n      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n        int missingBlkIdx \u003d decodeIndices[i];\n        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StripeReader.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/util/StripedBlockUtil.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StripeReader.java",
+            "oldMethodName": "decodeAndFillBuffer",
+            "newMethodName": "decodeAndFillBuffer"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+          "commitDate": "21/09/16 6:34 AM",
+          "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "20/09/16 12:03 AM",
+          "commitNameOld": "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 1.27,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,24 @@\n-  public static void decodeAndFillBuffer(final ByteBuffer[] decodeInputs,\n-      AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n-      RawErasureDecoder decoder) {\n+  void decodeAndFillBuffer(boolean fillBuffer) {\n     // Step 1: prepare indices and output buffers for missing data units\n-    int[] decodeIndices \u003d new int[parityBlkNum];\n-    int pos \u003d 0;\n-    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n-      if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n-          alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n-        decodeIndices[pos++] \u003d i;\n-      }\n-    }\n-    decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n-    ByteBuffer[] decodeOutputs \u003d new ByteBuffer[decodeIndices.length];\n-    for (int i \u003d 0; i \u003c decodeOutputs.length; i++) {\n-      decodeOutputs[i] \u003d ByteBuffer.allocate(\n-          (int) alignedStripe.getSpanInBlock());\n-    }\n+    int[] decodeIndices \u003d prepareErasedIndices();\n \n+    final int decodeChunkNum \u003d decodeIndices.length;\n+    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n+    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n+      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n+      decodeInputs[decodeIndices[i]] \u003d null;\n+    }\n     // Step 2: decode into prepared output buffers\n-    decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n+    decoder.decode(decodeInputs, decodeIndices, outputs);\n \n     // Step 3: fill original application buffer with decoded data\n-    for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n-      int missingBlkIdx \u003d decodeIndices[i];\n-      StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n-      if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n-        chunk.getChunkBuffer().copyFrom(decodeOutputs[i]);\n+    if (fillBuffer) {\n+      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n+        int missingBlkIdx \u003d decodeIndices[i];\n+        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n+        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n+          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n+        }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void decodeAndFillBuffer(boolean fillBuffer) {\n    // Step 1: prepare indices and output buffers for missing data units\n    int[] decodeIndices \u003d prepareErasedIndices();\n\n    final int decodeChunkNum \u003d decodeIndices.length;\n    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n      decodeInputs[decodeIndices[i]] \u003d null;\n    }\n    // Step 2: decode into prepared output buffers\n    decoder.decode(decodeInputs, decodeIndices, outputs);\n\n    // Step 3: fill original application buffer with decoded data\n    if (fillBuffer) {\n      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n        int missingBlkIdx \u003d decodeIndices[i];\n        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StripeReader.java",
+          "extendedDetails": {
+            "oldValue": "[public, static]",
+            "newValue": "[]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+          "commitDate": "21/09/16 6:34 AM",
+          "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "20/09/16 12:03 AM",
+          "commitNameOld": "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 1.27,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,24 @@\n-  public static void decodeAndFillBuffer(final ByteBuffer[] decodeInputs,\n-      AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n-      RawErasureDecoder decoder) {\n+  void decodeAndFillBuffer(boolean fillBuffer) {\n     // Step 1: prepare indices and output buffers for missing data units\n-    int[] decodeIndices \u003d new int[parityBlkNum];\n-    int pos \u003d 0;\n-    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n-      if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n-          alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n-        decodeIndices[pos++] \u003d i;\n-      }\n-    }\n-    decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n-    ByteBuffer[] decodeOutputs \u003d new ByteBuffer[decodeIndices.length];\n-    for (int i \u003d 0; i \u003c decodeOutputs.length; i++) {\n-      decodeOutputs[i] \u003d ByteBuffer.allocate(\n-          (int) alignedStripe.getSpanInBlock());\n-    }\n+    int[] decodeIndices \u003d prepareErasedIndices();\n \n+    final int decodeChunkNum \u003d decodeIndices.length;\n+    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n+    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n+      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n+      decodeInputs[decodeIndices[i]] \u003d null;\n+    }\n     // Step 2: decode into prepared output buffers\n-    decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n+    decoder.decode(decodeInputs, decodeIndices, outputs);\n \n     // Step 3: fill original application buffer with decoded data\n-    for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n-      int missingBlkIdx \u003d decodeIndices[i];\n-      StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n-      if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n-        chunk.getChunkBuffer().copyFrom(decodeOutputs[i]);\n+    if (fillBuffer) {\n+      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n+        int missingBlkIdx \u003d decodeIndices[i];\n+        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n+        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n+          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n+        }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void decodeAndFillBuffer(boolean fillBuffer) {\n    // Step 1: prepare indices and output buffers for missing data units\n    int[] decodeIndices \u003d prepareErasedIndices();\n\n    final int decodeChunkNum \u003d decodeIndices.length;\n    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n      decodeInputs[decodeIndices[i]] \u003d null;\n    }\n    // Step 2: decode into prepared output buffers\n    decoder.decode(decodeInputs, decodeIndices, outputs);\n\n    // Step 3: fill original application buffer with decoded data\n    if (fillBuffer) {\n      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n        int missingBlkIdx \u003d decodeIndices[i];\n        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StripeReader.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10861. Refactor StripeReaders and use ECChunk version decode API. Contributed by Sammi Chen\n",
+          "commitDate": "21/09/16 6:34 AM",
+          "commitName": "734d54c1a8950446e68098f62d8964e02ecc2890",
+          "commitAuthor": "Kai Zheng",
+          "commitDateOld": "20/09/16 12:03 AM",
+          "commitNameOld": "2b66d9ec5bdaec7e6b278926fbb6f222c4e3afaa",
+          "commitAuthorOld": "Jian He",
+          "daysBetweenCommits": 1.27,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,31 +1,24 @@\n-  public static void decodeAndFillBuffer(final ByteBuffer[] decodeInputs,\n-      AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n-      RawErasureDecoder decoder) {\n+  void decodeAndFillBuffer(boolean fillBuffer) {\n     // Step 1: prepare indices and output buffers for missing data units\n-    int[] decodeIndices \u003d new int[parityBlkNum];\n-    int pos \u003d 0;\n-    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n-      if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n-          alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n-        decodeIndices[pos++] \u003d i;\n-      }\n-    }\n-    decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n-    ByteBuffer[] decodeOutputs \u003d new ByteBuffer[decodeIndices.length];\n-    for (int i \u003d 0; i \u003c decodeOutputs.length; i++) {\n-      decodeOutputs[i] \u003d ByteBuffer.allocate(\n-          (int) alignedStripe.getSpanInBlock());\n-    }\n+    int[] decodeIndices \u003d prepareErasedIndices();\n \n+    final int decodeChunkNum \u003d decodeIndices.length;\n+    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n+    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n+      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n+      decodeInputs[decodeIndices[i]] \u003d null;\n+    }\n     // Step 2: decode into prepared output buffers\n-    decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n+    decoder.decode(decodeInputs, decodeIndices, outputs);\n \n     // Step 3: fill original application buffer with decoded data\n-    for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n-      int missingBlkIdx \u003d decodeIndices[i];\n-      StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n-      if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n-        chunk.getChunkBuffer().copyFrom(decodeOutputs[i]);\n+    if (fillBuffer) {\n+      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n+        int missingBlkIdx \u003d decodeIndices[i];\n+        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n+        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n+          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n+        }\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  void decodeAndFillBuffer(boolean fillBuffer) {\n    // Step 1: prepare indices and output buffers for missing data units\n    int[] decodeIndices \u003d prepareErasedIndices();\n\n    final int decodeChunkNum \u003d decodeIndices.length;\n    ECChunk[] outputs \u003d new ECChunk[decodeChunkNum];\n    for (int i \u003d 0; i \u003c decodeChunkNum; i++) {\n      outputs[i] \u003d decodeInputs[decodeIndices[i]];\n      decodeInputs[decodeIndices[i]] \u003d null;\n    }\n    // Step 2: decode into prepared output buffers\n    decoder.decode(decodeInputs, decodeIndices, outputs);\n\n    // Step 3: fill original application buffer with decoded data\n    if (fillBuffer) {\n      for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n        int missingBlkIdx \u003d decodeIndices[i];\n        StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n        if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n          chunk.getChunkBuffer().copyFrom(outputs[i].getBuffer());\n        }\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/StripeReader.java",
+          "extendedDetails": {
+            "oldValue": "[decodeInputs-ByteBuffer[](modifiers-final), alignedStripe-AlignedStripe, dataBlkNum-int, parityBlkNum-int, decoder-RawErasureDecoder]",
+            "newValue": "[fillBuffer-boolean]"
+          }
+        }
+      ]
+    },
+    "401db4fc65140979fe7665983e36905e886df971": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-8901. Use ByteBuffer in striping positional read. Contributed by Sammi Chen and Kai Zheng.\n",
+      "commitDate": "08/09/16 11:54 AM",
+      "commitName": "401db4fc65140979fe7665983e36905e886df971",
+      "commitAuthor": "Zhe Zhang",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-8901. Use ByteBuffer in striping positional read. Contributed by Sammi Chen and Kai Zheng.\n",
+          "commitDate": "08/09/16 11:54 AM",
+          "commitName": "401db4fc65140979fe7665983e36905e886df971",
+          "commitAuthor": "Zhe Zhang",
+          "commitDateOld": "06/04/16 10:50 PM",
+          "commitNameOld": "3c18a53cbd2efabb2ad108d63a0b0b558424115f",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 154.54,
+          "commitsBetweenForRepo": 1132,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,31 @@\n-  public static void decodeAndFillBuffer(final byte[][] decodeInputs,\n+  public static void decodeAndFillBuffer(final ByteBuffer[] decodeInputs,\n       AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n       RawErasureDecoder decoder) {\n     // Step 1: prepare indices and output buffers for missing data units\n     int[] decodeIndices \u003d new int[parityBlkNum];\n     int pos \u003d 0;\n     for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n       if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n           alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n         decodeIndices[pos++] \u003d i;\n       }\n     }\n     decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n-    byte[][] decodeOutputs \u003d\n-        new byte[decodeIndices.length][(int) alignedStripe.getSpanInBlock()];\n+    ByteBuffer[] decodeOutputs \u003d new ByteBuffer[decodeIndices.length];\n+    for (int i \u003d 0; i \u003c decodeOutputs.length; i++) {\n+      decodeOutputs[i] \u003d ByteBuffer.allocate(\n+          (int) alignedStripe.getSpanInBlock());\n+    }\n \n     // Step 2: decode into prepared output buffers\n     decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n \n     // Step 3: fill original application buffer with decoded data\n     for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n       int missingBlkIdx \u003d decodeIndices[i];\n       StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n-      if (chunk.state \u003d\u003d StripingChunk.MISSING) {\n-        chunk.copyFrom(decodeOutputs[i]);\n+      if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n+        chunk.getChunkBuffer().copyFrom(decodeOutputs[i]);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void decodeAndFillBuffer(final ByteBuffer[] decodeInputs,\n      AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n      RawErasureDecoder decoder) {\n    // Step 1: prepare indices and output buffers for missing data units\n    int[] decodeIndices \u003d new int[parityBlkNum];\n    int pos \u003d 0;\n    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n      if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n          alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n        decodeIndices[pos++] \u003d i;\n      }\n    }\n    decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n    ByteBuffer[] decodeOutputs \u003d new ByteBuffer[decodeIndices.length];\n    for (int i \u003d 0; i \u003c decodeOutputs.length; i++) {\n      decodeOutputs[i] \u003d ByteBuffer.allocate(\n          (int) alignedStripe.getSpanInBlock());\n    }\n\n    // Step 2: decode into prepared output buffers\n    decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n\n    // Step 3: fill original application buffer with decoded data\n    for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n      int missingBlkIdx \u003d decodeIndices[i];\n      StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n      if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n        chunk.getChunkBuffer().copyFrom(decodeOutputs[i]);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/util/StripedBlockUtil.java",
+          "extendedDetails": {
+            "oldValue": "[decodeInputs-byte[][](modifiers-final), alignedStripe-AlignedStripe, dataBlkNum-int, parityBlkNum-int, decoder-RawErasureDecoder]",
+            "newValue": "[decodeInputs-ByteBuffer[](modifiers-final), alignedStripe-AlignedStripe, dataBlkNum-int, parityBlkNum-int, decoder-RawErasureDecoder]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-8901. Use ByteBuffer in striping positional read. Contributed by Sammi Chen and Kai Zheng.\n",
+          "commitDate": "08/09/16 11:54 AM",
+          "commitName": "401db4fc65140979fe7665983e36905e886df971",
+          "commitAuthor": "Zhe Zhang",
+          "commitDateOld": "06/04/16 10:50 PM",
+          "commitNameOld": "3c18a53cbd2efabb2ad108d63a0b0b558424115f",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 154.54,
+          "commitsBetweenForRepo": 1132,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,31 @@\n-  public static void decodeAndFillBuffer(final byte[][] decodeInputs,\n+  public static void decodeAndFillBuffer(final ByteBuffer[] decodeInputs,\n       AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n       RawErasureDecoder decoder) {\n     // Step 1: prepare indices and output buffers for missing data units\n     int[] decodeIndices \u003d new int[parityBlkNum];\n     int pos \u003d 0;\n     for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n       if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n           alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n         decodeIndices[pos++] \u003d i;\n       }\n     }\n     decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n-    byte[][] decodeOutputs \u003d\n-        new byte[decodeIndices.length][(int) alignedStripe.getSpanInBlock()];\n+    ByteBuffer[] decodeOutputs \u003d new ByteBuffer[decodeIndices.length];\n+    for (int i \u003d 0; i \u003c decodeOutputs.length; i++) {\n+      decodeOutputs[i] \u003d ByteBuffer.allocate(\n+          (int) alignedStripe.getSpanInBlock());\n+    }\n \n     // Step 2: decode into prepared output buffers\n     decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n \n     // Step 3: fill original application buffer with decoded data\n     for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n       int missingBlkIdx \u003d decodeIndices[i];\n       StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n-      if (chunk.state \u003d\u003d StripingChunk.MISSING) {\n-        chunk.copyFrom(decodeOutputs[i]);\n+      if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n+        chunk.getChunkBuffer().copyFrom(decodeOutputs[i]);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public static void decodeAndFillBuffer(final ByteBuffer[] decodeInputs,\n      AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n      RawErasureDecoder decoder) {\n    // Step 1: prepare indices and output buffers for missing data units\n    int[] decodeIndices \u003d new int[parityBlkNum];\n    int pos \u003d 0;\n    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n      if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n          alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n        decodeIndices[pos++] \u003d i;\n      }\n    }\n    decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n    ByteBuffer[] decodeOutputs \u003d new ByteBuffer[decodeIndices.length];\n    for (int i \u003d 0; i \u003c decodeOutputs.length; i++) {\n      decodeOutputs[i] \u003d ByteBuffer.allocate(\n          (int) alignedStripe.getSpanInBlock());\n    }\n\n    // Step 2: decode into prepared output buffers\n    decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n\n    // Step 3: fill original application buffer with decoded data\n    for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n      int missingBlkIdx \u003d decodeIndices[i];\n      StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n      if (chunk.state \u003d\u003d StripingChunk.MISSING \u0026\u0026 chunk.useChunkBuffer()) {\n        chunk.getChunkBuffer().copyFrom(decodeOutputs[i]);\n      }\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/util/StripedBlockUtil.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "c201cf951d5adefefe7c68e882a0c07962248577": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-12040. Adjust inputs order for the decode API in raw erasure coder. (Kai Zheng via yliu)\n",
+      "commitDate": "28/10/15 1:18 AM",
+      "commitName": "c201cf951d5adefefe7c68e882a0c07962248577",
+      "commitAuthor": "yliu",
+      "commitDateOld": "03/10/15 11:38 AM",
+      "commitNameOld": "7136e8c5582dc4061b566cb9f11a0d6a6d08bb93",
+      "commitAuthorOld": "Haohui Mai",
+      "daysBetweenCommits": 24.57,
+      "commitsBetweenForRepo": 211,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,29 +1,28 @@\n   public static void decodeAndFillBuffer(final byte[][] decodeInputs,\n       AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n       RawErasureDecoder decoder) {\n     // Step 1: prepare indices and output buffers for missing data units\n     int[] decodeIndices \u003d new int[parityBlkNum];\n     int pos \u003d 0;\n     for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n       if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n           alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n-        decodeIndices[pos++] \u003d convertIndex4Decode(i, dataBlkNum, parityBlkNum);\n+        decodeIndices[pos++] \u003d i;\n       }\n     }\n     decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n     byte[][] decodeOutputs \u003d\n         new byte[decodeIndices.length][(int) alignedStripe.getSpanInBlock()];\n \n     // Step 2: decode into prepared output buffers\n     decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n \n     // Step 3: fill original application buffer with decoded data\n     for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n-      int missingBlkIdx \u003d convertDecodeIndexBack(decodeIndices[i],\n-          dataBlkNum, parityBlkNum);\n+      int missingBlkIdx \u003d decodeIndices[i];\n       StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n       if (chunk.state \u003d\u003d StripingChunk.MISSING) {\n         chunk.copyFrom(decodeOutputs[i]);\n       }\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public static void decodeAndFillBuffer(final byte[][] decodeInputs,\n      AlignedStripe alignedStripe, int dataBlkNum, int parityBlkNum,\n      RawErasureDecoder decoder) {\n    // Step 1: prepare indices and output buffers for missing data units\n    int[] decodeIndices \u003d new int[parityBlkNum];\n    int pos \u003d 0;\n    for (int i \u003d 0; i \u003c dataBlkNum; i++) {\n      if (alignedStripe.chunks[i] !\u003d null \u0026\u0026\n          alignedStripe.chunks[i].state \u003d\u003d StripingChunk.MISSING){\n        decodeIndices[pos++] \u003d i;\n      }\n    }\n    decodeIndices \u003d Arrays.copyOf(decodeIndices, pos);\n    byte[][] decodeOutputs \u003d\n        new byte[decodeIndices.length][(int) alignedStripe.getSpanInBlock()];\n\n    // Step 2: decode into prepared output buffers\n    decoder.decode(decodeInputs, decodeIndices, decodeOutputs);\n\n    // Step 3: fill original application buffer with decoded data\n    for (int i \u003d 0; i \u003c decodeIndices.length; i++) {\n      int missingBlkIdx \u003d decodeIndices[i];\n      StripingChunk chunk \u003d alignedStripe.chunks[missingBlkIdx];\n      if (chunk.state \u003d\u003d StripingChunk.MISSING) {\n        chunk.copyFrom(decodeOutputs[i]);\n      }\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs-client/src/main/java/org/apache/hadoop/hdfs/util/StripedBlockUtil.java",
+      "extendedDetails": {}
+    }
+  }
+}

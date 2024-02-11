@@ -1,0 +1,176 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FsDatasetImpl.java",
+  "functionName": "copyBlockFiles",
+  "functionId": "copyBlockFiles___srcReplica-ReplicaInfo__dstMeta-File__dstFile-File__calculateChecksum-boolean__smallBufferSize-int__conf-Configuration(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+  "functionStartLine": 963,
+  "functionEndLine": 993,
+  "numCommitsSeen": 530,
+  "timeTaken": 10213,
+  "changeHistory": [
+    "86c9862bec0248d671e657aa56094a2919b8ac14",
+    "c992bcf9c136d3df686655a80e636bb7bb0664da",
+    "4da8490b512a33a255ed27309860859388d7c168",
+    "08ac06283a3e9bf0d49d873823aabd419b08e41f"
+  ],
+  "changeHistoryShort": {
+    "86c9862bec0248d671e657aa56094a2919b8ac14": "Ymultichange(Yparameterchange,Ybodychange)",
+    "c992bcf9c136d3df686655a80e636bb7bb0664da": "Ymultichange(Yparameterchange,Ybodychange)",
+    "4da8490b512a33a255ed27309860859388d7c168": "Ymultichange(Yparameterchange,Ybodychange)",
+    "08ac06283a3e9bf0d49d873823aabd419b08e41f": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "86c9862bec0248d671e657aa56094a2919b8ac14": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-10636. Modify ReplicaInfo to remove the assumption that replica metadata and data are stored in java.io.File. (Virajith Jalaparti via lei)\n",
+      "commitDate": "13/09/16 12:54 PM",
+      "commitName": "86c9862bec0248d671e657aa56094a2919b8ac14",
+      "commitAuthor": "Lei Xu",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-10636. Modify ReplicaInfo to remove the assumption that replica metadata and data are stored in java.io.File. (Virajith Jalaparti via lei)\n",
+          "commitDate": "13/09/16 12:54 PM",
+          "commitName": "86c9862bec0248d671e657aa56094a2919b8ac14",
+          "commitAuthor": "Lei Xu",
+          "commitDateOld": "10/09/16 6:22 PM",
+          "commitNameOld": "a99bf26a0899bcc4307c3a242c8414eaef555aa7",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 2.77,
+          "commitsBetweenForRepo": 15,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,31 @@\n-  static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n+  static File[] copyBlockFiles(ReplicaInfo srcReplica, File dstMeta,\n                                File dstFile, boolean calculateChecksum,\n                                int smallBufferSize, final Configuration conf)\n       throws IOException {\n+\n     if (calculateChecksum) {\n-      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize, conf);\n+      computeChecksum(srcReplica, dstMeta, smallBufferSize, conf);\n     } else {\n       try {\n-        Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n+        srcReplica.copyMetadata(dstMeta.toURI());\n       } catch (IOException e) {\n-        throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n+        throw new IOException(\"Failed to copy \" + srcReplica + \" metadata to \"\n+            + dstMeta, e);\n       }\n     }\n-\n     try {\n-      Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n+      srcReplica.copyBlockdata(dstFile.toURI());\n     } catch (IOException e) {\n-      throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n+      throw new IOException(\"Failed to copy \" + srcReplica + \" block file to \"\n+          + dstFile, e);\n     }\n     if (LOG.isDebugEnabled()) {\n       if (calculateChecksum) {\n-        LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n-            + \" and calculated checksum\");\n+        LOG.debug(\"Copied \" + srcReplica.getMetadataURI() + \" meta to \"\n+            + dstMeta + \" and calculated checksum\");\n       } else {\n-        LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n+        LOG.debug(\"Copied \" + srcReplica.getBlockURI() + \" to \" + dstFile);\n       }\n     }\n     return new File[] {dstMeta, dstFile};\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static File[] copyBlockFiles(ReplicaInfo srcReplica, File dstMeta,\n                               File dstFile, boolean calculateChecksum,\n                               int smallBufferSize, final Configuration conf)\n      throws IOException {\n\n    if (calculateChecksum) {\n      computeChecksum(srcReplica, dstMeta, smallBufferSize, conf);\n    } else {\n      try {\n        srcReplica.copyMetadata(dstMeta.toURI());\n      } catch (IOException e) {\n        throw new IOException(\"Failed to copy \" + srcReplica + \" metadata to \"\n            + dstMeta, e);\n      }\n    }\n    try {\n      srcReplica.copyBlockdata(dstFile.toURI());\n    } catch (IOException e) {\n      throw new IOException(\"Failed to copy \" + srcReplica + \" block file to \"\n          + dstFile, e);\n    }\n    if (LOG.isDebugEnabled()) {\n      if (calculateChecksum) {\n        LOG.debug(\"Copied \" + srcReplica.getMetadataURI() + \" meta to \"\n            + dstMeta + \" and calculated checksum\");\n      } else {\n        LOG.debug(\"Copied \" + srcReplica.getBlockURI() + \" to \" + dstFile);\n      }\n    }\n    return new File[] {dstMeta, dstFile};\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+          "extendedDetails": {
+            "oldValue": "[srcMeta-File, srcFile-File, dstMeta-File, dstFile-File, calculateChecksum-boolean, smallBufferSize-int, conf-Configuration(modifiers-final)]",
+            "newValue": "[srcReplica-ReplicaInfo, dstMeta-File, dstFile-File, calculateChecksum-boolean, smallBufferSize-int, conf-Configuration(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-10636. Modify ReplicaInfo to remove the assumption that replica metadata and data are stored in java.io.File. (Virajith Jalaparti via lei)\n",
+          "commitDate": "13/09/16 12:54 PM",
+          "commitName": "86c9862bec0248d671e657aa56094a2919b8ac14",
+          "commitAuthor": "Lei Xu",
+          "commitDateOld": "10/09/16 6:22 PM",
+          "commitNameOld": "a99bf26a0899bcc4307c3a242c8414eaef555aa7",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 2.77,
+          "commitsBetweenForRepo": 15,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,31 @@\n-  static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n+  static File[] copyBlockFiles(ReplicaInfo srcReplica, File dstMeta,\n                                File dstFile, boolean calculateChecksum,\n                                int smallBufferSize, final Configuration conf)\n       throws IOException {\n+\n     if (calculateChecksum) {\n-      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize, conf);\n+      computeChecksum(srcReplica, dstMeta, smallBufferSize, conf);\n     } else {\n       try {\n-        Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n+        srcReplica.copyMetadata(dstMeta.toURI());\n       } catch (IOException e) {\n-        throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n+        throw new IOException(\"Failed to copy \" + srcReplica + \" metadata to \"\n+            + dstMeta, e);\n       }\n     }\n-\n     try {\n-      Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n+      srcReplica.copyBlockdata(dstFile.toURI());\n     } catch (IOException e) {\n-      throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n+      throw new IOException(\"Failed to copy \" + srcReplica + \" block file to \"\n+          + dstFile, e);\n     }\n     if (LOG.isDebugEnabled()) {\n       if (calculateChecksum) {\n-        LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n-            + \" and calculated checksum\");\n+        LOG.debug(\"Copied \" + srcReplica.getMetadataURI() + \" meta to \"\n+            + dstMeta + \" and calculated checksum\");\n       } else {\n-        LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n+        LOG.debug(\"Copied \" + srcReplica.getBlockURI() + \" to \" + dstFile);\n       }\n     }\n     return new File[] {dstMeta, dstFile};\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static File[] copyBlockFiles(ReplicaInfo srcReplica, File dstMeta,\n                               File dstFile, boolean calculateChecksum,\n                               int smallBufferSize, final Configuration conf)\n      throws IOException {\n\n    if (calculateChecksum) {\n      computeChecksum(srcReplica, dstMeta, smallBufferSize, conf);\n    } else {\n      try {\n        srcReplica.copyMetadata(dstMeta.toURI());\n      } catch (IOException e) {\n        throw new IOException(\"Failed to copy \" + srcReplica + \" metadata to \"\n            + dstMeta, e);\n      }\n    }\n    try {\n      srcReplica.copyBlockdata(dstFile.toURI());\n    } catch (IOException e) {\n      throw new IOException(\"Failed to copy \" + srcReplica + \" block file to \"\n          + dstFile, e);\n    }\n    if (LOG.isDebugEnabled()) {\n      if (calculateChecksum) {\n        LOG.debug(\"Copied \" + srcReplica.getMetadataURI() + \" meta to \"\n            + dstMeta + \" and calculated checksum\");\n      } else {\n        LOG.debug(\"Copied \" + srcReplica.getBlockURI() + \" to \" + dstFile);\n      }\n    }\n    return new File[] {dstMeta, dstFile};\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "c992bcf9c136d3df686655a80e636bb7bb0664da": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-8951. Move the shortcircuit package to hdfs-client. Contributed by Mingliang Liu.\n",
+      "commitDate": "26/08/15 2:02 PM",
+      "commitName": "c992bcf9c136d3df686655a80e636bb7bb0664da",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-8951. Move the shortcircuit package to hdfs-client. Contributed by Mingliang Liu.\n",
+          "commitDate": "26/08/15 2:02 PM",
+          "commitName": "c992bcf9c136d3df686655a80e636bb7bb0664da",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "17/08/15 5:40 PM",
+          "commitNameOld": "eee4d716b48074825e1afcd9c74038a393ddeb69",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 8.85,
+          "commitsBetweenForRepo": 45,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,29 @@\n   static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n                                File dstFile, boolean calculateChecksum,\n-                               int smallBufferSize)\n+                               int smallBufferSize, final Configuration conf)\n       throws IOException {\n     if (calculateChecksum) {\n-      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize);\n+      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize, conf);\n     } else {\n       try {\n         Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n       } catch (IOException e) {\n         throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n       }\n     }\n \n     try {\n       Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n     } catch (IOException e) {\n       throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n     }\n     if (LOG.isDebugEnabled()) {\n       if (calculateChecksum) {\n         LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n             + \" and calculated checksum\");\n       } else {\n         LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n       }\n     }\n     return new File[] {dstMeta, dstFile};\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n                               File dstFile, boolean calculateChecksum,\n                               int smallBufferSize, final Configuration conf)\n      throws IOException {\n    if (calculateChecksum) {\n      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize, conf);\n    } else {\n      try {\n        Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n      } catch (IOException e) {\n        throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n      }\n    }\n\n    try {\n      Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n    } catch (IOException e) {\n      throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n    }\n    if (LOG.isDebugEnabled()) {\n      if (calculateChecksum) {\n        LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n            + \" and calculated checksum\");\n      } else {\n        LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n      }\n    }\n    return new File[] {dstMeta, dstFile};\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+          "extendedDetails": {
+            "oldValue": "[srcMeta-File, srcFile-File, dstMeta-File, dstFile-File, calculateChecksum-boolean, smallBufferSize-int]",
+            "newValue": "[srcMeta-File, srcFile-File, dstMeta-File, dstFile-File, calculateChecksum-boolean, smallBufferSize-int, conf-Configuration(modifiers-final)]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-8951. Move the shortcircuit package to hdfs-client. Contributed by Mingliang Liu.\n",
+          "commitDate": "26/08/15 2:02 PM",
+          "commitName": "c992bcf9c136d3df686655a80e636bb7bb0664da",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "17/08/15 5:40 PM",
+          "commitNameOld": "eee4d716b48074825e1afcd9c74038a393ddeb69",
+          "commitAuthorOld": "Andrew Wang",
+          "daysBetweenCommits": 8.85,
+          "commitsBetweenForRepo": 45,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,29 @@\n   static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n                                File dstFile, boolean calculateChecksum,\n-                               int smallBufferSize)\n+                               int smallBufferSize, final Configuration conf)\n       throws IOException {\n     if (calculateChecksum) {\n-      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize);\n+      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize, conf);\n     } else {\n       try {\n         Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n       } catch (IOException e) {\n         throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n       }\n     }\n \n     try {\n       Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n     } catch (IOException e) {\n       throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n     }\n     if (LOG.isDebugEnabled()) {\n       if (calculateChecksum) {\n         LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n             + \" and calculated checksum\");\n       } else {\n         LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n       }\n     }\n     return new File[] {dstMeta, dstFile};\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n                               File dstFile, boolean calculateChecksum,\n                               int smallBufferSize, final Configuration conf)\n      throws IOException {\n    if (calculateChecksum) {\n      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize, conf);\n    } else {\n      try {\n        Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n      } catch (IOException e) {\n        throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n      }\n    }\n\n    try {\n      Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n    } catch (IOException e) {\n      throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n    }\n    if (LOG.isDebugEnabled()) {\n      if (calculateChecksum) {\n        LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n            + \" and calculated checksum\");\n      } else {\n        LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n      }\n    }\n    return new File[] {dstMeta, dstFile};\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "4da8490b512a33a255ed27309860859388d7c168": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-8314. Move HdfsServerConstants#IO_FILE_BUFFER_SIZE and SMALL_BUFFER_SIZE to the users. Contributed by Li Lu.\n",
+      "commitDate": "05/05/15 3:41 PM",
+      "commitName": "4da8490b512a33a255ed27309860859388d7c168",
+      "commitAuthor": "Haohui Mai",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-8314. Move HdfsServerConstants#IO_FILE_BUFFER_SIZE and SMALL_BUFFER_SIZE to the users. Contributed by Li Lu.\n",
+          "commitDate": "05/05/15 3:41 PM",
+          "commitName": "4da8490b512a33a255ed27309860859388d7c168",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "05/05/15 11:08 AM",
+          "commitNameOld": "24d3a2d4fdd836ac9a5bc755a7fb9354f7a582b1",
+          "commitAuthorOld": "Colin Patrick Mccabe",
+          "daysBetweenCommits": 0.19,
+          "commitsBetweenForRepo": 6,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n   static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n-                               File dstFile, boolean calculateChecksum)\n+                               File dstFile, boolean calculateChecksum,\n+                               int smallBufferSize)\n       throws IOException {\n     if (calculateChecksum) {\n-      computeChecksum(srcMeta, dstMeta, srcFile);\n+      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize);\n     } else {\n       try {\n         Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n       } catch (IOException e) {\n         throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n       }\n     }\n \n     try {\n       Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n     } catch (IOException e) {\n       throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n     }\n     if (LOG.isDebugEnabled()) {\n       if (calculateChecksum) {\n         LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n             + \" and calculated checksum\");\n       } else {\n         LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n       }\n     }\n     return new File[] {dstMeta, dstFile};\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n                               File dstFile, boolean calculateChecksum,\n                               int smallBufferSize)\n      throws IOException {\n    if (calculateChecksum) {\n      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize);\n    } else {\n      try {\n        Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n      } catch (IOException e) {\n        throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n      }\n    }\n\n    try {\n      Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n    } catch (IOException e) {\n      throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n    }\n    if (LOG.isDebugEnabled()) {\n      if (calculateChecksum) {\n        LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n            + \" and calculated checksum\");\n      } else {\n        LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n      }\n    }\n    return new File[] {dstMeta, dstFile};\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+          "extendedDetails": {
+            "oldValue": "[srcMeta-File, srcFile-File, dstMeta-File, dstFile-File, calculateChecksum-boolean]",
+            "newValue": "[srcMeta-File, srcFile-File, dstMeta-File, dstFile-File, calculateChecksum-boolean, smallBufferSize-int]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-8314. Move HdfsServerConstants#IO_FILE_BUFFER_SIZE and SMALL_BUFFER_SIZE to the users. Contributed by Li Lu.\n",
+          "commitDate": "05/05/15 3:41 PM",
+          "commitName": "4da8490b512a33a255ed27309860859388d7c168",
+          "commitAuthor": "Haohui Mai",
+          "commitDateOld": "05/05/15 11:08 AM",
+          "commitNameOld": "24d3a2d4fdd836ac9a5bc755a7fb9354f7a582b1",
+          "commitAuthorOld": "Colin Patrick Mccabe",
+          "daysBetweenCommits": 0.19,
+          "commitsBetweenForRepo": 6,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,28 +1,29 @@\n   static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n-                               File dstFile, boolean calculateChecksum)\n+                               File dstFile, boolean calculateChecksum,\n+                               int smallBufferSize)\n       throws IOException {\n     if (calculateChecksum) {\n-      computeChecksum(srcMeta, dstMeta, srcFile);\n+      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize);\n     } else {\n       try {\n         Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n       } catch (IOException e) {\n         throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n       }\n     }\n \n     try {\n       Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n     } catch (IOException e) {\n       throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n     }\n     if (LOG.isDebugEnabled()) {\n       if (calculateChecksum) {\n         LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n             + \" and calculated checksum\");\n       } else {\n         LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n       }\n     }\n     return new File[] {dstMeta, dstFile};\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n                               File dstFile, boolean calculateChecksum,\n                               int smallBufferSize)\n      throws IOException {\n    if (calculateChecksum) {\n      computeChecksum(srcMeta, dstMeta, srcFile, smallBufferSize);\n    } else {\n      try {\n        Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n      } catch (IOException e) {\n        throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n      }\n    }\n\n    try {\n      Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n    } catch (IOException e) {\n      throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n    }\n    if (LOG.isDebugEnabled()) {\n      if (calculateChecksum) {\n        LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n            + \" and calculated checksum\");\n      } else {\n        LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n      }\n    }\n    return new File[] {dstMeta, dstFile};\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "08ac06283a3e9bf0d49d873823aabd419b08e41f": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7056. Snapshot support for truncate. Contributed by Konstantin Shvachko and Plamen Jeliazkov.",
+      "commitDate": "13/01/15 12:24 AM",
+      "commitName": "08ac06283a3e9bf0d49d873823aabd419b08e41f",
+      "commitAuthor": "Konstantin V Shvachko",
+      "diff": "@@ -0,0 +1,28 @@\n+  static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n+                               File dstFile, boolean calculateChecksum)\n+      throws IOException {\n+    if (calculateChecksum) {\n+      computeChecksum(srcMeta, dstMeta, srcFile);\n+    } else {\n+      try {\n+        Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n+      } catch (IOException e) {\n+        throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n+      }\n+    }\n+\n+    try {\n+      Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n+    } catch (IOException e) {\n+      throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n+    }\n+    if (LOG.isDebugEnabled()) {\n+      if (calculateChecksum) {\n+        LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n+            + \" and calculated checksum\");\n+      } else {\n+        LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n+      }\n+    }\n+    return new File[] {dstMeta, dstFile};\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static File[] copyBlockFiles(File srcMeta, File srcFile, File dstMeta,\n                               File dstFile, boolean calculateChecksum)\n      throws IOException {\n    if (calculateChecksum) {\n      computeChecksum(srcMeta, dstMeta, srcFile);\n    } else {\n      try {\n        Storage.nativeCopyFileUnbuffered(srcMeta, dstMeta, true);\n      } catch (IOException e) {\n        throw new IOException(\"Failed to copy \" + srcMeta + \" to \" + dstMeta, e);\n      }\n    }\n\n    try {\n      Storage.nativeCopyFileUnbuffered(srcFile, dstFile, true);\n    } catch (IOException e) {\n      throw new IOException(\"Failed to copy \" + srcFile + \" to \" + dstFile, e);\n    }\n    if (LOG.isDebugEnabled()) {\n      if (calculateChecksum) {\n        LOG.debug(\"Copied \" + srcMeta + \" to \" + dstMeta\n            + \" and calculated checksum\");\n      } else {\n        LOG.debug(\"Copied \" + srcFile + \" to \" + dstFile);\n      }\n    }\n    return new File[] {dstMeta, dstFile};\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetImpl.java"
+    }
+  }
+}

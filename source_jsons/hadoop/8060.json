@@ -1,0 +1,294 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "EditLogFileInputStream.java",
+  "functionName": "nextOp",
+  "functionId": "nextOp",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+  "functionStartLine": 275,
+  "functionEndLine": 277,
+  "numCommitsSeen": 52,
+  "timeTaken": 5894,
+  "changeHistory": [
+    "74dfa8f1f22d58df64a78c660af111e17ab7053e",
+    "95710c15b7a724897bcde826e112df6d4b4fe56b",
+    "706394d03992b394e9f907aff2155df493e4ea4e",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+    "d86f3183d93714ba078416af4f609d26376eadb0",
+    "53190cfa1d43762e463bcb957929097742db08ba",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc"
+  ],
+  "changeHistoryShort": {
+    "74dfa8f1f22d58df64a78c660af111e17ab7053e": "Ybodychange",
+    "95710c15b7a724897bcde826e112df6d4b4fe56b": "Ybodychange",
+    "706394d03992b394e9f907aff2155df493e4ea4e": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yrename)",
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": "Yfilerename",
+    "d86f3183d93714ba078416af4f609d26376eadb0": "Yfilerename",
+    "53190cfa1d43762e463bcb957929097742db08ba": "Ymultichange(Ymovefromfile,Yreturntypechange,Ybodychange,Yrename)",
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "74dfa8f1f22d58df64a78c660af111e17ab7053e": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-2982. Startup performance suffers when there are many edit log segments. Contributed by Colin Patrick McCabe.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1342042 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "23/05/12 1:42 PM",
+      "commitName": "74dfa8f1f22d58df64a78c660af111e17ab7053e",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "17/05/12 10:28 PM",
+      "commitNameOld": "7d1f97b8213795efa26eb53c1914819c74c22502",
+      "commitAuthorOld": "Todd Lipcon",
+      "daysBetweenCommits": 5.64,
+      "commitsBetweenForRepo": 17,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,31 +1,3 @@\n   protected FSEditLogOp nextOp() throws IOException {\n-    FSEditLogOp op \u003d reader.readOp(false);\n-    if ((op !\u003d null) \u0026\u0026 (op.hasTransactionId())) {\n-      long txId \u003d op.getTransactionId();\n-      if ((txId \u003e\u003d lastTxId) \u0026\u0026\n-          (lastTxId !\u003d HdfsConstants.INVALID_TXID)) {\n-        //\n-        // Sometimes, the NameNode crashes while it\u0027s writing to the\n-        // edit log.  In that case, you can end up with an unfinalized edit log\n-        // which has some garbage at the end.\n-        // JournalManager#recoverUnfinalizedSegments will finalize these\n-        // unfinished edit logs, giving them a defined final transaction \n-        // ID.  Then they will be renamed, so that any subsequent\n-        // readers will have this information.\n-        //\n-        // Since there may be garbage at the end of these \"cleaned up\"\n-        // logs, we want to be sure to skip it here if we\u0027ve read everything\n-        // we were supposed to read out of the stream.\n-        // So we force an EOF on all subsequent reads.\n-        //\n-        long skipAmt \u003d file.length() - tracker.getPos();\n-        if (skipAmt \u003e 0) {\n-          FSImage.LOG.warn(\"skipping \" + skipAmt + \" bytes at the end \" +\n-              \"of edit log  \u0027\" + getName() + \"\u0027: reached txid \" + txId +\n-              \" out of \" + lastTxId);\n-          tracker.skip(skipAmt);\n-        }\n-      }\n-    }\n-    return op;\n+    return nextOpImpl(false);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected FSEditLogOp nextOp() throws IOException {\n    return nextOpImpl(false);\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+      "extendedDetails": {}
+    },
+    "95710c15b7a724897bcde826e112df6d4b4fe56b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-3335. check for edit log corruption at the end of the log. Contributed by Colin Patrick McCabe.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1338492 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "14/05/12 5:41 PM",
+      "commitName": "95710c15b7a724897bcde826e112df6d4b4fe56b",
+      "commitAuthor": "Todd Lipcon",
+      "commitDateOld": "09/04/12 12:39 PM",
+      "commitNameOld": "706394d03992b394e9f907aff2155df493e4ea4e",
+      "commitAuthorOld": "Eli Collins",
+      "daysBetweenCommits": 35.21,
+      "commitsBetweenForRepo": 245,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,3 +1,31 @@\n   protected FSEditLogOp nextOp() throws IOException {\n-    return reader.readOp(false);\n+    FSEditLogOp op \u003d reader.readOp(false);\n+    if ((op !\u003d null) \u0026\u0026 (op.hasTransactionId())) {\n+      long txId \u003d op.getTransactionId();\n+      if ((txId \u003e\u003d lastTxId) \u0026\u0026\n+          (lastTxId !\u003d HdfsConstants.INVALID_TXID)) {\n+        //\n+        // Sometimes, the NameNode crashes while it\u0027s writing to the\n+        // edit log.  In that case, you can end up with an unfinalized edit log\n+        // which has some garbage at the end.\n+        // JournalManager#recoverUnfinalizedSegments will finalize these\n+        // unfinished edit logs, giving them a defined final transaction \n+        // ID.  Then they will be renamed, so that any subsequent\n+        // readers will have this information.\n+        //\n+        // Since there may be garbage at the end of these \"cleaned up\"\n+        // logs, we want to be sure to skip it here if we\u0027ve read everything\n+        // we were supposed to read out of the stream.\n+        // So we force an EOF on all subsequent reads.\n+        //\n+        long skipAmt \u003d file.length() - tracker.getPos();\n+        if (skipAmt \u003e 0) {\n+          FSImage.LOG.warn(\"skipping \" + skipAmt + \" bytes at the end \" +\n+              \"of edit log  \u0027\" + getName() + \"\u0027: reached txid \" + txId +\n+              \" out of \" + lastTxId);\n+          tracker.skip(skipAmt);\n+        }\n+      }\n+    }\n+    return op;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected FSEditLogOp nextOp() throws IOException {\n    FSEditLogOp op \u003d reader.readOp(false);\n    if ((op !\u003d null) \u0026\u0026 (op.hasTransactionId())) {\n      long txId \u003d op.getTransactionId();\n      if ((txId \u003e\u003d lastTxId) \u0026\u0026\n          (lastTxId !\u003d HdfsConstants.INVALID_TXID)) {\n        //\n        // Sometimes, the NameNode crashes while it\u0027s writing to the\n        // edit log.  In that case, you can end up with an unfinalized edit log\n        // which has some garbage at the end.\n        // JournalManager#recoverUnfinalizedSegments will finalize these\n        // unfinished edit logs, giving them a defined final transaction \n        // ID.  Then they will be renamed, so that any subsequent\n        // readers will have this information.\n        //\n        // Since there may be garbage at the end of these \"cleaned up\"\n        // logs, we want to be sure to skip it here if we\u0027ve read everything\n        // we were supposed to read out of the stream.\n        // So we force an EOF on all subsequent reads.\n        //\n        long skipAmt \u003d file.length() - tracker.getPos();\n        if (skipAmt \u003e 0) {\n          FSImage.LOG.warn(\"skipping \" + skipAmt + \" bytes at the end \" +\n              \"of edit log  \u0027\" + getName() + \"\u0027: reached txid \" + txId +\n              \" out of \" + lastTxId);\n          tracker.skip(skipAmt);\n        }\n      }\n    }\n    return op;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+      "extendedDetails": {}
+    },
+    "706394d03992b394e9f907aff2155df493e4ea4e": {
+      "type": "Ymultichange(Ymovefromfile,Ymodifierchange,Ybodychange,Yrename)",
+      "commitMessage": "HDFS-3004. Implement Recovery Mode. Contributed by Colin Patrick McCabe\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1311394 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "09/04/12 12:39 PM",
+      "commitName": "706394d03992b394e9f907aff2155df493e4ea4e",
+      "commitAuthor": "Eli Collins",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-3004. Implement Recovery Mode. Contributed by Colin Patrick McCabe\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1311394 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "09/04/12 12:39 PM",
+          "commitName": "706394d03992b394e9f907aff2155df493e4ea4e",
+          "commitAuthor": "Eli Collins",
+          "commitDateOld": "09/04/12 12:11 PM",
+          "commitNameOld": "3ced5ea06698fa781f76c5e7d4440f54ce5fcad3",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,3 @@\n-  public FSEditLogOp readOp() throws IOException {\n-    return reader.readOp();\n+  protected FSEditLogOp nextOp() throws IOException {\n+    return reader.readOp(false);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected FSEditLogOp nextOp() throws IOException {\n    return reader.readOp(false);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+            "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+            "oldMethodName": "readOp",
+            "newMethodName": "nextOp"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HDFS-3004. Implement Recovery Mode. Contributed by Colin Patrick McCabe\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1311394 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "09/04/12 12:39 PM",
+          "commitName": "706394d03992b394e9f907aff2155df493e4ea4e",
+          "commitAuthor": "Eli Collins",
+          "commitDateOld": "09/04/12 12:11 PM",
+          "commitNameOld": "3ced5ea06698fa781f76c5e7d4440f54ce5fcad3",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,3 @@\n-  public FSEditLogOp readOp() throws IOException {\n-    return reader.readOp();\n+  protected FSEditLogOp nextOp() throws IOException {\n+    return reader.readOp(false);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected FSEditLogOp nextOp() throws IOException {\n    return reader.readOp(false);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+          "extendedDetails": {
+            "oldValue": "[public]",
+            "newValue": "[protected]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-3004. Implement Recovery Mode. Contributed by Colin Patrick McCabe\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1311394 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "09/04/12 12:39 PM",
+          "commitName": "706394d03992b394e9f907aff2155df493e4ea4e",
+          "commitAuthor": "Eli Collins",
+          "commitDateOld": "09/04/12 12:11 PM",
+          "commitNameOld": "3ced5ea06698fa781f76c5e7d4440f54ce5fcad3",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,3 @@\n-  public FSEditLogOp readOp() throws IOException {\n-    return reader.readOp();\n+  protected FSEditLogOp nextOp() throws IOException {\n+    return reader.readOp(false);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected FSEditLogOp nextOp() throws IOException {\n    return reader.readOp(false);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-3004. Implement Recovery Mode. Contributed by Colin Patrick McCabe\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1311394 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "09/04/12 12:39 PM",
+          "commitName": "706394d03992b394e9f907aff2155df493e4ea4e",
+          "commitAuthor": "Eli Collins",
+          "commitDateOld": "09/04/12 12:11 PM",
+          "commitNameOld": "3ced5ea06698fa781f76c5e7d4440f54ce5fcad3",
+          "commitAuthorOld": "Uma Maheswara Rao G",
+          "daysBetweenCommits": 0.02,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,3 @@\n-  public FSEditLogOp readOp() throws IOException {\n-    return reader.readOp();\n+  protected FSEditLogOp nextOp() throws IOException {\n+    return reader.readOp(false);\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  protected FSEditLogOp nextOp() throws IOException {\n    return reader.readOp(false);\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+          "extendedDetails": {
+            "oldValue": "readOp",
+            "newValue": "nextOp"
+          }
+        }
+      ]
+    },
+    "cd7157784e5e5ddc4e77144d042e54dd0d04bac1": {
+      "type": "Yfilerename",
+      "commitMessage": "HADOOP-7560. Change src layout to be heirarchical. Contributed by Alejandro Abdelnur.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1161332 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "24/08/11 5:14 PM",
+      "commitName": "cd7157784e5e5ddc4e77144d042e54dd0d04bac1",
+      "commitAuthor": "Arun Murthy",
+      "commitDateOld": "24/08/11 5:06 PM",
+      "commitNameOld": "bb0005cfec5fd2861600ff5babd259b48ba18b63",
+      "commitAuthorOld": "Arun Murthy",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public FSEditLogOp readOp() throws IOException {\n    return reader.readOp();\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+      "extendedDetails": {
+        "oldPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+        "newPath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java"
+      }
+    },
+    "d86f3183d93714ba078416af4f609d26376eadb0": {
+      "type": "Yfilerename",
+      "commitMessage": "HDFS-2096. Mavenization of hadoop-hdfs. Contributed by Alejandro Abdelnur.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1159702 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "19/08/11 10:36 AM",
+      "commitName": "d86f3183d93714ba078416af4f609d26376eadb0",
+      "commitAuthor": "Thomas White",
+      "commitDateOld": "19/08/11 10:26 AM",
+      "commitNameOld": "6ee5a73e0e91a2ef27753a32c576835e951d8119",
+      "commitAuthorOld": "Thomas White",
+      "daysBetweenCommits": 0.01,
+      "commitsBetweenForRepo": 1,
+      "commitsBetweenForFile": 1,
+      "diff": "",
+      "actualSource": "  public FSEditLogOp readOp() throws IOException {\n    return reader.readOp();\n  }",
+      "path": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+      "extendedDetails": {
+        "oldPath": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+        "newPath": "hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java"
+      }
+    },
+    "53190cfa1d43762e463bcb957929097742db08ba": {
+      "type": "Ymultichange(Ymovefromfile,Yreturntypechange,Ybodychange,Yrename)",
+      "commitMessage": "HDFS-2187. Make EditLogInputStream act like an iterator over FSEditLogOps. Contributed by Ivan Kelly and Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153996 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "04/08/11 1:22 PM",
+      "commitName": "53190cfa1d43762e463bcb957929097742db08ba",
+      "commitAuthor": "Todd Lipcon",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HDFS-2187. Make EditLogInputStream act like an iterator over FSEditLogOps. Contributed by Ivan Kelly and Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153996 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "04/08/11 1:22 PM",
+          "commitName": "53190cfa1d43762e463bcb957929097742db08ba",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "04/08/11 10:01 AM",
+          "commitNameOld": "924ed1366436c0f981361fcdf744099f42da0021",
+          "commitAuthorOld": "Thomas White",
+          "daysBetweenCommits": 0.14,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,3 @@\n-  public int read() throws IOException {\n-    return fStream.read();\n+  public FSEditLogOp readOp() throws IOException {\n+    return reader.readOp();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSEditLogOp readOp() throws IOException {\n    return reader.readOp();\n  }",
+          "path": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+          "extendedDetails": {
+            "oldPath": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+            "newPath": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+            "oldMethodName": "read",
+            "newMethodName": "readOp"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HDFS-2187. Make EditLogInputStream act like an iterator over FSEditLogOps. Contributed by Ivan Kelly and Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153996 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "04/08/11 1:22 PM",
+          "commitName": "53190cfa1d43762e463bcb957929097742db08ba",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "04/08/11 10:01 AM",
+          "commitNameOld": "924ed1366436c0f981361fcdf744099f42da0021",
+          "commitAuthorOld": "Thomas White",
+          "daysBetweenCommits": 0.14,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,3 @@\n-  public int read() throws IOException {\n-    return fStream.read();\n+  public FSEditLogOp readOp() throws IOException {\n+    return reader.readOp();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSEditLogOp readOp() throws IOException {\n    return reader.readOp();\n  }",
+          "path": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+          "extendedDetails": {
+            "oldValue": "int",
+            "newValue": "FSEditLogOp"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-2187. Make EditLogInputStream act like an iterator over FSEditLogOps. Contributed by Ivan Kelly and Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153996 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "04/08/11 1:22 PM",
+          "commitName": "53190cfa1d43762e463bcb957929097742db08ba",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "04/08/11 10:01 AM",
+          "commitNameOld": "924ed1366436c0f981361fcdf744099f42da0021",
+          "commitAuthorOld": "Thomas White",
+          "daysBetweenCommits": 0.14,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,3 @@\n-  public int read() throws IOException {\n-    return fStream.read();\n+  public FSEditLogOp readOp() throws IOException {\n+    return reader.readOp();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSEditLogOp readOp() throws IOException {\n    return reader.readOp();\n  }",
+          "path": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yrename",
+          "commitMessage": "HDFS-2187. Make EditLogInputStream act like an iterator over FSEditLogOps. Contributed by Ivan Kelly and Todd Lipcon.\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1153996 13f79535-47bb-0310-9956-ffa450edef68\n",
+          "commitDate": "04/08/11 1:22 PM",
+          "commitName": "53190cfa1d43762e463bcb957929097742db08ba",
+          "commitAuthor": "Todd Lipcon",
+          "commitDateOld": "04/08/11 10:01 AM",
+          "commitNameOld": "924ed1366436c0f981361fcdf744099f42da0021",
+          "commitAuthorOld": "Thomas White",
+          "daysBetweenCommits": 0.14,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,3 +1,3 @@\n-  public int read() throws IOException {\n-    return fStream.read();\n+  public FSEditLogOp readOp() throws IOException {\n+    return reader.readOp();\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  public FSEditLogOp readOp() throws IOException {\n    return reader.readOp();\n  }",
+          "path": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java",
+          "extendedDetails": {
+            "oldValue": "read",
+            "newValue": "readOp"
+          }
+        }
+      ]
+    },
+    "a196766ea07775f18ded69bd9e8d239f8cfd3ccc": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-7106. Reorganize SVN layout to combine HDFS, Common, and MR in a single tree (project unsplit)\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1134994 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "12/06/11 3:00 PM",
+      "commitName": "a196766ea07775f18ded69bd9e8d239f8cfd3ccc",
+      "commitAuthor": "Todd Lipcon",
+      "diff": "@@ -0,0 +1,3 @@\n+  public int read() throws IOException {\n+    return fStream.read();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public int read() throws IOException {\n    return fStream.read();\n  }",
+      "path": "hdfs/src/java/org/apache/hadoop/hdfs/server/namenode/EditLogFileInputStream.java"
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "BlockPoolSlice.java",
+  "functionName": "resolveDuplicateReplicas",
+  "functionId": "resolveDuplicateReplicas___replica1-ReplicaInfo(modifiers-final)__replica2-ReplicaInfo(modifiers-final)__volumeMap-ReplicaMap(modifiers-final)",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.java",
+  "functionStartLine": 735,
+  "functionEndLine": 753,
+  "numCommitsSeen": 58,
+  "timeTaken": 2240,
+  "changeHistory": [
+    "03fb5c642589dec4e663479771d0ae1782038b63",
+    "feda4733a8279485fc0ff1271f9c22bc44f333f6",
+    "4eab083b1b7faf4485274d1d30256cde08e11915",
+    "9f22fb8c9a10952225e15c7b67b5f77fa44b155d"
+  ],
+  "changeHistoryShort": {
+    "03fb5c642589dec4e663479771d0ae1782038b63": "Ybodychange",
+    "feda4733a8279485fc0ff1271f9c22bc44f333f6": "Ybodychange",
+    "4eab083b1b7faf4485274d1d30256cde08e11915": "Ybodychange",
+    "9f22fb8c9a10952225e15c7b67b5f77fa44b155d": "Ymodifierchange"
+  },
+  "changeHistoryDetails": {
+    "03fb5c642589dec4e663479771d0ae1782038b63": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-8486. DN startup may cause severe data loss (Daryn Sharp via Colin P.  McCabe)\n",
+      "commitDate": "02/06/15 11:40 AM",
+      "commitName": "03fb5c642589dec4e663479771d0ae1782038b63",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "commitDateOld": "16/05/15 9:05 AM",
+      "commitNameOld": "e453989a5722e653bd97e3e54f9bbdffc9454fba",
+      "commitAuthorOld": "Arpit Agarwal",
+      "daysBetweenCommits": 17.11,
+      "commitsBetweenForRepo": 120,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,47 +1,19 @@\n   ReplicaInfo resolveDuplicateReplicas(\n       final ReplicaInfo replica1, final ReplicaInfo replica2,\n       final ReplicaMap volumeMap) throws IOException {\n \n     if (!deleteDuplicateReplicas) {\n       // Leave both block replicas in place.\n       return replica1;\n     }\n-\n-    ReplicaInfo replicaToKeep;\n-    ReplicaInfo replicaToDelete;\n-\n-    if (replica1.getGenerationStamp() !\u003d replica2.getGenerationStamp()) {\n-      replicaToKeep \u003d replica1.getGenerationStamp() \u003e replica2.getGenerationStamp()\n-          ? replica1 : replica2;\n-    } else if (replica1.getNumBytes() !\u003d replica2.getNumBytes()) {\n-      replicaToKeep \u003d replica1.getNumBytes() \u003e replica2.getNumBytes() ?\n-          replica1 : replica2;\n-    } else if (replica1.getVolume().isTransientStorage() \u0026\u0026\n-               !replica2.getVolume().isTransientStorage()) {\n-      replicaToKeep \u003d replica2;\n-    } else {\n-      replicaToKeep \u003d replica1;\n-    }\n-\n-    replicaToDelete \u003d (replicaToKeep \u003d\u003d replica1) ? replica2 : replica1;\n-\n-    if (LOG.isDebugEnabled()) {\n-      LOG.debug(\"resolveDuplicateReplicas decide to keep \" + replicaToKeep\n-          + \".  Will try to delete \" + replicaToDelete);\n-    }\n-\n-    // Update volumeMap.\n+    final ReplicaInfo replicaToDelete \u003d\n+        selectReplicaToDelete(replica1, replica2);\n+    final ReplicaInfo replicaToKeep \u003d\n+        (replicaToDelete !\u003d replica1) ? replica1 : replica2;\n+    // Update volumeMap and delete the replica\n     volumeMap.add(bpid, replicaToKeep);\n-\n-    // Delete the files on disk. Failure here is okay.\n-    final File blockFile \u003d replicaToDelete.getBlockFile();\n-    if (!blockFile.delete()) {\n-      LOG.warn(\"Failed to delete block file \" + blockFile);\n+    if (replicaToDelete !\u003d null) {\n+      deleteReplica(replicaToDelete);\n     }\n-    final File metaFile \u003d replicaToDelete.getMetaFile();\n-    if (!metaFile.delete()) {\n-      LOG.warn(\"Failed to delete meta file \" + metaFile);\n-    }\n-\n     return replicaToKeep;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  ReplicaInfo resolveDuplicateReplicas(\n      final ReplicaInfo replica1, final ReplicaInfo replica2,\n      final ReplicaMap volumeMap) throws IOException {\n\n    if (!deleteDuplicateReplicas) {\n      // Leave both block replicas in place.\n      return replica1;\n    }\n    final ReplicaInfo replicaToDelete \u003d\n        selectReplicaToDelete(replica1, replica2);\n    final ReplicaInfo replicaToKeep \u003d\n        (replicaToDelete !\u003d replica1) ? replica1 : replica2;\n    // Update volumeMap and delete the replica\n    volumeMap.add(bpid, replicaToKeep);\n    if (replicaToDelete !\u003d null) {\n      deleteReplica(replicaToDelete);\n    }\n    return replicaToKeep;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.java",
+      "extendedDetails": {}
+    },
+    "feda4733a8279485fc0ff1271f9c22bc44f333f6": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7143. Fix findbugs warnings in HDFS-6581 branch. (Contributed by Tsz Wo Nicholas Sze)\n",
+      "commitDate": "24/09/14 9:06 PM",
+      "commitName": "feda4733a8279485fc0ff1271f9c22bc44f333f6",
+      "commitAuthor": "arp",
+      "commitDateOld": "20/09/14 1:25 PM",
+      "commitNameOld": "b2d5ed36bcb80e2581191dcdc3976e825c959142",
+      "commitAuthorOld": "arp",
+      "daysBetweenCommits": 4.32,
+      "commitsBetweenForRepo": 46,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,40 +1,47 @@\n   ReplicaInfo resolveDuplicateReplicas(\n       final ReplicaInfo replica1, final ReplicaInfo replica2,\n       final ReplicaMap volumeMap) throws IOException {\n \n     if (!deleteDuplicateReplicas) {\n       // Leave both block replicas in place.\n       return replica1;\n     }\n \n     ReplicaInfo replicaToKeep;\n     ReplicaInfo replicaToDelete;\n \n     if (replica1.getGenerationStamp() !\u003d replica2.getGenerationStamp()) {\n       replicaToKeep \u003d replica1.getGenerationStamp() \u003e replica2.getGenerationStamp()\n           ? replica1 : replica2;\n     } else if (replica1.getNumBytes() !\u003d replica2.getNumBytes()) {\n       replicaToKeep \u003d replica1.getNumBytes() \u003e replica2.getNumBytes() ?\n           replica1 : replica2;\n     } else if (replica1.getVolume().isTransientStorage() \u0026\u0026\n                !replica2.getVolume().isTransientStorage()) {\n       replicaToKeep \u003d replica2;\n     } else {\n       replicaToKeep \u003d replica1;\n     }\n \n     replicaToDelete \u003d (replicaToKeep \u003d\u003d replica1) ? replica2 : replica1;\n \n+    if (LOG.isDebugEnabled()) {\n+      LOG.debug(\"resolveDuplicateReplicas decide to keep \" + replicaToKeep\n+          + \".  Will try to delete \" + replicaToDelete);\n+    }\n+\n     // Update volumeMap.\n     volumeMap.add(bpid, replicaToKeep);\n \n     // Delete the files on disk. Failure here is okay.\n-    replicaToDelete.getBlockFile().delete();\n-    replicaToDelete.getMetaFile().delete();\n-\n-    FsDatasetImpl.LOG.info(\n-        \"resolveDuplicateReplicas keeping \" + replicaToKeep.getBlockFile() +\n-        \", deleting \" + replicaToDelete.getBlockFile());\n+    final File blockFile \u003d replicaToDelete.getBlockFile();\n+    if (!blockFile.delete()) {\n+      LOG.warn(\"Failed to delete block file \" + blockFile);\n+    }\n+    final File metaFile \u003d replicaToDelete.getMetaFile();\n+    if (!metaFile.delete()) {\n+      LOG.warn(\"Failed to delete meta file \" + metaFile);\n+    }\n \n     return replicaToKeep;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  ReplicaInfo resolveDuplicateReplicas(\n      final ReplicaInfo replica1, final ReplicaInfo replica2,\n      final ReplicaMap volumeMap) throws IOException {\n\n    if (!deleteDuplicateReplicas) {\n      // Leave both block replicas in place.\n      return replica1;\n    }\n\n    ReplicaInfo replicaToKeep;\n    ReplicaInfo replicaToDelete;\n\n    if (replica1.getGenerationStamp() !\u003d replica2.getGenerationStamp()) {\n      replicaToKeep \u003d replica1.getGenerationStamp() \u003e replica2.getGenerationStamp()\n          ? replica1 : replica2;\n    } else if (replica1.getNumBytes() !\u003d replica2.getNumBytes()) {\n      replicaToKeep \u003d replica1.getNumBytes() \u003e replica2.getNumBytes() ?\n          replica1 : replica2;\n    } else if (replica1.getVolume().isTransientStorage() \u0026\u0026\n               !replica2.getVolume().isTransientStorage()) {\n      replicaToKeep \u003d replica2;\n    } else {\n      replicaToKeep \u003d replica1;\n    }\n\n    replicaToDelete \u003d (replicaToKeep \u003d\u003d replica1) ? replica2 : replica1;\n\n    if (LOG.isDebugEnabled()) {\n      LOG.debug(\"resolveDuplicateReplicas decide to keep \" + replicaToKeep\n          + \".  Will try to delete \" + replicaToDelete);\n    }\n\n    // Update volumeMap.\n    volumeMap.add(bpid, replicaToKeep);\n\n    // Delete the files on disk. Failure here is okay.\n    final File blockFile \u003d replicaToDelete.getBlockFile();\n    if (!blockFile.delete()) {\n      LOG.warn(\"Failed to delete block file \" + blockFile);\n    }\n    final File metaFile \u003d replicaToDelete.getMetaFile();\n    if (!metaFile.delete()) {\n      LOG.warn(\"Failed to delete meta file \" + metaFile);\n    }\n\n    return replicaToKeep;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.java",
+      "extendedDetails": {}
+    },
+    "4eab083b1b7faf4485274d1d30256cde08e11915": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-7080. Fix finalize and upgrade unit test failures. (Arpit Agarwal)\n",
+      "commitDate": "17/09/14 3:25 PM",
+      "commitName": "4eab083b1b7faf4485274d1d30256cde08e11915",
+      "commitAuthor": "arp",
+      "commitDateOld": "12/09/14 10:13 PM",
+      "commitNameOld": "9f22fb8c9a10952225e15c7b67b5f77fa44b155d",
+      "commitAuthorOld": "arp",
+      "daysBetweenCommits": 4.72,
+      "commitsBetweenForRepo": 42,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,35 +1,40 @@\n   ReplicaInfo resolveDuplicateReplicas(\n       final ReplicaInfo replica1, final ReplicaInfo replica2,\n       final ReplicaMap volumeMap) throws IOException {\n \n+    if (!deleteDuplicateReplicas) {\n+      // Leave both block replicas in place.\n+      return replica1;\n+    }\n+\n     ReplicaInfo replicaToKeep;\n     ReplicaInfo replicaToDelete;\n \n     if (replica1.getGenerationStamp() !\u003d replica2.getGenerationStamp()) {\n       replicaToKeep \u003d replica1.getGenerationStamp() \u003e replica2.getGenerationStamp()\n           ? replica1 : replica2;\n     } else if (replica1.getNumBytes() !\u003d replica2.getNumBytes()) {\n       replicaToKeep \u003d replica1.getNumBytes() \u003e replica2.getNumBytes() ?\n           replica1 : replica2;\n     } else if (replica1.getVolume().isTransientStorage() \u0026\u0026\n                !replica2.getVolume().isTransientStorage()) {\n       replicaToKeep \u003d replica2;\n     } else {\n       replicaToKeep \u003d replica1;\n     }\n \n     replicaToDelete \u003d (replicaToKeep \u003d\u003d replica1) ? replica2 : replica1;\n \n     // Update volumeMap.\n     volumeMap.add(bpid, replicaToKeep);\n \n     // Delete the files on disk. Failure here is okay.\n     replicaToDelete.getBlockFile().delete();\n     replicaToDelete.getMetaFile().delete();\n \n     FsDatasetImpl.LOG.info(\n         \"resolveDuplicateReplicas keeping \" + replicaToKeep.getBlockFile() +\n         \", deleting \" + replicaToDelete.getBlockFile());\n \n     return replicaToKeep;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  ReplicaInfo resolveDuplicateReplicas(\n      final ReplicaInfo replica1, final ReplicaInfo replica2,\n      final ReplicaMap volumeMap) throws IOException {\n\n    if (!deleteDuplicateReplicas) {\n      // Leave both block replicas in place.\n      return replica1;\n    }\n\n    ReplicaInfo replicaToKeep;\n    ReplicaInfo replicaToDelete;\n\n    if (replica1.getGenerationStamp() !\u003d replica2.getGenerationStamp()) {\n      replicaToKeep \u003d replica1.getGenerationStamp() \u003e replica2.getGenerationStamp()\n          ? replica1 : replica2;\n    } else if (replica1.getNumBytes() !\u003d replica2.getNumBytes()) {\n      replicaToKeep \u003d replica1.getNumBytes() \u003e replica2.getNumBytes() ?\n          replica1 : replica2;\n    } else if (replica1.getVolume().isTransientStorage() \u0026\u0026\n               !replica2.getVolume().isTransientStorage()) {\n      replicaToKeep \u003d replica2;\n    } else {\n      replicaToKeep \u003d replica1;\n    }\n\n    replicaToDelete \u003d (replicaToKeep \u003d\u003d replica1) ? replica2 : replica1;\n\n    // Update volumeMap.\n    volumeMap.add(bpid, replicaToKeep);\n\n    // Delete the files on disk. Failure here is okay.\n    replicaToDelete.getBlockFile().delete();\n    replicaToDelete.getMetaFile().delete();\n\n    FsDatasetImpl.LOG.info(\n        \"resolveDuplicateReplicas keeping \" + replicaToKeep.getBlockFile() +\n        \", deleting \" + replicaToDelete.getBlockFile());\n\n    return replicaToKeep;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.java",
+      "extendedDetails": {}
+    },
+    "9f22fb8c9a10952225e15c7b67b5f77fa44b155d": {
+      "type": "Ymodifierchange",
+      "commitMessage": "HDFS-6978. Directory scanner should correctly reconcile blocks on RAM disk. (Arpit Agarwal)\n",
+      "commitDate": "12/09/14 10:13 PM",
+      "commitName": "9f22fb8c9a10952225e15c7b67b5f77fa44b155d",
+      "commitAuthor": "arp",
+      "commitDateOld": "08/09/14 10:35 AM",
+      "commitNameOld": "ccdf0054a354fc110124b83de742c2ee6076449e",
+      "commitAuthorOld": "arp",
+      "daysBetweenCommits": 4.48,
+      "commitsBetweenForRepo": 57,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,35 +1,35 @@\n-  private ReplicaInfo resolveDuplicateReplicas(\n+  ReplicaInfo resolveDuplicateReplicas(\n       final ReplicaInfo replica1, final ReplicaInfo replica2,\n       final ReplicaMap volumeMap) throws IOException {\n \n     ReplicaInfo replicaToKeep;\n     ReplicaInfo replicaToDelete;\n \n     if (replica1.getGenerationStamp() !\u003d replica2.getGenerationStamp()) {\n       replicaToKeep \u003d replica1.getGenerationStamp() \u003e replica2.getGenerationStamp()\n           ? replica1 : replica2;\n     } else if (replica1.getNumBytes() !\u003d replica2.getNumBytes()) {\n       replicaToKeep \u003d replica1.getNumBytes() \u003e replica2.getNumBytes() ?\n           replica1 : replica2;\n     } else if (replica1.getVolume().isTransientStorage() \u0026\u0026\n                !replica2.getVolume().isTransientStorage()) {\n       replicaToKeep \u003d replica2;\n     } else {\n       replicaToKeep \u003d replica1;\n     }\n \n     replicaToDelete \u003d (replicaToKeep \u003d\u003d replica1) ? replica2 : replica1;\n \n     // Update volumeMap.\n     volumeMap.add(bpid, replicaToKeep);\n \n     // Delete the files on disk. Failure here is okay.\n     replicaToDelete.getBlockFile().delete();\n     replicaToDelete.getMetaFile().delete();\n \n     FsDatasetImpl.LOG.info(\n         \"resolveDuplicateReplicas keeping \" + replicaToKeep.getBlockFile() +\n         \", deleting \" + replicaToDelete.getBlockFile());\n \n     return replicaToKeep;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  ReplicaInfo resolveDuplicateReplicas(\n      final ReplicaInfo replica1, final ReplicaInfo replica2,\n      final ReplicaMap volumeMap) throws IOException {\n\n    ReplicaInfo replicaToKeep;\n    ReplicaInfo replicaToDelete;\n\n    if (replica1.getGenerationStamp() !\u003d replica2.getGenerationStamp()) {\n      replicaToKeep \u003d replica1.getGenerationStamp() \u003e replica2.getGenerationStamp()\n          ? replica1 : replica2;\n    } else if (replica1.getNumBytes() !\u003d replica2.getNumBytes()) {\n      replicaToKeep \u003d replica1.getNumBytes() \u003e replica2.getNumBytes() ?\n          replica1 : replica2;\n    } else if (replica1.getVolume().isTransientStorage() \u0026\u0026\n               !replica2.getVolume().isTransientStorage()) {\n      replicaToKeep \u003d replica2;\n    } else {\n      replicaToKeep \u003d replica1;\n    }\n\n    replicaToDelete \u003d (replicaToKeep \u003d\u003d replica1) ? replica2 : replica1;\n\n    // Update volumeMap.\n    volumeMap.add(bpid, replicaToKeep);\n\n    // Delete the files on disk. Failure here is okay.\n    replicaToDelete.getBlockFile().delete();\n    replicaToDelete.getMetaFile().delete();\n\n    FsDatasetImpl.LOG.info(\n        \"resolveDuplicateReplicas keeping \" + replicaToKeep.getBlockFile() +\n        \", deleting \" + replicaToDelete.getBlockFile());\n\n    return replicaToKeep;\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/BlockPoolSlice.java",
+      "extendedDetails": {
+        "oldValue": "[private]",
+        "newValue": "[]"
+      }
+    }
+  }
+}

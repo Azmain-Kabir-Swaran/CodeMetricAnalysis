@@ -1,0 +1,51 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FsDatasetCache.java",
+  "functionName": "shouldDefer",
+  "functionId": "shouldDefer",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetCache.java",
+  "functionStartLine": 508,
+  "functionEndLine": 540,
+  "numCommitsSeen": 31,
+  "timeTaken": 1730,
+  "changeHistory": [
+    "659c88801d008bb352d10a1cb3bd0e401486cc9b",
+    "cad14aa9168112ef1ceae80b94d9aae3ba293578"
+  ],
+  "changeHistoryShort": {
+    "659c88801d008bb352d10a1cb3bd0e401486cc9b": "Ybodychange",
+    "cad14aa9168112ef1ceae80b94d9aae3ba293578": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "659c88801d008bb352d10a1cb3bd0e401486cc9b": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-14818. Check native pmdk lib by \u0027hadoop checknative\u0027 command. Contributed by Feilong He.\n",
+      "commitDate": "22/09/19 9:32 AM",
+      "commitName": "659c88801d008bb352d10a1cb3bd0e401486cc9b",
+      "commitAuthor": "Rakesh Radhakrishnan",
+      "commitDateOld": "15/07/19 12:32 AM",
+      "commitNameOld": "e98adb00b7da8fa913b86ecf2049444b1d8617d4",
+      "commitAuthorOld": "Rakesh Radhakrishnan",
+      "daysBetweenCommits": 69.38,
+      "commitsBetweenForRepo": 622,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,28 +1,33 @@\n     private boolean shouldDefer() {\n+      // Currently, defer condition is just checked for DRAM cache case.\n+      if (!cacheLoader.isTransientCache()) {\n+        return false;\n+      }\n+\n       /* If revocationTimeMs \u003d\u003d 0, this is an immediate uncache request.\n        * No clients were anchored at the time we made the request. */\n       if (revocationTimeMs \u003d\u003d 0) {\n         return false;\n       }\n       /* Let\u0027s check if any clients still have this block anchored. */\n       boolean anchored \u003d\n         !dataset.datanode.getShortCircuitRegistry().\n             processBlockMunlockRequest(key);\n       if (!anchored) {\n         LOG.debug(\"Uncaching {} now that it is no longer in use \" +\n             \"by any clients.\", key);\n         return false;\n       }\n       long delta \u003d revocationTimeMs - Time.monotonicNow();\n       if (delta \u003c 0) {\n         LOG.warn(\"Forcibly uncaching {} after {} \" +\n             \"because client(s) {} refused to stop using it.\", key,\n             DurationFormatUtils.formatDurationHMS(revocationTimeMs),\n             dataset.datanode.getShortCircuitRegistry().getClientNames(key));\n         return false;\n       }\n       LOG.info(\"Replica {} still can\u0027t be uncached because some \" +\n           \"clients continue to use it.  Will wait for {}\", key,\n           DurationFormatUtils.formatDurationHMS(delta));\n       return true;\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    private boolean shouldDefer() {\n      // Currently, defer condition is just checked for DRAM cache case.\n      if (!cacheLoader.isTransientCache()) {\n        return false;\n      }\n\n      /* If revocationTimeMs \u003d\u003d 0, this is an immediate uncache request.\n       * No clients were anchored at the time we made the request. */\n      if (revocationTimeMs \u003d\u003d 0) {\n        return false;\n      }\n      /* Let\u0027s check if any clients still have this block anchored. */\n      boolean anchored \u003d\n        !dataset.datanode.getShortCircuitRegistry().\n            processBlockMunlockRequest(key);\n      if (!anchored) {\n        LOG.debug(\"Uncaching {} now that it is no longer in use \" +\n            \"by any clients.\", key);\n        return false;\n      }\n      long delta \u003d revocationTimeMs - Time.monotonicNow();\n      if (delta \u003c 0) {\n        LOG.warn(\"Forcibly uncaching {} after {} \" +\n            \"because client(s) {} refused to stop using it.\", key,\n            DurationFormatUtils.formatDurationHMS(revocationTimeMs),\n            dataset.datanode.getShortCircuitRegistry().getClientNames(key));\n        return false;\n      }\n      LOG.info(\"Replica {} still can\u0027t be uncached because some \" +\n          \"clients continue to use it.  Will wait for {}\", key,\n          DurationFormatUtils.formatDurationHMS(delta));\n      return true;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetCache.java",
+      "extendedDetails": {}
+    },
+    "cad14aa9168112ef1ceae80b94d9aae3ba293578": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-6036. Forcibly timeout misbehaving DFSClients that try to do no-checksum reads that extend too long.  (cmccabe)\n",
+      "commitDate": "08/09/14 12:51 PM",
+      "commitName": "cad14aa9168112ef1ceae80b94d9aae3ba293578",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "diff": "@@ -0,0 +1,28 @@\n+    private boolean shouldDefer() {\n+      /* If revocationTimeMs \u003d\u003d 0, this is an immediate uncache request.\n+       * No clients were anchored at the time we made the request. */\n+      if (revocationTimeMs \u003d\u003d 0) {\n+        return false;\n+      }\n+      /* Let\u0027s check if any clients still have this block anchored. */\n+      boolean anchored \u003d\n+        !dataset.datanode.getShortCircuitRegistry().\n+            processBlockMunlockRequest(key);\n+      if (!anchored) {\n+        LOG.debug(\"Uncaching {} now that it is no longer in use \" +\n+            \"by any clients.\", key);\n+        return false;\n+      }\n+      long delta \u003d revocationTimeMs - Time.monotonicNow();\n+      if (delta \u003c 0) {\n+        LOG.warn(\"Forcibly uncaching {} after {} \" +\n+            \"because client(s) {} refused to stop using it.\", key,\n+            DurationFormatUtils.formatDurationHMS(revocationTimeMs),\n+            dataset.datanode.getShortCircuitRegistry().getClientNames(key));\n+        return false;\n+      }\n+      LOG.info(\"Replica {} still can\u0027t be uncached because some \" +\n+          \"clients continue to use it.  Will wait for {}\", key,\n+          DurationFormatUtils.formatDurationHMS(delta));\n+      return true;\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private boolean shouldDefer() {\n      /* If revocationTimeMs \u003d\u003d 0, this is an immediate uncache request.\n       * No clients were anchored at the time we made the request. */\n      if (revocationTimeMs \u003d\u003d 0) {\n        return false;\n      }\n      /* Let\u0027s check if any clients still have this block anchored. */\n      boolean anchored \u003d\n        !dataset.datanode.getShortCircuitRegistry().\n            processBlockMunlockRequest(key);\n      if (!anchored) {\n        LOG.debug(\"Uncaching {} now that it is no longer in use \" +\n            \"by any clients.\", key);\n        return false;\n      }\n      long delta \u003d revocationTimeMs - Time.monotonicNow();\n      if (delta \u003c 0) {\n        LOG.warn(\"Forcibly uncaching {} after {} \" +\n            \"because client(s) {} refused to stop using it.\", key,\n            DurationFormatUtils.formatDurationHMS(revocationTimeMs),\n            dataset.datanode.getShortCircuitRegistry().getClientNames(key));\n        return false;\n      }\n      LOG.info(\"Replica {} still can\u0027t be uncached because some \" +\n          \"clients continue to use it.  Will wait for {}\", key,\n          DurationFormatUtils.formatDurationHMS(delta));\n      return true;\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/fsdataset/impl/FsDatasetCache.java"
+    }
+  }
+}

@@ -1,0 +1,73 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "DirectoryScanner.java",
+  "functionName": "throttle",
+  "functionId": "throttle",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DirectoryScanner.java",
+  "functionStartLine": 699,
+  "functionEndLine": 719,
+  "numCommitsSeen": 56,
+  "timeTaken": 2505,
+  "changeHistory": [
+    "1dc0adfac0ee4821c67366728c70be9b59477b0f",
+    "96b12662ea76e3ded4ef13944fc8df206cfb4613",
+    "7a3c381b39887a02e944fa98287afd0eb4db3560"
+  ],
+  "changeHistoryShort": {
+    "1dc0adfac0ee4821c67366728c70be9b59477b0f": "Ybodychange",
+    "96b12662ea76e3ded4ef13944fc8df206cfb4613": "Ymodifierchange",
+    "7a3c381b39887a02e944fa98287afd0eb4db3560": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "1dc0adfac0ee4821c67366728c70be9b59477b0f": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-13947. Review of DirectoryScanner Class. Contributed by BELUGA BEHR.\n",
+      "commitDate": "03/10/18 11:19 AM",
+      "commitName": "1dc0adfac0ee4821c67366728c70be9b59477b0f",
+      "commitAuthor": "Inigo Goiri",
+      "commitDateOld": "06/09/18 2:48 PM",
+      "commitNameOld": "eca1a4bfe952fc184fe90dde50bac9b0e5293568",
+      "commitAuthorOld": "Giovanni Matteo Fumarola",
+      "daysBetweenCommits": 26.86,
+      "commitsBetweenForRepo": 283,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,21 @@\n     public void throttle() throws InterruptedException {\n       accumulateTimeRunning();\n \n-      if ((throttleLimitMsPerSec \u003c 1000) \u0026\u0026\n-          (throttleTimer.now(TimeUnit.MILLISECONDS) \u003e throttleLimitMsPerSec)) {\n-\n-        Thread.sleep(MILLIS_PER_SECOND - throttleLimitMsPerSec);\n-        throttleTimer.reset().start();\n+      if (throttleLimitMsPerSec \u003e 0L) {\n+        final long runningTime \u003d throttleTimer.now(TimeUnit.MILLISECONDS);\n+        if (runningTime \u003e\u003d throttleLimitMsPerSec) {\n+          final long sleepTime;\n+          if (runningTime \u003e\u003d 1000L) {\n+            LOG.warn(\"Unable to throttle within the second. Blocking for 1s.\");\n+            sleepTime \u003d 1000L;\n+          } else {\n+            // Sleep for the expected time plus any time processing ran over\n+            final long overTime \u003d runningTime - throttleLimitMsPerSec;\n+            sleepTime \u003d (1000L - throttleLimitMsPerSec) + overTime;\n+          }\n+          Thread.sleep(sleepTime);\n+          throttleTimer.reset().start();\n+        }\n+        accumulateTimeWaiting();\n       }\n-\n-      accumulateTimeWaiting();\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void throttle() throws InterruptedException {\n      accumulateTimeRunning();\n\n      if (throttleLimitMsPerSec \u003e 0L) {\n        final long runningTime \u003d throttleTimer.now(TimeUnit.MILLISECONDS);\n        if (runningTime \u003e\u003d throttleLimitMsPerSec) {\n          final long sleepTime;\n          if (runningTime \u003e\u003d 1000L) {\n            LOG.warn(\"Unable to throttle within the second. Blocking for 1s.\");\n            sleepTime \u003d 1000L;\n          } else {\n            // Sleep for the expected time plus any time processing ran over\n            final long overTime \u003d runningTime - throttleLimitMsPerSec;\n            sleepTime \u003d (1000L - throttleLimitMsPerSec) + overTime;\n          }\n          Thread.sleep(sleepTime);\n          throttleTimer.reset().start();\n        }\n        accumulateTimeWaiting();\n      }\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DirectoryScanner.java",
+      "extendedDetails": {}
+    },
+    "96b12662ea76e3ded4ef13944fc8df206cfb4613": {
+      "type": "Ymodifierchange",
+      "commitMessage": "HDFS-10637. Modifications to remove the assumption that FsVolumes are backed by java.io.File. (Virajith Jalaparti via lei)\n",
+      "commitDate": "10/10/16 3:30 PM",
+      "commitName": "96b12662ea76e3ded4ef13944fc8df206cfb4613",
+      "commitAuthor": "Lei Xu",
+      "commitDateOld": "13/09/16 12:54 PM",
+      "commitNameOld": "86c9862bec0248d671e657aa56094a2919b8ac14",
+      "commitAuthorOld": "Lei Xu",
+      "daysBetweenCommits": 27.11,
+      "commitsBetweenForRepo": 180,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,12 +1,12 @@\n-    private void throttle() throws InterruptedException {\n+    public void throttle() throws InterruptedException {\n       accumulateTimeRunning();\n \n       if ((throttleLimitMsPerSec \u003c 1000) \u0026\u0026\n           (throttleTimer.now(TimeUnit.MILLISECONDS) \u003e throttleLimitMsPerSec)) {\n \n         Thread.sleep(MILLIS_PER_SECOND - throttleLimitMsPerSec);\n         throttleTimer.reset().start();\n       }\n \n       accumulateTimeWaiting();\n     }\n\\ No newline at end of file\n",
+      "actualSource": "    public void throttle() throws InterruptedException {\n      accumulateTimeRunning();\n\n      if ((throttleLimitMsPerSec \u003c 1000) \u0026\u0026\n          (throttleTimer.now(TimeUnit.MILLISECONDS) \u003e throttleLimitMsPerSec)) {\n\n        Thread.sleep(MILLIS_PER_SECOND - throttleLimitMsPerSec);\n        throttleTimer.reset().start();\n      }\n\n      accumulateTimeWaiting();\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DirectoryScanner.java",
+      "extendedDetails": {
+        "oldValue": "[private]",
+        "newValue": "[public]"
+      }
+    },
+    "7a3c381b39887a02e944fa98287afd0eb4db3560": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-8873. Allow the directoryScanner to be rate-limited (Daniel Templeton via Colin P. McCabe)\n",
+      "commitDate": "26/09/15 4:09 AM",
+      "commitName": "7a3c381b39887a02e944fa98287afd0eb4db3560",
+      "commitAuthor": "Colin Patrick Mccabe",
+      "diff": "@@ -0,0 +1,12 @@\n+    private void throttle() throws InterruptedException {\n+      accumulateTimeRunning();\n+\n+      if ((throttleLimitMsPerSec \u003c 1000) \u0026\u0026\n+          (throttleTimer.now(TimeUnit.MILLISECONDS) \u003e throttleLimitMsPerSec)) {\n+\n+        Thread.sleep(MILLIS_PER_SECOND - throttleLimitMsPerSec);\n+        throttleTimer.reset().start();\n+      }\n+\n+      accumulateTimeWaiting();\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private void throttle() throws InterruptedException {\n      accumulateTimeRunning();\n\n      if ((throttleLimitMsPerSec \u003c 1000) \u0026\u0026\n          (throttleTimer.now(TimeUnit.MILLISECONDS) \u003e throttleLimitMsPerSec)) {\n\n        Thread.sleep(MILLIS_PER_SECOND - throttleLimitMsPerSec);\n        throttleTimer.reset().start();\n      }\n\n      accumulateTimeWaiting();\n    }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/datanode/DirectoryScanner.java"
+    }
+  }
+}

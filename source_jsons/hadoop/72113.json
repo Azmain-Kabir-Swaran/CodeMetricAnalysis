@@ -1,0 +1,32 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "KerberosUtil.java",
+  "functionName": "getTokenServerName",
+  "functionId": "getTokenServerName___rawToken-byte[]",
+  "sourceFilePath": "hadoop-common-project/hadoop-auth/src/main/java/org/apache/hadoop/security/authentication/util/KerberosUtil.java",
+  "functionStartLine": 289,
+  "functionEndLine": 339,
+  "numCommitsSeen": 13,
+  "timeTaken": 594,
+  "changeHistory": [
+    "e806c6e0ce6026d53227b51d58ec6d5458164571"
+  ],
+  "changeHistoryShort": {
+    "e806c6e0ce6026d53227b51d58ec6d5458164571": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "e806c6e0ce6026d53227b51d58ec6d5458164571": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-14146.  KerberosAuthenticationHandler should authenticate with SPN in AP-REQ.  Contributed by Daryn Sharp\n",
+      "commitDate": "21/06/17 9:03 AM",
+      "commitName": "e806c6e0ce6026d53227b51d58ec6d5458164571",
+      "commitAuthor": "Daryn Sharp",
+      "diff": "@@ -0,0 +1,51 @@\n+  public static String getTokenServerName(byte[] rawToken) {\n+    // subsequent comments include only relevant portions of the kerberos\n+    // DER encoding that will be extracted.\n+    DER token \u003d new DER(rawToken);\n+    // InitialContextToken ::\u003d [APPLICATION 0] IMPLICIT SEQUENCE {\n+    //     mech   OID\n+    //     mech-token  (NegotiationToken or InnerContextToken)\n+    // }\n+    DER oid \u003d token.next();\n+    if (oid.equals(DER.SPNEGO_MECH_OID)) {\n+      // NegotiationToken ::\u003d CHOICE {\n+      //     neg-token-init[0] NegTokenInit\n+      // }\n+      // NegTokenInit ::\u003d SEQUENCE {\n+      //     mech-token[2]     InitialContextToken\n+      // }\n+      token \u003d token.next().get(0xa0, 0x30, 0xa2, 0x04).next();\n+      oid \u003d token.next();\n+    }\n+    if (!oid.equals(DER.KRB5_MECH_OID)) {\n+      throw new IllegalArgumentException(\"Malformed gss token\");\n+    }\n+    // InnerContextToken ::\u003d {\n+    //     token-id[1]\n+    //     AP-REQ\n+    // }\n+    if (token.next().getTag() !\u003d 1) {\n+      throw new IllegalArgumentException(\"Not an AP-REQ token\");\n+    }\n+    // AP-REQ ::\u003d [APPLICATION 14] SEQUENCE {\n+    //     ticket[3]      Ticket\n+    // }\n+    DER ticket \u003d token.next().get(0x6e, 0x30, 0xa3, 0x61, 0x30);\n+    // Ticket ::\u003d [APPLICATION 1] SEQUENCE {\n+    //     realm[1]       String\n+    //     sname[2]       PrincipalName\n+    // }\n+    // PrincipalName ::\u003d SEQUENCE {\n+    //     name-string[1] SEQUENCE OF String\n+    // }\n+    String realm \u003d ticket.get(0xa1, 0x1b).getAsString();\n+    DER names \u003d ticket.get(0xa2, 0x30, 0xa1, 0x30);\n+    StringBuilder sb \u003d new StringBuilder();\n+    while (names.hasNext()) {\n+      if (sb.length() \u003e 0) {\n+        sb.append(\u0027/\u0027);\n+      }\n+      sb.append(names.next().getAsString());\n+    }\n+    return sb.append(\u0027@\u0027).append(realm).toString();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public static String getTokenServerName(byte[] rawToken) {\n    // subsequent comments include only relevant portions of the kerberos\n    // DER encoding that will be extracted.\n    DER token \u003d new DER(rawToken);\n    // InitialContextToken ::\u003d [APPLICATION 0] IMPLICIT SEQUENCE {\n    //     mech   OID\n    //     mech-token  (NegotiationToken or InnerContextToken)\n    // }\n    DER oid \u003d token.next();\n    if (oid.equals(DER.SPNEGO_MECH_OID)) {\n      // NegotiationToken ::\u003d CHOICE {\n      //     neg-token-init[0] NegTokenInit\n      // }\n      // NegTokenInit ::\u003d SEQUENCE {\n      //     mech-token[2]     InitialContextToken\n      // }\n      token \u003d token.next().get(0xa0, 0x30, 0xa2, 0x04).next();\n      oid \u003d token.next();\n    }\n    if (!oid.equals(DER.KRB5_MECH_OID)) {\n      throw new IllegalArgumentException(\"Malformed gss token\");\n    }\n    // InnerContextToken ::\u003d {\n    //     token-id[1]\n    //     AP-REQ\n    // }\n    if (token.next().getTag() !\u003d 1) {\n      throw new IllegalArgumentException(\"Not an AP-REQ token\");\n    }\n    // AP-REQ ::\u003d [APPLICATION 14] SEQUENCE {\n    //     ticket[3]      Ticket\n    // }\n    DER ticket \u003d token.next().get(0x6e, 0x30, 0xa3, 0x61, 0x30);\n    // Ticket ::\u003d [APPLICATION 1] SEQUENCE {\n    //     realm[1]       String\n    //     sname[2]       PrincipalName\n    // }\n    // PrincipalName ::\u003d SEQUENCE {\n    //     name-string[1] SEQUENCE OF String\n    // }\n    String realm \u003d ticket.get(0xa1, 0x1b).getAsString();\n    DER names \u003d ticket.get(0xa2, 0x30, 0xa1, 0x30);\n    StringBuilder sb \u003d new StringBuilder();\n    while (names.hasNext()) {\n      if (sb.length() \u003e 0) {\n        sb.append(\u0027/\u0027);\n      }\n      sb.append(names.next().getAsString());\n    }\n    return sb.append(\u0027@\u0027).append(realm).toString();\n  }",
+      "path": "hadoop-common-project/hadoop-auth/src/main/java/org/apache/hadoop/security/authentication/util/KerberosUtil.java"
+    }
+  }
+}

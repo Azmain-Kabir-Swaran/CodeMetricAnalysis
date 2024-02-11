@@ -1,0 +1,181 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "S3ARetryPolicy.java",
+  "functionName": "shouldRetry",
+  "functionId": "shouldRetry___exception-Exception__retries-int__failovers-int__idempotent-boolean",
+  "sourceFilePath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java",
+  "functionStartLine": 246,
+  "functionEndLine": 259,
+  "numCommitsSeen": 15,
+  "timeTaken": 3960,
+  "changeHistory": [
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+    "6c348c56918973fd988b110e79231324a8befe12"
+  ],
+  "changeHistoryShort": {
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": "Ybodychange",
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": "Ymultichange(Ymovefromfile,Yreturntypechange,Ymodifierchange,Yexceptionschange,Ybodychange,Yparameterchange)",
+    "6c348c56918973fd988b110e79231324a8befe12": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d7c0a08a1c077752918a8cf1b4f1900ce2721899": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-15426 Make S3guard client resilient to DDB throttle events and network failures (Contributed by Steve Loughran)\n",
+      "commitDate": "12/09/18 9:04 PM",
+      "commitName": "d7c0a08a1c077752918a8cf1b4f1900ce2721899",
+      "commitAuthor": "Steve Loughran",
+      "commitDateOld": "08/08/18 10:57 PM",
+      "commitNameOld": "da9a39eed138210de29b59b90c449b28da1c04f9",
+      "commitAuthorOld": "Steve Loughran",
+      "daysBetweenCommits": 34.92,
+      "commitsBetweenForRepo": 315,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,13 +1,14 @@\n   public RetryAction shouldRetry(Exception exception,\n       int retries,\n       int failovers,\n       boolean idempotent) throws Exception {\n+    Preconditions.checkArgument(exception !\u003d null, \"Null exception\");\n     Exception ex \u003d exception;\n     if (exception instanceof AmazonClientException) {\n       // uprate the amazon client exception for the purpose of exception\n       // processing.\n       ex \u003d S3AUtils.translateException(\"\", \"\",\n           (AmazonClientException) exception);\n     }\n     return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public RetryAction shouldRetry(Exception exception,\n      int retries,\n      int failovers,\n      boolean idempotent) throws Exception {\n    Preconditions.checkArgument(exception !\u003d null, \"Null exception\");\n    Exception ex \u003d exception;\n    if (exception instanceof AmazonClientException) {\n      // uprate the amazon client exception for the purpose of exception\n      // processing.\n      ex \u003d S3AUtils.translateException(\"\", \"\",\n          (AmazonClientException) exception);\n    }\n    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n  }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java",
+      "extendedDetails": {}
+    },
+    "de8b6ca5ef8614de6d6277b7617e27c788b0555c": {
+      "type": "Ymultichange(Ymovefromfile,Yreturntypechange,Ymodifierchange,Yexceptionschange,Ybodychange,Yparameterchange)",
+      "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+      "commitDate": "22/11/17 7:28 AM",
+      "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+      "commitAuthor": "Steve Loughran",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "21/11/17 8:42 PM",
+          "commitNameOld": "782ba3bf9da52699b27405a3f147464975d1df99",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 0.45,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,13 @@\n-    private boolean shouldRetry(String operation,\n-        AmazonClientException e,\n-        int retryCount) {\n-      try {\n-        RetryPolicy.RetryAction retryAction \u003d\n-            retryPolicy.shouldRetry(e, retryCount, 0, true);\n-        boolean retry \u003d retryAction \u003d\u003d RetryPolicy.RetryAction.RETRY;\n-        if (retry) {\n-          fs.incrementStatistic(IGNORED_ERRORS);\n-          LOG.info(\"Retrying {} after exception \", operation, e);\n-          Thread.sleep(retryAction.delayMillis);\n-        }\n-        return retry;\n-      } catch (InterruptedException ex) {\n-        Thread.currentThread().interrupt();\n-        return false;\n-      } catch (Exception ignored) {\n-        return false;\n-      }\n-    }\n\\ No newline at end of file\n+  public RetryAction shouldRetry(Exception exception,\n+      int retries,\n+      int failovers,\n+      boolean idempotent) throws Exception {\n+    Exception ex \u003d exception;\n+    if (exception instanceof AmazonClientException) {\n+      // uprate the amazon client exception for the purpose of exception\n+      // processing.\n+      ex \u003d S3AUtils.translateException(\"\", \"\",\n+          (AmazonClientException) exception);\n+    }\n+    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  public RetryAction shouldRetry(Exception exception,\n      int retries,\n      int failovers,\n      boolean idempotent) throws Exception {\n    Exception ex \u003d exception;\n    if (exception instanceof AmazonClientException) {\n      // uprate the amazon client exception for the purpose of exception\n      // processing.\n      ex \u003d S3AUtils.translateException(\"\", \"\",\n          (AmazonClientException) exception);\n    }\n    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java",
+            "newPath": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java",
+            "oldMethodName": "shouldRetry",
+            "newMethodName": "shouldRetry"
+          }
+        },
+        {
+          "type": "Yreturntypechange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "21/11/17 8:42 PM",
+          "commitNameOld": "782ba3bf9da52699b27405a3f147464975d1df99",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 0.45,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,13 @@\n-    private boolean shouldRetry(String operation,\n-        AmazonClientException e,\n-        int retryCount) {\n-      try {\n-        RetryPolicy.RetryAction retryAction \u003d\n-            retryPolicy.shouldRetry(e, retryCount, 0, true);\n-        boolean retry \u003d retryAction \u003d\u003d RetryPolicy.RetryAction.RETRY;\n-        if (retry) {\n-          fs.incrementStatistic(IGNORED_ERRORS);\n-          LOG.info(\"Retrying {} after exception \", operation, e);\n-          Thread.sleep(retryAction.delayMillis);\n-        }\n-        return retry;\n-      } catch (InterruptedException ex) {\n-        Thread.currentThread().interrupt();\n-        return false;\n-      } catch (Exception ignored) {\n-        return false;\n-      }\n-    }\n\\ No newline at end of file\n+  public RetryAction shouldRetry(Exception exception,\n+      int retries,\n+      int failovers,\n+      boolean idempotent) throws Exception {\n+    Exception ex \u003d exception;\n+    if (exception instanceof AmazonClientException) {\n+      // uprate the amazon client exception for the purpose of exception\n+      // processing.\n+      ex \u003d S3AUtils.translateException(\"\", \"\",\n+          (AmazonClientException) exception);\n+    }\n+    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  public RetryAction shouldRetry(Exception exception,\n      int retries,\n      int failovers,\n      boolean idempotent) throws Exception {\n    Exception ex \u003d exception;\n    if (exception instanceof AmazonClientException) {\n      // uprate the amazon client exception for the purpose of exception\n      // processing.\n      ex \u003d S3AUtils.translateException(\"\", \"\",\n          (AmazonClientException) exception);\n    }\n    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java",
+          "extendedDetails": {
+            "oldValue": "boolean",
+            "newValue": "RetryAction"
+          }
+        },
+        {
+          "type": "Ymodifierchange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "21/11/17 8:42 PM",
+          "commitNameOld": "782ba3bf9da52699b27405a3f147464975d1df99",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 0.45,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,13 @@\n-    private boolean shouldRetry(String operation,\n-        AmazonClientException e,\n-        int retryCount) {\n-      try {\n-        RetryPolicy.RetryAction retryAction \u003d\n-            retryPolicy.shouldRetry(e, retryCount, 0, true);\n-        boolean retry \u003d retryAction \u003d\u003d RetryPolicy.RetryAction.RETRY;\n-        if (retry) {\n-          fs.incrementStatistic(IGNORED_ERRORS);\n-          LOG.info(\"Retrying {} after exception \", operation, e);\n-          Thread.sleep(retryAction.delayMillis);\n-        }\n-        return retry;\n-      } catch (InterruptedException ex) {\n-        Thread.currentThread().interrupt();\n-        return false;\n-      } catch (Exception ignored) {\n-        return false;\n-      }\n-    }\n\\ No newline at end of file\n+  public RetryAction shouldRetry(Exception exception,\n+      int retries,\n+      int failovers,\n+      boolean idempotent) throws Exception {\n+    Exception ex \u003d exception;\n+    if (exception instanceof AmazonClientException) {\n+      // uprate the amazon client exception for the purpose of exception\n+      // processing.\n+      ex \u003d S3AUtils.translateException(\"\", \"\",\n+          (AmazonClientException) exception);\n+    }\n+    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  public RetryAction shouldRetry(Exception exception,\n      int retries,\n      int failovers,\n      boolean idempotent) throws Exception {\n    Exception ex \u003d exception;\n    if (exception instanceof AmazonClientException) {\n      // uprate the amazon client exception for the purpose of exception\n      // processing.\n      ex \u003d S3AUtils.translateException(\"\", \"\",\n          (AmazonClientException) exception);\n    }\n    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java",
+          "extendedDetails": {
+            "oldValue": "[private]",
+            "newValue": "[public]"
+          }
+        },
+        {
+          "type": "Yexceptionschange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "21/11/17 8:42 PM",
+          "commitNameOld": "782ba3bf9da52699b27405a3f147464975d1df99",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 0.45,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,13 @@\n-    private boolean shouldRetry(String operation,\n-        AmazonClientException e,\n-        int retryCount) {\n-      try {\n-        RetryPolicy.RetryAction retryAction \u003d\n-            retryPolicy.shouldRetry(e, retryCount, 0, true);\n-        boolean retry \u003d retryAction \u003d\u003d RetryPolicy.RetryAction.RETRY;\n-        if (retry) {\n-          fs.incrementStatistic(IGNORED_ERRORS);\n-          LOG.info(\"Retrying {} after exception \", operation, e);\n-          Thread.sleep(retryAction.delayMillis);\n-        }\n-        return retry;\n-      } catch (InterruptedException ex) {\n-        Thread.currentThread().interrupt();\n-        return false;\n-      } catch (Exception ignored) {\n-        return false;\n-      }\n-    }\n\\ No newline at end of file\n+  public RetryAction shouldRetry(Exception exception,\n+      int retries,\n+      int failovers,\n+      boolean idempotent) throws Exception {\n+    Exception ex \u003d exception;\n+    if (exception instanceof AmazonClientException) {\n+      // uprate the amazon client exception for the purpose of exception\n+      // processing.\n+      ex \u003d S3AUtils.translateException(\"\", \"\",\n+          (AmazonClientException) exception);\n+    }\n+    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  public RetryAction shouldRetry(Exception exception,\n      int retries,\n      int failovers,\n      boolean idempotent) throws Exception {\n    Exception ex \u003d exception;\n    if (exception instanceof AmazonClientException) {\n      // uprate the amazon client exception for the purpose of exception\n      // processing.\n      ex \u003d S3AUtils.translateException(\"\", \"\",\n          (AmazonClientException) exception);\n    }\n    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java",
+          "extendedDetails": {
+            "oldValue": "[]",
+            "newValue": "[Exception]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "21/11/17 8:42 PM",
+          "commitNameOld": "782ba3bf9da52699b27405a3f147464975d1df99",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 0.45,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,13 @@\n-    private boolean shouldRetry(String operation,\n-        AmazonClientException e,\n-        int retryCount) {\n-      try {\n-        RetryPolicy.RetryAction retryAction \u003d\n-            retryPolicy.shouldRetry(e, retryCount, 0, true);\n-        boolean retry \u003d retryAction \u003d\u003d RetryPolicy.RetryAction.RETRY;\n-        if (retry) {\n-          fs.incrementStatistic(IGNORED_ERRORS);\n-          LOG.info(\"Retrying {} after exception \", operation, e);\n-          Thread.sleep(retryAction.delayMillis);\n-        }\n-        return retry;\n-      } catch (InterruptedException ex) {\n-        Thread.currentThread().interrupt();\n-        return false;\n-      } catch (Exception ignored) {\n-        return false;\n-      }\n-    }\n\\ No newline at end of file\n+  public RetryAction shouldRetry(Exception exception,\n+      int retries,\n+      int failovers,\n+      boolean idempotent) throws Exception {\n+    Exception ex \u003d exception;\n+    if (exception instanceof AmazonClientException) {\n+      // uprate the amazon client exception for the purpose of exception\n+      // processing.\n+      ex \u003d S3AUtils.translateException(\"\", \"\",\n+          (AmazonClientException) exception);\n+    }\n+    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  public RetryAction shouldRetry(Exception exception,\n      int retries,\n      int failovers,\n      boolean idempotent) throws Exception {\n    Exception ex \u003d exception;\n    if (exception instanceof AmazonClientException) {\n      // uprate the amazon client exception for the purpose of exception\n      // processing.\n      ex \u003d S3AUtils.translateException(\"\", \"\",\n          (AmazonClientException) exception);\n    }\n    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java",
+          "extendedDetails": {}
+        },
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HADOOP-13786 Add S3A committer for zero-rename commits to S3 endpoints.\nContributed by Steve Loughran and Ryan Blue.\n",
+          "commitDate": "22/11/17 7:28 AM",
+          "commitName": "de8b6ca5ef8614de6d6277b7617e27c788b0555c",
+          "commitAuthor": "Steve Loughran",
+          "commitDateOld": "21/11/17 8:42 PM",
+          "commitNameOld": "782ba3bf9da52699b27405a3f147464975d1df99",
+          "commitAuthorOld": "Chris Douglas",
+          "daysBetweenCommits": 0.45,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,20 +1,13 @@\n-    private boolean shouldRetry(String operation,\n-        AmazonClientException e,\n-        int retryCount) {\n-      try {\n-        RetryPolicy.RetryAction retryAction \u003d\n-            retryPolicy.shouldRetry(e, retryCount, 0, true);\n-        boolean retry \u003d retryAction \u003d\u003d RetryPolicy.RetryAction.RETRY;\n-        if (retry) {\n-          fs.incrementStatistic(IGNORED_ERRORS);\n-          LOG.info(\"Retrying {} after exception \", operation, e);\n-          Thread.sleep(retryAction.delayMillis);\n-        }\n-        return retry;\n-      } catch (InterruptedException ex) {\n-        Thread.currentThread().interrupt();\n-        return false;\n-      } catch (Exception ignored) {\n-        return false;\n-      }\n-    }\n\\ No newline at end of file\n+  public RetryAction shouldRetry(Exception exception,\n+      int retries,\n+      int failovers,\n+      boolean idempotent) throws Exception {\n+    Exception ex \u003d exception;\n+    if (exception instanceof AmazonClientException) {\n+      // uprate the amazon client exception for the purpose of exception\n+      // processing.\n+      ex \u003d S3AUtils.translateException(\"\", \"\",\n+          (AmazonClientException) exception);\n+    }\n+    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n+  }\n\\ No newline at end of file\n",
+          "actualSource": "  public RetryAction shouldRetry(Exception exception,\n      int retries,\n      int failovers,\n      boolean idempotent) throws Exception {\n    Exception ex \u003d exception;\n    if (exception instanceof AmazonClientException) {\n      // uprate the amazon client exception for the purpose of exception\n      // processing.\n      ex \u003d S3AUtils.translateException(\"\", \"\",\n          (AmazonClientException) exception);\n    }\n    return retryPolicy.shouldRetry(ex, retries, failovers, idempotent);\n  }",
+          "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ARetryPolicy.java",
+          "extendedDetails": {
+            "oldValue": "[operation-String, e-AmazonClientException, retryCount-int]",
+            "newValue": "[exception-Exception, retries-int, failovers-int, idempotent-boolean]"
+          }
+        }
+      ]
+    },
+    "6c348c56918973fd988b110e79231324a8befe12": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-13560. S3ABlockOutputStream to support huge (many GB) file writes. Contributed by Steve Loughran\n",
+      "commitDate": "18/10/16 1:16 PM",
+      "commitName": "6c348c56918973fd988b110e79231324a8befe12",
+      "commitAuthor": "Steve Loughran",
+      "diff": "@@ -0,0 +1,20 @@\n+    private boolean shouldRetry(String operation,\n+        AmazonClientException e,\n+        int retryCount) {\n+      try {\n+        RetryPolicy.RetryAction retryAction \u003d\n+            retryPolicy.shouldRetry(e, retryCount, 0, true);\n+        boolean retry \u003d retryAction \u003d\u003d RetryPolicy.RetryAction.RETRY;\n+        if (retry) {\n+          fs.incrementStatistic(IGNORED_ERRORS);\n+          LOG.info(\"Retrying {} after exception \", operation, e);\n+          Thread.sleep(retryAction.delayMillis);\n+        }\n+        return retry;\n+      } catch (InterruptedException ex) {\n+        Thread.currentThread().interrupt();\n+        return false;\n+      } catch (Exception ignored) {\n+        return false;\n+      }\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    private boolean shouldRetry(String operation,\n        AmazonClientException e,\n        int retryCount) {\n      try {\n        RetryPolicy.RetryAction retryAction \u003d\n            retryPolicy.shouldRetry(e, retryCount, 0, true);\n        boolean retry \u003d retryAction \u003d\u003d RetryPolicy.RetryAction.RETRY;\n        if (retry) {\n          fs.incrementStatistic(IGNORED_ERRORS);\n          LOG.info(\"Retrying {} after exception \", operation, e);\n          Thread.sleep(retryAction.delayMillis);\n        }\n        return retry;\n      } catch (InterruptedException ex) {\n        Thread.currentThread().interrupt();\n        return false;\n      } catch (Exception ignored) {\n        return false;\n      }\n    }",
+      "path": "hadoop-tools/hadoop-aws/src/main/java/org/apache/hadoop/fs/s3a/S3ABlockOutputStream.java"
+    }
+  }
+}

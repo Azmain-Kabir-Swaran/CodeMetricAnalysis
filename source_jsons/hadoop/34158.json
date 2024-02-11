@@ -1,0 +1,82 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ContainerScheduler.java",
+  "functionName": "resourcesToFreeUp",
+  "functionId": "resourcesToFreeUp___containerToStartId-ContainerId",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/scheduler/ContainerScheduler.java",
+  "functionStartLine": 600,
+  "functionEndLine": 629,
+  "numCommitsSeen": 34,
+  "timeTaken": 3001,
+  "changeHistory": [
+    "3219b7b4ac7d12aee343f6ab2980b3357fc618b6",
+    "c8172f5f143d2fefafa5a412899ab7cd081b406d"
+  ],
+  "changeHistoryShort": {
+    "3219b7b4ac7d12aee343f6ab2980b3357fc618b6": "Ymultichange(Ymovefromfile,Ybodychange)",
+    "c8172f5f143d2fefafa5a412899ab7cd081b406d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "3219b7b4ac7d12aee343f6ab2980b3357fc618b6": {
+      "type": "Ymultichange(Ymovefromfile,Ybodychange)",
+      "commitMessage": "YARN-4597. Introduce ContainerScheduler and a SCHEDULED state to NodeManager container lifecycle. (asuresh)\n",
+      "commitDate": "15/11/16 7:56 AM",
+      "commitName": "3219b7b4ac7d12aee343f6ab2980b3357fc618b6",
+      "commitAuthor": "Arun Suresh",
+      "subchanges": [
+        {
+          "type": "Ymovefromfile",
+          "commitMessage": "YARN-4597. Introduce ContainerScheduler and a SCHEDULED state to NodeManager container lifecycle. (asuresh)\n",
+          "commitDate": "15/11/16 7:56 AM",
+          "commitName": "3219b7b4ac7d12aee343f6ab2980b3357fc618b6",
+          "commitAuthor": "Arun Suresh",
+          "commitDateOld": "15/11/16 2:11 AM",
+          "commitNameOld": "7ffb9943b8838a3bb56684e0722db40d800743a2",
+          "commitAuthorOld": "Naganarasimha",
+          "daysBetweenCommits": 0.24,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,30 @@\n   private ResourceUtilization resourcesToFreeUp(\n       ContainerId containerToStartId) {\n     // Get allocation of currently allocated containers.\n     ResourceUtilization resourceAllocationToFreeUp \u003d ResourceUtilization\n-        .newInstance(getContainersMonitor().getContainersAllocation());\n+        .newInstance(this.utilizationTracker.getCurrentUtilization());\n \n-    // Subtract from the allocation the allocation of the opportunistic\n-    // containers that are marked for killing.\n-    for (ContainerId opportContId : opportunisticContainersToKill) {\n-      if (allocatedOpportunisticContainers.containsKey(opportContId)) {\n-        getContainersMonitor().decreaseResourceUtilization(\n-            resourceAllocationToFreeUp,\n-            allocatedOpportunisticContainers.get(opportContId).getPti());\n-      }\n-    }\n     // Add to the allocation the allocation of the pending guaranteed\n     // containers that will start before the current container will be started.\n-    for (AllocatedContainerInfo guarContInfo : queuedGuaranteedContainers) {\n-      getContainersMonitor().increaseResourceUtilization(\n-          resourceAllocationToFreeUp, guarContInfo.getPti());\n-      if (guarContInfo.getPti().getContainerId().equals(containerToStartId)) {\n+    for (Container container : queuedGuaranteedContainers.values()) {\n+      ContainersMonitor.increaseResourceUtilization(\n+          getContainersMonitor(), resourceAllocationToFreeUp,\n+          container.getResource());\n+      if (container.getContainerId().equals(containerToStartId)) {\n         break;\n       }\n     }\n+\n+    // These resources are being freed, likely at the behest of another\n+    // guaranteed container..\n+    for (Container container : oppContainersToKill.values()) {\n+      ContainersMonitor.decreaseResourceUtilization(\n+          getContainersMonitor(), resourceAllocationToFreeUp,\n+          container.getResource());\n+    }\n+\n     // Subtract the overall node resources.\n     getContainersMonitor().subtractNodeResourcesFromResourceUtilization(\n         resourceAllocationToFreeUp);\n     return resourceAllocationToFreeUp;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private ResourceUtilization resourcesToFreeUp(\n      ContainerId containerToStartId) {\n    // Get allocation of currently allocated containers.\n    ResourceUtilization resourceAllocationToFreeUp \u003d ResourceUtilization\n        .newInstance(this.utilizationTracker.getCurrentUtilization());\n\n    // Add to the allocation the allocation of the pending guaranteed\n    // containers that will start before the current container will be started.\n    for (Container container : queuedGuaranteedContainers.values()) {\n      ContainersMonitor.increaseResourceUtilization(\n          getContainersMonitor(), resourceAllocationToFreeUp,\n          container.getResource());\n      if (container.getContainerId().equals(containerToStartId)) {\n        break;\n      }\n    }\n\n    // These resources are being freed, likely at the behest of another\n    // guaranteed container..\n    for (Container container : oppContainersToKill.values()) {\n      ContainersMonitor.decreaseResourceUtilization(\n          getContainersMonitor(), resourceAllocationToFreeUp,\n          container.getResource());\n    }\n\n    // Subtract the overall node resources.\n    getContainersMonitor().subtractNodeResourcesFromResourceUtilization(\n        resourceAllocationToFreeUp);\n    return resourceAllocationToFreeUp;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/scheduler/ContainerScheduler.java",
+          "extendedDetails": {
+            "oldPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/queuing/QueuingContainerManagerImpl.java",
+            "newPath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/scheduler/ContainerScheduler.java",
+            "oldMethodName": "resourcesToFreeUp",
+            "newMethodName": "resourcesToFreeUp"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "YARN-4597. Introduce ContainerScheduler and a SCHEDULED state to NodeManager container lifecycle. (asuresh)\n",
+          "commitDate": "15/11/16 7:56 AM",
+          "commitName": "3219b7b4ac7d12aee343f6ab2980b3357fc618b6",
+          "commitAuthor": "Arun Suresh",
+          "commitDateOld": "15/11/16 2:11 AM",
+          "commitNameOld": "7ffb9943b8838a3bb56684e0722db40d800743a2",
+          "commitAuthorOld": "Naganarasimha",
+          "daysBetweenCommits": 0.24,
+          "commitsBetweenForRepo": 1,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,29 +1,30 @@\n   private ResourceUtilization resourcesToFreeUp(\n       ContainerId containerToStartId) {\n     // Get allocation of currently allocated containers.\n     ResourceUtilization resourceAllocationToFreeUp \u003d ResourceUtilization\n-        .newInstance(getContainersMonitor().getContainersAllocation());\n+        .newInstance(this.utilizationTracker.getCurrentUtilization());\n \n-    // Subtract from the allocation the allocation of the opportunistic\n-    // containers that are marked for killing.\n-    for (ContainerId opportContId : opportunisticContainersToKill) {\n-      if (allocatedOpportunisticContainers.containsKey(opportContId)) {\n-        getContainersMonitor().decreaseResourceUtilization(\n-            resourceAllocationToFreeUp,\n-            allocatedOpportunisticContainers.get(opportContId).getPti());\n-      }\n-    }\n     // Add to the allocation the allocation of the pending guaranteed\n     // containers that will start before the current container will be started.\n-    for (AllocatedContainerInfo guarContInfo : queuedGuaranteedContainers) {\n-      getContainersMonitor().increaseResourceUtilization(\n-          resourceAllocationToFreeUp, guarContInfo.getPti());\n-      if (guarContInfo.getPti().getContainerId().equals(containerToStartId)) {\n+    for (Container container : queuedGuaranteedContainers.values()) {\n+      ContainersMonitor.increaseResourceUtilization(\n+          getContainersMonitor(), resourceAllocationToFreeUp,\n+          container.getResource());\n+      if (container.getContainerId().equals(containerToStartId)) {\n         break;\n       }\n     }\n+\n+    // These resources are being freed, likely at the behest of another\n+    // guaranteed container..\n+    for (Container container : oppContainersToKill.values()) {\n+      ContainersMonitor.decreaseResourceUtilization(\n+          getContainersMonitor(), resourceAllocationToFreeUp,\n+          container.getResource());\n+    }\n+\n     // Subtract the overall node resources.\n     getContainersMonitor().subtractNodeResourcesFromResourceUtilization(\n         resourceAllocationToFreeUp);\n     return resourceAllocationToFreeUp;\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  private ResourceUtilization resourcesToFreeUp(\n      ContainerId containerToStartId) {\n    // Get allocation of currently allocated containers.\n    ResourceUtilization resourceAllocationToFreeUp \u003d ResourceUtilization\n        .newInstance(this.utilizationTracker.getCurrentUtilization());\n\n    // Add to the allocation the allocation of the pending guaranteed\n    // containers that will start before the current container will be started.\n    for (Container container : queuedGuaranteedContainers.values()) {\n      ContainersMonitor.increaseResourceUtilization(\n          getContainersMonitor(), resourceAllocationToFreeUp,\n          container.getResource());\n      if (container.getContainerId().equals(containerToStartId)) {\n        break;\n      }\n    }\n\n    // These resources are being freed, likely at the behest of another\n    // guaranteed container..\n    for (Container container : oppContainersToKill.values()) {\n      ContainersMonitor.decreaseResourceUtilization(\n          getContainersMonitor(), resourceAllocationToFreeUp,\n          container.getResource());\n    }\n\n    // Subtract the overall node resources.\n    getContainersMonitor().subtractNodeResourcesFromResourceUtilization(\n        resourceAllocationToFreeUp);\n    return resourceAllocationToFreeUp;\n  }",
+          "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/scheduler/ContainerScheduler.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "c8172f5f143d2fefafa5a412899ab7cd081b406d": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-2883. Queuing of container requests in the NM. (Konstantinos Karanasos and Arun Suresh via kasha)\n",
+      "commitDate": "20/04/16 9:55 AM",
+      "commitName": "c8172f5f143d2fefafa5a412899ab7cd081b406d",
+      "commitAuthor": "Karthik Kambatla",
+      "diff": "@@ -0,0 +1,30 @@\n+  private ResourceUtilization resourcesToFreeUp(\n+      ContainerId containerToStartId) {\n+    // Get allocation of currently allocated containers.\n+    ResourceUtilization resourceAllocationToFreeUp \u003d ResourceUtilization\n+        .newInstance(getContainersMonitor().getContainersAllocation());\n+\n+    // Subtract from the allocation the allocation of the opportunistic\n+    // containers that are marked for killing.\n+    for (ContainerId opportContId : opportunisticContainersToKill) {\n+      if (allocatedOpportunisticContainers.containsKey(opportContId)) {\n+        getContainersMonitor().decreaseResourceUtilization(\n+            resourceAllocationToFreeUp,\n+            allocatedOpportunisticContainers.get(opportContId).getPti());\n+      }\n+    }\n+    // Add to the allocation the allocation of the pending guaranteed\n+    // containers that will start before the current container will be started.\n+    for (AllocatedContainerInfo guarContInfo : queuedGuaranteedContainers) {\n+      getContainersMonitor().increaseResourceUtilization(\n+          resourceAllocationToFreeUp, guarContInfo.getPti());\n+      if (guarContInfo.getPti().getContainerId().equals(containerToStartId)) {\n+        break;\n+      }\n+    }\n+    // Subtract the overall node resources.\n+    getContainersMonitor().subtractNodeResourcesFromResourceUtilization(\n+        resourceAllocationToFreeUp);\n+\n+    return resourceAllocationToFreeUp;\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  private ResourceUtilization resourcesToFreeUp(\n      ContainerId containerToStartId) {\n    // Get allocation of currently allocated containers.\n    ResourceUtilization resourceAllocationToFreeUp \u003d ResourceUtilization\n        .newInstance(getContainersMonitor().getContainersAllocation());\n\n    // Subtract from the allocation the allocation of the opportunistic\n    // containers that are marked for killing.\n    for (ContainerId opportContId : opportunisticContainersToKill) {\n      if (allocatedOpportunisticContainers.containsKey(opportContId)) {\n        getContainersMonitor().decreaseResourceUtilization(\n            resourceAllocationToFreeUp,\n            allocatedOpportunisticContainers.get(opportContId).getPti());\n      }\n    }\n    // Add to the allocation the allocation of the pending guaranteed\n    // containers that will start before the current container will be started.\n    for (AllocatedContainerInfo guarContInfo : queuedGuaranteedContainers) {\n      getContainersMonitor().increaseResourceUtilization(\n          resourceAllocationToFreeUp, guarContInfo.getPti());\n      if (guarContInfo.getPti().getContainerId().equals(containerToStartId)) {\n        break;\n      }\n    }\n    // Subtract the overall node resources.\n    getContainersMonitor().subtractNodeResourcesFromResourceUtilization(\n        resourceAllocationToFreeUp);\n\n    return resourceAllocationToFreeUp;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-nodemanager/src/main/java/org/apache/hadoop/yarn/server/nodemanager/containermanager/queuing/QueuingContainerManagerImpl.java"
+    }
+  }
+}

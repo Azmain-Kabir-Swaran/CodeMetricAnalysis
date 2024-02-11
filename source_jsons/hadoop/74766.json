@@ -1,0 +1,70 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ZKDelegationTokenSecretManager.java",
+  "functionName": "removeStoredMasterKey",
+  "functionId": "removeStoredMasterKey___key-DelegationKey",
+  "sourceFilePath": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/token/delegation/ZKDelegationTokenSecretManager.java",
+  "functionStartLine": 779,
+  "functionEndLine": 805,
+  "numCommitsSeen": 16,
+  "timeTaken": 1547,
+  "changeHistory": [
+    "fc90bf7b27cc20486f2806670a14fd7d654b0a31",
+    "db45f047ab6b19d8a3e7752bb2cde10827cd8dad",
+    "db890eef3208cc557476fa510f7a253ba22bc68a"
+  ],
+  "changeHistoryShort": {
+    "fc90bf7b27cc20486f2806670a14fd7d654b0a31": "Ybodychange",
+    "db45f047ab6b19d8a3e7752bb2cde10827cd8dad": "Ybodychange",
+    "db890eef3208cc557476fa510f7a253ba22bc68a": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "fc90bf7b27cc20486f2806670a14fd7d654b0a31": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11722. Some Instances of Services using ZKDelegationTokenSecretManager go down when old token cannot be deleted. Contributed by Arun Suresh.\n",
+      "commitDate": "17/03/15 7:41 PM",
+      "commitName": "fc90bf7b27cc20486f2806670a14fd7d654b0a31",
+      "commitAuthor": "Aaron T. Myers",
+      "commitDateOld": "04/02/15 1:05 PM",
+      "commitNameOld": "55235d28c3641ff5f1c05c53dd7271cafc131926",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 41.23,
+      "commitsBetweenForRepo": 397,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,19 +1,27 @@\n   protected void removeStoredMasterKey(DelegationKey key) {\n     String nodeRemovePath \u003d\n         getNodePath(ZK_DTSM_MASTER_KEY_ROOT,\n             DELEGATION_KEY_PREFIX + key.getKeyId());\n     if (LOG.isDebugEnabled()) {\n       LOG.debug(\"Removing ZKDTSMDelegationKey_\" + key.getKeyId());\n     }\n     try {\n       if (zkClient.checkExists().forPath(nodeRemovePath) !\u003d null) {\n         while(zkClient.checkExists().forPath(nodeRemovePath) !\u003d null){\n-          zkClient.delete().guaranteed().forPath(nodeRemovePath);\n+          try {\n+            zkClient.delete().guaranteed().forPath(nodeRemovePath);\n+          } catch (NoNodeException nne) {\n+            // It is possible that the node might be deleted between the\n+            // check and the actual delete.. which might lead to an\n+            // exception that can bring down the daemon running this\n+            // SecretManager\n+            LOG.debug(\"Node already deleted by peer \" + nodeRemovePath);\n+          }\n         }\n       } else {\n         LOG.debug(\"Attempted to delete a non-existing znode \" + nodeRemovePath);\n       }\n     } catch (Exception e) {\n       LOG.debug(nodeRemovePath + \" znode could not be removed!!\");\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void removeStoredMasterKey(DelegationKey key) {\n    String nodeRemovePath \u003d\n        getNodePath(ZK_DTSM_MASTER_KEY_ROOT,\n            DELEGATION_KEY_PREFIX + key.getKeyId());\n    if (LOG.isDebugEnabled()) {\n      LOG.debug(\"Removing ZKDTSMDelegationKey_\" + key.getKeyId());\n    }\n    try {\n      if (zkClient.checkExists().forPath(nodeRemovePath) !\u003d null) {\n        while(zkClient.checkExists().forPath(nodeRemovePath) !\u003d null){\n          try {\n            zkClient.delete().guaranteed().forPath(nodeRemovePath);\n          } catch (NoNodeException nne) {\n            // It is possible that the node might be deleted between the\n            // check and the actual delete.. which might lead to an\n            // exception that can bring down the daemon running this\n            // SecretManager\n            LOG.debug(\"Node already deleted by peer \" + nodeRemovePath);\n          }\n        }\n      } else {\n        LOG.debug(\"Attempted to delete a non-existing znode \" + nodeRemovePath);\n      }\n    } catch (Exception e) {\n      LOG.debug(nodeRemovePath + \" znode could not be removed!!\");\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/token/delegation/ZKDelegationTokenSecretManager.java",
+      "extendedDetails": {}
+    },
+    "db45f047ab6b19d8a3e7752bb2cde10827cd8dad": {
+      "type": "Ybodychange",
+      "commitMessage": "HADOOP-11170. ZKDelegationTokenSecretManager fails to renewToken created by a peer. (Arun Suresh and Gregory Chanan via kasha)\n",
+      "commitDate": "23/10/14 5:04 PM",
+      "commitName": "db45f047ab6b19d8a3e7752bb2cde10827cd8dad",
+      "commitAuthor": "Karthik Kambatla",
+      "commitDateOld": "22/10/14 2:26 PM",
+      "commitNameOld": "70719e5c62f32836914bea88e1ddd99c0ed009e1",
+      "commitAuthorOld": "Karthik Kambatla",
+      "daysBetweenCommits": 1.11,
+      "commitsBetweenForRepo": 12,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,17 +1,19 @@\n   protected void removeStoredMasterKey(DelegationKey key) {\n     String nodeRemovePath \u003d\n         getNodePath(ZK_DTSM_MASTER_KEY_ROOT,\n             DELEGATION_KEY_PREFIX + key.getKeyId());\n     if (LOG.isDebugEnabled()) {\n       LOG.debug(\"Removing ZKDTSMDelegationKey_\" + key.getKeyId());\n     }\n     try {\n       if (zkClient.checkExists().forPath(nodeRemovePath) !\u003d null) {\n-        zkClient.delete().forPath(nodeRemovePath);\n+        while(zkClient.checkExists().forPath(nodeRemovePath) !\u003d null){\n+          zkClient.delete().guaranteed().forPath(nodeRemovePath);\n+        }\n       } else {\n         LOG.debug(\"Attempted to delete a non-existing znode \" + nodeRemovePath);\n       }\n     } catch (Exception e) {\n       LOG.debug(nodeRemovePath + \" znode could not be removed!!\");\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void removeStoredMasterKey(DelegationKey key) {\n    String nodeRemovePath \u003d\n        getNodePath(ZK_DTSM_MASTER_KEY_ROOT,\n            DELEGATION_KEY_PREFIX + key.getKeyId());\n    if (LOG.isDebugEnabled()) {\n      LOG.debug(\"Removing ZKDTSMDelegationKey_\" + key.getKeyId());\n    }\n    try {\n      if (zkClient.checkExists().forPath(nodeRemovePath) !\u003d null) {\n        while(zkClient.checkExists().forPath(nodeRemovePath) !\u003d null){\n          zkClient.delete().guaranteed().forPath(nodeRemovePath);\n        }\n      } else {\n        LOG.debug(\"Attempted to delete a non-existing znode \" + nodeRemovePath);\n      }\n    } catch (Exception e) {\n      LOG.debug(nodeRemovePath + \" znode could not be removed!!\");\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/token/delegation/ZKDelegationTokenSecretManager.java",
+      "extendedDetails": {}
+    },
+    "db890eef3208cc557476fa510f7a253ba22bc68a": {
+      "type": "Yintroduced",
+      "commitMessage": "HADOOP-11017. KMS delegation token secret manager should be able to use zookeeper as store. (asuresh via tucu)\n",
+      "commitDate": "20/09/14 8:21 AM",
+      "commitName": "db890eef3208cc557476fa510f7a253ba22bc68a",
+      "commitAuthor": "Alejandro Abdelnur",
+      "diff": "@@ -0,0 +1,17 @@\n+  protected void removeStoredMasterKey(DelegationKey key) {\n+    String nodeRemovePath \u003d\n+        getNodePath(ZK_DTSM_MASTER_KEY_ROOT,\n+            DELEGATION_KEY_PREFIX + key.getKeyId());\n+    if (LOG.isDebugEnabled()) {\n+      LOG.debug(\"Removing ZKDTSMDelegationKey_\" + key.getKeyId());\n+    }\n+    try {\n+      if (zkClient.checkExists().forPath(nodeRemovePath) !\u003d null) {\n+        zkClient.delete().forPath(nodeRemovePath);\n+      } else {\n+        LOG.debug(\"Attempted to delete a non-existing znode \" + nodeRemovePath);\n+      }\n+    } catch (Exception e) {\n+      LOG.debug(nodeRemovePath + \" znode could not be removed!!\");\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  protected void removeStoredMasterKey(DelegationKey key) {\n    String nodeRemovePath \u003d\n        getNodePath(ZK_DTSM_MASTER_KEY_ROOT,\n            DELEGATION_KEY_PREFIX + key.getKeyId());\n    if (LOG.isDebugEnabled()) {\n      LOG.debug(\"Removing ZKDTSMDelegationKey_\" + key.getKeyId());\n    }\n    try {\n      if (zkClient.checkExists().forPath(nodeRemovePath) !\u003d null) {\n        zkClient.delete().forPath(nodeRemovePath);\n      } else {\n        LOG.debug(\"Attempted to delete a non-existing znode \" + nodeRemovePath);\n      }\n    } catch (Exception e) {\n      LOG.debug(nodeRemovePath + \" znode could not be removed!!\");\n    }\n  }",
+      "path": "hadoop-common-project/hadoop-common/src/main/java/org/apache/hadoop/security/token/delegation/ZKDelegationTokenSecretManager.java"
+    }
+  }
+}

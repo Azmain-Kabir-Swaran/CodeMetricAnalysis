@@ -1,0 +1,89 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FederationInterceptorREST.java",
+  "functionName": "getClusterMetricsInfo",
+  "functionId": "getClusterMetricsInfo",
+  "sourceFilePath": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/FederationInterceptorREST.java",
+  "functionStartLine": 1020,
+  "functionEndLine": 1070,
+  "numCommitsSeen": 20,
+  "timeTaken": 2163,
+  "changeHistory": [
+    "7536488bbd919b619f037442e6395154f579aaac",
+    "8be5707067509b78bde5fcf60072ae988d5a9f32",
+    "bac4e8cca8b54405f5e37b90e545b93bbadee0f4",
+    "cc59b5fb26ccf58dffcd8850fa12ec65250f127d"
+  ],
+  "changeHistoryShort": {
+    "7536488bbd919b619f037442e6395154f579aaac": "Ybodychange",
+    "8be5707067509b78bde5fcf60072ae988d5a9f32": "Ybodychange",
+    "bac4e8cca8b54405f5e37b90e545b93bbadee0f4": "Ybodychange",
+    "cc59b5fb26ccf58dffcd8850fa12ec65250f127d": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "7536488bbd919b619f037442e6395154f579aaac": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-996. REST API support for node resource configuration. Contributed by Inigo Goiri.\n",
+      "commitDate": "11/02/19 3:27 PM",
+      "commitName": "7536488bbd919b619f037442e6395154f579aaac",
+      "commitAuthor": "Giovanni Matteo Fumarola",
+      "commitDateOld": "16/11/18 10:23 AM",
+      "commitNameOld": "abd6d48c46342d2694a1cb56c40f208de797794c",
+      "commitAuthorOld": "Giovanni Matteo Fumarola",
+      "daysBetweenCommits": 87.21,
+      "commitsBetweenForRepo": 561,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,51 +1,51 @@\n   public ClusterMetricsInfo getClusterMetricsInfo() {\n     ClusterMetricsInfo metrics \u003d new ClusterMetricsInfo();\n \n-    Map\u003cSubClusterId, SubClusterInfo\u003e subClustersActive \u003d null;\n+    final Map\u003cSubClusterId, SubClusterInfo\u003e subClustersActive;\n     try {\n-      subClustersActive \u003d federationFacade.getSubClusters(true);\n-    } catch (YarnException e) {\n+      subClustersActive \u003d getActiveSubclusters();\n+    } catch (Exception e) {\n       LOG.error(e.getLocalizedMessage());\n       return metrics;\n     }\n \n     // Send the requests in parallel\n     CompletionService\u003cClusterMetricsInfo\u003e compSvc \u003d\n         new ExecutorCompletionService\u003cClusterMetricsInfo\u003e(this.threadpool);\n \n     for (final SubClusterInfo info : subClustersActive.values()) {\n       compSvc.submit(new Callable\u003cClusterMetricsInfo\u003e() {\n         @Override\n         public ClusterMetricsInfo call() {\n           DefaultRequestInterceptorREST interceptor \u003d\n               getOrCreateInterceptorForSubCluster(\n                   info.getSubClusterId(), info.getRMWebServiceAddress());\n           try {\n             ClusterMetricsInfo metrics \u003d interceptor.getClusterMetricsInfo();\n             return metrics;\n           } catch (Exception e) {\n             LOG.error(\"Subcluster {} failed to return Cluster Metrics.\",\n                 info.getSubClusterId());\n             return null;\n           }\n         }\n       });\n     }\n \n     // Collect all the responses in parallel\n \n     for (int i \u003d 0; i \u003c subClustersActive.size(); i++) {\n       try {\n         Future\u003cClusterMetricsInfo\u003e future \u003d compSvc.take();\n         ClusterMetricsInfo metricsResponse \u003d future.get();\n \n         if (metricsResponse !\u003d null) {\n           RouterWebServiceUtil.mergeMetrics(metrics, metricsResponse);\n         }\n       } catch (Throwable e) {\n         LOG.warn(\"Failed to get nodes report \", e);\n       }\n     }\n \n     return metrics;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ClusterMetricsInfo getClusterMetricsInfo() {\n    ClusterMetricsInfo metrics \u003d new ClusterMetricsInfo();\n\n    final Map\u003cSubClusterId, SubClusterInfo\u003e subClustersActive;\n    try {\n      subClustersActive \u003d getActiveSubclusters();\n    } catch (Exception e) {\n      LOG.error(e.getLocalizedMessage());\n      return metrics;\n    }\n\n    // Send the requests in parallel\n    CompletionService\u003cClusterMetricsInfo\u003e compSvc \u003d\n        new ExecutorCompletionService\u003cClusterMetricsInfo\u003e(this.threadpool);\n\n    for (final SubClusterInfo info : subClustersActive.values()) {\n      compSvc.submit(new Callable\u003cClusterMetricsInfo\u003e() {\n        @Override\n        public ClusterMetricsInfo call() {\n          DefaultRequestInterceptorREST interceptor \u003d\n              getOrCreateInterceptorForSubCluster(\n                  info.getSubClusterId(), info.getRMWebServiceAddress());\n          try {\n            ClusterMetricsInfo metrics \u003d interceptor.getClusterMetricsInfo();\n            return metrics;\n          } catch (Exception e) {\n            LOG.error(\"Subcluster {} failed to return Cluster Metrics.\",\n                info.getSubClusterId());\n            return null;\n          }\n        }\n      });\n    }\n\n    // Collect all the responses in parallel\n\n    for (int i \u003d 0; i \u003c subClustersActive.size(); i++) {\n      try {\n        Future\u003cClusterMetricsInfo\u003e future \u003d compSvc.take();\n        ClusterMetricsInfo metricsResponse \u003d future.get();\n\n        if (metricsResponse !\u003d null) {\n          RouterWebServiceUtil.mergeMetrics(metrics, metricsResponse);\n        }\n      } catch (Throwable e) {\n        LOG.warn(\"Failed to get nodes report \", e);\n      }\n    }\n\n    return metrics;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/FederationInterceptorREST.java",
+      "extendedDetails": {}
+    },
+    "8be5707067509b78bde5fcf60072ae988d5a9f32": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7276. Federation Router Web Service fixes. Contributed by Inigo Goiri.\n",
+      "commitDate": "27/10/17 4:46 PM",
+      "commitName": "8be5707067509b78bde5fcf60072ae988d5a9f32",
+      "commitAuthor": "Inigo Goiri",
+      "commitDateOld": "03/10/17 3:01 PM",
+      "commitNameOld": "c9b525bd943fe7e098e72fb9be5623862c7ab5ff",
+      "commitAuthorOld": "Akira Ajisaka",
+      "daysBetweenCommits": 24.07,
+      "commitsBetweenForRepo": 186,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,52 +1,51 @@\n   public ClusterMetricsInfo getClusterMetricsInfo() {\n     ClusterMetricsInfo metrics \u003d new ClusterMetricsInfo();\n \n     Map\u003cSubClusterId, SubClusterInfo\u003e subClustersActive \u003d null;\n     try {\n       subClustersActive \u003d federationFacade.getSubClusters(true);\n     } catch (YarnException e) {\n       LOG.error(e.getLocalizedMessage());\n       return metrics;\n     }\n \n     // Send the requests in parallel\n-\n-    ExecutorCompletionService\u003cClusterMetricsInfo\u003e compSvc \u003d\n+    CompletionService\u003cClusterMetricsInfo\u003e compSvc \u003d\n         new ExecutorCompletionService\u003cClusterMetricsInfo\u003e(this.threadpool);\n \n     for (final SubClusterInfo info : subClustersActive.values()) {\n       compSvc.submit(new Callable\u003cClusterMetricsInfo\u003e() {\n         @Override\n         public ClusterMetricsInfo call() {\n           DefaultRequestInterceptorREST interceptor \u003d\n-              getOrCreateInterceptorForSubCluster(info.getSubClusterId(),\n-                  info.getClientRMServiceAddress());\n+              getOrCreateInterceptorForSubCluster(\n+                  info.getSubClusterId(), info.getRMWebServiceAddress());\n           try {\n             ClusterMetricsInfo metrics \u003d interceptor.getClusterMetricsInfo();\n             return metrics;\n           } catch (Exception e) {\n-            LOG.error(\"Subcluster \" + info.getSubClusterId()\n-                + \" failed to return Cluster Metrics.\");\n+            LOG.error(\"Subcluster {} failed to return Cluster Metrics.\",\n+                info.getSubClusterId());\n             return null;\n           }\n         }\n       });\n     }\n \n     // Collect all the responses in parallel\n \n-    for (int i \u003d 0; i \u003c subClustersActive.values().size(); i++) {\n+    for (int i \u003d 0; i \u003c subClustersActive.size(); i++) {\n       try {\n         Future\u003cClusterMetricsInfo\u003e future \u003d compSvc.take();\n         ClusterMetricsInfo metricsResponse \u003d future.get();\n \n         if (metricsResponse !\u003d null) {\n           RouterWebServiceUtil.mergeMetrics(metrics, metricsResponse);\n         }\n       } catch (Throwable e) {\n         LOG.warn(\"Failed to get nodes report \", e);\n       }\n     }\n \n     return metrics;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ClusterMetricsInfo getClusterMetricsInfo() {\n    ClusterMetricsInfo metrics \u003d new ClusterMetricsInfo();\n\n    Map\u003cSubClusterId, SubClusterInfo\u003e subClustersActive \u003d null;\n    try {\n      subClustersActive \u003d federationFacade.getSubClusters(true);\n    } catch (YarnException e) {\n      LOG.error(e.getLocalizedMessage());\n      return metrics;\n    }\n\n    // Send the requests in parallel\n    CompletionService\u003cClusterMetricsInfo\u003e compSvc \u003d\n        new ExecutorCompletionService\u003cClusterMetricsInfo\u003e(this.threadpool);\n\n    for (final SubClusterInfo info : subClustersActive.values()) {\n      compSvc.submit(new Callable\u003cClusterMetricsInfo\u003e() {\n        @Override\n        public ClusterMetricsInfo call() {\n          DefaultRequestInterceptorREST interceptor \u003d\n              getOrCreateInterceptorForSubCluster(\n                  info.getSubClusterId(), info.getRMWebServiceAddress());\n          try {\n            ClusterMetricsInfo metrics \u003d interceptor.getClusterMetricsInfo();\n            return metrics;\n          } catch (Exception e) {\n            LOG.error(\"Subcluster {} failed to return Cluster Metrics.\",\n                info.getSubClusterId());\n            return null;\n          }\n        }\n      });\n    }\n\n    // Collect all the responses in parallel\n\n    for (int i \u003d 0; i \u003c subClustersActive.size(); i++) {\n      try {\n        Future\u003cClusterMetricsInfo\u003e future \u003d compSvc.take();\n        ClusterMetricsInfo metricsResponse \u003d future.get();\n\n        if (metricsResponse !\u003d null) {\n          RouterWebServiceUtil.mergeMetrics(metrics, metricsResponse);\n        }\n      } catch (Throwable e) {\n        LOG.warn(\"Failed to get nodes report \", e);\n      }\n    }\n\n    return metrics;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/FederationInterceptorREST.java",
+      "extendedDetails": {}
+    },
+    "bac4e8cca8b54405f5e37b90e545b93bbadee0f4": {
+      "type": "Ybodychange",
+      "commitMessage": "YARN-7095. Federation: routing getNode/getNodes/getMetrics REST invocations transparently to multiple RMs. (Giovanni Matteo Fumarola via Subru).\n",
+      "commitDate": "31/08/17 3:05 PM",
+      "commitName": "bac4e8cca8b54405f5e37b90e545b93bbadee0f4",
+      "commitAuthor": "Subru Krishnan",
+      "commitDateOld": "29/08/17 2:53 PM",
+      "commitNameOld": "cc8893edc0b7960e958723c81062986c12f06ade",
+      "commitAuthorOld": "Carlo Curino",
+      "daysBetweenCommits": 2.01,
+      "commitsBetweenForRepo": 76,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,3 +1,52 @@\n   public ClusterMetricsInfo getClusterMetricsInfo() {\n-    throw new NotImplementedException();\n+    ClusterMetricsInfo metrics \u003d new ClusterMetricsInfo();\n+\n+    Map\u003cSubClusterId, SubClusterInfo\u003e subClustersActive \u003d null;\n+    try {\n+      subClustersActive \u003d federationFacade.getSubClusters(true);\n+    } catch (YarnException e) {\n+      LOG.error(e.getLocalizedMessage());\n+      return metrics;\n+    }\n+\n+    // Send the requests in parallel\n+\n+    ExecutorCompletionService\u003cClusterMetricsInfo\u003e compSvc \u003d\n+        new ExecutorCompletionService\u003cClusterMetricsInfo\u003e(this.threadpool);\n+\n+    for (final SubClusterInfo info : subClustersActive.values()) {\n+      compSvc.submit(new Callable\u003cClusterMetricsInfo\u003e() {\n+        @Override\n+        public ClusterMetricsInfo call() {\n+          DefaultRequestInterceptorREST interceptor \u003d\n+              getOrCreateInterceptorForSubCluster(info.getSubClusterId(),\n+                  info.getClientRMServiceAddress());\n+          try {\n+            ClusterMetricsInfo metrics \u003d interceptor.getClusterMetricsInfo();\n+            return metrics;\n+          } catch (Exception e) {\n+            LOG.error(\"Subcluster \" + info.getSubClusterId()\n+                + \" failed to return Cluster Metrics.\");\n+            return null;\n+          }\n+        }\n+      });\n+    }\n+\n+    // Collect all the responses in parallel\n+\n+    for (int i \u003d 0; i \u003c subClustersActive.values().size(); i++) {\n+      try {\n+        Future\u003cClusterMetricsInfo\u003e future \u003d compSvc.take();\n+        ClusterMetricsInfo metricsResponse \u003d future.get();\n+\n+        if (metricsResponse !\u003d null) {\n+          RouterWebServiceUtil.mergeMetrics(metrics, metricsResponse);\n+        }\n+      } catch (Throwable e) {\n+        LOG.warn(\"Failed to get nodes report \", e);\n+      }\n+    }\n+\n+    return metrics;\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  public ClusterMetricsInfo getClusterMetricsInfo() {\n    ClusterMetricsInfo metrics \u003d new ClusterMetricsInfo();\n\n    Map\u003cSubClusterId, SubClusterInfo\u003e subClustersActive \u003d null;\n    try {\n      subClustersActive \u003d federationFacade.getSubClusters(true);\n    } catch (YarnException e) {\n      LOG.error(e.getLocalizedMessage());\n      return metrics;\n    }\n\n    // Send the requests in parallel\n\n    ExecutorCompletionService\u003cClusterMetricsInfo\u003e compSvc \u003d\n        new ExecutorCompletionService\u003cClusterMetricsInfo\u003e(this.threadpool);\n\n    for (final SubClusterInfo info : subClustersActive.values()) {\n      compSvc.submit(new Callable\u003cClusterMetricsInfo\u003e() {\n        @Override\n        public ClusterMetricsInfo call() {\n          DefaultRequestInterceptorREST interceptor \u003d\n              getOrCreateInterceptorForSubCluster(info.getSubClusterId(),\n                  info.getClientRMServiceAddress());\n          try {\n            ClusterMetricsInfo metrics \u003d interceptor.getClusterMetricsInfo();\n            return metrics;\n          } catch (Exception e) {\n            LOG.error(\"Subcluster \" + info.getSubClusterId()\n                + \" failed to return Cluster Metrics.\");\n            return null;\n          }\n        }\n      });\n    }\n\n    // Collect all the responses in parallel\n\n    for (int i \u003d 0; i \u003c subClustersActive.values().size(); i++) {\n      try {\n        Future\u003cClusterMetricsInfo\u003e future \u003d compSvc.take();\n        ClusterMetricsInfo metricsResponse \u003d future.get();\n\n        if (metricsResponse !\u003d null) {\n          RouterWebServiceUtil.mergeMetrics(metrics, metricsResponse);\n        }\n      } catch (Throwable e) {\n        LOG.warn(\"Failed to get nodes report \", e);\n      }\n    }\n\n    return metrics;\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/FederationInterceptorREST.java",
+      "extendedDetails": {}
+    },
+    "cc59b5fb26ccf58dffcd8850fa12ec65250f127d": {
+      "type": "Yintroduced",
+      "commitMessage": "YARN-6896. Federation: routing REST invocations transparently to multiple RMs (part 1 - basic execution). (Contributed by Giovanni Matteo Fumarola via curino)\n",
+      "commitDate": "11/08/17 3:58 PM",
+      "commitName": "cc59b5fb26ccf58dffcd8850fa12ec65250f127d",
+      "commitAuthor": "Carlo Curino",
+      "diff": "@@ -0,0 +1,3 @@\n+  public ClusterMetricsInfo getClusterMetricsInfo() {\n+    throw new NotImplementedException();\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  public ClusterMetricsInfo getClusterMetricsInfo() {\n    throw new NotImplementedException();\n  }",
+      "path": "hadoop-yarn-project/hadoop-yarn/hadoop-yarn-server/hadoop-yarn-server-router/src/main/java/org/apache/hadoop/yarn/server/router/webapp/FederationInterceptorREST.java"
+    }
+  }
+}

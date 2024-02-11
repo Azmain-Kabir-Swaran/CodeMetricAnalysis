@@ -1,0 +1,80 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "ShuffleHandler.java",
+  "functionName": "getMapOutputInfo",
+  "functionId": "getMapOutputInfo___mapId-String__reduce-int__jobId-String__user-String",
+  "sourceFilePath": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-shuffle/src/main/java/org/apache/hadoop/mapred/ShuffleHandler.java",
+  "functionStartLine": 1108,
+  "functionEndLine": 1139,
+  "numCommitsSeen": 98,
+  "timeTaken": 2191,
+  "changeHistory": [
+    "d8107fcd1c93c202925f2946d0cd4072fe0aef1e",
+    "a5c08eed16e797d2ba9f98f7bc6a8e1bf09aaddd"
+  ],
+  "changeHistoryShort": {
+    "d8107fcd1c93c202925f2946d0cd4072fe0aef1e": "Ymultichange(Yparameterchange,Ybodychange)",
+    "a5c08eed16e797d2ba9f98f7bc6a8e1bf09aaddd": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "d8107fcd1c93c202925f2946d0cd4072fe0aef1e": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "MAPREDUCE-6197. Cache MapOutputLocations in ShuffleHandler. Contributed by Junping Du\n",
+      "commitDate": "21/06/16 2:25 PM",
+      "commitName": "d8107fcd1c93c202925f2946d0cd4072fe0aef1e",
+      "commitAuthor": "Jian He",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "MAPREDUCE-6197. Cache MapOutputLocations in ShuffleHandler. Contributed by Junping Du\n",
+          "commitDate": "21/06/16 2:25 PM",
+          "commitName": "d8107fcd1c93c202925f2946d0cd4072fe0aef1e",
+          "commitAuthor": "Jian He",
+          "commitDateOld": "14/06/16 3:06 PM",
+          "commitNameOld": "c77a1095dc556e8bea87df6d8ddf36e898f27e86",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 6.97,
+          "commitsBetweenForRepo": 45,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,32 @@\n-    protected MapOutputInfo getMapOutputInfo(String base, String mapId,\n-        int reduce, String user) throws IOException {\n-      // Index file\n-      Path indexFileName \u003d\n-          lDirAlloc.getLocalPathToRead(base + \"/file.out.index\", conf);\n-      IndexRecord info \u003d\n-          indexCache.getIndexInformation(mapId, reduce, indexFileName, user);\n-\n-      Path mapOutputFileName \u003d\n-          lDirAlloc.getLocalPathToRead(base + \"/file.out\", conf);\n-      if (LOG.isDebugEnabled()) {\n-        LOG.debug(base + \" : \" + mapOutputFileName + \" : \" + indexFileName);\n+    protected MapOutputInfo getMapOutputInfo(String mapId, int reduce,\n+        String jobId, String user) throws IOException {\n+      AttemptPathInfo pathInfo;\n+      try {\n+        AttemptPathIdentifier identifier \u003d new AttemptPathIdentifier(\n+            jobId, user, mapId);\n+        pathInfo \u003d pathCache.get(identifier);\n+        if (LOG.isDebugEnabled()) {\n+          LOG.debug(\"Retrieved pathInfo for \" + identifier +\n+              \" check for corresponding loaded messages to determine whether\" +\n+              \" it was loaded or cached\");\n+        }\n+      } catch (ExecutionException e) {\n+        if (e.getCause() instanceof IOException) {\n+          throw (IOException) e.getCause();\n+        } else {\n+          throw new RuntimeException(e.getCause());\n+        }\n       }\n-      MapOutputInfo outputInfo \u003d new MapOutputInfo(mapOutputFileName, info);\n+\n+      IndexRecord info \u003d\n+        indexCache.getIndexInformation(mapId, reduce, pathInfo.indexPath, user);\n+\n+      if (LOG.isDebugEnabled()) {\n+        LOG.debug(\"getMapOutputInfo: jobId\u003d\" + jobId + \", mapId\u003d\" + mapId +\n+            \",dataFile\u003d\" + pathInfo.dataPath + \", indexFile\u003d\" +\n+            pathInfo.indexPath);\n+      }\n+\n+      MapOutputInfo outputInfo \u003d new MapOutputInfo(pathInfo.dataPath, info);\n       return outputInfo;\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    protected MapOutputInfo getMapOutputInfo(String mapId, int reduce,\n        String jobId, String user) throws IOException {\n      AttemptPathInfo pathInfo;\n      try {\n        AttemptPathIdentifier identifier \u003d new AttemptPathIdentifier(\n            jobId, user, mapId);\n        pathInfo \u003d pathCache.get(identifier);\n        if (LOG.isDebugEnabled()) {\n          LOG.debug(\"Retrieved pathInfo for \" + identifier +\n              \" check for corresponding loaded messages to determine whether\" +\n              \" it was loaded or cached\");\n        }\n      } catch (ExecutionException e) {\n        if (e.getCause() instanceof IOException) {\n          throw (IOException) e.getCause();\n        } else {\n          throw new RuntimeException(e.getCause());\n        }\n      }\n\n      IndexRecord info \u003d\n        indexCache.getIndexInformation(mapId, reduce, pathInfo.indexPath, user);\n\n      if (LOG.isDebugEnabled()) {\n        LOG.debug(\"getMapOutputInfo: jobId\u003d\" + jobId + \", mapId\u003d\" + mapId +\n            \",dataFile\u003d\" + pathInfo.dataPath + \", indexFile\u003d\" +\n            pathInfo.indexPath);\n      }\n\n      MapOutputInfo outputInfo \u003d new MapOutputInfo(pathInfo.dataPath, info);\n      return outputInfo;\n    }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-shuffle/src/main/java/org/apache/hadoop/mapred/ShuffleHandler.java",
+          "extendedDetails": {
+            "oldValue": "[base-String, mapId-String, reduce-int, user-String]",
+            "newValue": "[mapId-String, reduce-int, jobId-String, user-String]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "MAPREDUCE-6197. Cache MapOutputLocations in ShuffleHandler. Contributed by Junping Du\n",
+          "commitDate": "21/06/16 2:25 PM",
+          "commitName": "d8107fcd1c93c202925f2946d0cd4072fe0aef1e",
+          "commitAuthor": "Jian He",
+          "commitDateOld": "14/06/16 3:06 PM",
+          "commitNameOld": "c77a1095dc556e8bea87df6d8ddf36e898f27e86",
+          "commitAuthorOld": "Wangda Tan",
+          "daysBetweenCommits": 6.97,
+          "commitsBetweenForRepo": 45,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,16 +1,32 @@\n-    protected MapOutputInfo getMapOutputInfo(String base, String mapId,\n-        int reduce, String user) throws IOException {\n-      // Index file\n-      Path indexFileName \u003d\n-          lDirAlloc.getLocalPathToRead(base + \"/file.out.index\", conf);\n-      IndexRecord info \u003d\n-          indexCache.getIndexInformation(mapId, reduce, indexFileName, user);\n-\n-      Path mapOutputFileName \u003d\n-          lDirAlloc.getLocalPathToRead(base + \"/file.out\", conf);\n-      if (LOG.isDebugEnabled()) {\n-        LOG.debug(base + \" : \" + mapOutputFileName + \" : \" + indexFileName);\n+    protected MapOutputInfo getMapOutputInfo(String mapId, int reduce,\n+        String jobId, String user) throws IOException {\n+      AttemptPathInfo pathInfo;\n+      try {\n+        AttemptPathIdentifier identifier \u003d new AttemptPathIdentifier(\n+            jobId, user, mapId);\n+        pathInfo \u003d pathCache.get(identifier);\n+        if (LOG.isDebugEnabled()) {\n+          LOG.debug(\"Retrieved pathInfo for \" + identifier +\n+              \" check for corresponding loaded messages to determine whether\" +\n+              \" it was loaded or cached\");\n+        }\n+      } catch (ExecutionException e) {\n+        if (e.getCause() instanceof IOException) {\n+          throw (IOException) e.getCause();\n+        } else {\n+          throw new RuntimeException(e.getCause());\n+        }\n       }\n-      MapOutputInfo outputInfo \u003d new MapOutputInfo(mapOutputFileName, info);\n+\n+      IndexRecord info \u003d\n+        indexCache.getIndexInformation(mapId, reduce, pathInfo.indexPath, user);\n+\n+      if (LOG.isDebugEnabled()) {\n+        LOG.debug(\"getMapOutputInfo: jobId\u003d\" + jobId + \", mapId\u003d\" + mapId +\n+            \",dataFile\u003d\" + pathInfo.dataPath + \", indexFile\u003d\" +\n+            pathInfo.indexPath);\n+      }\n+\n+      MapOutputInfo outputInfo \u003d new MapOutputInfo(pathInfo.dataPath, info);\n       return outputInfo;\n     }\n\\ No newline at end of file\n",
+          "actualSource": "    protected MapOutputInfo getMapOutputInfo(String mapId, int reduce,\n        String jobId, String user) throws IOException {\n      AttemptPathInfo pathInfo;\n      try {\n        AttemptPathIdentifier identifier \u003d new AttemptPathIdentifier(\n            jobId, user, mapId);\n        pathInfo \u003d pathCache.get(identifier);\n        if (LOG.isDebugEnabled()) {\n          LOG.debug(\"Retrieved pathInfo for \" + identifier +\n              \" check for corresponding loaded messages to determine whether\" +\n              \" it was loaded or cached\");\n        }\n      } catch (ExecutionException e) {\n        if (e.getCause() instanceof IOException) {\n          throw (IOException) e.getCause();\n        } else {\n          throw new RuntimeException(e.getCause());\n        }\n      }\n\n      IndexRecord info \u003d\n        indexCache.getIndexInformation(mapId, reduce, pathInfo.indexPath, user);\n\n      if (LOG.isDebugEnabled()) {\n        LOG.debug(\"getMapOutputInfo: jobId\u003d\" + jobId + \", mapId\u003d\" + mapId +\n            \",dataFile\u003d\" + pathInfo.dataPath + \", indexFile\u003d\" +\n            pathInfo.indexPath);\n      }\n\n      MapOutputInfo outputInfo \u003d new MapOutputInfo(pathInfo.dataPath, info);\n      return outputInfo;\n    }",
+          "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-shuffle/src/main/java/org/apache/hadoop/mapred/ShuffleHandler.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "a5c08eed16e797d2ba9f98f7bc6a8e1bf09aaddd": {
+      "type": "Yintroduced",
+      "commitMessage": "MAPREDUCE-5787. Added the ability to keep alive shuffle connections in the MapReduce shuffle-handler. Contributed by Rajesh Balamohan.\n\n\ngit-svn-id: https://svn.apache.org/repos/asf/hadoop/common/trunk@1580062 13f79535-47bb-0310-9956-ffa450edef68\n",
+      "commitDate": "21/03/14 2:43 PM",
+      "commitName": "a5c08eed16e797d2ba9f98f7bc6a8e1bf09aaddd",
+      "commitAuthor": "Vinod Kumar Vavilapalli",
+      "diff": "@@ -0,0 +1,16 @@\n+    protected MapOutputInfo getMapOutputInfo(String base, String mapId,\n+        int reduce, String user) throws IOException {\n+      // Index file\n+      Path indexFileName \u003d\n+          lDirAlloc.getLocalPathToRead(base + \"/file.out.index\", conf);\n+      IndexRecord info \u003d\n+          indexCache.getIndexInformation(mapId, reduce, indexFileName, user);\n+\n+      Path mapOutputFileName \u003d\n+          lDirAlloc.getLocalPathToRead(base + \"/file.out\", conf);\n+      if (LOG.isDebugEnabled()) {\n+        LOG.debug(base + \" : \" + mapOutputFileName + \" : \" + indexFileName);\n+      }\n+      MapOutputInfo outputInfo \u003d new MapOutputInfo(mapOutputFileName, info);\n+      return outputInfo;\n+    }\n\\ No newline at end of file\n",
+      "actualSource": "    protected MapOutputInfo getMapOutputInfo(String base, String mapId,\n        int reduce, String user) throws IOException {\n      // Index file\n      Path indexFileName \u003d\n          lDirAlloc.getLocalPathToRead(base + \"/file.out.index\", conf);\n      IndexRecord info \u003d\n          indexCache.getIndexInformation(mapId, reduce, indexFileName, user);\n\n      Path mapOutputFileName \u003d\n          lDirAlloc.getLocalPathToRead(base + \"/file.out\", conf);\n      if (LOG.isDebugEnabled()) {\n        LOG.debug(base + \" : \" + mapOutputFileName + \" : \" + indexFileName);\n      }\n      MapOutputInfo outputInfo \u003d new MapOutputInfo(mapOutputFileName, info);\n      return outputInfo;\n    }",
+      "path": "hadoop-mapreduce-project/hadoop-mapreduce-client/hadoop-mapreduce-client-shuffle/src/main/java/org/apache/hadoop/mapred/ShuffleHandler.java"
+    }
+  }
+}

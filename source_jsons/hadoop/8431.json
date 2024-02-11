@@ -1,0 +1,281 @@
+{
+  "origin": "codeshovel",
+  "repositoryName": "hadoop",
+  "repositoryPath": "/home/shaiful/research/codeshovel/codeshovel-projects/hadoop/.git",
+  "startCommitName": "HEAD",
+  "sourceFileName": "FSDirAttrOp.java",
+  "functionName": "setQuota",
+  "functionId": "setQuota___fsd-FSDirectory__pc-FSPermissionChecker__src-String__nsQuota-long__ssQuota-long__type-StorageType__allowOwner-boolean",
+  "sourceFilePath": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+  "functionStartLine": 228,
+  "functionEndLine": 258,
+  "numCommitsSeen": 122,
+  "timeTaken": 8063,
+  "changeHistory": [
+    "ea87d6049340d1df040047aa08ce7784c03dd69e",
+    "f8644fbe9f76fb2990bcc997a346649e4d432d91",
+    "84a1321f6aa0af6895564a7c47f8f264656f0294",
+    "9d175853b0170683ad5f21d9bcdeaac49fe89e04",
+    "48b9d5fd2a96728b1118be217ca597c4098e99ca",
+    "f2231cebcddc80f0b753c4a7cb45ee4040846951",
+    "5dae97a584d30cef3e34141edfaca49c4ec57913",
+    "832ebd8cb63d91b4aa4bfed412b9799b3b9be4a7"
+  ],
+  "changeHistoryShort": {
+    "ea87d6049340d1df040047aa08ce7784c03dd69e": "Ymultichange(Yparameterchange,Ybodychange)",
+    "f8644fbe9f76fb2990bcc997a346649e4d432d91": "Ybodychange",
+    "84a1321f6aa0af6895564a7c47f8f264656f0294": "Ymultichange(Yparameterchange,Ybodychange)",
+    "9d175853b0170683ad5f21d9bcdeaac49fe89e04": "Ybodychange",
+    "48b9d5fd2a96728b1118be217ca597c4098e99ca": "Ybodychange",
+    "f2231cebcddc80f0b753c4a7cb45ee4040846951": "Ymultichange(Yparameterchange,Ybodychange)",
+    "5dae97a584d30cef3e34141edfaca49c4ec57913": "Ymultichange(Yparameterchange,Ybodychange)",
+    "832ebd8cb63d91b4aa4bfed412b9799b3b9be4a7": "Yintroduced"
+  },
+  "changeHistoryDetails": {
+    "ea87d6049340d1df040047aa08ce7784c03dd69e": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-13377. The owner of folder can set quota for his sub folder. Contributed by Yang Yun.\n",
+      "commitDate": "24/03/20 10:26 AM",
+      "commitName": "ea87d6049340d1df040047aa08ce7784c03dd69e",
+      "commitAuthor": "Ayush Saxena",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13377. The owner of folder can set quota for his sub folder. Contributed by Yang Yun.\n",
+          "commitDate": "24/03/20 10:26 AM",
+          "commitName": "ea87d6049340d1df040047aa08ce7784c03dd69e",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "04/01/20 5:32 AM",
+          "commitNameOld": "f8644fbe9f76fb2990bcc997a346649e4d432d91",
+          "commitAuthorOld": "Ayush Saxena",
+          "daysBetweenCommits": 80.16,
+          "commitsBetweenForRepo": 277,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,31 @@\n   static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n-      long nsQuota, long ssQuota, StorageType type) throws IOException {\n+      long nsQuota, long ssQuota, StorageType type, boolean allowOwner)\n+      throws IOException {\n \n     fsd.writeLock();\n     try {\n       INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n+      if (fsd.isPermissionEnabled() \u0026\u0026 !pc.isSuperUser() \u0026\u0026 allowOwner) {\n+        INodeDirectory parentDir\u003d iip.getLastINode().getParent();\n+        if (parentDir \u003d\u003d null ||\n+            !parentDir.getUserName().equals(pc.getUser())) {\n+          throw new AccessControlException(\n+              \"Access denied for user \" + pc.getUser() +\n+              \". Superuser or owner of parent folder privilege is required\");\n+        }\n+      }\n       INodeDirectory changed \u003d\n           unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n       if (changed !\u003d null) {\n         final QuotaCounts q \u003d changed.getQuotaCounts();\n         if (type \u003d\u003d null) {\n           fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n         } else {\n           fsd.getEditLog().logSetQuotaByStorageType(\n               src, q.getTypeSpaces().get(type), type);\n         }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n      long nsQuota, long ssQuota, StorageType type, boolean allowOwner)\n      throws IOException {\n\n    fsd.writeLock();\n    try {\n      INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n      if (fsd.isPermissionEnabled() \u0026\u0026 !pc.isSuperUser() \u0026\u0026 allowOwner) {\n        INodeDirectory parentDir\u003d iip.getLastINode().getParent();\n        if (parentDir \u003d\u003d null ||\n            !parentDir.getUserName().equals(pc.getUser())) {\n          throw new AccessControlException(\n              \"Access denied for user \" + pc.getUser() +\n              \". Superuser or owner of parent folder privilege is required\");\n        }\n      }\n      INodeDirectory changed \u003d\n          unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+          "extendedDetails": {
+            "oldValue": "[fsd-FSDirectory, pc-FSPermissionChecker, src-String, nsQuota-long, ssQuota-long, type-StorageType]",
+            "newValue": "[fsd-FSDirectory, pc-FSPermissionChecker, src-String, nsQuota-long, ssQuota-long, type-StorageType, allowOwner-boolean]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13377. The owner of folder can set quota for his sub folder. Contributed by Yang Yun.\n",
+          "commitDate": "24/03/20 10:26 AM",
+          "commitName": "ea87d6049340d1df040047aa08ce7784c03dd69e",
+          "commitAuthor": "Ayush Saxena",
+          "commitDateOld": "04/01/20 5:32 AM",
+          "commitNameOld": "f8644fbe9f76fb2990bcc997a346649e4d432d91",
+          "commitAuthorOld": "Ayush Saxena",
+          "daysBetweenCommits": 80.16,
+          "commitsBetweenForRepo": 277,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,21 +1,31 @@\n   static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n-      long nsQuota, long ssQuota, StorageType type) throws IOException {\n+      long nsQuota, long ssQuota, StorageType type, boolean allowOwner)\n+      throws IOException {\n \n     fsd.writeLock();\n     try {\n       INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n+      if (fsd.isPermissionEnabled() \u0026\u0026 !pc.isSuperUser() \u0026\u0026 allowOwner) {\n+        INodeDirectory parentDir\u003d iip.getLastINode().getParent();\n+        if (parentDir \u003d\u003d null ||\n+            !parentDir.getUserName().equals(pc.getUser())) {\n+          throw new AccessControlException(\n+              \"Access denied for user \" + pc.getUser() +\n+              \". Superuser or owner of parent folder privilege is required\");\n+        }\n+      }\n       INodeDirectory changed \u003d\n           unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n       if (changed !\u003d null) {\n         final QuotaCounts q \u003d changed.getQuotaCounts();\n         if (type \u003d\u003d null) {\n           fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n         } else {\n           fsd.getEditLog().logSetQuotaByStorageType(\n               src, q.getTypeSpaces().get(type), type);\n         }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n      long nsQuota, long ssQuota, StorageType type, boolean allowOwner)\n      throws IOException {\n\n    fsd.writeLock();\n    try {\n      INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n      if (fsd.isPermissionEnabled() \u0026\u0026 !pc.isSuperUser() \u0026\u0026 allowOwner) {\n        INodeDirectory parentDir\u003d iip.getLastINode().getParent();\n        if (parentDir \u003d\u003d null ||\n            !parentDir.getUserName().equals(pc.getUser())) {\n          throw new AccessControlException(\n              \"Access denied for user \" + pc.getUser() +\n              \". Superuser or owner of parent folder privilege is required\");\n        }\n      }\n      INodeDirectory changed \u003d\n          unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "f8644fbe9f76fb2990bcc997a346649e4d432d91": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-15091. Cache Admin and Quota Commands Should Check SuperUser Before Taking Lock. Contributed by Ayush Saxena.\n",
+      "commitDate": "04/01/20 5:32 AM",
+      "commitName": "f8644fbe9f76fb2990bcc997a346649e4d432d91",
+      "commitAuthor": "Ayush Saxena",
+      "commitDateOld": "03/09/19 5:38 AM",
+      "commitNameOld": "91b01a1db794581c67e1ccf9aabaa7cafd686c48",
+      "commitAuthorOld": "Ayush Saxena",
+      "daysBetweenCommits": 123.04,
+      "commitsBetweenForRepo": 609,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,24 +1,21 @@\n   static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n       long nsQuota, long ssQuota, StorageType type) throws IOException {\n-    if (fsd.isPermissionEnabled()) {\n-      pc.checkSuperuserPrivilege();\n-    }\n \n     fsd.writeLock();\n     try {\n       INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n       INodeDirectory changed \u003d\n           unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n       if (changed !\u003d null) {\n         final QuotaCounts q \u003d changed.getQuotaCounts();\n         if (type \u003d\u003d null) {\n           fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n         } else {\n           fsd.getEditLog().logSetQuotaByStorageType(\n               src, q.getTypeSpaces().get(type), type);\n         }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n      long nsQuota, long ssQuota, StorageType type) throws IOException {\n\n    fsd.writeLock();\n    try {\n      INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n      INodeDirectory changed \u003d\n          unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+      "extendedDetails": {}
+    },
+    "84a1321f6aa0af6895564a7c47f8f264656f0294": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-13136. Avoid taking FSN lock while doing group member lookup for FSD permission check. Contributed by Xiaoyu Yao.\n",
+      "commitDate": "22/02/18 11:32 AM",
+      "commitName": "84a1321f6aa0af6895564a7c47f8f264656f0294",
+      "commitAuthor": "Xiaoyu Yao",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-13136. Avoid taking FSN lock while doing group member lookup for FSD permission check. Contributed by Xiaoyu Yao.\n",
+          "commitDate": "22/02/18 11:32 AM",
+          "commitName": "84a1321f6aa0af6895564a7c47f8f264656f0294",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "20/12/17 8:55 AM",
+          "commitNameOld": "a78db9919065d06ced8122229530f44cc7369857",
+          "commitAuthorOld": "Wei Yan",
+          "daysBetweenCommits": 64.11,
+          "commitsBetweenForRepo": 331,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,24 @@\n-  static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n-      StorageType type) throws IOException {\n-    FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n+  static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n+      long nsQuota, long ssQuota, StorageType type) throws IOException {\n     if (fsd.isPermissionEnabled()) {\n       pc.checkSuperuserPrivilege();\n     }\n \n     fsd.writeLock();\n     try {\n       INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n       INodeDirectory changed \u003d\n           unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n       if (changed !\u003d null) {\n         final QuotaCounts q \u003d changed.getQuotaCounts();\n         if (type \u003d\u003d null) {\n           fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n         } else {\n           fsd.getEditLog().logSetQuotaByStorageType(\n               src, q.getTypeSpaces().get(type), type);\n         }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n      long nsQuota, long ssQuota, StorageType type) throws IOException {\n    if (fsd.isPermissionEnabled()) {\n      pc.checkSuperuserPrivilege();\n    }\n\n    fsd.writeLock();\n    try {\n      INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n      INodeDirectory changed \u003d\n          unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+          "extendedDetails": {
+            "oldValue": "[fsd-FSDirectory, src-String, nsQuota-long, ssQuota-long, type-StorageType]",
+            "newValue": "[fsd-FSDirectory, pc-FSPermissionChecker, src-String, nsQuota-long, ssQuota-long, type-StorageType]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-13136. Avoid taking FSN lock while doing group member lookup for FSD permission check. Contributed by Xiaoyu Yao.\n",
+          "commitDate": "22/02/18 11:32 AM",
+          "commitName": "84a1321f6aa0af6895564a7c47f8f264656f0294",
+          "commitAuthor": "Xiaoyu Yao",
+          "commitDateOld": "20/12/17 8:55 AM",
+          "commitNameOld": "a78db9919065d06ced8122229530f44cc7369857",
+          "commitAuthorOld": "Wei Yan",
+          "daysBetweenCommits": 64.11,
+          "commitsBetweenForRepo": 331,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,25 +1,24 @@\n-  static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n-      StorageType type) throws IOException {\n-    FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n+  static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n+      long nsQuota, long ssQuota, StorageType type) throws IOException {\n     if (fsd.isPermissionEnabled()) {\n       pc.checkSuperuserPrivilege();\n     }\n \n     fsd.writeLock();\n     try {\n       INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n       INodeDirectory changed \u003d\n           unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n       if (changed !\u003d null) {\n         final QuotaCounts q \u003d changed.getQuotaCounts();\n         if (type \u003d\u003d null) {\n           fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n         } else {\n           fsd.getEditLog().logSetQuotaByStorageType(\n               src, q.getTypeSpaces().get(type), type);\n         }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void setQuota(FSDirectory fsd, FSPermissionChecker pc, String src,\n      long nsQuota, long ssQuota, StorageType type) throws IOException {\n    if (fsd.isPermissionEnabled()) {\n      pc.checkSuperuserPrivilege();\n    }\n\n    fsd.writeLock();\n    try {\n      INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n      INodeDirectory changed \u003d\n          unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "9d175853b0170683ad5f21d9bcdeaac49fe89e04": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10997. Reduce number of path resolving methods. Contributed by Daryn Sharp.\n",
+      "commitDate": "24/10/16 3:14 PM",
+      "commitName": "9d175853b0170683ad5f21d9bcdeaac49fe89e04",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "06/10/16 2:33 PM",
+      "commitNameOld": "48b9d5fd2a96728b1118be217ca597c4098e99ca",
+      "commitAuthorOld": "Kihwal Lee",
+      "daysBetweenCommits": 18.03,
+      "commitsBetweenForRepo": 119,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,25 +1,25 @@\n   static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n       StorageType type) throws IOException {\n     FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n     if (fsd.isPermissionEnabled()) {\n       pc.checkSuperuserPrivilege();\n     }\n \n     fsd.writeLock();\n     try {\n-      INodesInPath iip \u003d fsd.resolvePathForWrite(pc, src);\n+      INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n       INodeDirectory changed \u003d\n           unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n       if (changed !\u003d null) {\n         final QuotaCounts q \u003d changed.getQuotaCounts();\n         if (type \u003d\u003d null) {\n           fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n         } else {\n           fsd.getEditLog().logSetQuotaByStorageType(\n               src, q.getTypeSpaces().get(type), type);\n         }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n      StorageType type) throws IOException {\n    FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n    if (fsd.isPermissionEnabled()) {\n      pc.checkSuperuserPrivilege();\n    }\n\n    fsd.writeLock();\n    try {\n      INodesInPath iip \u003d fsd.resolvePath(pc, src, DirOp.WRITE);\n      INodeDirectory changed \u003d\n          unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+      "extendedDetails": {}
+    },
+    "48b9d5fd2a96728b1118be217ca597c4098e99ca": {
+      "type": "Ybodychange",
+      "commitMessage": "HDFS-10955. Pass IIP for FSDirAttr methods. Contributed by Daryn Sharp.\n",
+      "commitDate": "06/10/16 2:33 PM",
+      "commitName": "48b9d5fd2a96728b1118be217ca597c4098e99ca",
+      "commitAuthor": "Kihwal Lee",
+      "commitDateOld": "23/09/16 10:37 AM",
+      "commitNameOld": "a5bb88c8e0fd4bd19b6d377fecbe1d2d441514f6",
+      "commitAuthorOld": "Konstantin V Shvachko",
+      "daysBetweenCommits": 13.16,
+      "commitsBetweenForRepo": 98,
+      "commitsBetweenForFile": 1,
+      "diff": "@@ -1,23 +1,25 @@\n   static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n       StorageType type) throws IOException {\n+    FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n     if (fsd.isPermissionEnabled()) {\n-      FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n       pc.checkSuperuserPrivilege();\n     }\n \n     fsd.writeLock();\n     try {\n-      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, ssQuota, type);\n+      INodesInPath iip \u003d fsd.resolvePathForWrite(pc, src);\n+      INodeDirectory changed \u003d\n+          unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n       if (changed !\u003d null) {\n         final QuotaCounts q \u003d changed.getQuotaCounts();\n         if (type \u003d\u003d null) {\n           fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n         } else {\n           fsd.getEditLog().logSetQuotaByStorageType(\n               src, q.getTypeSpaces().get(type), type);\n         }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+      "actualSource": "  static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n      StorageType type) throws IOException {\n    FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n    if (fsd.isPermissionEnabled()) {\n      pc.checkSuperuserPrivilege();\n    }\n\n    fsd.writeLock();\n    try {\n      INodesInPath iip \u003d fsd.resolvePathForWrite(pc, src);\n      INodeDirectory changed \u003d\n          unprotectedSetQuota(fsd, iip, nsQuota, ssQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+      "extendedDetails": {}
+    },
+    "f2231cebcddc80f0b753c4a7cb45ee4040846951": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-7775. Use consistent naming for NN-internal quota related types and functions. (Contributed bu Xiaoyu Yao)\n",
+      "commitDate": "13/02/15 9:01 PM",
+      "commitName": "f2231cebcddc80f0b753c4a7cb45ee4040846951",
+      "commitAuthor": "Arpit Agarwal",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-7775. Use consistent naming for NN-internal quota related types and functions. (Contributed bu Xiaoyu Yao)\n",
+          "commitDate": "13/02/15 9:01 PM",
+          "commitName": "f2231cebcddc80f0b753c4a7cb45ee4040846951",
+          "commitAuthor": "Arpit Agarwal",
+          "commitDateOld": "11/02/15 10:41 AM",
+          "commitNameOld": "5dae97a584d30cef3e34141edfaca49c4ec57913",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 2.43,
+          "commitsBetweenForRepo": 58,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,23 @@\n-  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota, StorageType type)\n-      throws IOException {\n+  static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n+      StorageType type) throws IOException {\n     if (fsd.isPermissionEnabled()) {\n       FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n       pc.checkSuperuserPrivilege();\n     }\n \n     fsd.writeLock();\n     try {\n-      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota, type);\n+      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, ssQuota, type);\n       if (changed !\u003d null) {\n         final QuotaCounts q \u003d changed.getQuotaCounts();\n         if (type \u003d\u003d null) {\n-          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getDiskSpace());\n+          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n         } else {\n           fsd.getEditLog().logSetQuotaByStorageType(\n               src, q.getTypeSpaces().get(type), type);\n         }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n      StorageType type) throws IOException {\n    if (fsd.isPermissionEnabled()) {\n      FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n      pc.checkSuperuserPrivilege();\n    }\n\n    fsd.writeLock();\n    try {\n      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, ssQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+          "extendedDetails": {
+            "oldValue": "[fsd-FSDirectory, src-String, nsQuota-long, dsQuota-long, type-StorageType]",
+            "newValue": "[fsd-FSDirectory, src-String, nsQuota-long, ssQuota-long, type-StorageType]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7775. Use consistent naming for NN-internal quota related types and functions. (Contributed bu Xiaoyu Yao)\n",
+          "commitDate": "13/02/15 9:01 PM",
+          "commitName": "f2231cebcddc80f0b753c4a7cb45ee4040846951",
+          "commitAuthor": "Arpit Agarwal",
+          "commitDateOld": "11/02/15 10:41 AM",
+          "commitNameOld": "5dae97a584d30cef3e34141edfaca49c4ec57913",
+          "commitAuthorOld": "Arpit Agarwal",
+          "daysBetweenCommits": 2.43,
+          "commitsBetweenForRepo": 58,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,23 +1,23 @@\n-  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota, StorageType type)\n-      throws IOException {\n+  static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n+      StorageType type) throws IOException {\n     if (fsd.isPermissionEnabled()) {\n       FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n       pc.checkSuperuserPrivilege();\n     }\n \n     fsd.writeLock();\n     try {\n-      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota, type);\n+      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, ssQuota, type);\n       if (changed !\u003d null) {\n         final QuotaCounts q \u003d changed.getQuotaCounts();\n         if (type \u003d\u003d null) {\n-          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getDiskSpace());\n+          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n         } else {\n           fsd.getEditLog().logSetQuotaByStorageType(\n               src, q.getTypeSpaces().get(type), type);\n         }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void setQuota(FSDirectory fsd, String src, long nsQuota, long ssQuota,\n      StorageType type) throws IOException {\n    if (fsd.isPermissionEnabled()) {\n      FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n      pc.checkSuperuserPrivilege();\n    }\n\n    fsd.writeLock();\n    try {\n      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, ssQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getStorageSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "5dae97a584d30cef3e34141edfaca49c4ec57913": {
+      "type": "Ymultichange(Yparameterchange,Ybodychange)",
+      "commitMessage": "HDFS-7723. Quota By Storage Type namenode implemenation. (Contributed by Xiaoyu Yao)\n",
+      "commitDate": "11/02/15 10:41 AM",
+      "commitName": "5dae97a584d30cef3e34141edfaca49c4ec57913",
+      "commitAuthor": "Arpit Agarwal",
+      "subchanges": [
+        {
+          "type": "Yparameterchange",
+          "commitMessage": "HDFS-7723. Quota By Storage Type namenode implemenation. (Contributed by Xiaoyu Yao)\n",
+          "commitDate": "11/02/15 10:41 AM",
+          "commitName": "5dae97a584d30cef3e34141edfaca49c4ec57913",
+          "commitAuthor": "Arpit Agarwal",
+          "commitDateOld": "18/12/14 11:25 AM",
+          "commitNameOld": "65f2a4ee600dfffa5203450261da3c1989de25a9",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 54.97,
+          "commitsBetweenForRepo": 369,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,23 @@\n-  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota)\n+  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota, StorageType type)\n       throws IOException {\n     if (fsd.isPermissionEnabled()) {\n       FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n       pc.checkSuperuserPrivilege();\n     }\n \n     fsd.writeLock();\n     try {\n-      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota);\n+      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota, type);\n       if (changed !\u003d null) {\n-        final Quota.Counts q \u003d changed.getQuotaCounts();\n-        fsd.getEditLog().logSetQuota(\n-            src, q.get(Quota.NAMESPACE), q.get(Quota.DISKSPACE));\n+        final QuotaCounts q \u003d changed.getQuotaCounts();\n+        if (type \u003d\u003d null) {\n+          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getDiskSpace());\n+        } else {\n+          fsd.getEditLog().logSetQuotaByStorageType(\n+              src, q.getTypeSpaces().get(type), type);\n+        }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota, StorageType type)\n      throws IOException {\n    if (fsd.isPermissionEnabled()) {\n      FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n      pc.checkSuperuserPrivilege();\n    }\n\n    fsd.writeLock();\n    try {\n      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getDiskSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+          "extendedDetails": {
+            "oldValue": "[fsd-FSDirectory, src-String, nsQuota-long, dsQuota-long]",
+            "newValue": "[fsd-FSDirectory, src-String, nsQuota-long, dsQuota-long, type-StorageType]"
+          }
+        },
+        {
+          "type": "Ybodychange",
+          "commitMessage": "HDFS-7723. Quota By Storage Type namenode implemenation. (Contributed by Xiaoyu Yao)\n",
+          "commitDate": "11/02/15 10:41 AM",
+          "commitName": "5dae97a584d30cef3e34141edfaca49c4ec57913",
+          "commitAuthor": "Arpit Agarwal",
+          "commitDateOld": "18/12/14 11:25 AM",
+          "commitNameOld": "65f2a4ee600dfffa5203450261da3c1989de25a9",
+          "commitAuthorOld": "Haohui Mai",
+          "daysBetweenCommits": 54.97,
+          "commitsBetweenForRepo": 369,
+          "commitsBetweenForFile": 1,
+          "diff": "@@ -1,19 +1,23 @@\n-  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota)\n+  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota, StorageType type)\n       throws IOException {\n     if (fsd.isPermissionEnabled()) {\n       FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n       pc.checkSuperuserPrivilege();\n     }\n \n     fsd.writeLock();\n     try {\n-      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota);\n+      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota, type);\n       if (changed !\u003d null) {\n-        final Quota.Counts q \u003d changed.getQuotaCounts();\n-        fsd.getEditLog().logSetQuota(\n-            src, q.get(Quota.NAMESPACE), q.get(Quota.DISKSPACE));\n+        final QuotaCounts q \u003d changed.getQuotaCounts();\n+        if (type \u003d\u003d null) {\n+          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getDiskSpace());\n+        } else {\n+          fsd.getEditLog().logSetQuotaByStorageType(\n+              src, q.getTypeSpaces().get(type), type);\n+        }\n       }\n     } finally {\n       fsd.writeUnlock();\n     }\n   }\n\\ No newline at end of file\n",
+          "actualSource": "  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota, StorageType type)\n      throws IOException {\n    if (fsd.isPermissionEnabled()) {\n      FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n      pc.checkSuperuserPrivilege();\n    }\n\n    fsd.writeLock();\n    try {\n      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota, type);\n      if (changed !\u003d null) {\n        final QuotaCounts q \u003d changed.getQuotaCounts();\n        if (type \u003d\u003d null) {\n          fsd.getEditLog().logSetQuota(src, q.getNameSpace(), q.getDiskSpace());\n        } else {\n          fsd.getEditLog().logSetQuotaByStorageType(\n              src, q.getTypeSpaces().get(type), type);\n        }\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+          "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java",
+          "extendedDetails": {}
+        }
+      ]
+    },
+    "832ebd8cb63d91b4aa4bfed412b9799b3b9be4a7": {
+      "type": "Yintroduced",
+      "commitMessage": "HDFS-7506. Consolidate implementation of setting inode attributes into a single class. Contributed by Haohui Mai.\n",
+      "commitDate": "15/12/14 10:40 AM",
+      "commitName": "832ebd8cb63d91b4aa4bfed412b9799b3b9be4a7",
+      "commitAuthor": "Haohui Mai",
+      "diff": "@@ -0,0 +1,19 @@\n+  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota)\n+      throws IOException {\n+    if (fsd.isPermissionEnabled()) {\n+      FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n+      pc.checkSuperuserPrivilege();\n+    }\n+\n+    fsd.writeLock();\n+    try {\n+      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota);\n+      if (changed !\u003d null) {\n+        final Quota.Counts q \u003d changed.getQuotaCounts();\n+        fsd.getEditLog().logSetQuota(\n+            src, q.get(Quota.NAMESPACE), q.get(Quota.DISKSPACE));\n+      }\n+    } finally {\n+      fsd.writeUnlock();\n+    }\n+  }\n\\ No newline at end of file\n",
+      "actualSource": "  static void setQuota(FSDirectory fsd, String src, long nsQuota, long dsQuota)\n      throws IOException {\n    if (fsd.isPermissionEnabled()) {\n      FSPermissionChecker pc \u003d fsd.getPermissionChecker();\n      pc.checkSuperuserPrivilege();\n    }\n\n    fsd.writeLock();\n    try {\n      INodeDirectory changed \u003d unprotectedSetQuota(fsd, src, nsQuota, dsQuota);\n      if (changed !\u003d null) {\n        final Quota.Counts q \u003d changed.getQuotaCounts();\n        fsd.getEditLog().logSetQuota(\n            src, q.get(Quota.NAMESPACE), q.get(Quota.DISKSPACE));\n      }\n    } finally {\n      fsd.writeUnlock();\n    }\n  }",
+      "path": "hadoop-hdfs-project/hadoop-hdfs/src/main/java/org/apache/hadoop/hdfs/server/namenode/FSDirAttrOp.java"
+    }
+  }
+}
