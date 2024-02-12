@@ -29,8 +29,8 @@ public class CodeMetricAnalysis {
 
     public static void main(String[] args) {
 
-        if (args.length < 2) {
-            System.out.println("Usage: java -jar CodeMetricAnalysis.jar <input_directory> <output_directory>");
+        if (args.length != 2) {
+            System.out.println("Please make sure you give your command properly, as shown below:\njava -jar 'target/CodeMetricAnalysis-1.0-SNAPSHOT-jar-with-dependencies.jar' <input_directory> <output_directory>");
             return;
         }
 
