@@ -20,19 +20,24 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
 
 public class CodeMetricAnalysis {
-
+    private static int countNotParsableMethods = 0;
+    private static int countNoYIntroduceCommits = 0;
     public static void main(String[] args) {
 
         if (args.length != 2) {
             System.out.println("Please make sure you give your command properly, as shown below:\njava -jar 'target/CodeMetricAnalysis-1.0-SNAPSHOT-jar-with-dependencies.jar' <input_directory> <output_directory>");
             return;
         }
+
+        // For storing the records of the not parsable and no YIntroduce commits
+        Map<String, int[]> projectsInfo = new HashMap<>();
 
         String inputDirectory = args[0];
         String outputDirectory = args[1];
@@ -41,6 +46,8 @@ public class CodeMetricAnalysis {
 
         // Joining 'checkstyle' and 'hadoop' project paths
         for (String project : projects) {
+            countNotParsableMethods = 0;
+            countNoYIntroduceCommits = 0;
             Path projectPath = Paths.get(inputDirectory, project);
             try (Stream<Path> paths = Files.walk(projectPath)) {
                 paths.filter(Files::isRegularFile)
@@ -50,7 +57,15 @@ public class CodeMetricAnalysis {
                 System.err.println("Error processing project: " + project);
                 e.printStackTrace();
             }
+            projectsInfo.put(project, new int[]{countNotParsableMethods, countNoYIntroduceCommits});
         }
+
+        // Printing the not parsable and no YIntroduce commits count
+        projectsInfo.forEach((projectName, counts) -> {
+            System.out.println("\n" + counts[0] + " method(s) from " + projectName + " project are not parsable.");
+            System.out.println(counts[1] + " method(s) from " + projectName + " project have problem(s) with the history (e.g., there is no YIntroduce commit).");
+        });
+        System.out.println();
     }
 
     private static void processJsonFile(String jsonFilePath, String outputDirectory) {
@@ -76,6 +91,7 @@ public class CodeMetricAnalysis {
             }
 
             if (introductionCommit == null) {
+                countNoYIntroduceCommits++;
                 System.out.println("No introduction commit found for method in " + jsonFilePath);
                 return;
             }
@@ -119,6 +135,7 @@ public class CodeMetricAnalysis {
                     System.out.println("Successfully saved the data for method in " + jsonFilePath);
                 }
             } catch (RuntimeException e) {
+                countNotParsableMethods++;
                 System.out.println("Error parsing source code for " + jsonFilePath);
             }
 
