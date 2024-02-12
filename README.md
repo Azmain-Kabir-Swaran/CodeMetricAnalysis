@@ -102,8 +102,38 @@ conda install --file requirements.txt
 python correlation_calculation.py
 ```
 
-##### **&nbsp;&nbsp;&nbsp;&nbsp;Step 3:** *The result should contain the correlation coefficient between `Size vs. Revisions`, `McCabe vs. Revisions`, and `Readability vs. Revisions` for both projects.*
+##### **&nbsp;&nbsp;&nbsp;&nbsp;Step 3:** *The result should contain the correlation coefficient between `Size vs. Revisions`, `McCabe vs. Revisions`, and `Readability vs. Revisions` for both projects as shown in the below:*
 
+```
+Correlations coefficients for checkstyle:
+  Size vs. Revisions:
+    Pearson: Coefficient=0.4294, P-value=3.037e-167
+    Spearman: Coefficient=0.2999, P-value=2.170e-78
+    Kendall: Coefficient=0.2321, P-value=3.431e-76
+  McCabe vs. Revisions:
+    Pearson: Coefficient=0.4017, P-value=9.787e-145
+    Spearman: Coefficient=0.3437, P-value=6.216e-104
+    Kendall: Coefficient=0.2772, P-value=2.892e-99
+  Readability vs. Revisions:
+    Pearson: Coefficient=-0.1906, P-value=7.248e-32
+    Spearman: Coefficient=-0.1569, P-value=5.448e-22
+    Kendall: Coefficient=-0.1119, P-value=5.674e-22
+
+
+Correlations coefficients for hadoop:
+  Size vs. Revisions:
+    Pearson: Coefficient=0.3503, P-value=0.000e+00
+    Spearman: Coefficient=0.2389, P-value=0.000e+00
+    Kendall: Coefficient=0.1928, P-value=0.000e+00
+  McCabe vs. Revisions:
+    Pearson: Coefficient=0.2793, P-value=0.000e+00
+    Spearman: Coefficient=0.1954, P-value=0.000e+00
+    Kendall: Coefficient=0.1659, P-value=0.000e+00
+  Readability vs. Revisions:
+    Pearson: Coefficient=-0.1465, P-value=0.000e+00
+    Spearman: Coefficient=-0.1664, P-value=0.000e+00
+    Kendall: Coefficient=-0.1233, P-value=0.000e+00
+```
 
 ### 4. References
 
