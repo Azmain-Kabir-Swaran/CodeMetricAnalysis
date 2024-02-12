@@ -34,9 +34,11 @@
   3. [Setup \& Usage](#3-setup--installation)
   4. [References](#4-references)
 
+
 ### 1. Introduction
 
 This project investigates the relationship between code metrics—specifically size, McCabe cyclomatic complexity, and readability, and the change-proneness of Java methods utilizing CodeShovel's [[1]](#ref1) detailed change history within the Apache Hadoop project (https://github.com/apache/hadoop) which contains 73,733 files/methods and Checkstyle project (https://github.com/apache/hadoop) which contains 3,733 files/methods. A Java program was developed to extract these metrics from JSON files representing each method's change history, and calculate the number of revisions, while excluding non-content altering changes. The results are compiled into 2 CSV files for those 2 projects, which are then analyzed by a Python program to calculate correlation coefficients (Pearson, Spearman, and Kendall’s Tau) between the metrics and revision frequency. This analysis try to identify predictors of method change-proneness to inform future software maintenance efforts. The project, structured as a Maven project for straightforward build and dependency management
+
 
 ### 2. Requirements
 
@@ -45,10 +47,11 @@ This project investigates the relationship between code metrics—specifically s
 - Need to install required Python libraries from [requirements.txt](requirements.txt).
 - Preferred operating system: Linux/macOS/Windows-WSL/Windows.
 
+
 ### 3. Setup & Usage
 #### 3.1. Java Program for method's Size, McCabe, Readability, and Number of Revisions calculation:
 
-##### **&nbsp;&nbsp;&nbsp;&nbsp;Step 1:** *Clone or download the repository and open it from the IntelliJ. In the [pom.xml](pom.xml) file all the dependencies are already added. However, the following steps needs to be completed to run the Java program and to get the results.*
+##### **&nbsp;&nbsp;&nbsp;&nbsp;Step 1:** *Clone or download the repository and open it from the IntelliJ. In the [pom.xml](pom.xml) file all the dependencies are already added. However, the following steps need to be completed to run the Java program and get the results.*
 
 ##### **&nbsp;&nbsp;&nbsp;&nbsp;Step 2:** *Go to the terminal and make sure that the current directory is the root directory of this project.*
 
@@ -77,7 +80,6 @@ java -jar 'target/CodeMetricAnalysis-1.0-SNAPSHOT-jar-with-dependencies.jar' 'so
 
 #### 3.2. Python Script for correlation coefficient and P-values calculation from 2 CSV files generated from the Java program:
 
-
 ##### **&nbsp;&nbsp;&nbsp;&nbsp;Step 1:** *At first, open this repository using Visual Studio Code (or, Jupyter Notebook). Then open terminal and the current directory should be the root directory of this project. In this project, Python 3.8.15 was used inside a conda environment (it can be also run without a conda environment). Following commands can be utilized if you want to run it using conda (conda have to be installed already):*
 
 ```bash
@@ -101,6 +103,7 @@ python correlation_calculation.py
 ```
 
 ##### **&nbsp;&nbsp;&nbsp;&nbsp;Step 3:** *The result should contain he correlation coefficient between `Size vs. Revisions`, `McCabe vs. Revisions`, and `Readability vs. Revisions` for both projects.*
+
 
 ### 4. References
 
