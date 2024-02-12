@@ -15,7 +15,7 @@
 │   ├── checkstyle
 │   └── hadoop
 │
-└── src
+├── src
 │   ├── main/java/org/example
 │   │   └── CodeMetricAnalysis.java
 │   │
