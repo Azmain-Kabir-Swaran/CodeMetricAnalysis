@@ -83,13 +83,13 @@ public class CodeMetricAnalysis {
             String sourceCode = (String) introductionCommit.get("actualSource");
 
             // Wrap the source code with a dummy class so that it can be parsed using Java parser where necessary
-            String wrappedSourceCode = wrapMethodInClass(sourceCode.trim());
+            String wrappedSourceCode = wrapMethodInClass(sourceCode);
 
             try {
                 CompilationUnit compilationUnit = JavaParser.parse(wrappedSourceCode);
                 int size = calculateSLOC(compilationUnit);
                 int mccabe = calculateMcCabe(compilationUnit);
-                double readability = calculateReadability(sourceCode.trim());
+                double readability = calculateReadability(sourceCode);
                 int revisions = countRevisions(changeHistoryDetails);
 
                 // Output to CSV
@@ -166,11 +166,11 @@ public class CodeMetricAnalysis {
             String actualSource = (String) details.get("actualSource");
 
             if (changeType.contains("Yintroduced")) {
-                originalSource = actualSource.trim();
+                originalSource = actualSource;
                 revisions++; // Count the introduction as a revision
             } else if (!changeType.contains("Yfilerename") && !changeType.contains("Ymovefromfile")) {
                 revisions++; // Count all other changes as revisions
-            } else if ((changeType.contains("Yfilerename") || changeType.contains("Ymovefromfile")) && (originalSource == null || !actualSource.trim().equals(originalSource))) {
+            } else if ((changeType.contains("Yfilerename") || changeType.contains("Ymovefromfile")) && (originalSource == null || !actualSource.equals(originalSource))) {
                 revisions++; // Count renames only if the content was modified
             }
         }
