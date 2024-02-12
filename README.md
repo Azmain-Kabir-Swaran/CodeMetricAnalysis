@@ -40,7 +40,7 @@ This project investigates the relationship between code metrics—specifically s
 
 ### 2. Requirements
 
-- IntelliJ IDEA Community Edition was used to develop the Java program along along Maven build tool and openjdk-19.
+- IntelliJ IDEA Community Edition was used to develop the Java program along Maven build tool and openjdk-19.
 - Python 3.8.15 was used in a conda environment.
 - Need to install required Python libraries from [requirements.txt](requirements.txt).
 - Preferred operating system: Linux/macOS/Windows-WSL/Windows.
