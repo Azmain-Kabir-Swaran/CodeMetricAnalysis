@@ -31,7 +31,7 @@
 ## Steps to Run the Program
   1. [Introduction](#1-introduction)
   2. [Requirements](#2-requirements)
-  3. [Setup \& Usage](#3-setup--installation)
+  3. [Setup \& Usage](#3-setup--usage)
   4. [References](#4-references)
 
 
